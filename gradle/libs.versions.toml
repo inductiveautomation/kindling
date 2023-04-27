@@ -9,9 +9,8 @@ ignition = "8.1.1"
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+conveyor = { id = "dev.hydraulic.conveyor", version = "1.5" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "11.3.2" }
-shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
-runtime = { id = "org.beryx.runtime", version = "1.13.0" }
 
 [libraries]
 # core functionality
