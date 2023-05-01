@@ -1,7 +1,7 @@
 [versions]
 java = "17"
 kotlin = "1.8.21"
-coroutines = "1.6.4"
+coroutines = "1.7.0-RC"
 flatlaf = "3.1.1"
 kotest = "5.6.1"
 ignition = "8.1.1"
@@ -34,7 +34,7 @@ flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref =
 flatlaf-swingx = { group = "com.formdev", name = "flatlaf-swingx", version.ref = "flatlaf" }
 svgSalamander = { group = "com.formdev", name = "svgSalamander", version = "1.1.4" }
 jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.12" }
-swingx = { group = "org.swinglabs.swingx", name = "swingx-core", version = "1.6.5-1" }
+swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
 osthemedetector = { group = "com.github.Dansoftowner", name = "jSystemThemeDetector", version = "3.8" }
 rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = "3.3.3" }
 jfreechart = { group = "org.jfree", name = "jfreechart", version = "1.5.4" }

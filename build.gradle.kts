@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.conveyor)
     application
-    `maven-publish`
 }
 
 apply {
@@ -55,10 +54,10 @@ dependencies {
     testImplementation(libs.bundles.kotest)
 }
 
-group = "io.github.paulgriffith"
+group = "io.github.inductiveautomation"
 
 application {
-    mainClass.set("io.github.paulgriffith.kindling.MainPanel")
+    mainClass.set("io.github.inductiveautomation.kindling.MainPanel")
 }
 
 tasks {
@@ -76,15 +75,3 @@ ktlint {
         reporter(CHECKSTYLE)
     }
 }
-
-//    modules.set(
-//        listOf(
-//            "java.desktop",
-//            "java.sql",
-//            "java.logging",
-//            "java.naming",
-//            "java.xml",
-//            "jdk.zipfs",
-//        ),
-//    )
-//

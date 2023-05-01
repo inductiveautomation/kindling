@@ -21,7 +21,7 @@ jobs:
         uses: actions/delete-package-versions@v4
         with:
           package-version-ids: ${{ env.project_version }}
-          package-name: 'io.github.paulgriffith.kindling'
+          package-name: 'io.github.inductiveautomation.kindling'
           package-type: 'maven'
         continue-on-error: true
       - name: Publish to Github Packages
