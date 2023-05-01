@@ -146,7 +146,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
             val toolPanel = openFunction()
             tabs.addTab(component = toolPanel, select = true)
         }.getOrElse { ex ->
-            io.github.inductiveautomation.kindling.MainPanel.Companion.LOGGER.error("Failed to open $description as a $title", ex)
+            LOGGER.error("Failed to open $description as a $title", ex)
             tabs.addTab(
                 "ERROR",
                 FlatSVGIcon("icons/bx-error.svg"),
@@ -200,7 +200,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
     }
 
     companion object {
-        val LOGGER = getLogger<io.github.inductiveautomation.kindling.MainPanel>()
+        val LOGGER = getLogger<MainPanel>()
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -208,14 +208,14 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
             System.setProperty("apple.laf.useScreenMenuBar", "true")
 
             EventQueue.invokeLater {
-                io.github.inductiveautomation.kindling.MainPanel.Companion.setupLaf()
+                setupLaf()
 
                 JFrame("Kindling").apply {
                     defaultCloseOperation = JFrame.EXIT_ON_CLOSE
                     preferredSize = Dimension(1280, 800)
                     iconImage = Kindling.frameIcon
 
-                    val mainPanel = io.github.inductiveautomation.kindling.MainPanel(args.isEmpty())
+                    val mainPanel = MainPanel(args.isEmpty())
                     add(mainPanel)
                     pack()
                     jMenuBar = mainPanel.menuBar
