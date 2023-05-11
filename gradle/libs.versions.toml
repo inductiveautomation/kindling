@@ -24,7 +24,7 @@ zip4j = { group = "net.lingala.zip4j", name = "zip4j", version = "2.11.4" }
 excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" }
 
 # build
-jsoup = { group = "org.jsoup", name = "jsoup", version = "1.15.4" }
+jsoup = { group = "org.jsoup", name = "jsoup", version = "1.16.1" }
 
 # appearance/swing
 miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.1" }
