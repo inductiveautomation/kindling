@@ -3,7 +3,7 @@ java = "17"
 kotlin = "1.8.21"
 coroutines = "1.7.0"
 flatlaf = "3.1.1"
-kotest = "5.6.1"
+kotest = "5.6.2"
 ignition = "8.1.1"
 
 [plugins]
