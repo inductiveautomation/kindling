@@ -11,9 +11,11 @@ import io.github.inductiveautomation.kindling.cache.model.AuditProfileData
 import io.github.inductiveautomation.kindling.cache.model.ScriptedSFData
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.DetailsPane
+import io.github.inductiveautomation.kindling.core.Savable
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.core.ToolPanelSurrogate
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -31,7 +33,6 @@ import org.hsqldb.jdbc.JDBCDataSource
 import org.intellij.lang.annotations.Language
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.io.Serializable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.PreparedStatement
@@ -47,11 +48,13 @@ import kotlin.io.path.copyToRecursively
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+import kotlinx.serialization.Serializable
+import kotlin.io.path.absolutePathString
 
 private const val TRANSACTION_GROUP_DATA = "Transaction Group Data"
 
 @OptIn(ExperimentalPathApi::class)
-class CacheView(private val path: Path) : ToolPanel() {
+class CacheView(private val path: Path) : ToolPanel(), Savable {
     private val tempDirectory: Path = Files.createTempDirectory(path.nameWithoutExtension)
 
     private val dbName = when (path.extension) {
@@ -100,6 +103,8 @@ class CacheView(private val path: Path) : ToolPanel() {
     override fun removeNotify() = super.removeNotify().also {
         connection.close()
     }
+
+    override fun save(): ToolPanelSurrogate = CacheViewSurrogate(path.absolutePathString())
 
     @Suppress("SqlNoDataSourceInspection", "SqlResolve")
     @Language("HSQLDB")
@@ -228,7 +233,7 @@ class CacheView(private val path: Path) : ToolPanel() {
         resizeWeight = 0.75
     }
 
-    private fun Serializable.toDetail(): Detail = when (this) {
+    private fun java.io.Serializable.toDetail(): Detail = when (this) {
         is BasicHistoricalRecord -> toDetail()
         is ScanclassHistorySet -> toDetail()
         is AuditProfileData -> toDetail()
@@ -261,13 +266,13 @@ class CacheView(private val path: Path) : ToolPanel() {
     /**
      * @throws ClassNotFoundException
      */
-    private fun ByteArray.deserialize(): Serializable {
+    private fun ByteArray.deserialize(): java.io.Serializable {
         return AliasingObjectInputStream(inputStream()) {
             put("com.inductiveautomation.ignition.gateway.audit.AuditProfileData", AuditProfileData::class.java)
             put("com.inductiveautomation.ignition.gateway.script.ialabs.IALabsDatasourceFunctions\$QuerySFData", ScriptedSFData::class.java)
 //            put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFData", AlarmJournalData::class.java)
 //            put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFGroup", AlarmJournalSFGroup::class.java)
-        }.readObject() as Serializable
+        }.readObject() as java.io.Serializable
     }
 
     private fun ScanclassHistorySet.toDetail(): Detail {
@@ -417,6 +422,7 @@ class CacheView(private val path: Path) : ToolPanel() {
         val LOGGER = getLogger<CacheView>()
         val cacheFileExtensions = listOf("data", "script", "log", "backup", "properties")
     }
+
 }
 
 object CacheViewer : Tool {
@@ -425,4 +431,9 @@ object CacheViewer : Tool {
     override val icon = FlatSVGIcon("icons/bx-data.svg")
     override val extensions = listOf("data", "script", "zip")
     override fun open(path: Path): ToolPanel = CacheView(path)
+}
+
+@Serializable
+class CacheViewSurrogate(val path: String) : ToolPanelSurrogate {
+    override fun load(): Savable = CacheView(Path.of(path))
 }

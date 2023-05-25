@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.CheckBoxList
+import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.NoSelectionModel
@@ -31,7 +32,7 @@ class LoggerNamesModel(val data: List<LoggerName>) : AbstractListModel<Any>() {
 }
 
 class LoggerNamesList(model: LoggerNamesModel) : CheckBoxList(model) {
-    var isShowFullLoggerName = false
+    var isShowFullLoggerName = Kindling.session.showFullLoggerNames
         set(value) {
             field = value
             repaint()

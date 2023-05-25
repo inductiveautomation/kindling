@@ -25,7 +25,7 @@ class TextFileView(override val provider: FileSystemProvider, override val path:
         isEditable = false
         syntaxEditingStyle = KNOWN_EXTENSIONS[path.extension] ?: SYNTAX_STYLE_NONE
 
-        Kindling.theme.apply(this)
+        Kindling.session.theme.apply(this)
     }
 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-file.svg").derive(16, 16)

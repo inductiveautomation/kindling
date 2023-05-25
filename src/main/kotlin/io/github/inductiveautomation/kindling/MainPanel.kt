@@ -6,7 +6,10 @@ import com.formdev.flatlaf.extras.components.FlatTextArea
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.CustomIconView
 import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.UserSession.Companion.loadPanels
 import io.github.inductiveautomation.kindling.core.MultiTool
+import io.github.inductiveautomation.kindling.core.PreferencesPanel
+import io.github.inductiveautomation.kindling.core.Savable
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
@@ -25,19 +28,21 @@ import java.awt.EventQueue
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.desktop.QuitStrategy
-import java.awt.event.ItemEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.io.File
-import javax.swing.ButtonGroup
 import javax.swing.JButton
-import javax.swing.JCheckBoxMenuItem
 import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JPanel
 import javax.swing.UIManager
+import kotlin.system.exitProcess
 
-class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
+class MainPanel(private var empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
     private val fileChooser = JFileChooser(Kindling.homeLocation).apply {
         isMultiSelectionEnabled = true
         fileView = CustomIconView()
@@ -61,6 +66,8 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
 
     private val tabs = TabStrip()
     private val openButton = JButton(openAction)
+
+    private val preferences = PreferencesPanel()
 
     private val menuBar = JMenuBar().apply {
         add(
@@ -102,22 +109,15 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
             },
         )
         add(
-            JMenu("Theme").apply {
-                val buttonGroup = ButtonGroup()
-
-                for (value in Kindling.Theme.values()) {
-                    add(
-                        JCheckBoxMenuItem(value.name, Kindling.theme == value).apply {
-                            addItemListener { e ->
-                                if (e.stateChange == ItemEvent.SELECTED) {
-                                    Kindling.theme = value
-                                }
-                            }
-                            buttonGroup.add(this)
-                        },
-                    )
-                }
-            },
+            JMenu("Preferences").apply {
+                addMouseListener(
+                    object : MouseAdapter() {
+                        override fun mouseClicked(e: MouseEvent?) {
+                            preferences.isVisible = !preferences.isVisible
+                        }
+                    }
+                )
+            }
         )
         add(
             JMenu("Debug").apply
@@ -192,9 +192,15 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
     }
 
     init {
+        val panels = loadPanels()
+        empty = panels.isEmpty()
+
         if (empty) {
             add(openButton, "dock center")
         } else {
+            panels.forEach {
+                tabs.add(it as ToolPanel)
+            }
             add(tabs, "dock center")
         }
     }
@@ -206,12 +212,13 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
         fun main(args: Array<String>) {
             System.setProperty("apple.awt.application.name", "Kindling")
             System.setProperty("apple.laf.useScreenMenuBar", "true")
+            System.setProperty("flatlaf.uiScale", Kindling.session.uiScaleFactor.toString())
 
             EventQueue.invokeLater {
                 setupLaf()
 
                 JFrame("Kindling").apply {
-                    defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+                    defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
                     preferredSize = Dimension(1280, 800)
                     iconImage = Kindling.frameIcon
 
@@ -236,6 +243,22 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                     }
 
                     transferHandler = FileTransferHandler(mainPanel::openFiles)
+
+                    addWindowListener(
+                        object : WindowAdapter() {
+                            override fun windowClosing(e: WindowEvent?) {
+                                val savablePanels = mainPanel.tabs.indices
+                                    .map(mainPanel.tabs::getComponentAt)
+                                    .filterIsInstance<Savable>()
+                                    .map(Savable::save)
+                                Kindling.UserSession.savePanels(savablePanels)
+                                Kindling.session.saveSession()
+                                super.windowClosing(e)
+                                dispose()
+                                exitProcess(0)
+                            }
+                        }
+                    )
 
                     setLocationRelativeTo(null)
                     isVisible = true

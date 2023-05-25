@@ -7,8 +7,10 @@ import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.MultiTool
+import io.github.inductiveautomation.kindling.core.Savable
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.core.ToolPanelSurrogate
 import io.github.inductiveautomation.kindling.core.add
 import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byCountAsc
 import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byCountDesc
@@ -16,6 +18,7 @@ import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byNam
 import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byNameDesc
 import io.github.inductiveautomation.kindling.thread.model.Stacktrace
 import io.github.inductiveautomation.kindling.thread.model.Thread
+import io.github.inductiveautomation.kindling.thread.model.ThreadColumnIdentifier
 import io.github.inductiveautomation.kindling.thread.model.ThreadDump
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
 import io.github.inductiveautomation.kindling.thread.model.ThreadModel
@@ -33,6 +36,7 @@ import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
@@ -60,15 +64,15 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
 
 class MultiThreadView(
-    private val paths: List<Path>,
-) : ToolPanel() {
+    val paths: List<Path>,
+) : ToolPanel(), Savable {
     private val threadDumps = paths.map { path ->
         ThreadDump.fromStream(path.inputStream()) ?: throw ToolOpeningException("Failed to open $path as a thread dump")
     }
 
-    private val poolList = FilterList("(No Pool)")
-    private val systemList = FilterList("Unassigned")
-    private val stateList = FilterList("")
+    val poolList = FilterList("(No Pool)")
+    val systemList = FilterList("Unassigned")
+    val stateList = FilterList("")
     private val searchField = JXSearchField("Search")
 
     private var visibleThreadDumps: List<ThreadDump?> = emptyList()
@@ -91,7 +95,7 @@ class MultiThreadView(
             }
         }
 
-    private val mainTable: ReifiedJXTable<ThreadModel> = run {
+    val mainTable: ReifiedJXTable<ThreadModel> = run {
         // populate initial state of all the filter lists
         visibleThreadDumps = threadDumps
         val initialModel = ThreadModel(currentLifespanList)
@@ -198,7 +202,7 @@ class MultiThreadView(
 
     private var comparison = ThreadComparisonPane(threadDumps.size, threadDumps[0].version)
 
-    private val threadDumpCheckboxList = ThreadDumpCheckboxList(paths).apply {
+    val threadDumpCheckboxList = ThreadDumpCheckboxList(paths).apply {
         isVisible = !mainTable.model.isSingleContext
     }
 
@@ -356,7 +360,7 @@ class MultiThreadView(
             add(sortButton(NATURAL_SORT_DESCENDING, "Sort Z-A", byNameDesc))
         }
 
-        add(JLabel("Version: ${threadDumps[0].version}"))
+        add(JLabel("Version: ${threadDumps.first().version}"))
         add(threadDumpCheckboxList, "gapleft 20px, pushx, growx, shpx 200")
         add(exportButton, "gapright 8")
         add(searchField, "wmin 300, wrap")
@@ -420,6 +424,20 @@ class MultiThreadView(
             }
         }
     }
+
+    override fun save() : ToolPanelSurrogate {
+        val sortedColumn = mainTable.sortedColumn.identifier as ThreadColumnIdentifier
+        return MultiThreadViewSurrogate(
+            paths = paths.map { it.toString() },
+            threadDumpSelectedIndices = threadDumpCheckboxList.checkBoxListSelectedIndices.toTypedArray(),
+            stateFilterSelectedIndices = poolList.checkBoxListSelectedIndices.toTypedArray(),
+            systemFilterSelectedIndices = systemList.checkBoxListSelectedIndices.toTypedArray(),
+            poolFilterSelectedIndices = poolList.checkBoxListSelectedIndices.toTypedArray(),
+            sortedColumn = sortedColumn,
+            sortOrder = mainTable.getSortOrder(sortedColumn),
+        )
+    }
+
 
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)
@@ -519,5 +537,26 @@ object MultiThreadViewer : MultiTool, ClipboardTool {
             tempFile.outputStream().use(threadDump::copyTo)
         }
         return open(tempFile)
+    }
+}
+
+@Serializable
+class MultiThreadViewSurrogate(
+    val paths: List<String>,
+    val threadDumpSelectedIndices: Array<Int>,
+    val stateFilterSelectedIndices: Array<Int>,
+    val systemFilterSelectedIndices: Array<Int>,
+    val poolFilterSelectedIndices: Array<Int>,
+    val sortedColumn: ThreadColumnIdentifier,
+    val sortOrder: SortOrder,
+) : ToolPanelSurrogate {
+    override fun load(): Savable {
+        return MultiThreadView(paths.map(Path::of)).apply {
+            threadDumpCheckboxList.checkBoxListSelectedIndices = threadDumpSelectedIndices.toIntArray()
+            poolList.checkBoxListSelectedIndices = poolFilterSelectedIndices.toIntArray()
+            stateList.checkBoxListSelectedIndices = stateFilterSelectedIndices.toIntArray()
+            systemList.checkBoxListSelectedIndices = systemFilterSelectedIndices.toIntArray()
+            mainTable.setSortOrder(sortedColumn, sortOrder)
+        }
     }
 }

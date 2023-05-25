@@ -18,6 +18,7 @@ coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.5.1" }
 xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.42.0.0" }
+kotlinreflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.4.7" }
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.1" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version = "2.11.5" }
@@ -32,6 +33,7 @@ flatlaf-core = { group = "com.formdev", name = "flatlaf", version.ref = "flatlaf
 flatlaf-extras = { group = "com.formdev", name = "flatlaf-extras", version.ref = "flatlaf" }
 flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref = "flatlaf" }
 flatlaf-swingx = { group = "com.formdev", name = "flatlaf-swingx", version.ref = "flatlaf" }
+flatlaf-themes = { group = "com.formdev", name = "flatlaf-intellij-themes", version.ref = "flatlaf" }
 svgSalamander = { group = "com.formdev", name = "svgSalamander", version = "1.1.4" }
 jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.12" }
 swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
@@ -61,6 +63,7 @@ flatlaf = [
     "flatlaf-extras",
     "flatlaf-jide",
     "flatlaf-swingx",
+    "flatlaf-themes",
 ]
 kotest = [
     "kotest-junit",

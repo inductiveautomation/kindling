@@ -1,8 +1,10 @@
 package io.github.inductiveautomation.kindling.idb
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import io.github.inductiveautomation.kindling.core.Savable
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.core.ToolPanelSurrogate
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
 import io.github.inductiveautomation.kindling.log.Level
@@ -11,12 +13,14 @@ import io.github.inductiveautomation.kindling.log.SystemLogsEvent
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.toList
+import kotlinx.serialization.Serializable
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
 
-class IdbView(path: Path) : ToolPanel() {
+class IdbView(val path: Path) : ToolPanel(), Savable {
     private val connection = SQLiteConnection(path)
 
     private val tables: List<String> = connection.metaData.getTables("", "", "", null).toList { rs ->
@@ -63,6 +67,8 @@ class IdbView(path: Path) : ToolPanel() {
         super.removeNotify()
         connection.close()
     }
+
+    override fun save(): ToolPanelSurrogate = IdbViewSurrogate(path.absolutePathString())
 }
 
 enum class IdbTool {
@@ -169,4 +175,9 @@ object IdbViewer : Tool {
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")
     override val extensions = listOf("idb")
     override fun open(path: Path): ToolPanel = IdbView(path)
+}
+
+@Serializable
+class IdbViewSurrogate(val path: String) : ToolPanelSurrogate {
+    override fun load(): Savable = IdbView(Path.of(path))
 }

@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.log
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.JideButton
 import com.jidesoft.swing.JidePopupMenu
+import io.github.inductiveautomation.kindling.core.Kindling
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import java.awt.event.MouseAdapter
@@ -21,7 +22,7 @@ class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
 
     val search = JXSearchField("Search")
 
-    var isShowFullLoggerName: Boolean by Delegates.observable(false) { property, oldValue, newValue ->
+    var isShowFullLoggerName: Boolean by Delegates.observable(Kindling.session.showFullLoggerNames) { property, oldValue, newValue ->
         firePropertyChange(property.name, oldValue, newValue)
     }
 
@@ -35,7 +36,7 @@ class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
 
     private val settingsMenu = JidePopupMenu().apply {
         add(
-            JCheckBoxMenuItem("Show Full Logger Names").apply {
+            JCheckBoxMenuItem("Show Full Logger Names", Kindling.session.showFullLoggerNames).apply {
                 addActionListener {
                     isShowFullLoggerName = !isShowFullLoggerName
                 }

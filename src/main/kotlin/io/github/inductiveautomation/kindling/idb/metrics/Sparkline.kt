@@ -45,7 +45,7 @@ fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart {
         padding = RectangleInsets(10.0, 10.0, 10.0, 10.0)
         isBorderVisible = false
 
-        Kindling.theme.apply(this)
+        Kindling.session.theme.apply(this)
         Kindling.addThemeChangeListener { theme ->
             theme.apply(this)
         }

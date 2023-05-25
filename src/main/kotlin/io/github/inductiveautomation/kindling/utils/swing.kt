@@ -28,6 +28,7 @@ import java.util.EventListener
 import javax.swing.DefaultListCellRenderer
 import javax.swing.DefaultListSelectionModel
 import javax.swing.Icon
+import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JFrame
@@ -40,6 +41,7 @@ import javax.swing.ListCellRenderer
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
 import javax.swing.filechooser.FileFilter
+import javax.swing.plaf.basic.BasicComboBoxRenderer
 import javax.swing.table.TableModel
 import javax.swing.text.Document
 import javax.swing.tree.DefaultTreeCellRenderer
@@ -361,5 +363,26 @@ inline fun jFrame(title: String, width: Int, height: Int, block: JFrame.() -> Un
         block()
 
         isVisible = true
+    }
+}
+
+inline fun <reified T> JComboBox<T>.configureCellRenderer(
+    configureDefault: Boolean = true,
+    noinline block: BasicComboBoxRenderer.(list: JList<*>?, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) -> Unit
+) {
+    renderer = object : BasicComboBoxRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            if (configureDefault) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            }
+            block(list, value as T?, index, isSelected, cellHasFocus)
+            return this
+        }
     }
 }
