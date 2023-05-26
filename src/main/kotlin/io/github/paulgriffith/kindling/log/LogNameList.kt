@@ -1,7 +1,6 @@
 package io.github.paulgriffith.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-
 import io.github.paulgriffith.kindling.utils.Action
 import io.github.paulgriffith.kindling.utils.FilterComparator
 import io.github.paulgriffith.kindling.utils.FilterList
@@ -10,7 +9,6 @@ import io.github.paulgriffith.kindling.utils.FlatScrollPane
 import io.github.paulgriffith.kindling.utils.listCellRenderer
 import net.miginfocom.swing.MigLayout
 import javax.swing.ButtonGroup
-import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JToggleButton
 class LogNameList(private val emptyLabel: String) : FilterList(emptyLabel) {
@@ -42,7 +40,7 @@ class LogNameList(private val emptyLabel: String) : FilterList(emptyLabel) {
     }
 }
 
-class LoggerNamesPanel( var events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")) {
+class LoggerNamesPanel( var events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
     var loggerNamesList = LogNameList("")
     private val flatScrollPane = FlatScrollPane(
             loggerNamesList.apply {
@@ -88,7 +86,6 @@ class LoggerNamesPanel( var events: List<LogEvent>) : JPanel(MigLayout("ins 0, f
     }
 
     init {
-        add(JLabel("Logger Name Filter"), "align center, wrap")
         listOf(
                 naturalAsc,
                 naturalDesc,
@@ -96,11 +93,14 @@ class LoggerNamesPanel( var events: List<LogEvent>) : JPanel(MigLayout("ins 0, f
                 countDesc,
         ).forEach { sortButton ->
             sortButtons.add(sortButton)
-            add(sortButton, "cell 0 1")
+            add(sortButton, "cell 0 0")
         }
         sortButtons.setSelected(countDesc.model, true)
         add(flatScrollPane, "newline, push, grow")
     }
+
+    override val isFilterApplied: Boolean
+        get() = loggerNamesList.checkBoxListSelectedValues.size != loggerNamesList.model.size - 1
 
     companion object {
         private val bySubNameAsc: FilterComparator = compareBy(nullsFirst(String.CASE_INSENSITIVE_ORDER)) { entry ->

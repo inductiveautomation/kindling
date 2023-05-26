@@ -3,8 +3,6 @@ package io.github.paulgriffith.kindling.log
 import com.formdev.flatlaf.ui.FlatScrollBarUI
 import io.github.paulgriffith.kindling.core.ToolPanel
 import io.github.paulgriffith.kindling.utils.EDT_SCOPE
-import io.github.paulgriffith.kindling.utils.FilterList
-import io.github.paulgriffith.kindling.utils.FilterModel
 import io.github.paulgriffith.kindling.utils.FlatScrollPane
 import io.github.paulgriffith.kindling.utils.ReifiedJXTable
 import io.github.paulgriffith.kindling.utils.attachPopupMenu
@@ -323,20 +321,17 @@ class LogPanel(
     private val details = LogDetailsPane()
     private val loggerNamesSidebar = LoggerNamesPanel(rawData)
 
-    private val loggerLevelsSidebar = FilterList("").apply {
-        model = FilterModel(rawData.groupingBy { it.level?.name }.eachCount())
-        selectAll()
-    }
+    private val loggerLevelsSidebar = LogLevelsList(rawData)
     @Suppress("UNCHECKED_CAST")
     private val loggerMDCsSidebar = if (rawData.first() is SystemLogEvent) { LoggerMDCPanel(rawData as List<SystemLogEvent>) } else null
     private val loggerTimesSidebar = LoggerTimesPanel(startTime, endTime)
     private val filterPane = JTabbedPane().apply {
         addTab("Loggers", loggerNamesSidebar)
         addTab("Levels", FlatScrollPane(loggerLevelsSidebar))
+        addTab("Time", loggerTimesSidebar)
         if (loggerMDCsSidebar != null) {
             addTab("MDC", loggerMDCsSidebar)
         }
-        addTab("Time", loggerTimesSidebar)
     }
     private val filters: List<(LogEvent) -> Boolean> = buildList {
         add { event ->
@@ -404,6 +399,29 @@ class LogPanel(
             EDT_SCOPE.launch {
                 table.model = createModel(filteredData)
             }
+            updateFilterPaneUI()
+        }
+    }
+
+    private fun updateFilterPaneUI() {
+        filterPane.run {
+            listOf(
+                    loggerNamesSidebar,
+                    loggerLevelsSidebar,
+                    loggerTimesSidebar,
+                    loggerMDCsSidebar,
+            ).forEachIndexed { index, sidebar ->
+                sidebar?.let {
+                    updateBackgroundAt(it.isFilterApplied, index)
+                }
+            }
+        }
+    }
+    private fun JTabbedPane.updateBackgroundAt(condition: Boolean, index: Int) {
+        if(condition) {
+            setBackgroundAt(index, background.darker())
+        } else {
+            setBackgroundAt(index, background)
         }
     }
 
@@ -567,6 +585,7 @@ class LogPanel(
 
         override fun updateUI() {
             setUI(customUI)
+            updateFilterPaneUI()
         }
     }
 

@@ -1,88 +1,71 @@
 package io.github.paulgriffith.kindling.log
 
+import com.formdev.flatlaf.ui.FlatSpinnerUI
+import io.github.paulgriffith.kindling.core.Kindling
 import io.github.paulgriffith.kindling.utils.Action
 import io.github.paulgriffith.kindling.utils.add
 import io.github.paulgriffith.kindling.utils.getAll
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXDatePicker
-import java.awt.Component
-import java.awt.Container
-import java.awt.Dimension
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.event.MouseMotionAdapter
 import java.util.Calendar
 import java.util.Date
 import java.util.EventListener
 import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JFrame
 import javax.swing.JLabel
-import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.JScrollPane
+import javax.swing.JSpinner
+import javax.swing.JTextField
+import javax.swing.SpinnerNumberModel
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
+import javax.swing.plaf.SpinnerUI
+
 
 class LoggerTimesPanel(
         private val lowerBound: Long,
         private val upperBound: Long,
-) : JPanel(MigLayout("ins 0, fill")) {
+) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
 
     private val listeners = EventListenerList()
     private val enabledCheckBox = JCheckBox(
             Action("Enabled") {
                 fireTimeUpdateEvent()
-            }
+            },
     ).apply { isSelected = true }
-    private var latchedStartTime = lowerBound
-    private var latchedEndTime = upperBound
-    private val startSelector = DateTimeSelector("From:", latchedStartTime)
-    private val endSelector = DateTimeSelector("To:", latchedEndTime)
+    private var startTime = lowerBound
+    private var endTime = upperBound
+
+    private val startSelector = DateTimeSelector("From", startTime).apply {
+        addTimeChangeActionListener(this@LoggerTimesPanel::fireTimeUpdateEvent)
+    }
+    private val endSelector = DateTimeSelector("To", endTime).apply {
+        addTimeChangeActionListener(this@LoggerTimesPanel::fireTimeUpdateEvent)
+    }
     private val resetButton = JButton(
-            Action("Reset") {
-                latchedStartTime = lowerBound
-                latchedEndTime = upperBound
-                startSelector.updateDisplay(latchedStartTime)
-                endSelector.updateDisplay(latchedEndTime)
-                fireTimeUpdateEvent()
-            }
-    )
-    private val applyButton = JButton(
-            Action("Apply") {
-                if (verifyDateTimeSelections()) {
-                    startSelector.updateLatchedTime()
-                    endSelector.updateLatchedTime()
-                    latchedStartTime = startSelector.latchedTime
-                    latchedEndTime = endSelector.latchedTime
-                    fireTimeUpdateEvent()
-                } else {
-                    JOptionPane.showMessageDialog(JFrame(),
-                            "Your selected start time cannot be greater than your selected end time.",
-                            "ERROR: Invalid Selected Time",
-                            JOptionPane.ERROR_MESSAGE)
-                }
-            }
+        Action("Reset") {
+            startTime = lowerBound
+            endTime = upperBound
+            startSelector.updateDisplay(startTime)
+            endSelector.updateDisplay(endTime)
+            fireTimeUpdateEvent()
+        },
     )
 
-    private fun verifyDateTimeSelections(): Boolean {
-        return startSelector.getDisplayedDateTime() < endSelector.getDisplayedDateTime()
+    init {
+        add(enabledCheckBox, "left, wrap")
+        add(startSelector, "spanx 2, pushx, growx, wrap")
+        add(endSelector, "spanx 2, push, grow, wrap")
+        add(resetButton, "right")
     }
 
     fun isValidLogEvent(event : LogEvent) : Boolean {
-        return !enabledCheckBox.isSelected || event.timestamp.toEpochMilli() in latchedStartTime..latchedEndTime
-    }
-
-    init {
-        add(JLabel("Time Filter"), "align center, wrap")
-        add(JPanel(MigLayout("ins 4, fill")).apply {
-            border = BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor"))
-            add(enabledCheckBox, "left, wrap")
-            add(startSelector,"spanx 2, pushx, growx, wrap")
-            add(endSelector,"spanx 2, push, grow, wrap")
-            add(resetButton, "left")
-            add(applyButton, "right")
-        }, "grow, push")
+        return !enabledCheckBox.isSelected || event.timestamp.toEpochMilli() in startTime..endTime
     }
 
     fun interface TimeUpdateEventListener : EventListener {
@@ -94,17 +77,30 @@ class LoggerTimesPanel(
     }
 
     private fun fireTimeUpdateEvent() {
+        startSelector.updateTime()
+        endSelector.updateTime()
+        startTime = startSelector.time
+        endTime = endSelector.time
         for (listener in listeners.getAll<TimeUpdateEventListener>()) {
             listener.onTimeUpdate()
         }
     }
+
+    override val isFilterApplied: Boolean
+        get() = enabledCheckBox.isSelected && (lowerBound != startTime || upperBound != endTime)
 }
 
 class DateTimeSelector(label: String, initialTime: Long) : JPanel(MigLayout("ins 0, fillx")) {
 
-    var latchedTime = initialTime
+    var time = initialTime
     private var datePicker = JXDatePicker(Date(initialTime)).apply {
         editor.horizontalAlignment = SwingConstants.CENTER
+    }
+    fun addTimeChangeActionListener(action : () -> Unit) {
+        datePicker.addActionListener {
+            action()
+        }
+        timeSelector.addTimeChangeActionListener(action)
     }
     private val timeSelector = TimeSelector(initialTime)
 
@@ -113,25 +109,22 @@ class DateTimeSelector(label: String, initialTime: Long) : JPanel(MigLayout("ins
         timeSelector.updateDisplay(latchedTime)
     }
 
-    fun getDisplayedDateTime() : Long {
-        return datePicker.date.time +
-                (timeSelector.hourSelector.selectedIndex * MILLIS_PER_HOUR) +
-                (timeSelector.minuteSelector.selectedIndex * MILLIS_PER_MINUTE) +
-                (timeSelector.secondSelector.selectedIndex * MILLIS_PER_SECOND)  +
-                timeSelector.milliSelector.selectedIndex
+    fun updateTime() {
+        time = datePicker.date.time +
+                ((timeSelector.hourSelector.value as Int) * MILLIS_PER_HOUR) +
+                ((timeSelector.minuteSelector.value as Int) * MILLIS_PER_MINUTE) +
+                ((timeSelector.secondSelector.value as Int) * MILLIS_PER_SECOND)  +
+                (timeSelector.milliSelector.value as Int)
     }
 
-    fun updateLatchedTime() {
-        latchedTime = getDisplayedDateTime()
-    }
     init {
         add(JLabel(label).apply {
             horizontalAlignment = SwingConstants.CENTER
-        }, "spanx 2, align center, growx, wrap")
-        add(JLabel("Date:"))
-        add(datePicker, "growx, wrap")
-        add(JLabel("Time:"))
-        add(timeSelector,"growx")
+        }, "cell 1 0, align center, growx, wrap", )
+        add(JLabel("Date   "))
+        add(datePicker, "growx, pushx, wrap")
+        add(JLabel("Time   "))
+        add(timeSelector,"growx, pushx")
     }
     companion object {
         const val MILLIS_PER_HOUR = 3600000
@@ -140,53 +133,102 @@ class DateTimeSelector(label: String, initialTime: Long) : JPanel(MigLayout("ins
     }
 }
 
-class TimeSelector(time : Long) : JPanel(MigLayout("ins 0")) {
+class TimeSelector(initialTime : Long) : JPanel(MigLayout("fill, ins 0")) {
 
-    private val backgroundColor = UIManager.getColor("ComboBox.background")
-    val hourSelector = FormattedComboBox(24)
-    val minuteSelector = FormattedComboBox(60)
-    val secondSelector = FormattedComboBox(60)
-    val milliSelector = FormattedComboBox(1000)
-    private var latchedTime: Calendar = Calendar.getInstance()
+    val hourSelector = CustomSpinner(23, 10)
+    val minuteSelector = CustomSpinner(59, 6)
+    val secondSelector = CustomSpinner(59, 6)
+    val milliSelector = CustomSpinner(999, 1)
+    private var time: Calendar = Calendar.getInstance()
+
     init {
+        background = UIManager.getColor("ComboBox.background")
         border = BorderFactory.createLineBorder(UIManager.getColor("Button.borderColor"))
-        add(hourSelector,"wmin 45")
-        add(JLabel(":"),"shrinkx").apply { background = backgroundColor }
-        add(minuteSelector,"wmin 45")
-        add(JLabel(":"),"shrinkx").apply { background = backgroundColor }
-        add(secondSelector,"wmin 45")
-        add(JLabel(":"),"shrinkx").apply { background = backgroundColor }
-        add(milliSelector,"wmin 55")
-        updateDisplay(time)
+        add(hourSelector,"wmin 45, growx")
+        add(minuteSelector,"wmin 45, growx")
+        add(secondSelector,"wmin 45, growx")
+        add(milliSelector,"wmin 55, growx")
+        updateDisplay(initialTime)
+        Kindling.addThemeChangeListener {
+            background = UIManager.getColor("ComboBox.background")
+            border = BorderFactory.createLineBorder(UIManager.getColor("Button.borderColor"))
+        }
     }
 
-    fun updateDisplay(time : Long) {
-        latchedTime.timeInMillis = time
-        hourSelector.selectedIndex = latchedTime.get(Calendar.HOUR_OF_DAY)
-        minuteSelector.selectedIndex = latchedTime.get(Calendar.MINUTE)
-        secondSelector.selectedIndex = latchedTime.get(Calendar.SECOND)
-        milliSelector.selectedIndex = latchedTime.get(Calendar.MILLISECOND)
+
+    fun updateDisplay(newTime : Long) {
+        time.timeInMillis = newTime
+        hourSelector.value = time.get(Calendar.HOUR_OF_DAY)
+        minuteSelector.value = time.get(Calendar.MINUTE)
+        secondSelector.value = time.get(Calendar.SECOND)
+        milliSelector.value = time.get(Calendar.MILLISECOND)
+    }
+
+    fun addTimeChangeActionListener(action: () -> Unit) {
+        listOf(hourSelector, minuteSelector, secondSelector, milliSelector).forEach { spinner ->
+            spinner.addChangeListener {
+                if (spinner.isSelection) {
+                    action()
+                }
+            }
+        }
     }
 }
 
-class FormattedComboBox(items : Int) : JComboBox<String>() {
+class CustomSpinner(max: Int, pixelsPerValueChange: Int) : JSpinner(SpinnerNumberModel(0, 0, max, 1)) {
+    var isSelection = true
+    private var previousY = 0
     init {
-        border = null
-        val popup: Any = getUI().getAccessibleChild(this, 0)
-        val c: Component = (popup as Container).getComponent(0)
-        if (c is JScrollPane) {
-            val scrollBar = c.verticalScrollBar
-            val scrollBarDim = Dimension(10, scrollBar.preferredSize.height)
-            scrollBar.preferredSize = scrollBarDim
+        (editor as DefaultEditor).textField.apply {
+            border = BorderFactory.createEmptyBorder()
+            horizontalAlignment = JTextField.CENTER
+            addMouseMotionListener(object: MouseMotionAdapter() {
+                override fun mouseDragged(e: MouseEvent?) {
+                    if (e != null) {
+                        if (e.y < 0 || e.y > this@CustomSpinner.height) {
+                            val deltaY = previousY - (e.y / pixelsPerValueChange)
+                            var currentValue  = (this@CustomSpinner.value as Int) + deltaY
+                            if (deltaY < 0 && previousY == 0) {
+                                currentValue += this@CustomSpinner.height
+                            }
+                            if (currentValue < 0) {
+                                this@CustomSpinner.value = 0
+                            } else if (currentValue > max) {
+                                this@CustomSpinner.value = max
+                            } else {
+                                this@CustomSpinner.value = currentValue
+                            }
+                        }
+                        previousY = e.y / pixelsPerValueChange
+                    }
+                }
+            })
+            addMouseListener(object: MouseAdapter() {
+                override fun mouseReleased(e: MouseEvent?) {
+                    isSelection = true
+                    previousY = 0
+                    fireStateChanged()
+                }
+
+                override fun mousePressed(e: MouseEvent?) {
+                    isSelection = false
+                    super.mousePressed(e)
+                }
+            })
         }
-        val numDigits = (items - 1).toString().length
-        (0 until items).forEach {
-            addItem(it.toString().padStart(numDigits, '0'))
-        }
-        for (component in components) {
-            if (component is JButton) {
-                remove(component)
-            }
-        }
+        border = BorderFactory.createEmptyBorder()
+        isOpaque = false
+    }
+
+    override fun setUI(ui: SpinnerUI?) {
+        super.setUI(SpinnerUI())
+    }
+}
+
+class SpinnerUI : FlatSpinnerUI() {
+    override fun installDefaults() {
+        super.installDefaults()
+        buttonBackground = null
+        buttonSeparatorColor = null
     }
 }

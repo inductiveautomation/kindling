@@ -155,3 +155,7 @@ class WrapperLogColumns(panel: LogPanel) : LogColumnList<WrapperLogEvent>(panel)
             Message,
     )
 }
+
+interface LogFilterPanel {
+    val isFilterApplied: Boolean
+}

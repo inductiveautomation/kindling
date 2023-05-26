@@ -1,21 +1,27 @@
 package io.github.paulgriffith.kindling.log
 
+import io.github.paulgriffith.kindling.core.Kindling
 import io.github.paulgriffith.kindling.utils.Column
 import io.github.paulgriffith.kindling.utils.ColumnList
 import io.github.paulgriffith.kindling.utils.FlatScrollPane
 import io.github.paulgriffith.kindling.utils.ReifiedJXTable
+import io.github.paulgriffith.kindling.utils.attachPopupMenu
 import net.miginfocom.swing.MigLayout
 import java.awt.Component
+import java.awt.event.ActionEvent
 import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JComboBox
-import javax.swing.JLabel
 import javax.swing.JList
+import javax.swing.JMenuItem
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
+import javax.swing.UIManager
 import javax.swing.plaf.basic.BasicComboBoxRenderer
 import javax.swing.table.AbstractTableModel
+import kotlin.math.min
 
-class LoggerMDCPanel(events: List<SystemLogEvent>) : JPanel(MigLayout("ins 0, fill")) {
+class LoggerMDCPanel(events: List<SystemLogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
 
     private val allMDCs = events.flatMap { event ->
         event.mdc.map { (key, value) ->
@@ -94,6 +100,7 @@ private val valueMenu: JComboBox<String> = JComboBox<String>().apply {
         border = BorderFactory.createEmptyBorder()
         isOpaque = false
         isContentAreaFilled = false
+        font = UIManager.getFont("h2.regular.font")
         addActionListener {
             val key = keyMenu.selectedItem as String?
             val value = valueMenu.selectedItem as String?
@@ -114,24 +121,46 @@ private val valueMenu: JComboBox<String> = JComboBox<String>().apply {
         border = BorderFactory.createEmptyBorder()
         isOpaque = false
         isContentAreaFilled = false
-        addActionListener {
-            if (filterTable.selectedRow < filterTable.model.data.size && filterTable.model.data.size > 0 && filterTable.selectedRow > -1) {
-                filterTable.model.data.removeAt(filterTable.selectedRow)
-                filterTable.model.fireTableDataChanged()
+        font = UIManager.getFont("h2.regular.font")
+        addActionListener(removeSelectedFilter())
+    }
+
+    private fun removeSelectedFilter(): (e: ActionEvent) -> Unit = {
+        if (filterTable.selectedRow < filterTable.model.data.size && filterTable.model.data.size > 0 && filterTable.selectedRow > -1) {
+            val previousSelection = filterTable.selectedRow
+            filterTable.model.data.removeAt(filterTable.selectedRow)
+            filterTable.model.fireTableDataChanged()
+            val currentSelection = min(previousSelection, filterTable.model.data.size - 1)
+            if (currentSelection >= 0) {
+                filterTable.setRowSelectionInterval(currentSelection, currentSelection)
             }
         }
     }
 
-    val filterTable = ReifiedJXTable(MDCTableModel())
+    val filterTable = ReifiedJXTable(MDCTableModel()).apply {
+        attachPopupMenu {
+            JPopupMenu().apply {
+                add(JMenuItem("Remove Filter").apply {
+                    addActionListener(removeSelectedFilter())
+                })
+            }
+        }
+    }
 
     init {
-        add(JLabel("MDC Key Filter"), "align center, span 2, wrap")
         add(keyMenu, "spanx 2, pushx, growx, wrap")
         add(valueMenu, "spanx 2, pushx, growx, wrap")
-        add(removeButton, "cell 1 3, align right")
-        add(addButton, "cell 1 3, align right, wrap, pushx")
+        add(removeButton, "cell 0 3, align right")
+        add(addButton, "cell 0 3, align right, wrap, pushx")
         add(FlatScrollPane(filterTable), "spanx 2, pushy, grow")
+        Kindling.addThemeChangeListener {
+            addButton.font = UIManager.getFont("h2.regular.font")
+            removeButton.font = UIManager.getFont("h2.regular.font")
+        }
     }
+
+    override val isFilterApplied : Boolean
+        get() = filterTable.model.data.any(MDCEntry::enabled)
 }
 
 data class MDC(override val key: String, override val value: String) : Map.Entry<String, String>
