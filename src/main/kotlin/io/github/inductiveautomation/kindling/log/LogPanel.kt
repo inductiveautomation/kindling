@@ -1,15 +1,16 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.ui.FlatScrollBarUI
-import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.getValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.action.AbstractActionExt
 import java.awt.Dimension
 import java.awt.Graphics
@@ -25,13 +26,19 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
 import java.time.temporal.TemporalUnit
 import javax.swing.Icon
+import javax.swing.JCheckBoxMenuItem
 import javax.swing.JComponent
+import javax.swing.JMenu
+import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.JScrollBar
 import javax.swing.JSplitPane
+import javax.swing.JTabbedPane
 import javax.swing.SortOrder
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import kotlin.math.absoluteValue
+import kotlin.reflect.KProperty
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
 class LogPanel(
@@ -46,6 +53,21 @@ class LogPanel(
     private var showDensityDisplay: Boolean = true
 
     val header = Header(totalRows)
+    private val startTime = rawData.minBy{ it.timestamp }.timestamp.toEpochMilli()
+    private val endTime = rawData.maxBy{ it.timestamp }.timestamp.toEpochMilli()
+    private var messageFilter = ""
+    private var stackTraceFilter = object {
+        var enabled = false
+        var completeMatch = false
+        var stacktrace = emptyList<String>()
+
+        fun enableFilter(completeMatch: Boolean, stacktrace : List<String>) {
+            enabled = true
+            this.completeMatch = completeMatch
+            this.stacktrace = stacktrace
+        }
+    }
+    private var threadFilter = ""
 
     val table = run {
         val initialModel = createModel(rawData)
@@ -63,31 +85,272 @@ class LogPanel(
                 }
             }
             actionMap.put("column.showLogDensity", densityDisplayAction)
+
+            attachPopupMenu { event ->
+                val viewRow = rowAtPoint(event.point)
+                val modelRow = convertRowIndexToModel(viewRow)
+
+                JPopupMenu().apply {
+                    val model = this@attachPopupMenu.model
+                    val selectedLogEvent = model.data[modelRow]
+
+                    add(
+                        JMenu("Filter all with same...").apply {
+                            model.columns.filterableColumns.forEach { column ->
+                                when(column) {
+                                    model.columns.Level -> {
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = !loggerLevelsSidebar.isOnlySelected(selectedLogEvent.level!!.name),
+                                            onTrue = { loggerLevelsSidebar.select(selectedLogEvent.level!!.name) },
+                                            onFalse = { loggerLevelsSidebar.checkBoxListSelectionModel.setSelectionInterval(0, 0) },
+                                        )
+                                    }
+                                    model.columns.Logger -> {
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = !loggerNamesSidebar.loggerNamesList.isOnlySelected(selectedLogEvent.logger),
+                                            onTrue = { loggerNamesSidebar.loggerNamesList.select(selectedLogEvent.logger) },
+                                            onFalse = { loggerNamesSidebar.loggerNamesList.checkBoxListSelectionModel.setSelectionInterval(0, 0) },
+                                        )
+                                    }
+                                    model.columns.Message -> {
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = messageFilter.isEmpty(),
+                                            onTrue = { messageFilter = selectedLogEvent.message },
+                                            onFalse = { messageFilter = "" },
+                                        )
+                                    }
+                                    (model.columns as? SystemLogColumns)?.Thread -> {
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = threadFilter.isEmpty(),
+                                            onTrue = { threadFilter = (selectedLogEvent as SystemLogEvent).thread },
+                                            onFalse = { threadFilter = "" },
+                                        )
+                                    }
+                                    else -> null
+                                }?.let(this::add)
+                            }
+                            add(
+                                JMenu("StackTrace").apply {
+                                    val eventStacktrace = selectedLogEvent.stacktrace
+                                    if (eventStacktrace.isNotEmpty()) {
+                                        add(
+                                            logMenuItem(
+                                                label = "Complete Match",
+                                                condition = !stackTraceFilter.enabled,
+                                                onTrue = { stackTraceFilter.enableFilter(true, eventStacktrace) },
+                                                onFalse = { stackTraceFilter.enabled = false },
+                                            )
+                                        )
+                                        add(
+                                            logMenuItem(
+                                                label = "Partial Match",
+                                                condition = !stackTraceFilter.enabled,
+                                                onTrue = { stackTraceFilter.enableFilter(false, eventStacktrace) },
+                                                onFalse = { stackTraceFilter.enabled = false },
+                                            )
+                                        )
+                                    } else {
+                                        isEnabled = false
+                                    }
+                                }
+                            )
+                        }
+                    )
+
+                    add(
+                        JMenu("Mark/Unmark all with same...").apply {
+                            model.columns.markableColumns.forEach { column ->
+                                when(column) {
+                                    model.columns.Level -> {
+                                        val condition = isMarked(LogEvent::level, selectedLogEvent.level!!.name)
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = condition,
+                                            action = { event ->
+                                                if (event.level?.name == selectedLogEvent.level!!.name) {
+                                                    event.marked = !condition
+                                                }
+                                            }
+                                        )
+                                    }
+                                    model.columns.Logger -> {
+                                        val condition = isMarked(LogEvent::logger, selectedLogEvent.logger)
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = condition,
+                                            action = { event ->
+                                                if (event.logger == selectedLogEvent.logger) {
+                                                    event.marked = !condition
+                                                }
+                                            }
+                                        )
+
+                                    }
+                                    model.columns.Message -> {
+                                        val condition = isMarked(LogEvent::message, selectedLogEvent.message)
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = condition,
+                                            action = { event ->
+                                                if (event.message == selectedLogEvent.message) {
+                                                    event.marked = !condition
+                                                }
+                                            }
+                                        )
+                                    }
+                                    (model.columns as SystemLogColumns).Thread -> {
+                                        val condition = isMarked(SystemLogEvent::thread, (selectedLogEvent as SystemLogEvent).thread)
+                                        logMenuItem(
+                                            label = column.header,
+                                            condition = condition,
+                                            action = { event ->
+                                                if ((event as SystemLogEvent).thread == selectedLogEvent.thread) {
+                                                    event.marked = !condition
+                                                }
+                                            }
+                                        )
+
+                                    }
+                                    else -> null
+                                }?.let(this::add)
+                            }
+
+                            val eventStacktrace = selectedLogEvent.stacktrace
+                            add(
+                                JMenu("StackTrace").apply {
+                                    if (eventStacktrace.isNotEmpty()) {
+                                        val isFullStackMarked = isMarked(LogEvent::stacktrace, eventStacktrace.joinToString("\n"))
+                                        add(
+                                            logMenuItem(
+                                                label = "Complete Match",
+                                                condition = isFullStackMarked,
+                                                action = {
+                                                    if (it.stacktrace == eventStacktrace) {
+                                                        it.marked = !isFullStackMarked
+                                                    }
+                                                },
+                                            )
+                                        )
+                                        val isPartialStackMarked = isMarked(LogEvent::stacktrace, if (eventStacktrace.isNotEmpty()) { eventStacktrace.first() } else { "" })
+                                        add(
+                                            logMenuItem(
+                                                label = "Partial Match",
+                                                condition = isPartialStackMarked,
+                                                action = {
+                                                    if (it.stacktrace.isNotEmpty() && it.stacktrace.first() == selectedLogEvent.stacktrace.first()) {
+                                                        it.marked = !isPartialStackMarked
+                                                    }
+                                                },
+                                            )
+                                        )
+                                    } else {
+                                        isEnabled = false
+                                    }
+                                }
+                            )
+                        }
+                    )
+                }
+            }
+
         }
+    }
+
+    private fun logMenuItem(
+            label: String,
+            condition: Boolean,
+            onTrue: () -> Unit,
+            onFalse: () -> Unit,
+    ): JCheckBoxMenuItem {
+        return JCheckBoxMenuItem(label, !condition).apply {
+            addActionListener {
+                if (condition) onTrue() else onFalse()
+                updateData()
+            }
+        }
+    }
+
+    private fun logMenuItem(
+            label: String,
+            condition: Boolean,
+            action: (LogEvent) -> Unit,
+    ): JCheckBoxMenuItem {
+        return JCheckBoxMenuItem(label, condition).apply {
+            addActionListener {
+                table.model.data.forEach {
+                    action(it)
+                }
+                updateData()
+            }
+        }
+    }
+
+    private fun isMarked(type: KProperty<*>, selectedValue: String): Boolean {
+        table.model.data.forEach {
+            if (!it.marked) {
+                val eventValue = when (type) {
+                    LogEvent::level -> it.level?.name ?: ""
+                    LogEvent::logger -> it.logger
+                    SystemLogEvent::thread -> (it as SystemLogEvent).thread
+                    LogEvent::message ->it.message
+                    LogEvent::stacktrace -> {
+                        if (selectedValue.contains("\n")) {
+                            it.stacktrace.joinToString("\n")
+                        } else if (it.stacktrace.isNotEmpty()){
+                            it.stacktrace.first()
+                        } else {
+                            "empty stacktrace"
+                        }
+                    }
+                    else -> ""
+                }
+                if (eventValue == selectedValue) return false
+            }
+        }
+        return true
     }
 
     private val tableScrollPane = FlatScrollPane(table) {
         verticalScrollBar = densityDisplay
     }
 
-    private val details = DetailsPane()
-    private val sidebar = LoggerNamesPanel(rawData)
+    private val details = LogDetailsPane()
+    private val loggerNamesSidebar = LoggerNamesPanel(rawData)
 
+    private val loggerLevelsSidebar = LogLevelsList(rawData)
+    @Suppress("UNCHECKED_CAST")
+    private val loggerMDCsSidebar = if (rawData.first() is SystemLogEvent) { LoggerMDCPanel(rawData as List<SystemLogEvent>) } else null
+    private val loggerTimesSidebar = LoggerTimesPanel(startTime, endTime)
+    private val filterPane = JTabbedPane().apply {
+        addTab("Loggers", loggerNamesSidebar)
+        addTab("Levels", FlatScrollPane(loggerLevelsSidebar))
+        addTab("Time", loggerTimesSidebar)
+        if (loggerMDCsSidebar != null) {
+            addTab("MDC", loggerMDCsSidebar)
+        }
+    }
     private val filters: List<(LogEvent) -> Boolean> = buildList {
         add { event ->
-            event.logger in sidebar.list.checkBoxListSelectedIndices
-                .map { sidebar.list.model.getElementAt(it) }
-                .filterIsInstance<LoggerName>()
-                .mapTo(mutableSetOf()) { it.name }
+            event.logger in loggerNamesSidebar.loggerNamesList.checkBoxListSelectedValues
         }
         add { event ->
-            when (event) {
-                is SystemLogsEvent -> {
-                    event.level >= header.minimumLevel
-                }
-
-                is WrapperLogEvent -> true
-            }
+            loggerTimesSidebar.isValidLogEvent(event)
+        }
+        add { event ->
+            event.level!!.name in loggerLevelsSidebar.checkBoxListSelectedValues
+        }
+        add { event ->
+            loggerMDCsSidebar?.filterTable?.model?.isValidLogEvent(event, false) ?: true
+        }
+        add { event ->
+            loggerMDCsSidebar?.filterTable?.model?.isValidLogEvent(event, true) ?: true
+        }
+        add { event ->
+            event.marked || !header.isOnlyShowMarkedLogs
         }
         add { event ->
             val text = header.search.text
@@ -95,7 +358,7 @@ class LogPanel(
                 true
             } else {
                 when (event) {
-                    is SystemLogsEvent -> {
+                    is SystemLogEvent -> {
                         text in event.message ||
                             event.logger.contains(text, ignoreCase = true) ||
                             event.thread.contains(text, ignoreCase = true) ||
@@ -110,6 +373,22 @@ class LogPanel(
                 }
             }
         }
+        add { event ->
+            messageFilter.isEmpty() || messageFilter in event.message
+        }
+        add { event ->
+            !stackTraceFilter.enabled ||
+            (
+                event.stacktrace.isNotEmpty() &&
+                (
+                    (stackTraceFilter.completeMatch && stackTraceFilter.stacktrace == event.stacktrace) ||
+                    (!stackTraceFilter.completeMatch && stackTraceFilter.stacktrace.first() == event.stacktrace.first())
+                )
+            )
+        }
+        add { event ->
+            event is WrapperLogEvent || threadFilter.isEmpty() || threadFilter == (event as SystemLogEvent).thread
+        }
     }
 
     private fun updateData() {
@@ -120,13 +399,36 @@ class LogPanel(
             EDT_SCOPE.launch {
                 table.model = createModel(filteredData)
             }
+            updateFilterPaneUI()
+        }
+    }
+
+    private fun updateFilterPaneUI() {
+        filterPane.run {
+            listOf(
+                    loggerNamesSidebar,
+                    loggerLevelsSidebar,
+                    loggerTimesSidebar,
+                    loggerMDCsSidebar,
+            ).forEachIndexed { index, sidebar ->
+                sidebar?.let {
+                    updateBackgroundAt(it.isFilterApplied, index)
+                }
+            }
+        }
+    }
+    private fun JTabbedPane.updateBackgroundAt(condition: Boolean, index: Int) {
+        if(condition) {
+            setBackgroundAt(index, background.darker())
+        } else {
+            setBackgroundAt(index, background)
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun createModel(rawData: List<LogEvent>) = when (rawData.firstOrNull()) {
         is WrapperLogEvent -> LogsModel(rawData as List<WrapperLogEvent>, WrapperLogColumns(this))
-        is SystemLogsEvent -> LogsModel(rawData as List<SystemLogsEvent>, SystemLogsColumns(this))
+        is SystemLogEvent -> LogsModel(rawData as List<SystemLogEvent>, SystemLogColumns(this))
         else -> LogsModel(rawData as List<WrapperLogEvent>, WrapperLogColumns(this))
     }
 
@@ -135,7 +437,8 @@ class LogPanel(
         add(
             JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
-                sidebar,
+                JPanel(MigLayout("ins 0, fill")).apply {
+                    add(filterPane, "grow") },
                 JSplitPane(
                     JSplitPane.VERTICAL_SPLIT,
                     tableScrollPane,
@@ -158,7 +461,7 @@ class LogPanel(
                         .map { row -> table.model[row] }
                         .map { event ->
                             when (event) {
-                                is SystemLogsEvent -> DetailEvent(
+                                is SystemLogEvent -> DetailEvent(
                                     title = "${dateFormatter.format(event.timestamp)} ${event.thread}",
                                     message = event.message,
                                     body = event.stacktrace,
@@ -166,7 +469,7 @@ class LogPanel(
                                 )
 
                                 is WrapperLogEvent -> DetailEvent(
-                                    title = dateFormatter.format(event.timestamp),
+                                    title = event.level.toString() + "   -   " + dateFormatter.format(event.timestamp) + "   -   " + event.logger.substringAfterLast("."),
                                     message = event.message,
                                     body = event.stacktrace,
                                 )
@@ -180,10 +483,24 @@ class LogPanel(
             header.displayedRows = table.model.rowCount
         }
 
-        sidebar.list.checkBoxListSelectionModel.addListSelectionListener {
+        loggerNamesSidebar.loggerNamesList.checkBoxListSelectionModel.addListSelectionListener {
             if (!it.valueIsAdjusting) {
                 updateData()
             }
+        }
+
+        loggerLevelsSidebar.checkBoxListSelectionModel.addListSelectionListener {
+            if (!it.valueIsAdjusting) {
+                updateData()
+            }
+        }
+
+        loggerMDCsSidebar?.filterTable?.model?.addTableModelListener {
+            updateData()
+        }
+
+        loggerTimesSidebar.addTimeUpdateEventListener {
+            updateData()
         }
 
         header.addPropertyChangeListener("minimumLevel") {
@@ -197,8 +514,13 @@ class LogPanel(
         }
 
         header.addPropertyChangeListener("isShowFullLoggerName") {
+            loggerNamesSidebar.loggerNamesList.isShowFullLoggerNames = !loggerNamesSidebar.loggerNamesList.isShowFullLoggerNames
             table.model.fireTableDataChanged()
-            sidebar.list.isShowFullLoggerName = it.newValue as Boolean
+        }
+
+        header.addPropertyChangeListener("isOnlyShowMarkedLogs") {
+            table.model.fireTableDataChanged()
+            updateData()
         }
     }
 
@@ -263,6 +585,7 @@ class LogPanel(
 
         override fun updateUI() {
             setUI(customUI)
+            updateFilterPaneUI()
         }
     }
 
@@ -315,7 +638,6 @@ class LogPanel(
                 if (line.isBlank()) {
                     continue
                 }
-
                 val match = DEFAULT_WRAPPER_MESSAGE_FORMAT.matchEntire(line)
                 if (match != null) {
                     val timestamp by match.groups
@@ -335,6 +657,7 @@ class LogPanel(
                             message = message.value.trim(),
                             logger = logger.value.trim(),
                             level = Level.valueOf(level.value.single()),
+                            marked = false
                         )
                     } else {
                         val stack by match.groups
@@ -349,6 +672,7 @@ class LogPanel(
                                 timestamp = time,
                                 message = stack.value,
                                 level = Level.INFO,
+                                marked = false,
                             )
                         }
                     }

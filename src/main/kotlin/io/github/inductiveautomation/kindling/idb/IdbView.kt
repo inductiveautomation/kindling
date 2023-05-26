@@ -7,7 +7,7 @@ import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
 import io.github.inductiveautomation.kindling.log.Level
 import io.github.inductiveautomation.kindling.log.LogPanel
-import io.github.inductiveautomation.kindling.log.SystemLogsEvent
+import io.github.inductiveautomation.kindling.log.SystemLogEvent
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.toList
@@ -135,7 +135,7 @@ enum class IdbTool {
             ).executeQuery()
                 .toList { resultSet ->
                     val eventId = resultSet.getInt("event_id")
-                    SystemLogsEvent(
+                    SystemLogEvent(
                         timestamp = Instant.ofEpochMilli(resultSet.getLong("timestmp")),
                         message = resultSet.getString("formatted_message"),
                         logger = resultSet.getString("logger_name"),
@@ -143,6 +143,7 @@ enum class IdbTool {
                         level = Level.valueOf(resultSet.getString("level_string")),
                         mdc = mdcKeys[eventId].orEmpty(),
                         stacktrace = stackTraces[eventId].orEmpty(),
+                        marked = false,
                     )
                 }
             return LogPanel(events)

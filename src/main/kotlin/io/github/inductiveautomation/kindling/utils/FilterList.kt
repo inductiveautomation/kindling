@@ -1,9 +1,7 @@
-package io.github.inductiveautomation.kindling.thread
+package io.github.inductiveautomation.kindling.utils
 
 import com.jidesoft.swing.CheckBoxList
 import com.jidesoft.swing.ListSearchable
-import io.github.inductiveautomation.kindling.utils.NoSelectionModel
-import io.github.inductiveautomation.kindling.utils.listCellRenderer
 import java.text.DecimalFormat
 import javax.swing.AbstractListModel
 import javax.swing.ListModel
@@ -46,11 +44,11 @@ class FilterModel(val rawData: Map<String?, Int>) : AbstractListModel<Any>() {
     }
 }
 
-class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(emptyMap())) {
-    private var total = 0
-    private var percentages = emptyMap<String?, String>()
+open class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(emptyMap())) {
+    protected var total = 0
+    protected var percentages = emptyMap<String?, String>()
 
-    private var lastSelection = arrayOf<Any>()
+    protected var lastSelection = arrayOf<Any>()
 
     init {
         selectionModel = NoSelectionModel()
@@ -78,6 +76,22 @@ class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(empt
             }
         }
     }
+
+    fun updateComparator(comparator: FilterComparator) {
+        checkBoxListSelectionModel.valueIsAdjusting = true
+        val currentSelection = checkBoxListSelectedValues
+        lastSelection = if (currentSelection.isEmpty()) {
+            lastSelection
+        } else {
+            currentSelection
+        }
+        model.comparator = comparator
+        selectNone()
+        addCheckBoxListSelectedValues(lastSelection)
+        checkBoxListSelectionModel.valueIsAdjusting = false
+    }
+
+    fun isOnlySelected(value: String): Boolean = checkBoxListSelectedValues.size == 1 && value == checkBoxListSelectedValues.first()
 
     fun select(value: String) {
         val rowToSelect = model.indexOf(value)

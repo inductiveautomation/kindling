@@ -3,31 +3,37 @@ package io.github.inductiveautomation.kindling.log
 import java.time.Instant
 
 sealed interface LogEvent {
+    var marked: Boolean
     val timestamp: Instant
     val message: String
     val logger: String
+    val level: Level?
+    val stacktrace: List<String>
 }
 
 data class WrapperLogEvent(
+    override var marked: Boolean,
     override val timestamp: Instant,
     override val message: String,
     override val logger: String = STDOUT,
-    val level: Level? = null,
-    val stacktrace: List<String> = emptyList(),
+    override val level: Level? = null,
+    override val stacktrace: List<String> = emptyList(),
 ) : LogEvent {
     companion object {
         const val STDOUT = "STDOUT"
     }
 }
 
-data class SystemLogsEvent(
+
+data class SystemLogEvent(
+    override var marked: Boolean,
     override val timestamp: Instant,
     override val message: String,
     override val logger: String,
     val thread: String,
-    val level: Level,
+    override val level: Level,
     val mdc: Map<String, String>,
-    val stacktrace: List<String>,
+    override val stacktrace: List<String>,
 ) : LogEvent
 
 @Suppress("ktlint:trailing-comma-on-declaration-site")
