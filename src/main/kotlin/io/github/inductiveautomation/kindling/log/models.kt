@@ -23,17 +23,18 @@ class LogsModel<T : LogEvent>(
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
         return columnIndex == 0
     }
+
     operator fun get(row: Int): T = data[row]
     operator fun <R> get(row: Int, column: Column<T, R>): R? {
         return data.getOrNull(row)?.let { event ->
             column.getValue(event)
         }
     }
+
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
         require(isCellEditable(rowIndex, columnIndex))
         data[rowIndex].marked = aValue as Boolean
     }
-
 }
 
 @Suppress("unused", "PropertyName")
@@ -48,7 +49,7 @@ sealed class LogColumnList<T : LogEvent>(panel: LogPanel) : ColumnList<T>() {
                 FlatSVGIcon("icons/bx-search.svg").derive(0.8F)
             }
         },
-        getValue = LogEvent::marked
+        getValue = LogEvent::marked,
     )
 
     val Level = Column<T, Level?>(
@@ -57,7 +58,7 @@ sealed class LogColumnList<T : LogEvent>(panel: LogPanel) : ColumnList<T>() {
             minWidth = 55
             maxWidth = 55
         },
-        getValue = LogEvent::level
+        getValue = LogEvent::level,
     )
 
     val Timestamp = Column<T, Instant>(
@@ -69,7 +70,7 @@ sealed class LogColumnList<T : LogEvent>(panel: LogPanel) : ColumnList<T>() {
                 panel.dateFormatter.format(it as Instant)
             }
         },
-        getValue = LogEvent::timestamp
+        getValue = LogEvent::timestamp,
     )
 
     val Logger = Column<T, String>(
@@ -86,19 +87,19 @@ sealed class LogColumnList<T : LogEvent>(panel: LogPanel) : ColumnList<T>() {
             }
 
             cellRenderer = DefaultTableRenderer(
-                    ReifiedLabelProvider(
-                            getText = valueExtractor,
-                            getTooltip = { it }
-                    )
+                ReifiedLabelProvider(
+                    getText = valueExtractor,
+                    getTooltip = { it },
+                ),
             )
             comparator = compareBy(AlphanumComparator(), valueExtractor)
         },
-        getValue = LogEvent::logger
+        getValue = LogEvent::logger,
     )
 
     val Message = Column<T, String>(
         header = "Message",
-        getValue = LogEvent::message
+        getValue = LogEvent::message,
     )
 
     init {
@@ -120,7 +121,7 @@ class SystemLogColumns(panel: LogPanel) : LogColumnList<SystemLogEvent>(panel) {
         columnCustomization = {
             minWidth = 50
         },
-        getValue = SystemLogEvent::thread
+        getValue = SystemLogEvent::thread,
     )
 
     init {
@@ -128,31 +129,31 @@ class SystemLogColumns(panel: LogPanel) : LogColumnList<SystemLogEvent>(panel) {
     }
 
     override val filterableColumns = listOf(
-            Level,
-            Thread,
-            Logger,
-            Message,
+        Level,
+        Thread,
+        Logger,
+        Message,
     )
 
     override val markableColumns = listOf(
-            Level,
-            Thread,
-            Logger,
-            Message
+        Level,
+        Thread,
+        Logger,
+        Message,
     )
 }
 
 class WrapperLogColumns(panel: LogPanel) : LogColumnList<WrapperLogEvent>(panel) {
     override val filterableColumns = listOf(
-            Level,
-            Logger,
-            Message,
+        Level,
+        Logger,
+        Message,
     )
 
     override val markableColumns = listOf(
-            Level,
-            Logger,
-            Message,
+        Level,
+        Logger,
+        Message,
     )
 }
 

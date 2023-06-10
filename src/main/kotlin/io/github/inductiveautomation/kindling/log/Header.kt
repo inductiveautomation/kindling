@@ -46,7 +46,7 @@ class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
                 addActionListener {
                     isOnlyShowMarkedLogs = !isOnlyShowMarkedLogs
                 }
-            }
+            },
         )
         val tzGroup = ButtonGroup()
         add(

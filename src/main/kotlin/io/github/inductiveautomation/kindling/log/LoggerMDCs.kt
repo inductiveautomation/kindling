@@ -32,16 +32,16 @@ class LoggerMDCPanel(events: List<SystemLogEvent>) : JPanel(MigLayout("ins 0, fi
     private val fullMDCMap = allMDCs.groupingBy { it }.eachCount()
 
     private val keyList = allMDCs.groupingBy { it.key }.eachCount()
-            .toList().sortedByDescending { (_, value) -> value }.toMap()
+        .toList().sortedByDescending { (_, value) -> value }.toMap()
 
     private val keyMenu = JComboBox<String>().apply {
         renderer = object : BasicComboBoxRenderer() {
             override fun getListCellRendererComponent(
-                    list: JList<*>?,
-                    value: Any?,
-                    index: Int,
-                    isSelected: Boolean,
-                    cellHasFocus: Boolean
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean,
             ): Component {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
                 text = if (index == -1 && value == null) {
@@ -70,31 +70,31 @@ class LoggerMDCPanel(events: List<SystemLogEvent>) : JPanel(MigLayout("ins 0, fi
         }
     }
 
-private val valueMenu: JComboBox<String> = JComboBox<String>().apply {
-    renderer = object : BasicComboBoxRenderer() {
-        override fun getListCellRendererComponent(
+    private val valueMenu: JComboBox<String> = JComboBox<String>().apply {
+        renderer = object : BasicComboBoxRenderer() {
+            override fun getListCellRendererComponent(
                 list: JList<*>?,
                 value: Any?,
                 index: Int,
                 isSelected: Boolean,
-                cellHasFocus: Boolean
-        ): Component {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-            text = if (index == -1 && value == null) {
-                " - value - "
-            } else {
-                val count = fullMDCMap.entries.find { (mdc, _) ->
-                    val selectedKey: String = keyMenu.selectedItem as String
-                    val selectedValue: String = value as String
-                    mdc.key == selectedKey && mdc.value == selectedValue
-                }?.value
-                "${value as String} [${count}]"
+                cellHasFocus: Boolean,
+            ): Component {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                text = if (index == -1 && value == null) {
+                    " - value - "
+                } else {
+                    val count = fullMDCMap.entries.find { (mdc, _) ->
+                        val selectedKey: String = keyMenu.selectedItem as String
+                        val selectedValue: String = value as String
+                        mdc.key == selectedKey && mdc.value == selectedValue
+                    }?.value
+                    "${value as String} [$count]"
+                }
+                return this
             }
-            return this
         }
+        selectedIndex = -1
     }
-    selectedIndex = -1
-}
 
     private val addButton = JButton("+").apply {
         border = BorderFactory.createEmptyBorder()
@@ -140,9 +140,11 @@ private val valueMenu: JComboBox<String> = JComboBox<String>().apply {
     val filterTable = ReifiedJXTable(MDCTableModel()).apply {
         attachPopupMenu {
             JPopupMenu().apply {
-                add(JMenuItem("Remove Filter").apply {
-                    addActionListener(removeSelectedFilter())
-                })
+                add(
+                    JMenuItem("Remove Filter").apply {
+                        addActionListener(removeSelectedFilter())
+                    },
+                )
             }
         }
     }
@@ -159,20 +161,20 @@ private val valueMenu: JComboBox<String> = JComboBox<String>().apply {
         }
     }
 
-    override val isFilterApplied : Boolean
+    override val isFilterApplied: Boolean
         get() = filterTable.model.data.any(MDCEntry::enabled)
 }
 
 data class MDC(override val key: String, override val value: String) : Map.Entry<String, String>
 
 data class MDCEntry(
-        var enabled: Boolean = true,
-        val mdc: MDC,
-        var inverted: Boolean = false,
+    var enabled: Boolean = true,
+    val mdc: MDC,
+    var inverted: Boolean = false,
 )
 
 class MDCTableModel(
-        val data: MutableList<MDCEntry> = mutableListOf(),
+    val data: MutableList<MDCEntry> = mutableListOf(),
 ) : AbstractTableModel() {
 
     override fun getRowCount(): Int {
@@ -204,6 +206,7 @@ class MDCTableModel(
             Enable -> {
                 data[rowIndex].enabled = aValue
             }
+
             Invert -> {
                 data[rowIndex].inverted = aValue
             }
@@ -218,7 +221,7 @@ class MDCTableModel(
         }
     }
 
-    fun isValidLogEvent(logEvent : LogEvent, inverted : Boolean) : Boolean = when(logEvent) {
+    fun isValidLogEvent(logEvent: LogEvent, inverted: Boolean): Boolean = when (logEvent) {
         is WrapperLogEvent -> true
         is SystemLogEvent -> {
             val mdcList = data.filter {
@@ -228,7 +231,7 @@ class MDCTableModel(
             if (mdcList.isEmpty()) {
                 true
             } else {
-                if (mdcList.any { it.mdc in logEvent.mdc.entries } ) {
+                if (mdcList.any { it.mdc in logEvent.mdc.entries }) {
                     !inverted
                 } else {
                     inverted
@@ -239,16 +242,16 @@ class MDCTableModel(
 
     companion object MDCColumns : ColumnList<MDCEntry>() {
         val Enable by column(
-                value = MDCEntry::enabled,
+            value = MDCEntry::enabled,
         )
         val Key by column(
-                value = { it.mdc.key },
+            value = { it.mdc.key },
         )
         val Value by column(
-                value = { it.mdc.value },
+            value = { it.mdc.value },
         )
         val Invert by column(
-                value = MDCEntry::inverted,
+            value = MDCEntry::inverted,
         )
     }
 }

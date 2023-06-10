@@ -24,7 +24,6 @@ data class WrapperLogEvent(
     }
 }
 
-
 data class SystemLogEvent(
     override var marked: Boolean,
     override val timestamp: Instant,
