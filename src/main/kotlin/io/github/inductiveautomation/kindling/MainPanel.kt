@@ -6,10 +6,8 @@ import com.formdev.flatlaf.extras.components.FlatTextArea
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.CustomIconView
 import io.github.inductiveautomation.kindling.core.Kindling
-import io.github.inductiveautomation.kindling.core.Kindling.UserSession.Companion.loadPanels
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.PreferencesPanel
-import io.github.inductiveautomation.kindling.core.Savable
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
@@ -42,7 +40,7 @@ import javax.swing.JPanel
 import javax.swing.UIManager
 import kotlin.system.exitProcess
 
-class MainPanel(private var empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
+class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
     private val fileChooser = JFileChooser(Kindling.homeLocation).apply {
         isMultiSelectionEnabled = true
         fileView = CustomIconView()
@@ -115,19 +113,19 @@ class MainPanel(private var empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                         override fun mouseClicked(e: MouseEvent?) {
                             preferences.isVisible = !preferences.isVisible
                         }
-                    }
-                )
-            }
-        )
-        add(
-            JMenu("Debug").apply
-            {
-                add(
-                    Action("UI Inspector") {
-                        FlatUIDefaultsInspector.show()
                     },
                 )
             },
+        )
+        add(
+            JMenu("Debug").apply
+                {
+                    add(
+                        Action("UI Inspector") {
+                            FlatUIDefaultsInspector.show()
+                        },
+                    )
+                },
         )
     }
 
@@ -192,15 +190,9 @@ class MainPanel(private var empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
     }
 
     init {
-        val panels = loadPanels()
-        empty = panels.isEmpty()
-
         if (empty) {
             add(openButton, "dock center")
         } else {
-            panels.forEach {
-                tabs.add(it as ToolPanel)
-            }
             add(tabs, "dock center")
         }
     }
@@ -247,17 +239,12 @@ class MainPanel(private var empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                     addWindowListener(
                         object : WindowAdapter() {
                             override fun windowClosing(e: WindowEvent?) {
-                                val savablePanels = mainPanel.tabs.indices
-                                    .map(mainPanel.tabs::getComponentAt)
-                                    .filterIsInstance<Savable>()
-                                    .map(Savable::save)
-                                Kindling.UserSession.savePanels(savablePanels)
                                 Kindling.session.saveSession()
                                 super.windowClosing(e)
                                 dispose()
                                 exitProcess(0)
                             }
-                        }
+                        },
                     )
 
                     setLocationRelativeTo(null)

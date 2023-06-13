@@ -8,14 +8,8 @@ import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
-import com.jthemedetecor.OsThemeDetector
-import io.github.inductiveautomation.kindling.cache.CacheViewSurrogate
-import io.github.inductiveautomation.kindling.idb.IdbViewSurrogate
-import io.github.inductiveautomation.kindling.thread.MultiThreadViewSurrogate
-import io.github.inductiveautomation.kindling.zip.ZipViewSurrogate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -25,9 +19,6 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.jfree.chart.JFreeChart
 import java.awt.Image
@@ -52,11 +43,7 @@ object Kindling {
 
     val frameIcon: Image = Toolkit.getDefaultToolkit().getImage(this::class.java.getResource("/icons/kindling.png"))
 
-    val savableFormat = Json { serializersModule = savableModule }
-
     private val themeListeners = mutableListOf<(Theme) -> Unit>()
-
-    private val themeDetector = OsThemeDetector.getDetector()
 
     fun addThemeChangeListener(listener: (Theme) -> Unit) {
         themeListeners.add(listener)
@@ -93,9 +80,6 @@ object Kindling {
 
     @Serializable
     class UserSession {
-
-        var saveAndResume: Boolean = true
-
         var theme = Theme.defaultTheme
             set(newValue) {
                 field = newValue
@@ -113,40 +97,12 @@ object Kindling {
             val sessionOutput = cacheLocation.resolve(sessionFile)
 
             sessionOutput.outputStream().use {
-                savableFormat.encodeToStream(this, it)
+                Json.encodeToStream(this, it)
             }
         }
 
         companion object {
             const val sessionFile = "session.json"
-            const val toolsFile = "tools.json"
-
-            private val savableJsonFormat = Json { serializersModule = savableModule }
-
-            fun savePanels(savablePanels: List<ToolPanelSurrogate>) {
-                if (session.saveAndResume) {
-                    val out = cacheLocation.resolve(toolsFile).outputStream()
-
-                    out.use { os ->
-                        savableJsonFormat.encodeToStream(savablePanels, os)
-                    }
-                }
-            }
-
-            fun loadPanels(): List<Savable> {
-                return if (session.saveAndResume) {
-                    try {
-                        cacheLocation.resolve(toolsFile).inputStream().use {
-                            val surrogates = savableJsonFormat.decodeFromStream<List<ToolPanelSurrogate>>(it)
-                            surrogates.map(ToolPanelSurrogate::load)
-                        }
-                    } catch (e: Exception) {
-                        emptyList()
-                    }
-                } else {
-                    emptyList()
-                }
-            }
         }
     }
 
@@ -154,7 +110,7 @@ object Kindling {
     @Serializable
     class Theme(
         val name: String,
-        @Serializable(with=LafSerializer::class)
+        @Serializable(with = LafSerializer::class)
         val lookAndFeel: FlatLaf,
         val isDark: Boolean,
         private val rSyntaxThemeName: String
@@ -208,26 +164,8 @@ object Kindling {
                 )
             }
 
-            val defaultTheme = if (themeDetector.isDark) defaultDark else defaultLight
+            val defaultTheme = defaultLight
         }
-    }
-}
-
-interface Savable {
-    fun save(): ToolPanelSurrogate
-}
-
-@Polymorphic
-interface ToolPanelSurrogate {
-    fun load(): Savable
-}
-
-val savableModule = SerializersModule {
-    polymorphic(ToolPanelSurrogate::class) {
-        subclass(MultiThreadViewSurrogate::class)
-        subclass(IdbViewSurrogate::class)
-        subclass(CacheViewSurrogate::class)
-        subclass(ZipViewSurrogate::class)
     }
 }
 

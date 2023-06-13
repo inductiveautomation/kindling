@@ -50,7 +50,7 @@ class PreferencesPanel : JFrame("Preferences") {
                     add(cancelButton, "east, gapright 10")
                     add(submitButton, "east, gapright 10")
                 },
-                "south, gapbottom 10"
+                "south, gapbottom 10",
             )
         }
         pack()
@@ -58,7 +58,6 @@ class PreferencesPanel : JFrame("Preferences") {
 
     private fun saveChanges() {
         Kindling.session.showFullLoggerNames = generalPanel.showFullLoggerNames.isSelected
-        Kindling.session.saveAndResume = generalPanel.sessionResume.isSelected
         Kindling.session.uiScaleFactor = uiPanel.uiScaleSelector.value as Double
 
         if (Kindling.session.theme != uiPanel.themeSelection.selectedItem) {
@@ -84,7 +83,7 @@ class PreferencesPanel : JFrame("Preferences") {
         val themeSelection = ThemeSelectionDropdown()
 
         val uiScaleSelector = JSpinner(
-            SpinnerNumberModel(Kindling.session.uiScaleFactor, 1.0, 2.0, 0.1)
+            SpinnerNumberModel(Kindling.session.uiScaleFactor, 1.0, 2.0, 0.1),
         )
 
         init {
@@ -128,11 +127,6 @@ class PreferencesPanel : JFrame("Preferences") {
                 addActionListener {
                     setLafForSelectedItem()
                 }
-
-                Kindling.addThemeChangeListener { newTheme ->
-                    select(newTheme)
-                    setLafForSelectedItem()
-                }
             }
 
             override fun getSelectedItem(): Kindling.Theme = super.getSelectedItem() as Kindling.Theme
@@ -156,9 +150,6 @@ class PreferencesPanel : JFrame("Preferences") {
     }
 
     class GeneralPanel : JPanel(MigLayout("fill, ins 10")) {
-        val sessionResume = JCheckBox("Resume session on relaunch").apply {
-            isSelected = Kindling.session.saveAndResume
-        }
 
         val showFullLoggerNames = JCheckBox("Show full logger names by default").apply {
             isSelected = Kindling.session.showFullLoggerNames
@@ -166,7 +157,6 @@ class PreferencesPanel : JFrame("Preferences") {
 
         init {
             border = BorderFactory.createTitledBorder("General")
-            add(sessionResume, "wrap")
             add(showFullLoggerNames)
         }
     }

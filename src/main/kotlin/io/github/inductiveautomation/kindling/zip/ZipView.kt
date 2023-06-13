@@ -3,11 +3,9 @@ package io.github.inductiveautomation.kindling.zip
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatPopupMenu
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
-import io.github.inductiveautomation.kindling.core.Savable
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.core.ToolPanelSurrogate
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PathNode
@@ -24,7 +22,6 @@ import io.github.inductiveautomation.kindling.zip.views.PathView
 import io.github.inductiveautomation.kindling.zip.views.ProjectView
 import io.github.inductiveautomation.kindling.zip.views.TextFileView
 import io.github.inductiveautomation.kindling.zip.views.ToolView
-import kotlinx.serialization.Serializable
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -39,14 +36,13 @@ import javax.swing.JSplitPane
 import javax.swing.tree.TreeSelectionModel
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.extension
 import kotlin.io.path.fileSize
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
 
-class ZipView(private val path: Path) : ToolPanel("ins 6, flowy"), Savable {
+class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
     private val zipFile: FileSystem = FileSystems.newFileSystem(path)
     private val provider: FileSystemProvider = zipFile.provider()
 
@@ -170,8 +166,6 @@ class ZipView(private val path: Path) : ToolPanel("ins 6, flowy"), Savable {
 
     override val icon: Icon = ZipViewer.icon
 
-    override fun save(): ToolPanelSurrogate = ZipViewSurrogate(path.absolutePathString())
-
     private fun maybeAddNewTab(vararg paths: Path) {
         val pathList = paths.toList()
         val existingTab = tabStrip.tabs.find { tab -> tab.paths == pathList }
@@ -234,9 +228,4 @@ object ZipViewer : Tool {
     }
 
     private val logger = getLogger<ZipViewer>()
-}
-
-@Serializable
-class ZipViewSurrogate(val path: String) : ToolPanelSurrogate {
-    override fun load(): Savable = ZipView(Path.of(path))
 }
