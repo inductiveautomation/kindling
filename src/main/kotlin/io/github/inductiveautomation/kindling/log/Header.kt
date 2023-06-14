@@ -22,7 +22,7 @@ class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
 
     val search = JXSearchField("Search")
 
-    var isShowFullLoggerName: Boolean by Delegates.observable(Kindling.session.showFullLoggerNames) { property, oldValue, newValue ->
+    var isShowFullLoggerName: Boolean by Delegates.observable(Kindling.showFullLoggerNames.currentValue) { property, oldValue, newValue ->
         firePropertyChange(property.name, oldValue, newValue)
     }
 
@@ -36,7 +36,7 @@ class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
 
     private val settingsMenu = JidePopupMenu().apply {
         add(
-            JCheckBoxMenuItem("Show Full Logger Names", Kindling.session.showFullLoggerNames).apply {
+            JCheckBoxMenuItem("Show Full Logger Names", isShowFullLoggerName).apply {
                 addActionListener {
                     isShowFullLoggerName = !isShowFullLoggerName
                 }

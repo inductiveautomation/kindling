@@ -32,7 +32,7 @@ class LoggerNamesModel(val data: List<LoggerName>) : AbstractListModel<Any>() {
 }
 
 class LoggerNamesList(model: LoggerNamesModel) : CheckBoxList(model) {
-    var isShowFullLoggerName = Kindling.session.showFullLoggerNames
+    var isShowFullLoggerName = Kindling.showFullLoggerNames.currentValue
         set(value) {
             field = value
             repaint()

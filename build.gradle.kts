@@ -31,7 +31,6 @@ repositories {
 dependencies {
     // see gradle/libs.version.toml
     api(libs.serialization.json)
-    api(libs.kotlinreflect)
     api(libs.xerial.jdbc)
     api(libs.hsql)
     api(libs.zip4j)

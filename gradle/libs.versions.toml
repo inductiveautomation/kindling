@@ -18,7 +18,6 @@ coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.5.1" }
 xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.42.0.0" }
-kotlinreflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.4.7" }
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.1" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version = "2.11.5" }

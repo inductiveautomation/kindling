@@ -10,13 +10,14 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
@@ -26,94 +27,118 @@ import java.awt.Toolkit
 import java.io.File
 import javax.swing.UIManager
 import kotlin.io.path.Path
-import kotlin.io.path.createDirectory
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
 import kotlin.io.path.inputStream
-import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
-import kotlin.reflect.full.createInstance
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 import org.fife.ui.rsyntaxtextarea.Theme as RSyntaxTheme
 
-@OptIn(ExperimentalSerializationApi::class)
 object Kindling {
     val homeLocation: File = Path(System.getProperty("user.home"), "Downloads").toFile()
 
-    val cacheLocation = Path(System.getProperty("user.home"), ".kindling").also {
-        if (it.notExists()) it.createDirectory()
-    }
-
     val frameIcon: Image = Toolkit.getDefaultToolkit().getImage(this::class.java.getResource("/icons/kindling.png"))
 
-    private val themeListeners = mutableListOf<(Theme) -> Unit>()
-
-    fun addThemeChangeListener(listener: (Theme) -> Unit) {
-        themeListeners.add(listener)
-    }
-
     fun initTheme() {
-        session.theme.apply(false)
+        theme.currentValue.apply(false)
     }
 
-    private fun Theme.apply(animate: Boolean) {
-        try {
-            if (animate) {
-                FlatAnimatedLafChange.showSnapshot()
-            }
-            UIManager.setLookAndFeel(lookAndFeel)
-            FlatLaf.updateUI()
-        } finally {
-            // Will no-op if not animated
-            FlatAnimatedLafChange.hideSnapshotWithAnimation()
+    private val cacheLocation = Path(System.getProperty("user.home"), ".kindling").also {
+        it.createDirectories()
+    }
+
+    private val preferencesPath = cacheLocation / "session.json"
+
+    private val preferences: MutableMap<String, JsonElement> = try {
+        @OptIn(ExperimentalSerializationApi::class)
+        preferencesPath.inputStream().use(Json::decodeFromStream)
+    } catch (e: Exception) { // Fallback to default session.
+        mutableMapOf()
+    }
+
+    private val defaultLight = Theme(
+        name = "Default Light",
+        lookAndFeelClassname = (if (SystemInfo.isMacOS) FlatMacLightLaf::class.java else FlatLightLaf::class.java).name,
+        isDark = false,
+        rSyntaxThemeName = "idea.xml",
+    )
+    private val defaultDark = Theme(
+        name = "Default Dark",
+        lookAndFeelClassname = (if (SystemInfo.isMacOS) FlatMacDarkLaf::class.java else FlatDarkLaf::class.java).name,
+        isDark = true,
+        rSyntaxThemeName = "dark.xml",
+    )
+
+    val themes = buildMap<String, Theme> {
+        put(defaultLight.name, defaultLight)
+        put(defaultDark.name, defaultDark)
+
+        for (info in FlatAllIJThemes.INFOS) {
+            put(
+                info.name,
+                Theme(
+                    name = info.name,
+                    lookAndFeelClassname = info.className,
+                    isDark = info.isDark,
+                    rSyntaxThemeName = if (info.isDark) "dark.xml" else "idea.xml",
+                ),
+            )
         }
     }
 
-    val session: UserSession = run {
-        try {
-            val session: UserSession = cacheLocation.resolve(UserSession.sessionFile).inputStream().use(Json::decodeFromStream)
-            // Throw away the newly created theme instance and grab a copy of what we have from Theme.companion
-            session.apply {
-                theme = (Theme.lightThemes + Theme.darkThemes).find { it.name == theme.name } ?: Theme.defaultTheme
-            }
-        } catch (e: Exception) { // A few exceptions can happen here. Fallback to default session.
-            UserSession()
+    private val properties: MutableMap<KProperty<*>, Property<*>> = mutableMapOf()
+
+    val theme: Property<Theme> by persistentProperty(
+        description = "UI Theme",
+        serializer = ThemeSerializer,
+        default = defaultLight,
+    )
+    val showFullLoggerNames by persistentProperty(
+        description = "Show full logger names by default",
+        serializer = Boolean.serializer(),
+        default = false,
+    )
+    val uiScaleFactor by persistentProperty(
+        description = "UI Scale Factor",
+        serializer = Double.serializer(),
+        default = 1.0,
+    )
+
+    init {
+        theme.addListener { newValue ->
+            newValue.apply(true)
         }
     }
 
-    @Serializable
-    class UserSession {
-        var theme = Theme.defaultTheme
-            set(newValue) {
-                field = newValue
-                newValue.apply(true)
-                for (listener in themeListeners) {
-                    listener.invoke(newValue)
-                }
-            }
-
-        var showFullLoggerNames = false
-
-        var uiScaleFactor = 1.0
-
-        fun saveSession() {
-            val sessionOutput = cacheLocation.resolve(sessionFile)
-
-            sessionOutput.outputStream().use {
-                Json.encodeToStream(this, it)
-            }
-        }
-
-        companion object {
-            const val sessionFile = "session.json"
-        }
+    private fun <T : Any> persistentProperty(
+        description: String,
+        serializer: KSerializer<T>,
+        default: T,
+    ): ReadOnlyProperty<Kindling, Property<T>> = ReadOnlyProperty { thisRef, property ->
+        @Suppress("UNCHECKED_CAST")
+        thisRef.properties.getOrPut(property) {
+            Property(
+                initial = thisRef.preferences[property.name]?.let { Json.decodeFromJsonElement(serializer, it) }
+                    ?: default,
+                description = description,
+                setter = { value ->
+                    val newValue = Json.encodeToJsonElement(serializer, value)
+                    thisRef.preferences[property.name] = newValue
+                    @OptIn(ExperimentalSerializationApi::class)
+                    preferencesPath.outputStream().use {
+                        Json.encodeToStream<MutableMap<String, JsonElement>>(thisRef.preferences, it)
+                    }
+                },
+            )
+        } as Property<T>
     }
 
-    @Suppress("ktlint:trailing-comma-on-declaration-site")
-    @Serializable
     class Theme(
         val name: String,
-        @Serializable(with = LafSerializer::class)
-        val lookAndFeel: FlatLaf,
         val isDark: Boolean,
-        private val rSyntaxThemeName: String
+        val lookAndFeelClassname: String,
+        private val rSyntaxThemeName: String,
     ) {
         private val rSyntaxTheme: RSyntaxTheme by lazy {
             RSyntaxTheme::class.java.getResourceAsStream("themes/$rSyntaxThemeName").use(org.fife.ui.rsyntaxtextarea.Theme::load)
@@ -131,53 +156,45 @@ object Kindling {
             }
             chart.backgroundPaint = UIManager.getColor("Panel.background")
         }
+    }
 
-        companion object {
-            private val defaultDark = Theme(
-                name = "Default Dark",
-                lookAndFeel = if (SystemInfo.isMacOS) FlatMacDarkLaf() else FlatDarkLaf(),
-                isDark = true,
-                rSyntaxThemeName = "dark.xml",
-            )
-            private val defaultLight = Theme(
-                name = "Default Light",
-                lookAndFeel = if (SystemInfo.isMacOS) FlatMacLightLaf() else FlatLightLaf(),
-                isDark = false,
-                rSyntaxThemeName = "idea.xml",
-            )
-
-            val lightThemes = listOf(defaultLight) + FlatAllIJThemes.INFOS.filter { !it.isDark }.map { info ->
-                Theme(
-                    name = info.name,
-                    lookAndFeel = Class.forName(info.className).kotlin.createInstance() as FlatLaf,
-                    isDark = info.isDark,
-                    rSyntaxThemeName = "idea.xml",
-                )
+    private fun Theme.apply(animate: Boolean) {
+        try {
+            if (animate) {
+                FlatAnimatedLafChange.showSnapshot()
             }
-
-            val darkThemes = listOf(defaultDark) + FlatAllIJThemes.INFOS.filter { it.isDark }.map { info ->
-                Theme(
-                    name = info.name,
-                    lookAndFeel = Class.forName(info.className).kotlin.createInstance() as FlatLaf,
-                    isDark = info.isDark,
-                    rSyntaxThemeName = "dark.xml",
-                )
-            }
-
-            val defaultTheme = defaultLight
+            UIManager.setLookAndFeel(lookAndFeelClassname)
+            FlatLaf.updateUI()
+        } finally {
+            // Will no-op if not animated
+            FlatAnimatedLafChange.hideSnapshotWithAnimation()
         }
     }
 }
 
-object LafSerializer : KSerializer<FlatLaf> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("FlatLaf", PrimitiveKind.STRING)
+private object ThemeSerializer : KSerializer<Kindling.Theme> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Kindling.Theme", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: FlatLaf) {
-        encoder.encodeString(value::class.qualifiedName!!) // Class will not be local or within an anonymous object
-    }
+    override fun serialize(encoder: Encoder, value: Kindling.Theme) = encoder.encodeString(value.name)
+    override fun deserialize(decoder: Decoder): Kindling.Theme = Kindling.themes.getValue(decoder.decodeString())
+}
 
-    override fun deserialize(decoder: Decoder): FlatLaf {
-        val className = decoder.decodeString()
-        return Class.forName(className).kotlin.createInstance() as FlatLaf
+class Property<T : Any>(
+    val description: String,
+    initial: T,
+    private val setter: (T) -> Unit,
+) {
+    var currentValue: T = initial
+        set(value) {
+            setter(value)
+            for (listener in listeners) {
+                listener(value)
+            }
+        }
+
+    private val listeners = mutableListOf<(T) -> Unit>()
+
+    fun addListener(listener: (T) -> Unit) {
+        listeners.add(listener)
     }
 }

@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
 import com.formdev.flatlaf.extras.components.FlatTextArea
+import com.formdev.flatlaf.util.SystemInfo
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.CustomIconView
 import io.github.inductiveautomation.kindling.core.Kindling
@@ -26,11 +27,8 @@ import java.awt.EventQueue
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.desktop.QuitStrategy
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
 import java.io.File
+import java.lang.Boolean.getBoolean
 import javax.swing.JButton
 import javax.swing.JFileChooser
 import javax.swing.JFrame
@@ -38,7 +36,6 @@ import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JPanel
 import javax.swing.UIManager
-import kotlin.system.exitProcess
 
 class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
     private val fileChooser = JFileChooser(Kindling.homeLocation).apply {
@@ -48,7 +45,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
         Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
         fileFilter = Tool.tools.first().filter
 
-        Kindling.addThemeChangeListener {
+        Kindling.theme.addListener {
             updateUI()
         }
     }
@@ -106,19 +103,18 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                 }
             },
         )
-        add(
-            JMenu("Preferences").apply {
-                addMouseListener(
-                    object : MouseAdapter() {
-                        override fun mouseClicked(e: MouseEvent?) {
-                            preferences.isVisible = !preferences.isVisible
-                        }
-                    },
-                )
-            },
-        )
-        add(
-            JMenu("Debug").apply
+        if (!SystemInfo.isMacOS) {
+            add(
+                JMenu("Preferences").apply {
+                    addActionListener {
+                        preferences.isVisible = !preferences.isVisible
+                    }
+                },
+            )
+        }
+        if (getBoolean("kindling.debug")) {
+            add(
+                JMenu("Debug").apply
                 {
                     add(
                         Action("UI Inspector") {
@@ -126,7 +122,8 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                         },
                     )
                 },
-        )
+            )
+        }
     }
 
     /**
@@ -204,13 +201,13 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
         fun main(args: Array<String>) {
             System.setProperty("apple.awt.application.name", "Kindling")
             System.setProperty("apple.laf.useScreenMenuBar", "true")
-            System.setProperty("flatlaf.uiScale", Kindling.session.uiScaleFactor.toString())
+            System.setProperty("flatlaf.uiScale", Kindling.uiScaleFactor.currentValue.toString())
 
             EventQueue.invokeLater {
                 setupLaf()
 
                 JFrame("Kindling").apply {
-                    defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
+                    defaultCloseOperation = JFrame.EXIT_ON_CLOSE
                     preferredSize = Dimension(1280, 800)
                     iconImage = Kindling.frameIcon
 
@@ -231,21 +228,13 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                             setOpenFileHandler { event ->
                                 mainPanel.openFiles(event.files)
                             }
+                            setPreferencesHandler {
+                                mainPanel.preferences.isVisible = true
+                            }
                         }
                     }
 
                     transferHandler = FileTransferHandler(mainPanel::openFiles)
-
-                    addWindowListener(
-                        object : WindowAdapter() {
-                            override fun windowClosing(e: WindowEvent?) {
-                                Kindling.session.saveSession()
-                                super.windowClosing(e)
-                                dispose()
-                                exitProcess(0)
-                            }
-                        },
-                    )
 
                     setLocationRelativeTo(null)
                     isVisible = true
