@@ -113,7 +113,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                             override fun mouseClicked(e: MouseEvent?) {
                                 preferences.isVisible = !preferences.isVisible
                             }
-                        }
+                        },
                     )
                 },
             )
