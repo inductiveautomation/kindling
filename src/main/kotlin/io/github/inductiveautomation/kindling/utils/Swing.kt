@@ -3,6 +3,8 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.jidesoft.swing.ListSearchable
+import com.jidesoft.swing.StyledLabel
+import com.jidesoft.swing.StyledLabelBuilder
 import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import kotlinx.coroutines.CoroutineScope
@@ -382,4 +384,8 @@ inline fun <reified T> JComboBox<T>.configureCellRenderer(
             return this
         }
     }
+}
+
+inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel {
+    return StyledLabelBuilder().apply(block).createLabel()
 }

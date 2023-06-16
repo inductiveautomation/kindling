@@ -44,7 +44,7 @@ class TextFileView(override val provider: FileSystemProvider, override val path:
             text
         }
 
-        Kindling.theme.addListener { theme ->
+        Kindling.theme.addChangeListener { theme ->
             theme.apply(textArea)
         }
 

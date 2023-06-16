@@ -27,6 +27,8 @@ import java.awt.EventQueue
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.desktop.QuitStrategy
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.File
 import java.lang.Boolean.getBoolean
 import javax.swing.JButton
@@ -45,7 +47,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
         Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
         fileFilter = Tool.tools.first().filter
 
-        Kindling.theme.addListener {
+        Kindling.theme.addChangeListener {
             updateUI()
         }
     }
@@ -106,9 +108,13 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
         if (!SystemInfo.isMacOS) {
             add(
                 JMenu("Preferences").apply {
-                    addActionListener {
-                        preferences.isVisible = !preferences.isVisible
-                    }
+                    addMouseListener(
+                        object : MouseAdapter() {
+                            override fun mouseClicked(e: MouseEvent?) {
+                                preferences.isVisible = !preferences.isVisible
+                            }
+                        }
+                    )
                 },
             )
         }

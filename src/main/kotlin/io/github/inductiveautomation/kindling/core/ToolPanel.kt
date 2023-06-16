@@ -56,7 +56,7 @@ abstract class ToolPanel(
             isAcceptAllFileFilterUsed = false
             fileView = CustomIconView()
 
-            Kindling.theme.addListener {
+            Kindling.theme.addChangeListener {
                 updateUI()
             }
         }

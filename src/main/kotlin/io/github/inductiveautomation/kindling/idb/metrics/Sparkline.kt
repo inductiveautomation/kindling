@@ -46,7 +46,7 @@ fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart {
         isBorderVisible = false
 
         Kindling.theme.currentValue.apply(this)
-        Kindling.theme.addListener { theme ->
+        Kindling.theme.addChangeListener { theme ->
             theme.apply(this)
         }
     }

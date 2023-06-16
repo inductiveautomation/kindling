@@ -56,7 +56,7 @@ class CacheView(private val path: Path) : ToolPanel() {
 
     private val dbName = when (path.extension) {
         "zip" -> run {
-            LOGGER.debug("Exploding to $tempDirectory")
+            LOGGER.debug("Exploding to {}", tempDirectory)
             ZipFile(path.toFile()).run {
                 extractAll(tempDirectory.toString())
                 fileHeaders.first { !it.isDirectory }.fileName.substringBeforeLast('.')

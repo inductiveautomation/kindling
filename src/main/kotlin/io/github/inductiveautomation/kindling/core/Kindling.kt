@@ -8,32 +8,29 @@ import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
+import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.jfree.chart.JFreeChart
+import kotlinx.serialization.serializer
 import java.awt.Image
 import java.awt.Toolkit
+import java.awt.event.ItemEvent
 import java.io.File
+import javax.swing.JCheckBox
+import javax.swing.JComboBox
+import javax.swing.JComponent
+import javax.swing.JSpinner
+import javax.swing.SpinnerNumberModel
 import javax.swing.UIManager
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
-import org.fife.ui.rsyntaxtextarea.Theme as RSyntaxTheme
 
 object Kindling {
     val homeLocation: File = Path(System.getProperty("user.home"), "Downloads").toFile()
@@ -57,22 +54,23 @@ object Kindling {
         mutableMapOf()
     }
 
-    private val defaultLight = Theme(
-        name = "Default Light",
-        lookAndFeelClassname = (if (SystemInfo.isMacOS) FlatMacLightLaf::class.java else FlatLightLaf::class.java).name,
-        isDark = false,
-        rSyntaxThemeName = "idea.xml",
-    )
-    private val defaultDark = Theme(
-        name = "Default Dark",
-        lookAndFeelClassname = (if (SystemInfo.isMacOS) FlatMacDarkLaf::class.java else FlatDarkLaf::class.java).name,
-        isDark = true,
-        rSyntaxThemeName = "dark.xml",
-    )
+    private inline fun <reified T> MutableMap<String, Theme>.putLaf(name: String, isDark: Boolean = false) {
+        put(
+            name,
+            Theme(
+                name,
+                isDark,
+                T::class.java.name,
+                if (isDark) "dark.xml" else "idea.xml",
+            ),
+        )
+    }
 
-    val themes = buildMap<String, Theme> {
-        put(defaultLight.name, defaultLight)
-        put(defaultDark.name, defaultDark)
+    val themes = buildMap {
+        putLaf<FlatLightLaf>(FlatLightLaf.NAME)
+        putLaf<FlatMacLightLaf>(FlatMacLightLaf.NAME)
+        putLaf<FlatDarkLaf>(FlatDarkLaf.NAME, isDark = true)
+        putLaf<FlatMacDarkLaf>(FlatMacDarkLaf.NAME, isDark = true)
 
         for (info in FlatAllIJThemes.INFOS) {
             put(
@@ -87,76 +85,91 @@ object Kindling {
         }
     }
 
-    private val properties: MutableMap<KProperty<*>, Property<*>> = mutableMapOf()
+    private val _properties: Map<PropertyCategory, MutableMap<String, Property<*>>> = PropertyCategory.values().associateWith { mutableMapOf() }
+    val properties: Map<PropertyCategory, MutableMap<String, Property<*>>> = _properties
 
-    val theme: Property<Theme> by persistentProperty(
-        description = "UI Theme",
-        serializer = ThemeSerializer,
-        default = defaultLight,
+    val theme: Property<Theme> = persistentProperty(
+        category = PropertyCategory.UI,
+        name = "Theme",
+        description = "UI color scheme.",
+        default = themes.getValue(if (SystemInfo.isMacOS) FlatMacLightLaf.NAME else FlatLightLaf.NAME),
+        serializer = Theme.ThemeSerializer,
+        editor = {
+            ThemeSelectionDropdown().apply {
+                addActionListener {
+                    currentValue = selectedItem
+                }
+            }
+        },
     )
-    val showFullLoggerNames by persistentProperty(
-        description = "Show full logger names by default",
-        serializer = Boolean.serializer(),
-        default = false,
-    )
-    val uiScaleFactor by persistentProperty(
-        description = "UI Scale Factor",
-        serializer = Double.serializer(),
+
+    val uiScaleFactor: Property<Double> = persistentProperty(
+        category = PropertyCategory.UI,
+        name = "UI Scale Factor",
+        description = "Proportion to scale the UI. Requires restart.",
         default = 1.0,
+        editor = {
+            JSpinner(SpinnerNumberModel(currentValue, 1.0, 2.0, 0.1)).apply {
+                editor = JSpinner.NumberEditor(this, "0%")
+                addChangeListener {
+                    currentValue = value as Double
+                }
+            }
+        },
+    )
+
+    val showFullLoggerNames = persistentProperty(
+        category = PropertyCategory.General,
+        name = "Logger Names",
+        description = null,
+        default = false,
+        editor = {
+            JCheckBox("Show full logger names by default on newly created tool tabs").apply {
+                isSelected = currentValue
+                addItemListener { e ->
+                    currentValue = e.stateChange == ItemEvent.SELECTED
+                }
+            }
+        },
     )
 
     init {
-        theme.addListener { newValue ->
+        theme.addChangeListener { newValue ->
             newValue.apply(true)
         }
     }
 
-    private fun <T : Any> persistentProperty(
-        description: String,
-        serializer: KSerializer<T>,
+    enum class PropertyCategory {
+        General,
+        UI,
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private inline fun <reified T : Any> persistentProperty(
+        category: PropertyCategory,
+        name: String,
+        description: String?,
         default: T,
-    ): ReadOnlyProperty<Kindling, Property<T>> = ReadOnlyProperty { thisRef, property ->
-        @Suppress("UNCHECKED_CAST")
-        thisRef.properties.getOrPut(property) {
-            Property(
-                initial = thisRef.preferences[property.name]?.let { Json.decodeFromJsonElement(serializer, it) }
-                    ?: default,
-                description = description,
-                setter = { value ->
-                    val newValue = Json.encodeToJsonElement(serializer, value)
-                    thisRef.preferences[property.name] = newValue
-                    @OptIn(ExperimentalSerializationApi::class)
-                    preferencesPath.outputStream().use {
-                        Json.encodeToStream<MutableMap<String, JsonElement>>(thisRef.preferences, it)
-                    }
-                },
-            )
-        } as Property<T>
-    }
-
-    class Theme(
-        val name: String,
-        val isDark: Boolean,
-        val lookAndFeelClassname: String,
-        private val rSyntaxThemeName: String,
-    ) {
-        private val rSyntaxTheme: RSyntaxTheme by lazy {
-            RSyntaxTheme::class.java.getResourceAsStream("themes/$rSyntaxThemeName").use(org.fife.ui.rsyntaxtextarea.Theme::load)
+        serializer: KSerializer<T> = serializer<T>(),
+        noinline editor: Property<T>.() -> JComponent,
+    ): Property<T> = properties.getValue(category).getOrPut(name) {
+        object : Property<T>(
+            name = name,
+            description = description,
+            initial = preferences[name]?.let { Json.decodeFromJsonElement(serializer, it) }
+                ?: default,
+            setter = { value ->
+                val newValue = Json.encodeToJsonElement(serializer, value)
+                preferences[name] = newValue
+                @OptIn(ExperimentalSerializationApi::class)
+                preferencesPath.outputStream().use {
+                    Json.encodeToStream<MutableMap<String, JsonElement>>(preferences, it)
+                }
+            },
+        ) {
+            override fun createEditor(): JComponent = editor.invoke(this)
         }
-
-        fun apply(textArea: RSyntaxTextArea) {
-            rSyntaxTheme.apply(textArea)
-        }
-
-        fun apply(chart: JFreeChart) {
-            chart.xyPlot.apply {
-                backgroundPaint = UIManager.getColor("Panel.background")
-                domainAxis.tickLabelPaint = UIManager.getColor("ColorChooser.foreground")
-                rangeAxis.tickLabelPaint = UIManager.getColor("ColorChooser.foreground")
-            }
-            chart.backgroundPaint = UIManager.getColor("Panel.background")
-        }
-    }
+    } as Property<T>
 
     private fun Theme.apply(animate: Boolean) {
         try {
@@ -172,20 +185,15 @@ object Kindling {
     }
 }
 
-private object ThemeSerializer : KSerializer<Kindling.Theme> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Kindling.Theme", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Kindling.Theme) = encoder.encodeString(value.name)
-    override fun deserialize(decoder: Decoder): Kindling.Theme = Kindling.themes.getValue(decoder.decodeString())
-}
-
-class Property<T : Any>(
-    val description: String,
+abstract class Property<T : Any>(
+    val name: String,
+    val description: String?,
     initial: T,
     private val setter: (T) -> Unit,
 ) {
     var currentValue: T = initial
         set(value) {
+            field = value
             setter(value)
             for (listener in listeners) {
                 listener(value)
@@ -194,7 +202,33 @@ class Property<T : Any>(
 
     private val listeners = mutableListOf<(T) -> Unit>()
 
-    fun addListener(listener: (T) -> Unit) {
+    fun addChangeListener(listener: (T) -> Unit) {
         listeners.add(listener)
     }
+
+    abstract fun createEditor(): JComponent
+}
+
+private val themeComparator = compareBy<Theme> { it.isDark } then compareBy { it.name }
+
+class ThemeSelectionDropdown : JComboBox<Theme>(Kindling.themes.values.sortedWith(themeComparator).toTypedArray()) {
+    init {
+        selectedItem = Kindling.theme.currentValue
+
+        configureCellRenderer { _, value, _, _, _ ->
+            text = value?.name
+            val fg = UIManager.getColor("ComboBox.foreground")
+            val bg = UIManager.getColor("ComboBox.background")
+
+            if (Kindling.theme.currentValue.isDark != value?.isDark) {
+                foreground = bg
+                background = fg
+            } else {
+                foreground = fg
+                background = bg
+            }
+        }
+    }
+
+    override fun getSelectedItem(): Theme = super.getSelectedItem() as Theme
 }

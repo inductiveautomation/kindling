@@ -55,7 +55,7 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
             fileSelectionMode = JFileChooser.FILES_ONLY
             fileFilter = FileNameExtensionFilter("ZIP Files", "zip")
 
-            Kindling.theme.addListener {
+            Kindling.theme.addChangeListener {
                 updateUI()
             }
         }
