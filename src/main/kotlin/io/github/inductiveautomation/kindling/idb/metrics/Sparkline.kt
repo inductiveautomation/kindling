@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.idb.metrics
 
-import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.DATE_FORMAT
 import org.jfree.chart.ChartFactory
 import org.jfree.chart.JFreeChart
@@ -45,9 +46,9 @@ fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart {
         padding = RectangleInsets(10.0, 10.0, 10.0, 10.0)
         isBorderVisible = false
 
-        Kindling.theme.currentValue.apply(this)
-        Kindling.theme.addChangeListener { theme ->
-            theme.apply(this)
+        theme = Theme.currentValue
+        Theme.addChangeListener { newTheme ->
+            theme = newTheme
         }
     }
 }

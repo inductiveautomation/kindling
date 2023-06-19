@@ -1,7 +1,8 @@
 package io.github.inductiveautomation.kindling.zip.views
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -25,7 +26,7 @@ class TextFileView(override val provider: FileSystemProvider, override val path:
         isEditable = false
         syntaxEditingStyle = KNOWN_EXTENSIONS[path.extension] ?: SYNTAX_STYLE_NONE
 
-        Kindling.theme.currentValue.apply(this)
+        theme = Theme.currentValue
     }
 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-file.svg").derive(16, 16)
@@ -44,8 +45,8 @@ class TextFileView(override val provider: FileSystemProvider, override val path:
             text
         }
 
-        Kindling.theme.addChangeListener { theme ->
-            theme.apply(textArea)
+        Theme.addChangeListener { newTheme ->
+            textArea.theme = newTheme
         }
 
         add(RTextScrollPane(textArea), "push, grow")

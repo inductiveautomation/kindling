@@ -1,5 +1,7 @@
 package io.github.inductiveautomation.kindling.core
 
+import io.github.inductiveautomation.kindling.core.Kindling.General.HomeLocation
+import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileExtensionFilter
 import io.github.inductiveautomation.kindling.utils.FloatableComponent
@@ -51,12 +53,12 @@ abstract class ToolPanel(
         }
 
     companion object {
-        val exportFileChooser = JFileChooser(Kindling.homeLocation).apply {
+        val exportFileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {
             isMultiSelectionEnabled = false
             isAcceptAllFileFilterUsed = false
             fileView = CustomIconView()
 
-            Kindling.theme.addChangeListener {
+            Theme.addChangeListener {
                 updateUI()
             }
         }

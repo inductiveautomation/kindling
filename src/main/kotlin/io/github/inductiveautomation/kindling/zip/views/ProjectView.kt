@@ -1,7 +1,8 @@
 package io.github.inductiveautomation.kindling.zip.views
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.General.HomeLocation
+import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
@@ -23,7 +24,7 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
 
     init {
         exportButton.addActionListener {
-            exportZipFileChooser.selectedFile = Kindling.homeLocation.resolve("${path.name}.zip")
+            exportZipFileChooser.selectedFile = HomeLocation.currentValue.resolve("${path.name}.zip").toFile()
             if (exportZipFileChooser.showSaveDialog(this@ProjectView) == JFileChooser.APPROVE_OPTION) {
                 val exportLocation = exportZipFileChooser.selectedFile.toPath()
 
@@ -49,13 +50,13 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-box.svg").derive(16, 16)
 
     companion object {
-        val exportZipFileChooser = JFileChooser(Kindling.homeLocation).apply {
+        val exportZipFileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {
             isMultiSelectionEnabled = false
             isAcceptAllFileFilterUsed = false
             fileSelectionMode = JFileChooser.FILES_ONLY
             fileFilter = FileNameExtensionFilter("ZIP Files", "zip")
 
-            Kindling.theme.addChangeListener {
+            Theme.addChangeListener {
                 updateUI()
             }
         }

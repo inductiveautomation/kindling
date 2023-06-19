@@ -3,7 +3,7 @@ package io.github.inductiveautomation.kindling.log
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.JideButton
 import com.jidesoft.swing.JidePopupMenu
-import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.General.ShowFullLoggerNames
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import java.awt.event.MouseAdapter
@@ -22,7 +22,7 @@ class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
 
     val search = JXSearchField("Search")
 
-    var isShowFullLoggerName: Boolean by Delegates.observable(Kindling.showFullLoggerNames.currentValue) { property, oldValue, newValue ->
+    var isShowFullLoggerName: Boolean by Delegates.observable(ShowFullLoggerNames.currentValue) { property, oldValue, newValue ->
         firePropertyChange(property.name, oldValue, newValue)
     }
 
