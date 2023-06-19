@@ -48,9 +48,13 @@ sealed class PreferenceCategory(
                 }.getOrNull() ?: default,
                 setter = { value ->
                     val newValue = preferencesJson.encodeToJsonElement(serializer, value)
+                    // add it to the map in memory
                     persistentPreferences[property.name.lowercase()] = newValue
-                    @OptIn(ExperimentalSerializationApi::class) preferencesPath.outputStream().use {
-                        preferencesJson.encodeToStream<MutableMap<String, JsonElement>>(persistentPreferences, it)
+
+                    // and write it out to disk
+                    preferencesPath.outputStream().use { outputStream ->
+                        @OptIn(ExperimentalSerializationApi::class)
+                        preferencesJson.encodeToStream<MutableMap<String, JsonElement>>(persistentPreferences, outputStream)
                     }
                 },
             ) {
@@ -72,7 +76,10 @@ sealed class PreferenceCategory(
         }
 
         protected val persistentPreferences: MutableMap<String, JsonElement> = try {
-            @OptIn(ExperimentalSerializationApi::class) preferencesPath.inputStream().use(preferencesJson::decodeFromStream)
+            preferencesPath.inputStream().use { inputStream ->
+                @OptIn(ExperimentalSerializationApi::class)
+                preferencesJson.decodeFromStream(inputStream)
+            }
         } catch (e: Exception) { // Fallback to default session.
             mutableMapOf()
         }

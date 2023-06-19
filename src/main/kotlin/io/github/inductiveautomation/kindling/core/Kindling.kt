@@ -29,16 +29,17 @@ object Kindling {
                 JXTextField("The fully qualified location to open by default").apply {
                     text = currentValue.serializedForm
 
-                    document.addDocumentListener(object : DocumentListener {
-                        fun onChange() {
-                            currentValue = PathSerializer.fromString(text)
-                        }
+                    document.addDocumentListener(
+                        object : DocumentListener {
+                            fun onChange() {
+                                currentValue = PathSerializer.fromString(text)
+                            }
 
-                        override fun insertUpdate(e: DocumentEvent?) = onChange()
-                        override fun removeUpdate(e: DocumentEvent?) = onChange()
-                        override fun changedUpdate(e: DocumentEvent?) = onChange()
-
-                    })
+                            override fun insertUpdate(e: DocumentEvent?) = onChange()
+                            override fun removeUpdate(e: DocumentEvent?) = onChange()
+                            override fun changedUpdate(e: DocumentEvent?) = onChange()
+                        },
+                    )
                 }
             },
         )
