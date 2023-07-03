@@ -103,8 +103,16 @@ object Kindling {
                 },
             )
 
+            val UseHyperlinks: Preference<Boolean> = preference(
+                name = "Hyperlinks",
+                default = true,
+                editor = {
+                    PreferenceCheckbox("Enable hyperlinks in stacktraces")
+                },
+            )
+
             override val displayName: String = "General"
-            override val preferences: List<Preference<*>> = listOf(HomeLocation, DefaultTool, ShowFullLoggerNames)
+            override val preferences: List<Preference<*>> = listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
         }
 
         object UI : PreferenceCategory {
@@ -150,8 +158,27 @@ object Kindling {
                 },
             )
 
+            val HyperlinkStrategy: Preference<LinkHandlingStrategy> = preference(
+                name = "Hyperlink Strategy",
+                default = LinkHandlingStrategy.OpenInBrowser,
+                serializer = LinkHandlingStrategy.serializer(),
+                editor = {
+                    JComboBox(LinkHandlingStrategy.values()).apply {
+                        selectedItem = currentValue
+
+                        configureCellRenderer { _, value, _, _, _ ->
+                            text = value?.description
+                        }
+
+                        addActionListener {
+                            currentValue = selectedItem as LinkHandlingStrategy
+                        }
+                    }
+                },
+            )
+
             override val displayName: String = "Advanced"
-            override val preferences: List<Preference<*>> = listOf(Debug)
+            override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)
         }
 
         private val preferencesPath: Path = Path(System.getProperty("user.home"), ".kindling").also {
@@ -202,7 +229,23 @@ object Kindling {
         ) {
             preferencesPath.outputStream().use { outputStream ->
                 @OptIn(ExperimentalSerializationApi::class)
-                preferencesJson.encodeToStream(internalState, outputStream)
+                preferencesJson.encodeToStream(
+                    // (deeply) sort keys
+                    buildMap {
+                        for (category in internalState.keys.sorted()) {
+                            put(
+                                category,
+                                buildMap {
+                                    val categoryMap = internalState.getValue(category)
+                                    for (preference in categoryMap.keys.sorted()) {
+                                        put(preference, categoryMap.getValue(preference))
+                                    }
+                                },
+                            )
+                        }
+                    },
+                    outputStream,
+                )
             }
         }
     }

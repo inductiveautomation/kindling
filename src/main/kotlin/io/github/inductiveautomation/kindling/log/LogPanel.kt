@@ -1,15 +1,22 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.ui.FlatScrollBarUI
+import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
+import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
 import io.github.inductiveautomation.kindling.log.LogViewer.ShowDensity
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.MajorVersion
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.getValue
+import io.github.inductiveautomation.kindling.utils.toBodyLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,11 +35,13 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
 import java.time.temporal.TemporalUnit
 import javax.swing.Icon
+import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollBar
 import javax.swing.JSplitPane
+import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import javax.swing.SwingConstants
 import javax.swing.UIManager
@@ -133,30 +142,9 @@ class LogPanel(
             "push, grow",
         )
 
-        table.selectionModel.apply {
-            addListSelectionListener { selectionEvent ->
-                if (!selectionEvent.valueIsAdjusting) {
-                    details.events = selectedIndices
-                        .filter { isSelectedIndex(it) }
-                        .map { table.convertRowIndexToModel(it) }
-                        .map { row -> table.model[row] }
-                        .map { event ->
-                            when (event) {
-                                is SystemLogsEvent -> DetailEvent(
-                                    title = "${dateFormatter.format(event.timestamp)} ${event.thread}",
-                                    message = event.message,
-                                    body = event.stacktrace,
-                                    details = event.mdc,
-                                )
-
-                                is WrapperLogEvent -> DetailEvent(
-                                    title = dateFormatter.format(event.timestamp),
-                                    message = event.message,
-                                    body = event.stacktrace,
-                                )
-                            }
-                        }
-                }
+        table.selectionModel.addListSelectionListener { selectionEvent ->
+            if (!selectionEvent.valueIsAdjusting) {
+                table.selectionModel.updateDetails()
             }
         }
 
@@ -172,6 +160,10 @@ class LogPanel(
 
         header.search.addActionListener { updateData() }
 
+        header.version.addActionListener {
+            table.selectionModel.updateDetails()
+        }
+
         SelectedTimeZone.addChangeListener { zoneId ->
             dateFormatter = dateFormatter.withZone(zoneId)
             table.model.fireTableDataChanged()
@@ -181,6 +173,46 @@ class LogPanel(
             table.model.fireTableDataChanged()
             sidebar.list.isShowFullLoggerName = newValue
         }
+
+        HyperlinkStrategy.addChangeListener {
+            // if the link strategy changes, we need to rebuild all the hyperlinks
+            table.selectionModel.updateDetails()
+        }
+    }
+
+    private fun ListSelectionModel.updateDetails() {
+        details.events = selectedIndices
+            .filter { isSelectedIndex(it) }
+            .map { table.convertRowIndexToModel(it) }
+            .map { row -> table.model[row] }
+            .map { event ->
+                when (event) {
+                    is SystemLogsEvent -> DetailEvent(
+                        title = "${dateFormatter.format(event.timestamp)} ${event.thread}",
+                        message = event.message,
+                        body = event.stacktrace.map { element ->
+                            if (UseHyperlinks.currentValue) {
+                                element.toBodyLine((header.version.selectedItem as MajorVersion).version + ".0")
+                            } else {
+                                BodyLine(element)
+                            }
+                        },
+                        details = event.mdc,
+                    )
+
+                    is WrapperLogEvent -> DetailEvent(
+                        title = dateFormatter.format(event.timestamp),
+                        message = event.message,
+                        body = event.stacktrace.map { element ->
+                            if (UseHyperlinks.currentValue) {
+                                element.toBodyLine((header.version.selectedItem as MajorVersion).version + ".0")
+                            } else {
+                                BodyLine(element)
+                            }
+                        },
+                    )
+                }
+            }
     }
 
     inner class GroupingScrollBar : JScrollBar() {
@@ -249,13 +281,34 @@ class LogPanel(
 
     override val icon: Icon? = null
 
-    class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
+    class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
         private val events = JLabel("$totalRows (of $totalRows) events")
 
         val search = JXSearchField("Search")
 
+        val version: JComboBox<MajorVersion> = JComboBox(MajorVersion.values()).apply {
+            selectedItem = MajorVersion.EightOne
+            configureCellRenderer { _, value, _, _, _ ->
+                text = "${value?.version}.*"
+            }
+        }
+        private val versionLabel = JLabel("Version")
+
+        private fun updateVersionVisibility() {
+            val isVisible = UseHyperlinks.currentValue && HyperlinkStrategy.currentValue == LinkHandlingStrategy.OpenInBrowser
+            version.isVisible = isVisible
+            versionLabel.isVisible = isVisible
+        }
+
         init {
             add(events, "pushx")
+
+            add(versionLabel)
+            add(version)
+            updateVersionVisibility()
+            UseHyperlinks.addChangeListener { updateVersionVisibility() }
+            HyperlinkStrategy.addChangeListener { updateVersionVisibility() }
+
             add(search, "width 300, gap unrelated")
         }
 

@@ -18,7 +18,6 @@ import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byCou
 import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byCountDesc
 import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byNameAsc
 import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byNameDesc
-import io.github.inductiveautomation.kindling.thread.model.Stacktrace
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadDump
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
@@ -32,8 +31,8 @@ import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.escapeHtml
-import io.github.inductiveautomation.kindling.utils.getValue
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
+import io.github.inductiveautomation.kindling.utils.toBodyLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -451,27 +450,6 @@ class MultiThreadView(
             return idsToLifespans.map { it.value.toList() }
         }
 
-        private val classnameRegex = """(.*/)?(?<path>[^\s\d$]*)[.$].*\(.*\)""".toRegex()
-
-        fun Stacktrace.linkify(version: String): List<BodyLine> {
-            val (_, classmap) = classMapsByVersion.entries.find { (classMapVersion, _) ->
-                classMapVersion in version
-            } ?: return map(Detail::BodyLine)
-
-            return map { line ->
-                val escapedLine = line.escapeHtml()
-                val matchResult = classnameRegex.find(line)
-
-                if (matchResult != null) {
-                    val path by matchResult.groups
-                    val url = classmap[path.value] as String?
-                    BodyLine(escapedLine, url)
-                } else {
-                    BodyLine(escapedLine)
-                }
-            }
-        }
-
         fun Thread.toDetail(version: String): Detail = Detail(
             title = name,
             details = mapOf(
@@ -500,7 +478,7 @@ class MultiThreadView(
 
                 if (stacktrace.isNotEmpty()) {
                     add("stacktrace:")
-                    addAll(stacktrace.linkify(version))
+                    addAll(stacktrace.map { it.toBodyLine(version) })
                 }
             },
         )
@@ -541,14 +519,6 @@ object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
-    val UseHyperlinks: Preference<Boolean> = preference(
-        name = "Hyperlinks",
-        default = true,
-        editor = {
-            PreferenceCheckbox("Enable hyperlinks in stacktraces")
-        },
-    )
-
     override val displayName: String = "Thread View"
-    override val preferences = listOf(ShowNullThreads, ShowEmptyValues, UseHyperlinks)
+    override val preferences = listOf(ShowNullThreads, ShowEmptyValues)
 }

@@ -5,11 +5,11 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatLabel
 import com.formdev.flatlaf.extras.components.FlatTextPane
 import io.github.inductiveautomation.kindling.core.DetailsPane
-import io.github.inductiveautomation.kindling.thread.MultiThreadView.Companion.linkify
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
 import io.github.inductiveautomation.kindling.thread.MultiThreadView.Companion.toDetail
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowEmptyValues
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowNullThreads
-import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.UseHyperlinks
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -19,6 +19,7 @@ import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.tag
+import io.github.inductiveautomation.kindling.utils.toBodyLine
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTaskPane
 import org.jdesktop.swingx.JXTaskPaneContainer
@@ -215,8 +216,7 @@ class ThreadComparisonPane(
         private val scrollingTextPane = ScrollingTextPane().apply {
             addHyperlinkListener { event ->
                 if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                    val desktop = Desktop.getDesktop()
-                    desktop.browse(event.url.toURI())
+                    HyperlinkStrategy.currentValue.handleEvent(event)
                 }
             }
         }
@@ -334,19 +334,23 @@ class ThreadComparisonPane(
                 if (isVisible) {
                     itemCount = thread?.stacktrace?.size ?: 0
                     text = thread?.stacktrace
-                        ?.let {
-                            if (UseHyperlinks.currentValue) {
-                                it.linkify(version).map { (text, link) ->
-                                    """<a href="$link">$text</a>"""
-                                }
-                            } else {
-                                it
-                            }
-                        }?.joinToString(
+                        ?.joinToString(
                             separator = "\n",
                             prefix = "<html><pre>",
                             postfix = "</pre></html>",
-                        )
+                        ) { stackLine ->
+                            if (UseHyperlinks.currentValue) {
+                                stackLine.toBodyLine(version).let { (text, link) ->
+                                    if (link != null) {
+                                        """<a href="$link">$text</a>"""
+                                    } else {
+                                        text
+                                    }
+                                }
+                            } else {
+                                stackLine
+                            }
+                        }
                     isSpecial = highlightStacktrace
                 }
             }

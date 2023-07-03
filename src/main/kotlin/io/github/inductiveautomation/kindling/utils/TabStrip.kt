@@ -107,7 +107,7 @@ class TabStrip : FlatTabbedPane() {
         icon: Icon? = component.icon,
         select: Boolean = true,
     ) where T : Container, T : FloatableComponent {
-        addTab(tabName, icon, component, tabTooltip)
+        addTab(tabName.truncate(30), icon, component, tabTooltip)
         if (select) {
             selectedIndex = indices.last
         }
@@ -120,7 +120,7 @@ class TabStrip : FlatTabbedPane() {
         component: () -> T,
     ) where T : Container, T : FloatableComponent {
         addTab(
-            tabName,
+            tabName.truncate(30),
             icon,
             LazyTab(component),
             tabTooltip,

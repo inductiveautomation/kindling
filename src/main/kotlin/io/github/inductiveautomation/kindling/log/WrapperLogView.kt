@@ -93,7 +93,7 @@ object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
                     currentValue = ZoneId.of(selectedItem as String)
                 }
             }
-        }
+        },
     )
 
     val ShowDensity = preference(
@@ -101,7 +101,7 @@ object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         default = true,
         editor = {
             PreferenceCheckbox("Show 'minimap' of log events in scrollbar")
-        }
+        },
     )
 
     override val displayName: String = "Log View"

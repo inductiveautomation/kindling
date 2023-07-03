@@ -35,6 +35,7 @@ import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.desktop.OpenFilesHandler
 import java.awt.desktop.QuitStrategy
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -44,6 +45,7 @@ import javax.swing.JFrame
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JPanel
+import javax.swing.KeyStroke
 import javax.swing.UIManager
 
 class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
@@ -61,6 +63,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
 
     private val openAction = Action(
         name = "Open...",
+        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx)
     ) {
         fileChooser.chooseFiles(this)?.let { selectedFiles ->
             val selectedTool: Tool? = Tool.byFilter[fileChooser.fileFilter]

@@ -137,7 +137,7 @@ fun String.escapeHtml(): String {
 fun debounce(
     waitTime: Duration = 300.milliseconds,
     coroutineScope: CoroutineScope,
-    destinationFunction: () -> Unit
+    destinationFunction: () -> Unit,
 ): () -> Unit {
     var debounceJob: Job? = null
     return {

@@ -1,10 +1,9 @@
 package io.github.inductiveautomation.kindling.thread.model
 
+import io.github.inductiveautomation.kindling.utils.StackTrace
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.lang.Thread.State
-
-typealias Stacktrace = List<String>
 
 @Serializable
 data class Thread(
@@ -21,7 +20,7 @@ data class Thread(
     val lockedSynchronizers: List<String> = emptyList(),
     @SerialName("waitingFor")
     val blocker: Blocker? = null,
-    val stacktrace: Stacktrace = emptyList(),
+    val stacktrace: StackTrace = emptyList(),
 ) {
     var marked: Boolean = false
 

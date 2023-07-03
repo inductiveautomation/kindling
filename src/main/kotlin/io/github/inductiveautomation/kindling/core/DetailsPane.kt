@@ -2,13 +2,13 @@ package io.github.inductiveautomation.kindling.core
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTextPane
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.internal.DetailsIcon
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.escapeHtml
 import net.miginfocom.swing.MigLayout
 import java.awt.Component
-import java.awt.Desktop
 import java.awt.EventQueue
 import java.awt.Rectangle
 import java.awt.Toolkit
@@ -38,10 +38,10 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
     private val textPane = FlatTextPane().apply {
         isEditable = false
         editorKit = DetailsEditorKit()
+
         addHyperlinkListener { event ->
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                val desktop = Desktop.getDesktop()
-                desktop.browse(event.url.toURI())
+                HyperlinkStrategy.currentValue.handleEvent(event)
             }
         }
     }
