@@ -4,11 +4,12 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatLabel
 import com.formdev.flatlaf.extras.components.FlatTextPane
-import com.jidesoft.swing.JideButton
-import com.jidesoft.swing.JidePopupMenu
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.thread.MultiThreadView.Companion.linkify
 import io.github.inductiveautomation.kindling.thread.MultiThreadView.Companion.toDetail
+import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowEmptyValues
+import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowNullThreads
+import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.UseHyperlinks
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -22,12 +23,8 @@ import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTaskPane
 import org.jdesktop.swingx.JXTaskPaneContainer
 import java.awt.Color
-import java.awt.Desktop
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import java.text.DecimalFormat
 import java.util.EventListener
-import javax.swing.JCheckBoxMenuItem
 import javax.swing.JPanel
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
@@ -59,19 +56,19 @@ class ThreadComparisonPane(
     private val header = HeaderPanel()
 
     init {
-        header.addPropertyChangeListener("showNullThreads") { event ->
+        ShowNullThreads.addChangeListener {
             for (container in threadContainers) {
-                container.isShowNulls = event.newValue as Boolean
+                container.updateThreadInfo()
             }
         }
-        header.addPropertyChangeListener("showEmptyValues") { event ->
+        ShowEmptyValues.addChangeListener {
             for (container in threadContainers) {
-                container.isShowEmptyValues = event.newValue as Boolean
+                container.updateThreadInfo()
             }
         }
-        header.addPropertyChangeListener("enableHyperlinks") { event ->
+        UseHyperlinks.addChangeListener {
             for (container in threadContainers) {
-                container.isHyperlinksEnabled = event.newValue as Boolean
+                container.updateThreadInfo()
             }
         }
 
@@ -93,7 +90,7 @@ class ThreadComparisonPane(
             header.setText(it)
         }
 
-        val moreThanOneThread = threads.filterNotNull().size > 1
+        val moreThanOneThread = threads.count { it != null } > 1
 
         val highestCpu = if (moreThanOneThread) {
             val cpuUsages = threads.map { it?.cpuUsage ?: 0.0 }
@@ -161,42 +158,8 @@ class ThreadComparisonPane(
             isEditable = false
         }
 
-        private val settingsMenu = JidePopupMenu().apply {
-            add(
-                JCheckBoxMenuItem("Show Null Threads", SHOW_NULL_THREADS_DEFAULT).apply {
-                    addActionListener {
-                        this@HeaderPanel.firePropertyChange("showNullThreads", !isSelected, isSelected)
-                    }
-                },
-            )
-            add(
-                JCheckBoxMenuItem("Show Empty Values", SHOW_EMPTY_VALUES_DEFAULT).apply {
-                    addActionListener {
-                        this@HeaderPanel.firePropertyChange("showEmptyValues", !isSelected, isSelected)
-                    }
-                },
-            )
-            add(
-                JCheckBoxMenuItem("Enable Hyperlinks", ENABLE_HYPERLINKS_DEFAULT).apply {
-                    addActionListener {
-                        this@HeaderPanel.firePropertyChange("enableHyperlinks", !isSelected, isSelected)
-                    }
-                },
-            )
-        }
-        private val settings = JideButton(FlatSVGIcon("icons/bx-cog.svg")).apply {
-            addMouseListener(
-                object : MouseAdapter() {
-                    override fun mousePressed(e: MouseEvent) {
-                        settingsMenu.show(this@apply, e.x, e.y)
-                    }
-                },
-            )
-        }
-
         init {
             add(nameLabel, "pushx, growx")
-            add(settings, "east")
         }
 
         fun setText(thread: Thread) {
@@ -273,24 +236,6 @@ class ThreadComparisonPane(
             updateThreadInfo()
         }
 
-        var isShowNulls: Boolean = SHOW_NULL_THREADS_DEFAULT
-            set(value) {
-                field = value
-                updateThreadInfo()
-            }
-
-        var isShowEmptyValues: Boolean = SHOW_EMPTY_VALUES_DEFAULT
-            set(value) {
-                field = value
-                updateThreadInfo()
-            }
-
-        var isHyperlinksEnabled: Boolean = ENABLE_HYPERLINKS_DEFAULT
-            set(value) {
-                field = value
-                updateThreadInfo()
-            }
-
         var highlightCpu: Boolean = false
         var highlightStacktrace: Boolean = true
 
@@ -329,8 +274,8 @@ class ThreadComparisonPane(
             add(stacktrace)
         }
 
-        private fun updateThreadInfo() {
-            isVisible = thread != null || isShowNulls
+        fun updateThreadInfo() {
+            isVisible = thread != null || ShowNullThreads.currentValue
 
             titleLabel.text = buildString {
                 tag("html") {
@@ -352,7 +297,7 @@ class ThreadComparisonPane(
             detailsButton.isVisible = thread != null
 
             monitors.apply {
-                isVisible = isShowEmptyValues || thread?.lockedMonitors?.isNotEmpty() == true
+                isVisible = ShowEmptyValues.currentValue || thread?.lockedMonitors?.isNotEmpty() == true
                 if (isVisible) {
                     itemCount = thread?.lockedMonitors?.size ?: 0
                     text = thread?.lockedMonitors
@@ -371,7 +316,7 @@ class ThreadComparisonPane(
             }
 
             synchronizers.apply {
-                isVisible = isShowEmptyValues || thread?.lockedSynchronizers?.isNotEmpty() == true
+                isVisible = ShowEmptyValues.currentValue || thread?.lockedSynchronizers?.isNotEmpty() == true
                 if (isVisible) {
                     itemCount = thread?.lockedSynchronizers?.size ?: 0
                     text = thread?.lockedSynchronizers
@@ -385,22 +330,23 @@ class ThreadComparisonPane(
             }
 
             stacktrace.apply {
-                isVisible = isShowEmptyValues || thread?.stacktrace?.isNotEmpty() == true
+                isVisible = ShowEmptyValues.currentValue || thread?.stacktrace?.isNotEmpty() == true
                 if (isVisible) {
                     itemCount = thread?.stacktrace?.size ?: 0
                     text = thread?.stacktrace
-                        ?.linkify(version)
-                        ?.joinToString(
+                        ?.let {
+                            if (UseHyperlinks.currentValue) {
+                                it.linkify(version).map { (text, link) ->
+                                    """<a href="$link">$text</a>"""
+                                }
+                            } else {
+                                it
+                            }
+                        }?.joinToString(
                             separator = "\n",
                             prefix = "<html><pre>",
                             postfix = "</pre></html>",
-                        ) { (text, link) ->
-                            if (link != null && isHyperlinksEnabled) {
-                                """<a href="$link">$text</a>"""
-                            } else {
-                                text
-                            }
-                        }
+                        )
                     isSpecial = highlightStacktrace
                 }
             }
@@ -412,10 +358,6 @@ class ThreadComparisonPane(
         private val detailIcon = FlatSVGIcon("icons/bx-link-external.svg").derive(12, 12)
 
         private val percent = DecimalFormat("0.000'%'")
-
-        private const val SHOW_NULL_THREADS_DEFAULT = false
-        private const val SHOW_EMPTY_VALUES_DEFAULT = false
-        private const val ENABLE_HYPERLINKS_DEFAULT = true
 
         private val threadHighlightColor: Color
             get() = UIManager.getColor("Component.warning.focusedBorderColor")

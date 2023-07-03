@@ -1,10 +1,12 @@
-package io.github.inductiveautomation.kindling.utils // ktlint-disable filename
+package io.github.inductiveautomation.kindling.utils
 
-import io.github.evanrupert.excelkt.workbook
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.sqlite.SQLiteDataSource
-import java.io.File
 import java.io.InputStream
 import java.math.BigDecimal
 import java.nio.file.Path
@@ -16,10 +18,11 @@ import java.sql.Time
 import java.sql.Timestamp
 import java.util.Properties
 import java.util.ServiceLoader
-import javax.swing.table.TableModel
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.reflect.KProperty
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 fun String.truncate(length: Int = 20): String {
     return asIterable().joinToString(separator = "", limit = length)
@@ -115,52 +118,6 @@ operator fun MatchGroupCollection.getValue(thisRef: Any?, property: KProperty<*>
     return requireNotNull(get(property.name))
 }
 
-val TableModel.rowIndices get() = 0 until rowCount
-val TableModel.columnIndices get() = 0 until columnCount
-
-fun TableModel.exportToCSV(file: File) {
-    file.printWriter().use { out ->
-        columnIndices.joinTo(buffer = out, separator = ",") { col ->
-            getColumnName(col)
-        }
-        out.println()
-        for (row in rowIndices) {
-            columnIndices.joinTo(buffer = out, separator = ",") { col ->
-                "\"${getValueAt(row, col)?.toString().orEmpty()}\""
-            }
-            out.println()
-        }
-    }
-}
-
-fun TableModel.exportToXLSX(file: File) = file.outputStream().use { fos ->
-    workbook {
-        sheet("Sheet 1") { // TODO: Some way to pipe in a more useful sheet name (or multiple sheets?)
-            row {
-                for (col in columnIndices) {
-                    cell(getColumnName(col))
-                }
-            }
-            for (row in rowIndices) {
-                row {
-                    for (col in columnIndices) {
-                        when (val value = getValueAt(row, col)) {
-                            is Double -> cell(
-                                value,
-                                createCellStyle {
-                                    dataFormat = xssfWorkbook.createDataFormat().getFormat("0.00")
-                                },
-                            )
-
-                            else -> cell(value ?: "")
-                        }
-                    }
-                }
-            }
-        }
-    }.xssfWorkbook.write(fos)
-}
-
 inline fun <reified S> loadService(): ServiceLoader<S> {
     return ServiceLoader.load(S::class.java)
 }
@@ -173,6 +130,21 @@ fun String.escapeHtml(): String {
                 '<' -> append("&lt;")
                 else -> append(char)
             }
+        }
+    }
+}
+
+fun debounce(
+    waitTime: Duration = 300.milliseconds,
+    coroutineScope: CoroutineScope,
+    destinationFunction: () -> Unit
+): () -> Unit {
+    var debounceJob: Job? = null
+    return {
+        debounceJob?.cancel()
+        debounceJob = coroutineScope.launch {
+            delay(waitTime)
+            destinationFunction()
         }
     }
 }

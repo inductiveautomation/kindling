@@ -1,7 +1,7 @@
 package io.github.inductiveautomation.kindling.zip.views
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json

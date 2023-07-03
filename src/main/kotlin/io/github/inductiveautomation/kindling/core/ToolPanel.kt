@@ -1,7 +1,7 @@
 package io.github.inductiveautomation.kindling.core
 
-import io.github.inductiveautomation.kindling.core.Kindling.General.HomeLocation
-import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileExtensionFilter
 import io.github.inductiveautomation.kindling.utils.FloatableComponent

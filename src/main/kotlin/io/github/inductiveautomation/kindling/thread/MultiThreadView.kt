@@ -7,6 +7,10 @@ import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.MultiTool
+import io.github.inductiveautomation.kindling.core.Preference
+import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
+import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
+import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.add
@@ -503,7 +507,7 @@ class MultiThreadView(
     }
 }
 
-object MultiThreadViewer : MultiTool, ClipboardTool {
+object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val title = "Thread Viewer"
     override val description = "Thread dump (.json or .txt) files"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
@@ -520,4 +524,31 @@ object MultiThreadViewer : MultiTool, ClipboardTool {
         }
         return open(tempFile)
     }
+
+    val ShowNullThreads: Preference<Boolean> = preference(
+        name = "Show Null Threads",
+        default = false,
+        editor = {
+            PreferenceCheckbox("Show columns for missing threads")
+        },
+    )
+
+    val ShowEmptyValues: Preference<Boolean> = preference(
+        name = "Show Empty Values",
+        default = false,
+        editor = {
+            PreferenceCheckbox("Show empty values (stacktrace, blockers) as collapsible sections per column")
+        },
+    )
+
+    val UseHyperlinks: Preference<Boolean> = preference(
+        name = "Hyperlinks",
+        default = true,
+        editor = {
+            PreferenceCheckbox("Enable hyperlinks in stacktraces")
+        },
+    )
+
+    override val displayName: String = "Thread View"
+    override val preferences = listOf(ShowNullThreads, ShowEmptyValues, UseHyperlinks)
 }

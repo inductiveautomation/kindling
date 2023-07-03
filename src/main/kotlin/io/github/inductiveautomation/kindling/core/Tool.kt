@@ -38,6 +38,10 @@ interface Tool {
             tools.associateBy(Tool::filter)
         }
 
+        val byTitle: Map<String, Tool> by lazy {
+            tools.associateBy(Tool::title)
+        }
+
         val byExtension by lazy {
             buildMap {
                 for (tool in tools) {

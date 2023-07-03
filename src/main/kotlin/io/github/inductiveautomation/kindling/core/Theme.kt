@@ -5,7 +5,7 @@ import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
-import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.themes
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea

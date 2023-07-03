@@ -2,7 +2,10 @@ package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.ui.FlatScrollBarUI
 import io.github.inductiveautomation.kindling.core.DetailsPane
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
+import io.github.inductiveautomation.kindling.log.LogViewer.ShowDensity
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
@@ -10,13 +13,13 @@ import io.github.inductiveautomation.kindling.utils.getValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.jdesktop.swingx.action.AbstractActionExt
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Rectangle
 import java.awt.RenderingHints
-import java.awt.event.ActionEvent
 import java.awt.geom.AffineTransform
 import java.time.Duration
 import java.time.Instant
@@ -26,12 +29,15 @@ import java.time.temporal.Temporal
 import java.time.temporal.TemporalUnit
 import javax.swing.Icon
 import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JPanel
 import javax.swing.JScrollBar
 import javax.swing.JSplitPane
 import javax.swing.SortOrder
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import kotlin.math.absoluteValue
+import kotlin.properties.Delegates
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
 class LogPanel(
@@ -43,7 +49,6 @@ class LogPanel(
         .withZone(ZoneId.systemDefault())
 
     private val densityDisplay = GroupingScrollBar()
-    private var showDensityDisplay: Boolean = true
 
     val header = Header(totalRows)
 
@@ -51,18 +56,6 @@ class LogPanel(
         val initialModel = createModel(rawData)
         ReifiedJXTable(initialModel, initialModel.columns).apply {
             setSortOrder("Timestamp", SortOrder.ASCENDING)
-            val densityDisplayAction = object : AbstractActionExt("Display Density") {
-                init {
-                    isSelected = showDensityDisplay
-                    isStateAction = true
-                }
-
-                override fun actionPerformed(e: ActionEvent) {
-                    showDensityDisplay = !showDensityDisplay
-                    densityDisplay.repaint()
-                }
-            }
-            actionMap.put("column.showLogDensity", densityDisplayAction)
         }
     }
 
@@ -79,15 +72,6 @@ class LogPanel(
                 .map { sidebar.list.model.getElementAt(it) }
                 .filterIsInstance<LoggerName>()
                 .mapTo(mutableSetOf()) { it.name }
-        }
-        add { event ->
-            when (event) {
-                is SystemLogsEvent -> {
-                    event.level >= header.minimumLevel
-                }
-
-                is WrapperLogEvent -> true
-            }
         }
         add { event ->
             val text = header.search.text
@@ -186,19 +170,16 @@ class LogPanel(
             }
         }
 
-        header.addPropertyChangeListener("minimumLevel") {
-            updateData()
-        }
         header.search.addActionListener { updateData() }
 
-        header.addPropertyChangeListener("selectedTimeZone") {
-            dateFormatter = dateFormatter.withZone(ZoneId.of(it.newValue as String))
+        SelectedTimeZone.addChangeListener { zoneId ->
+            dateFormatter = dateFormatter.withZone(zoneId)
             table.model.fireTableDataChanged()
         }
 
-        header.addPropertyChangeListener("isShowFullLoggerName") {
+        ShowFullLoggerNames.addChangeListener { newValue ->
             table.model.fireTableDataChanged()
-            sidebar.list.isShowFullLoggerName = it.newValue as Boolean
+            sidebar.list.isShowFullLoggerName = newValue
         }
     }
 
@@ -231,7 +212,7 @@ class LogPanel(
         private val customUI = object : FlatScrollBarUI() {
             override fun paintTrack(g: Graphics, c: JComponent, trackBounds: Rectangle) {
                 super.paintTrack(g, c, trackBounds)
-                if (showDensityDisplay) {
+                if (ShowDensity.currentValue) {
                     g as Graphics2D
                     g.color = UIManager.getColor("Actions.Red")
 
@@ -267,6 +248,21 @@ class LogPanel(
     }
 
     override val icon: Icon? = null
+
+    class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill")) {
+        private val events = JLabel("$totalRows (of $totalRows) events")
+
+        val search = JXSearchField("Search")
+
+        init {
+            add(events, "pushx")
+            add(search, "width 300, gap unrelated")
+        }
+
+        var displayedRows by Delegates.observable(totalRows) { _, _, newValue ->
+            events.text = "$newValue (of $totalRows) events"
+        }
+    }
 
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)

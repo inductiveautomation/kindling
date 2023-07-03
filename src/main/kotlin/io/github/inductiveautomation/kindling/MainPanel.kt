@@ -8,15 +8,16 @@ import com.formdev.flatlaf.extras.components.FlatTextArea
 import com.formdev.flatlaf.util.SystemInfo
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.CustomIconView
-import io.github.inductiveautomation.kindling.core.Kindling.Advanced.Debug
-import io.github.inductiveautomation.kindling.core.Kindling.General.HomeLocation
-import io.github.inductiveautomation.kindling.core.Kindling.UI.ScaleFactor
-import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultTool
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.ScaleFactor
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.core.preferencesFrame
+import io.github.inductiveautomation.kindling.core.preferencesEditor
 import io.github.inductiveautomation.kindling.internal.FileTransferHandler
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -51,7 +52,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
         fileView = CustomIconView()
 
         Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
-        fileFilter = Tool.tools.first().filter
+        fileFilter = DefaultTool.currentValue.filter
 
         Theme.addChangeListener {
             updateUI()
@@ -125,7 +126,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                     addMouseListener(
                         object : MouseAdapter() {
                             override fun mouseClicked(e: MouseEvent?) {
-                                preferencesFrame.isVisible = !preferencesFrame.isVisible
+                                preferencesEditor.isVisible = !preferencesEditor.isVisible
                             }
                         },
                     )
@@ -283,7 +284,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
             }
             if (isSupported(Desktop.Action.APP_PREFERENCES)) {
                 setPreferencesHandler {
-                    preferencesFrame.isVisible = true
+                    preferencesEditor.isVisible = true
                 }
             }
         }

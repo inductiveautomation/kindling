@@ -3,122 +3,92 @@ package io.github.inductiveautomation.kindling.core
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.StyledLabel
 import io.github.inductiveautomation.kindling.utils.jFrame
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.serializer
 import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXTaskPane
+import org.jdesktop.swingx.JXTaskPaneContainer
 import java.awt.BorderLayout
 import java.awt.EventQueue
 import java.awt.Font
-import javax.swing.BorderFactory
+import java.awt.event.ItemEvent
 import javax.swing.JButton
+import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.JPanel
-import kotlin.io.path.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.inputStream
-import kotlin.io.path.outputStream
-import kotlin.properties.ReadOnlyProperty
+import javax.swing.UIManager
+import javax.swing.border.MatteBorder
 
-sealed class PreferenceCategory(
-    protected val preferences: MutableMap<String, Preference<*>> = mutableMapOf(),
-) : Collection<Preference<*>> by preferences.values {
-    protected inline fun <reified T : Any> preference(
-        name: String? = null,
-        description: String? = null,
-        requiresRestart: Boolean = false,
-        default: T,
-        serializer: KSerializer<T> = serializer<T>(),
-        noinline editor: Preference<T>.() -> JComponent,
-    ): ReadOnlyProperty<PreferenceCategory, Preference<T>> = ReadOnlyProperty { _, property ->
-        @Suppress("UNCHECKED_CAST")
-        preferences.getOrPut(property.name) {
-            object : Preference<T>(
-                name = name ?: property.name,
-                description = description,
-                requiresRestart = requiresRestart,
-                initial = runCatching {
-                    persistentPreferences[property.name.lowercase()]?.let { preferencesJson.decodeFromJsonElement(serializer, it) }
-                }.getOrNull() ?: default,
-                setter = { value ->
-                    val newValue = preferencesJson.encodeToJsonElement(serializer, value)
-                    // add it to the map in memory
-                    persistentPreferences[property.name.lowercase()] = newValue
+interface PreferenceCategory {
+    val displayName: String
+    val key: String
+        get() = displayName.lowercase().filter(Char::isJavaIdentifierStart)
 
-                    // and write it out to disk
-                    preferencesPath.outputStream().use { outputStream ->
-                        @OptIn(ExperimentalSerializationApi::class)
-                        preferencesJson.encodeToStream<MutableMap<String, JsonElement>>(persistentPreferences, outputStream)
-                    }
-                },
-            ) {
-                override fun createEditor(): JComponent = editor.invoke(this)
-            }
-        } as Preference<T>
-    }
-
-    companion object {
-        private val cacheLocation = Path(System.getProperty("user.home"), ".kindling").also {
-            it.createDirectories()
-        }
-
-        protected val preferencesPath = cacheLocation / "session.json"
-
-        protected val preferencesJson = Json {
-            ignoreUnknownKeys = true
-            prettyPrint = true
-        }
-
-        protected val persistentPreferences: MutableMap<String, JsonElement> = try {
-            preferencesPath.inputStream().use { inputStream ->
-                @OptIn(ExperimentalSerializationApi::class)
-                preferencesJson.decodeFromStream(inputStream)
-            }
-        } catch (e: Exception) { // Fallback to default session.
-            mutableMapOf()
-        }
-    }
+    val preferences: List<Preference<*>>
 }
 
-abstract class Preference<T : Any>(
+class Preference<T : Any>(
+    val category: PreferenceCategory,
     val name: String,
-    val description: String?,
-    val requiresRestart: Boolean,
-    initial: T,
-    private val setter: (T) -> Unit,
+    val description: String? = null,
+    val requiresRestart: Boolean = false,
+    private val default: T,
+    val serializer: KSerializer<T>,
+    createEditor: Preference<T>.() -> JComponent,
 ) {
-    var currentValue: T = initial
+    val key: String = name.lowercase().filter(Char::isJavaIdentifierStart)
+
+    var currentValue
+        get() = Kindling.Preferences[category, this] ?: default
         set(value) {
-            field = value
-            setter(value)
+            Kindling.Preferences[category, this] = value
             for (listener in listeners) {
                 listener(value)
             }
         }
 
-    private val listeners = mutableListOf<(T) -> Unit>()
+    val listeners: MutableList<(newValue: T) -> Unit> = mutableListOf()
 
     fun addChangeListener(listener: (newValue: T) -> Unit) {
         listeners.add(listener)
     }
 
-    abstract fun createEditor(): JComponent
+    val editor: JComponent by lazy { createEditor(this) }
+
+    companion object {
+        @Suppress("FunctionName")
+        fun Preference<Boolean>.PreferenceCheckbox(description: String): JCheckBox {
+            return JCheckBox(description).apply {
+                isSelected = currentValue
+                addItemListener { e ->
+                    currentValue = e.stateChange == ItemEvent.SELECTED
+                }
+            }
+        }
+
+        inline fun <reified T : Any> PreferenceCategory.preference(
+            name: String,
+            description: String? = null,
+            requiresRestart: Boolean = false,
+            default: T,
+            serializer: KSerializer<T> = serializer(),
+            noinline editor: Preference<T>.() -> JComponent,
+        ): Preference<T> = Preference(
+            name = name,
+            category = this,
+            description = description,
+            requiresRestart = requiresRestart,
+            default = default,
+            serializer = serializer,
+            createEditor = editor,
+        )
+    }
 }
 
-val preferencesFrame by lazy {
-    jFrame("Preferences", 800, 600, initiallyVisible = false) {
+val preferencesEditor by lazy {
+    jFrame("Preferences", 600, 800, initiallyVisible = false) {
         defaultCloseOperation = JFrame.HIDE_ON_CLOSE
-
-        Kindling.UI.Theme.addChangeListener {
-            // sometimes changing the theme affects the sizing of components and leads to annoying scrollbars, so we'll just resize when that happens
-            pack()
-        }
 
         val closeButton = JButton("Close").apply {
             addActionListener {
@@ -132,11 +102,13 @@ val preferencesFrame by lazy {
         contentPane = JPanel(BorderLayout()).apply {
             add(
                 FlatScrollPane(
-                    JPanel(MigLayout("ins 10")).apply {
-                        for (category in Kindling.preferenceCategories) {
-                            val categoryPanel = JPanel(MigLayout("fill, gap 10")).apply {
-                                border = BorderFactory.createTitledBorder(category.toString())
-                                for (preference in category) {
+                    JXTaskPaneContainer().apply {
+                        for (category in Kindling.Preferences.categories) {
+                            val categoryPane = JXTaskPane(category.displayName).apply {
+                                isAnimated = false
+                                isCollapsed = category.displayName == "Advanced"
+
+                                for (preference in category.preferences) {
                                     add(
                                         StyledLabel {
                                             add(preference.name, Font.BOLD)
@@ -150,24 +122,28 @@ val preferencesFrame by lazy {
                                         },
                                         "grow, wrap, gapy 0",
                                     )
-                                    add(preference.createEditor(), "grow, wrap, gapy 0")
+                                    add(preference.editor, "grow, wrap, gapy 0")
                                 }
                             }
-                            add(categoryPanel, "grow, wrap")
+                            add(categoryPane)
                         }
                     },
                 ) {
                     border = null
+                    verticalScrollBar.apply {
+                        unitIncrement = 5
+                        blockIncrement = 15
+                    }
                 },
                 BorderLayout.CENTER,
             )
             add(
                 JPanel(MigLayout("fill, ins 10")).apply {
+                    border = MatteBorder(1, 0, 0, 0, UIManager.getColor("Component.borderColor"))
                     add(closeButton, "east, gap 10 10 10 10")
                 },
                 BorderLayout.SOUTH,
             )
         }
-        pack()
     }
 }

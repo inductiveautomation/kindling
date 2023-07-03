@@ -5,7 +5,8 @@ import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.jidesoft.swing.ListSearchable
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
-import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.evanrupert.excelkt.workbook
+import io.github.inductiveautomation.kindling.core.Kindling.frameIcon
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +22,6 @@ import org.jdesktop.swingx.sort.SortController
 import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
 import java.awt.Component
-import java.awt.Image
-import java.awt.Toolkit
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -353,8 +352,6 @@ inline fun <reified T : EventListener> EventListenerList.getAll(): Array<T> {
     return getListeners(T::class.java)
 }
 
-val frameIcon: Image = Toolkit.getDefaultToolkit().getImage(Kindling::class.java.getResource("/icons/kindling.png"))
-
 /**
  * Constructs and (optionally) immediately displays a JFrame of the given dimensions, centered on the screen.
  */
@@ -396,4 +393,50 @@ inline fun <reified T> JComboBox<T>.configureCellRenderer(
 
 inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel {
     return StyledLabelBuilder().apply(block).createLabel()
+}
+
+val TableModel.rowIndices get() = 0 until rowCount
+val TableModel.columnIndices get() = 0 until columnCount
+
+fun TableModel.exportToCSV(file: File) {
+    file.printWriter().use { out ->
+        columnIndices.joinTo(buffer = out, separator = ",") { col ->
+            getColumnName(col)
+        }
+        out.println()
+        for (row in rowIndices) {
+            columnIndices.joinTo(buffer = out, separator = ",") { col ->
+                "\"${getValueAt(row, col)?.toString().orEmpty()}\""
+            }
+            out.println()
+        }
+    }
+}
+
+fun TableModel.exportToXLSX(file: File) = file.outputStream().use { fos ->
+    workbook {
+        sheet("Sheet 1") { // TODO: Some way to pipe in a more useful sheet name (or multiple sheets?)
+            row {
+                for (col in columnIndices) {
+                    cell(getColumnName(col))
+                }
+            }
+            for (row in rowIndices) {
+                row {
+                    for (col in columnIndices) {
+                        when (val value = getValueAt(row, col)) {
+                            is Double -> cell(
+                                value,
+                                createCellStyle {
+                                    dataFormat = xssfWorkbook.createDataFormat().getFormat("0.00")
+                                },
+                            )
+
+                            else -> cell(value ?: "")
+                        }
+                    }
+                }
+            }
+        }
+    }.xssfWorkbook.write(fos)
 }

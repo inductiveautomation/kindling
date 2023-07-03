@@ -1,6 +1,6 @@
 package io.github.inductiveautomation.kindling.idb.metrics
 
-import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.DATE_FORMAT
 import org.jfree.chart.ChartFactory

@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.log // ktlint-disable filename
 
 import com.jidesoft.comparator.AlphanumComparator
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider
@@ -56,7 +57,7 @@ class SystemLogsColumns(panel: LogPanel) : ColumnList<SystemLogsEvent>() {
             minWidth = 50
 
             val valueExtractor: (String?) -> String? = {
-                if (panel.header.isShowFullLoggerName) {
+                if (ShowFullLoggerNames.currentValue) {
                     it
                 } else {
                     it?.substringAfterLast('.')
@@ -74,7 +75,12 @@ class SystemLogsColumns(panel: LogPanel) : ColumnList<SystemLogsEvent>() {
         value = SystemLogsEvent::logger,
     )
 
-    val Message by column { it.message }
+    val Message by column(
+        column = {
+            isSortable = false
+        },
+        value = { it.message },
+    )
 }
 
 @Suppress("unused", "PropertyName")
@@ -101,7 +107,7 @@ class WrapperLogColumns(panel: LogPanel) : ColumnList<WrapperLogEvent>() {
             minWidth = 50
 
             val valueExtractor: (String?) -> String? = {
-                if (panel.header.isShowFullLoggerName) {
+                if (ShowFullLoggerNames.currentValue) {
                     it
                 } else {
                     it?.substringAfterLast('.')
@@ -118,5 +124,10 @@ class WrapperLogColumns(panel: LogPanel) : ColumnList<WrapperLogEvent>() {
         },
         value = { it.logger },
     )
-    val Message by column { it.message }
+    val Message by column(
+        column = {
+            isSortable = false
+        },
+        value = { it.message },
+    )
 }

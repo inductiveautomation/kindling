@@ -1,8 +1,8 @@
 package io.github.inductiveautomation.kindling.zip.views
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.core.Kindling.General.HomeLocation
-import io.github.inductiveautomation.kindling.core.Kindling.UI.Theme
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
@@ -50,14 +50,16 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-box.svg").derive(16, 16)
 
     companion object {
-        val exportZipFileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {
-            isMultiSelectionEnabled = false
-            isAcceptAllFileFilterUsed = false
-            fileSelectionMode = JFileChooser.FILES_ONLY
-            fileFilter = FileNameExtensionFilter("ZIP Files", "zip")
+        val exportZipFileChooser by lazy {
+            JFileChooser(HomeLocation.currentValue.toFile()).apply {
+                isMultiSelectionEnabled = false
+                isAcceptAllFileFilterUsed = false
+                fileSelectionMode = JFileChooser.FILES_ONLY
+                fileFilter = FileNameExtensionFilter("ZIP Files", "zip")
 
-            Theme.addChangeListener {
-                updateUI()
+                Theme.addChangeListener {
+                    updateUI()
+                }
             }
         }
 
