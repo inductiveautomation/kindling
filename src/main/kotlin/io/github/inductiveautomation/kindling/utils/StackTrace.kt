@@ -21,7 +21,7 @@ fun StackElement.toBodyLine(version: String): BodyLine {
                 val file = matchResult.groups["file"]?.value
                 val line = matchResult.groups["line"]?.value?.toIntOrNull()
                 if (file != null && line != null) {
-                    BodyLine(escapedLine, "http://localhost/file?file=${file}&line=${line}")
+                    BodyLine(escapedLine, "http://localhost/file?file=$file&line=$line")
                 } else {
                     BodyLine(escapedLine)
                 }
@@ -35,6 +35,7 @@ fun StackElement.toBodyLine(version: String): BodyLine {
     } ?: BodyLine(this)
 }
 
+@Suppress("ktlint:trailing-comma-on-declaration-site")
 enum class MajorVersion(val version: String) {
     SevenNine("7.9"),
     EightZero("8.0"),

@@ -62,6 +62,7 @@ abstract class ToolPanel(
             }
         }
 
+        @Suppress("ktlint:trailing-comma-on-declaration-site")
         private enum class ExportFormat(
             description: String,
             val extension: String,

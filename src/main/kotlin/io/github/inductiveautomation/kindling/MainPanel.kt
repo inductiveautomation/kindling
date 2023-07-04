@@ -63,7 +63,7 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
 
     private val openAction = Action(
         name = "Open...",
-        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx)
+        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx),
     ) {
         fileChooser.chooseFiles(this)?.let { selectedFiles ->
             val selectedTool: Tool? = Tool.byFilter[fileChooser.fileFilter]

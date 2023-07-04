@@ -31,6 +31,7 @@ data class SystemLogsEvent(
     val stacktrace: StackTrace,
 ) : LogEvent
 
+@Suppress("ktlint:trailing-comma-on-declaration-site")
 enum class Level {
     TRACE,
     DEBUG,
