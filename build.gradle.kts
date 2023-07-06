@@ -33,7 +33,6 @@ dependencies {
     api(libs.serialization.json)
     api(libs.xerial.jdbc)
     api(libs.hsql)
-    api(libs.zip4j)
     api(libs.miglayout)
     api(libs.jide.common)
     api(libs.swingx)

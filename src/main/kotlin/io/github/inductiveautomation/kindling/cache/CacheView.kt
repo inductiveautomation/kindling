@@ -26,12 +26,12 @@ import io.github.inductiveautomation.kindling.utils.toList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.lingala.zip4j.ZipFile
 import org.hsqldb.jdbc.JDBCDataSource
 import org.intellij.lang.annotations.Language
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.Serializable
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.PreparedStatement
@@ -44,6 +44,7 @@ import javax.swing.table.DefaultTableModel
 import kotlin.io.path.CopyActionResult
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.copyToRecursively
+import kotlin.io.path.createDirectories
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
@@ -57,10 +58,26 @@ class CacheView(private val path: Path) : ToolPanel() {
     private val dbName = when (path.extension) {
         "zip" -> run {
             LOGGER.debug("Exploding to {}", tempDirectory)
-            ZipFile(path.toFile()).run {
-                extractAll(tempDirectory.toString())
-                fileHeaders.first { !it.isDirectory }.fileName.substringBeforeLast('.')
+            var dbName: String? = null
+            FileSystems.newFileSystem(path).use { zip ->
+                for (directory in zip.rootDirectories) {
+                    directory.copyToRecursively(
+                        target = tempDirectory,
+                        copyAction = { source: Path, target: Path ->
+                            target.parent?.createDirectories()
+                            if (source.extension in cacheFileExtensions) {
+                                source.copyToIgnoringExistingDirectory(target, false)
+                            }
+
+                            dbName = "${target.nameWithoutExtension}/${target.nameWithoutExtension}"
+
+                            CopyActionResult.CONTINUE
+                        },
+                        followLinks = false,
+                    )
+                }
             }
+            dbName ?: throw ToolOpeningException("Unable to find an HSQL DB inside zip file")
         }
 
         in CacheViewer.extensions -> run {
