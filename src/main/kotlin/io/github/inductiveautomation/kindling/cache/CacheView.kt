@@ -5,9 +5,11 @@ import com.formdev.flatlaf.extras.components.FlatPopupMenu
 import com.inductiveautomation.ignition.gateway.history.BasicHistoricalRecord
 import com.inductiveautomation.ignition.gateway.history.ScanclassHistorySet
 import com.jidesoft.swing.JideButton
+import io.github.inductiveautomation.kindling.cache.model.AbstractDataset
 import io.github.inductiveautomation.kindling.cache.model.AlarmJournalData
 import io.github.inductiveautomation.kindling.cache.model.AlarmJournalSFGroup
 import io.github.inductiveautomation.kindling.cache.model.AuditProfileData
+import io.github.inductiveautomation.kindling.cache.model.BasicDataset
 import io.github.inductiveautomation.kindling.cache.model.ScriptedSFData
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.DetailsPane
@@ -265,6 +267,8 @@ class CacheView(private val path: Path) : ToolPanel() {
         return AliasingObjectInputStream(inputStream()) {
             put("com.inductiveautomation.ignition.gateway.audit.AuditProfileData", AuditProfileData::class.java)
             put("com.inductiveautomation.ignition.gateway.script.ialabs.IALabsDatasourceFunctions\$QuerySFData", ScriptedSFData::class.java)
+            put("com.inductiveautomation.ignition.common.AbstractDataset", AbstractDataset::class.java)
+            put("com.inductiveautomation.ignition.common.BasicDataset", BasicDataset::class.java)
 //            put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFData", AlarmJournalData::class.java)
 //            put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFGroup", AlarmJournalSFGroup::class.java)
         }.readObject() as Serializable
