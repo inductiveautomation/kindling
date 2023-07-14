@@ -163,7 +163,7 @@ class LogPanel(
 
                     add(
                         JMenu("Mark/Unmark all with same...").apply {
-                            model.columns.markableColumns.forEach { column ->
+                            model.columns.filterableColumns.forEach { column ->
                                 when(column) {
                                     model.columns.Level -> {
                                         val condition = isMarked(LogEvent::level, selectedLogEvent.level!!.name)
@@ -419,7 +419,7 @@ class LogPanel(
     }
     private fun JTabbedPane.updateBackgroundAt(condition: Boolean, index: Int) {
         if(condition) {
-            setBackgroundAt(index, background.darker())
+            setBackgroundAt(index, UIManager.getColor("TabbedPane.focusColor"))
         } else {
             setBackgroundAt(index, background)
         }
@@ -447,6 +447,7 @@ class LogPanel(
                     resizeWeight = 0.6
                 },
             ).apply {
+                isOneTouchExpandable = true
                 resizeWeight = 0.1
             },
             "push, grow",
@@ -465,7 +466,7 @@ class LogPanel(
                                     title = "${dateFormatter.format(event.timestamp)} ${event.thread}",
                                     message = event.message,
                                     body = event.stacktrace,
-                                    details = event.mdc,
+                                    details = event.mdc.associate { it.key to it.value },
                                 )
 
                                 is WrapperLogEvent -> DetailEvent(

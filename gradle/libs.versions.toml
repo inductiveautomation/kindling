@@ -32,6 +32,7 @@ flatlaf-core = { group = "com.formdev", name = "flatlaf", version.ref = "flatlaf
 flatlaf-extras = { group = "com.formdev", name = "flatlaf-extras", version.ref = "flatlaf" }
 flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref = "flatlaf" }
 flatlaf-swingx = { group = "com.formdev", name = "flatlaf-swingx", version.ref = "flatlaf" }
+flatlaf-fonts-roboto = { group = "com.formdev", name = "flatlaf-fonts-roboto", version = "2.137"}
 svgSalamander = { group = "com.formdev", name = "svgSalamander", version = "1.1.4" }
 jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.12" }
 swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
@@ -61,6 +62,7 @@ flatlaf = [
     "flatlaf-extras",
     "flatlaf-jide",
     "flatlaf-swingx",
+    "flatlaf-fonts-roboto",
 ]
 kotest = [
     "kotest-junit",

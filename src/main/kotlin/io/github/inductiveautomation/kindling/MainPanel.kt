@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
 import com.formdev.flatlaf.extras.components.FlatTextArea
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.CustomIconView
 import io.github.inductiveautomation.kindling.core.Kindling
@@ -22,28 +23,58 @@ import net.miginfocom.swing.MigLayout
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.EventQueue
+import java.awt.Font
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.desktop.QuitStrategy
 import java.awt.event.ItemEvent
 import java.io.File
+import java.nio.charset.Charset
+import java.util.Enumeration
 import javax.swing.ButtonGroup
 import javax.swing.JButton
 import javax.swing.JCheckBoxMenuItem
+import javax.swing.JComboBox
 import javax.swing.JFileChooser
 import javax.swing.JFrame
+import javax.swing.JLabel
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JPanel
 import javax.swing.UIManager
+import javax.swing.plaf.FontUIResource
+
 
 class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
     private val fileChooser = JFileChooser(Kindling.homeLocation).apply {
         isMultiSelectionEnabled = true
         fileView = CustomIconView()
 
+        val encodingSelector = JComboBox(Kindling.wrapperEncodings).apply {
+            toolTipText = "Charset Encoding for Wrapper Logs"
+            selectedItem = Kindling.selectedWrapperEncoding
+            addActionListener {
+                Kindling.selectedWrapperEncoding = selectedItem as Charset
+            }
+        }
+
+        val encodingPanel = JPanel(MigLayout("ins 0, fillx")).apply {
+            add(JLabel("Encoding: "))
+            add(encodingSelector, "growx, pushx")
+        }
+
         Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
-        fileFilter = Tool.tools.first().filter
+        fileFilter = Tool.tools.first().filter.apply {
+            addPropertyChangeListener {
+                encodingSelector.isEnabled = (fileFilter.description == "wrapper.log(.n) files" ||
+                        fileFilter.description == "All Files")
+            }
+        }
+
+        (((components[0] as JPanel).components[3] as JPanel).components[3] as JPanel).apply {
+            layout = MigLayout("fillx, ins 5 0, hidemode 0")
+            add(encodingPanel, "growx, pushx",0)
+        }
 
         Kindling.addThemeChangeListener {
             updateUI()
@@ -242,6 +273,14 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
                 }
             }
         }
+        private fun setUIFont(f: FontUIResource?) {
+            val keys: Enumeration<*> = UIManager.getDefaults().keys()
+            while (keys.hasMoreElements()) {
+                val key = keys.nextElement()
+                val value = UIManager.get(key)
+                if (value is FontUIResource) UIManager.put(key, f)
+            }
+        }
 
         private fun setupLaf() {
             Kindling.initTheme()
@@ -254,6 +293,9 @@ class MainPanel(empty: Boolean) : JPanel(MigLayout("ins 6, fill")) {
             }
 
             PlatformDefaults.setGridCellGap(UnitValue(2.0F), UnitValue(2.0F))
+
+            FlatRobotoFont.install() // https://github.com/JFormDesigner/FlatLaf/tree/main/flatlaf-fonts/flatlaf-fonts-inter
+            setUIFont(FontUIResource("Roboto", Font.PLAIN, 12))
         }
     }
 }

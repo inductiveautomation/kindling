@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.ClipboardTool
+import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
@@ -59,7 +60,7 @@ object LogViewer : MultiTool, ClipboardTool {
     override fun open(paths: List<Path>): ToolPanel {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
         val events = paths.flatMap { path ->
-            path.useLines(Charsets.ISO_8859_1) { lines -> LogPanel.parseLogs(lines) }
+            path.useLines(Kindling.selectedWrapperEncoding) { lines -> LogPanel.parseLogs(lines) }
         }
         return WrapperLogView(
             events = events,

@@ -31,6 +31,7 @@ class LogNameList(private val emptyLabel: String) : FilterList(emptyLabel) {
                     } else {
                         value.substringAfterLast(".")
                     }
+                    toolTipText = value
                     "$name - ${model.rawData[value]} (${percentages.getValue(value)})"
                 }
                 null -> "$emptyLabel - ${model.rawData[null]} (${percentages.getValue(null)})"

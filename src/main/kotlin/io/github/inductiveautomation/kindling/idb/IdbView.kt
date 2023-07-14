@@ -7,6 +7,7 @@ import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
 import io.github.inductiveautomation.kindling.log.Level
 import io.github.inductiveautomation.kindling.log.LogPanel
+import io.github.inductiveautomation.kindling.log.MDC
 import io.github.inductiveautomation.kindling.log.SystemLogEvent
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
@@ -91,7 +92,7 @@ enum class IdbTool {
                     )
                 }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
-            val mdcKeys: Map<Int, Map<String, String>> = connection.prepareStatement(
+            val mdcKeys: Map<Int, List<MDC>> = connection.prepareStatement(
                 //language=sql
                 """
                 SELECT 
@@ -105,16 +106,12 @@ enum class IdbTool {
                 """.trimIndent(),
             ).executeQuery()
                 .toList { resultSet ->
-                    Triple(
+                    Pair(
                         resultSet.getInt("event_id"),
-                        resultSet.getString("mapped_key"),
-                        resultSet.getString("mapped_value"),
+                        MDC(resultSet.getString("mapped_key"), resultSet.getString("mapped_value")),
                     )
-                }.groupingBy { it.first }
-                .aggregateTo(mutableMapOf<Int, MutableMap<String, String>>()) { _, accumulator, element, _ ->
-                    val acc = accumulator ?: mutableMapOf()
-                    acc[element.second] = element.third ?: "null"
-                    acc
+                }.groupBy { it.first }.mapValues { (_, listOfPairs) ->
+                    listOfPairs.map { (_, mdc) -> mdc }
                 }
 
             val events = connection.prepareStatement(

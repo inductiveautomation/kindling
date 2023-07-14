@@ -34,7 +34,9 @@ class LoggerMDCPanel(events: List<SystemLogEvent>) : JPanel(MigLayout("ins 0, fi
     private val keyList = allMDCs.groupingBy { it.key }.eachCount()
             .toList().sortedByDescending { (_, value) -> value }.toMap()
 
-    private val keyMenu = JComboBox<String>().apply {
+    private val keyValueMap = allMDCs.groupBy(MDC::key).mapValues { it.value.distinct() }
+
+    private val keyMenu = JComboBox(keyList.keys.toTypedArray()).apply {
         renderer = object : BasicComboBoxRenderer() {
             override fun getListCellRendererComponent(
                     list: JList<*>?,
@@ -54,18 +56,12 @@ class LoggerMDCPanel(events: List<SystemLogEvent>) : JPanel(MigLayout("ins 0, fi
                 return this
             }
         }
-        keyList.forEach {
-            addItem(it.key)
-        }
         selectedIndex = -1
 
         addActionListener {
             valueMenu.removeAllItems()
-            val values = fullMDCMap.filter { (mdc, _) ->
-                mdc.key == this.selectedItem as String
-            }.map { (mdc, _) -> mdc.value }
-            values.forEach {
-                valueMenu.addItem(it)
+            keyValueMap[selectedItem]?.forEach {
+                valueMenu.addItem(it.value)
             }
         }
     }
@@ -228,7 +224,7 @@ class MDCTableModel(
             if (mdcList.isEmpty()) {
                 true
             } else {
-                if (mdcList.any { it.mdc in logEvent.mdc.entries } ) {
+                if (mdcList.any { it.mdc in logEvent.mdc } ) {
                     !inverted
                 } else {
                     inverted

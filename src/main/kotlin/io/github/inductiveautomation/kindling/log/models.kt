@@ -110,7 +110,6 @@ sealed class LogColumnList<T : LogEvent>(panel: LogPanel) : ColumnList<T>() {
     }
 
     abstract val filterableColumns: List<Column<T, out Any?>>
-    abstract val markableColumns: List<Column<T, out Any?>>
 }
 
 @Suppress("PropertyName")
@@ -133,23 +132,10 @@ class SystemLogColumns(panel: LogPanel) : LogColumnList<SystemLogEvent>(panel) {
             Logger,
             Message,
     )
-
-    override val markableColumns = listOf(
-            Level,
-            Thread,
-            Logger,
-            Message
-    )
 }
 
 class WrapperLogColumns(panel: LogPanel) : LogColumnList<WrapperLogEvent>(panel) {
     override val filterableColumns = listOf(
-            Level,
-            Logger,
-            Message,
-    )
-
-    override val markableColumns = listOf(
             Level,
             Logger,
             Message,

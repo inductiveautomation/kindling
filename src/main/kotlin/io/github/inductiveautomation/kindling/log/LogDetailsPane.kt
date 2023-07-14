@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.log
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatTextPane
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.escapeHtml
@@ -233,7 +234,7 @@ class DetailsEditorKit : HTMLEditorKit() {
                 }
                 pre { 
                     font-size: 10px; 
-                    font-family: Segoe
+                    font-family: ${FlatRobotoFont.FAMILY}
                 }
                 object { 
                     padding-left: 16px; 

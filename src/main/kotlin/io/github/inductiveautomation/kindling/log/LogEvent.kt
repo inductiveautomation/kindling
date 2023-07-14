@@ -32,7 +32,7 @@ data class SystemLogEvent(
     override val logger: String,
     val thread: String,
     override val level: Level,
-    val mdc: Map<String, String>,
+    val mdc: List<MDC>,
     override val stacktrace: List<String>,
 ) : LogEvent
 
