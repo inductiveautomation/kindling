@@ -53,15 +53,15 @@ class LogPanel(
     private var showDensityDisplay: Boolean = true
 
     val header = Header(totalRows)
-    private val startTime = rawData.minBy{ it.timestamp }.timestamp.toEpochMilli()
-    private val endTime = rawData.maxBy{ it.timestamp }.timestamp.toEpochMilli()
+    private val startTime = rawData.minBy { it.timestamp }.timestamp.toEpochMilli()
+    private val endTime = rawData.maxBy { it.timestamp }.timestamp.toEpochMilli()
     private var messageFilter = ""
     private var stackTraceFilter = object {
         var enabled = false
         var completeMatch = false
         var stacktrace = emptyList<String>()
 
-        fun enableFilter(completeMatch: Boolean, stacktrace : List<String>) {
+        fun enableFilter(completeMatch: Boolean, stacktrace: List<String>) {
             enabled = true
             this.completeMatch = completeMatch
             this.stacktrace = stacktrace
@@ -97,7 +97,7 @@ class LogPanel(
                     add(
                         JMenu("Filter all with same...").apply {
                             model.columns.filterableColumns.forEach { column ->
-                                when(column) {
+                                when (column) {
                                     model.columns.Level -> {
                                         logMenuItem(
                                             label = column.header,
@@ -106,6 +106,7 @@ class LogPanel(
                                             onFalse = { loggerLevelsSidebar.checkBoxListSelectionModel.setSelectionInterval(0, 0) },
                                         )
                                     }
+
                                     model.columns.Logger -> {
                                         logMenuItem(
                                             label = column.header,
@@ -114,6 +115,7 @@ class LogPanel(
                                             onFalse = { loggerNamesSidebar.loggerNamesList.checkBoxListSelectionModel.setSelectionInterval(0, 0) },
                                         )
                                     }
+
                                     model.columns.Message -> {
                                         logMenuItem(
                                             label = column.header,
@@ -122,6 +124,7 @@ class LogPanel(
                                             onFalse = { messageFilter = "" },
                                         )
                                     }
+
                                     (model.columns as? SystemLogColumns)?.Thread -> {
                                         logMenuItem(
                                             label = column.header,
@@ -143,7 +146,7 @@ class LogPanel(
                                                 condition = !stackTraceFilter.enabled,
                                                 onTrue = { stackTraceFilter.enableFilter(true, eventStacktrace) },
                                                 onFalse = { stackTraceFilter.enabled = false },
-                                            )
+                                            ),
                                         )
                                         add(
                                             logMenuItem(
@@ -151,14 +154,14 @@ class LogPanel(
                                                 condition = !stackTraceFilter.enabled,
                                                 onTrue = { stackTraceFilter.enableFilter(false, eventStacktrace) },
                                                 onFalse = { stackTraceFilter.enabled = false },
-                                            )
+                                            ),
                                         )
                                     } else {
                                         isEnabled = false
                                     }
-                                }
+                                },
                             )
-                        }
+                        },
                     )
 
                     add(
@@ -174,7 +177,7 @@ class LogPanel(
                                                 if (event.level?.name == selectedLogEvent.level!!.name) {
                                                     event.marked = !condition
                                                 }
-                                            }
+                                            },
                                         )
                                     }
                                     model.columns.Logger -> {
@@ -186,7 +189,7 @@ class LogPanel(
                                                 if (event.logger == selectedLogEvent.logger) {
                                                     event.marked = !condition
                                                 }
-                                            }
+                                            },
                                         )
 
                                     }
@@ -199,9 +202,10 @@ class LogPanel(
                                                 if (event.message == selectedLogEvent.message) {
                                                     event.marked = !condition
                                                 }
-                                            }
+                                            },
                                         )
                                     }
+
                                     (model.columns as SystemLogColumns).Thread -> {
                                         val condition = isMarked(SystemLogEvent::thread, (selectedLogEvent as SystemLogEvent).thread)
                                         logMenuItem(
@@ -211,10 +215,10 @@ class LogPanel(
                                                 if ((event as SystemLogEvent).thread == selectedLogEvent.thread) {
                                                     event.marked = !condition
                                                 }
-                                            }
+                                            },
                                         )
-
                                     }
+
                                     else -> null
                                 }?.let(this::add)
                             }
@@ -233,9 +237,16 @@ class LogPanel(
                                                         it.marked = !isFullStackMarked
                                                     }
                                                 },
-                                            )
+                                            ),
                                         )
-                                        val isPartialStackMarked = isMarked(LogEvent::stacktrace, if (eventStacktrace.isNotEmpty()) { eventStacktrace.first() } else { "" })
+                                        val isPartialStackMarked = isMarked(
+                                            LogEvent::stacktrace,
+                                            if (eventStacktrace.isNotEmpty()) {
+                                                eventStacktrace.first()
+                                            } else {
+                                                ""
+                                            },
+                                        )
                                         add(
                                             logMenuItem(
                                                 label = "Partial Match",
@@ -245,26 +256,25 @@ class LogPanel(
                                                         it.marked = !isPartialStackMarked
                                                     }
                                                 },
-                                            )
+                                            ),
                                         )
                                     } else {
                                         isEnabled = false
                                     }
-                                }
+                                },
                             )
-                        }
+                        },
                     )
                 }
             }
-
         }
     }
 
     private fun logMenuItem(
-            label: String,
-            condition: Boolean,
-            onTrue: () -> Unit,
-            onFalse: () -> Unit,
+        label: String,
+        condition: Boolean,
+        onTrue: () -> Unit,
+        onFalse: () -> Unit,
     ): JCheckBoxMenuItem {
         return JCheckBoxMenuItem(label, !condition).apply {
             addActionListener {
@@ -275,9 +285,9 @@ class LogPanel(
     }
 
     private fun logMenuItem(
-            label: String,
-            condition: Boolean,
-            action: (LogEvent) -> Unit,
+        label: String,
+        condition: Boolean,
+        action: (LogEvent) -> Unit,
     ): JCheckBoxMenuItem {
         return JCheckBoxMenuItem(label, condition).apply {
             addActionListener {
@@ -296,11 +306,11 @@ class LogPanel(
                     LogEvent::level -> it.level?.name ?: ""
                     LogEvent::logger -> it.logger
                     SystemLogEvent::thread -> (it as SystemLogEvent).thread
-                    LogEvent::message ->it.message
+                    LogEvent::message -> it.message
                     LogEvent::stacktrace -> {
                         if (selectedValue.contains("\n")) {
                             it.stacktrace.joinToString("\n")
-                        } else if (it.stacktrace.isNotEmpty()){
+                        } else if (it.stacktrace.isNotEmpty()) {
                             it.stacktrace.first()
                         } else {
                             "empty stacktrace"
@@ -323,7 +333,11 @@ class LogPanel(
 
     private val loggerLevelsSidebar = LogLevelsList(rawData)
     @Suppress("UNCHECKED_CAST")
-    private val loggerMDCsSidebar = if (rawData.first() is SystemLogEvent) { LoggerMDCPanel(rawData as List<SystemLogEvent>) } else null
+    private val loggerMDCsSidebar = if (rawData.first() is SystemLogEvent) {
+        LoggerMDCPanel(rawData as List<SystemLogEvent>)
+    } else {
+        null
+    }
     private val loggerTimesSidebar = LoggerTimesPanel(startTime, endTime)
     private val filterPane = JTabbedPane().apply {
         addTab("Loggers", loggerNamesSidebar)
@@ -378,13 +392,13 @@ class LogPanel(
         }
         add { event ->
             !stackTraceFilter.enabled ||
-            (
-                event.stacktrace.isNotEmpty() &&
                 (
-                    (stackTraceFilter.completeMatch && stackTraceFilter.stacktrace == event.stacktrace) ||
-                    (!stackTraceFilter.completeMatch && stackTraceFilter.stacktrace.first() == event.stacktrace.first())
-                )
-            )
+                    event.stacktrace.isNotEmpty() &&
+                        (
+                            (stackTraceFilter.completeMatch && stackTraceFilter.stacktrace == event.stacktrace) ||
+                                (!stackTraceFilter.completeMatch && stackTraceFilter.stacktrace.first() == event.stacktrace.first())
+                            )
+                    )
         }
         add { event ->
             event is WrapperLogEvent || threadFilter.isEmpty() || threadFilter == (event as SystemLogEvent).thread
@@ -406,10 +420,10 @@ class LogPanel(
     private fun updateFilterPaneUI() {
         filterPane.run {
             listOf(
-                    loggerNamesSidebar,
-                    loggerLevelsSidebar,
-                    loggerTimesSidebar,
-                    loggerMDCsSidebar,
+                loggerNamesSidebar,
+                loggerLevelsSidebar,
+                loggerTimesSidebar,
+                loggerMDCsSidebar,
             ).forEachIndexed { index, sidebar ->
                 sidebar?.let {
                     updateBackgroundAt(it.isFilterApplied, index)
@@ -438,7 +452,8 @@ class LogPanel(
             JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
                 JPanel(MigLayout("ins 0, fill")).apply {
-                    add(filterPane, "grow") },
+                    add(filterPane, "grow")
+                },
                 JSplitPane(
                     JSplitPane.VERTICAL_SPLIT,
                     tableScrollPane,
@@ -658,7 +673,7 @@ class LogPanel(
                             message = message.value.trim(),
                             logger = logger.value.trim(),
                             level = Level.valueOf(level.value.single()),
-                            marked = false
+                            marked = false,
                         )
                     } else {
                         val stack by match.groups

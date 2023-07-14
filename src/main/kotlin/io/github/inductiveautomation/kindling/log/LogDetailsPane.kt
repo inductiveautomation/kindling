@@ -31,7 +31,6 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
         detailsPanel.removeAll()
         newValue.forEach {
             detailsPanel.add(DetailContainer(it), "growx, wrap")
-
         }
         detailsScrollPane.verticalScrollBar.value = 0
         detailsPanel.revalidate()
@@ -42,16 +41,16 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
     private val detailsScrollPane = JScrollPane(detailsPanel).apply { verticalScrollBar.unitIncrement = 16 }
 
     private val copy = Action(
-            description = "Copy to Clipboard",
-            icon = FlatSVGIcon("icons/bx-clipboard.svg"),
+        description = "Copy to Clipboard",
+        icon = FlatSVGIcon("icons/bx-clipboard.svg"),
     ) {
         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
         clipboard.setContents(StringSelection(events.toClipboardFormat()), null)
     }
 
     private val save = Action(
-            description = "Save to File",
-            icon = FlatSVGIcon("icons/bx-save.svg"),
+        description = "Save to File",
+        icon = FlatSVGIcon("icons/bx-save.svg"),
     ) {
         JFileChooser().apply {
             fileSelectionMode = JFileChooser.FILES_ONLY
@@ -64,10 +63,10 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
     }
 
     private val popout = Action(
-            description = "Open in New Window",
-            icon = FlatSVGIcon("icons/bx-link-external.svg"),
+        description = "Open in New Window",
+        icon = FlatSVGIcon("icons/bx-link-external.svg"),
     ) {
-        DetailsPopup("Details",events.toPopoutFormat())
+        DetailsPopup("Details", events.toPopoutFormat())
     }
 
     init {
@@ -76,7 +75,8 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
         add(JButton(save), "cell 1 0")
         add(JButton(popout), "cell 1 0")
     }
-    private class TextPane(content : String) : FlatTextPane() {
+
+    private class TextPane(content: String) : FlatTextPane() {
         init {
             isEditable = false
             editorKit = DetailsEditorKit()
@@ -90,18 +90,23 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
             text = content
         }
     }
-    private class DetailsPopup (header: String, content: String) : JFrame() {
+
+    private class DetailsPopup(header: String, content: String) : JFrame() {
         init {
             title = header
             layout = MigLayout("fill, ins 0")
             setLocation(200, 100)
             setSize(700, ((content.split("<br>").size * 20) + 55).coerceAtMost(900))
-            contentPane.add(JScrollPane(TextPane(content)).apply {
-                invokeLater { verticalScrollBar.value = 0 } }, "grow, push")
+            contentPane.add(
+                JScrollPane(TextPane(content)).apply {
+                    invokeLater { verticalScrollBar.value = 0 }
+                },
+                "grow, push",
+            )
             isVisible = true
         }
-
     }
+
     private class DetailContainer(val content: Detail) : JPanel(MigLayout("fill, ins 0")) {
         private val collapsablePane = JXCollapsiblePane().apply {
             isAnimated = false
@@ -119,7 +124,7 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
                 }
             }
 
-            val title = JLabel( "  " + content.title).apply {
+            val title = JLabel("  " + content.title).apply {
                 font = UIManager.getFont("h3.font")
             }
 
@@ -127,7 +132,7 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
                 border = null
                 background = null
                 font = UIManager.getFont("h3.font")
-                addActionListener{
+                addActionListener {
                     if (collapsablePane.isCollapsed) {
                         collapsablePane.isCollapsed = false
                         text = "▽"
@@ -222,13 +227,12 @@ class LogDetailsPane : JPanel(MigLayout("ins 1, fill")) {
     }
 }
 
-
 class DetailsEditorKit : HTMLEditorKit() {
     init {
         styleSheet.apply {
             //language=CSS
             addRule(
-                    """
+                """
                 b { 
                     font-size: larger; 
                 }

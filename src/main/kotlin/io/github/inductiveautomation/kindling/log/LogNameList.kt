@@ -11,6 +11,7 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.ButtonGroup
 import javax.swing.JPanel
 import javax.swing.JToggleButton
+
 class LogNameList(private val emptyLabel: String) : FilterList(emptyLabel) {
 
     var isShowFullLoggerNames = false
@@ -18,6 +19,7 @@ class LogNameList(private val emptyLabel: String) : FilterList(emptyLabel) {
             field = value
             updateCellRenderer()
         }
+
     init {
         updateCellRenderer()
     }
@@ -34,6 +36,7 @@ class LogNameList(private val emptyLabel: String) : FilterList(emptyLabel) {
                     toolTipText = value
                     "$name - ${model.rawData[value]} (${percentages.getValue(value)})"
                 }
+
                 null -> "$emptyLabel - ${model.rawData[null]} (${percentages.getValue(null)})"
                 else -> value.toString()
             }
@@ -41,13 +44,13 @@ class LogNameList(private val emptyLabel: String) : FilterList(emptyLabel) {
     }
 }
 
-class LoggerNamesPanel( var events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
+class LoggerNamesPanel(var events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
     var loggerNamesList = LogNameList("")
     private val flatScrollPane = FlatScrollPane(
-            loggerNamesList.apply {
-                model = FilterModel(events.groupingBy(LogEvent::logger).eachCount())
-                selectAll()
-            }
+        loggerNamesList.apply {
+            model = FilterModel(events.groupingBy(LogEvent::logger).eachCount())
+            selectAll()
+        },
     )
     private val sortButtons = ButtonGroup()
     private val naturalAsc = JToggleButton(
@@ -64,22 +67,23 @@ class LoggerNamesPanel( var events: List<LogEvent>) : JPanel(MigLayout("ins 0, f
                 true -> FilterModel.byNameDesc
                 false -> bySubNameDesc
             }
-        }
+        },
     )
     private val countDesc = JToggleButton(
         configSortAction(
             icon = NUMERIC_SORT_DESCENDING,
             tooltip = "Sort by Count",
             comparatorProvider = FilterModel::byCountDesc,
-        )
+        ),
     )
     private val countAsc = JToggleButton(
         configSortAction(
             icon = NUMERIC_SORT_ASCENDING,
             tooltip = "Sort by Count (ascending)",
             comparatorProvider = FilterModel::byCountAsc,
-        )
+        ),
     )
+
     private fun configSortAction(icon: FlatSVGIcon, tooltip: String, comparatorProvider: () -> FilterComparator): Action {
         return Action(description = tooltip, icon = icon) {
             loggerNamesList.updateComparator(comparatorProvider())
@@ -88,10 +92,10 @@ class LoggerNamesPanel( var events: List<LogEvent>) : JPanel(MigLayout("ins 0, f
 
     init {
         listOf(
-                naturalAsc,
-                naturalDesc,
-                countAsc,
-                countDesc,
+            naturalAsc,
+            naturalDesc,
+            countAsc,
+            countDesc,
         ).forEach { sortButton ->
             sortButtons.add(sortButton)
             add(sortButton, "cell 0 0")
