@@ -5,6 +5,7 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
+import io.github.inductiveautomation.kindling.utils.CharsetSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
 import io.github.inductiveautomation.kindling.utils.ThemeSerializer
@@ -22,6 +23,7 @@ import kotlinx.serialization.json.encodeToStream
 import org.jdesktop.swingx.JXTextField
 import java.awt.Image
 import java.awt.Toolkit
+import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Vector
 import javax.swing.JComboBox
@@ -37,13 +39,13 @@ import kotlin.io.path.outputStream
 import kotlin.time.Duration.Companion.seconds
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
 
-object Kindling {
+data object Kindling {
     val frameIcon: Image = Toolkit.getDefaultToolkit().getImage(Kindling::class.java.getResource("/icons/kindling.png"))
 
-    object Preferences {
-        object General : PreferenceCategory {
+    data object Preferences {
+        data object General : PreferenceCategory {
             val HomeLocation: Preference<Path> = preference(
-                name = "Home Location",
+                name = "Browse Location",
                 description = "The default path to start looking for files.",
                 default = Path(System.getProperty("user.home"), "Downloads"),
                 serializer = PathSerializer,
@@ -67,7 +69,7 @@ object Kindling {
             )
 
             val DefaultTool: Preference<Tool> = preference(
-                "Default Tool",
+                name = "Default Tool",
                 description = "The default tool to use when invoking the file selector",
                 default = Tool.tools.first(),
                 serializer = ToolSerializer,
@@ -95,6 +97,33 @@ object Kindling {
                 },
             )
 
+            val ChoosableEncodings = arrayOf(
+                Charsets.UTF_8,
+                Charsets.ISO_8859_1,
+                Charsets.US_ASCII,
+            )
+
+            val DefaultEncoding: Preference<Charset> = preference(
+                name = "Encoding",
+                description = "The default encoding to use when loading text files",
+                default = if (SystemInfo.isWindows) Charsets.ISO_8859_1 else Charsets.UTF_8,
+                serializer = CharsetSerializer,
+                editor = {
+                    JComboBox(ChoosableEncodings).apply {
+                        selectedItem = currentValue
+
+                        configureCellRenderer { _, value, _, selected, focused ->
+                            text = value?.displayName()
+                            toolTipText = value?.displayName()
+                        }
+
+                        addActionListener {
+                            currentValue = selectedItem as Charset
+                        }
+                    }
+                },
+            )
+
             val ShowFullLoggerNames: Preference<Boolean> = preference(
                 name = "Logger Names",
                 default = false,
@@ -112,10 +141,11 @@ object Kindling {
             )
 
             override val displayName: String = "General"
+            override val key: String = "general"
             override val preferences: List<Preference<*>> = listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
         }
 
-        object UI : PreferenceCategory {
+        data object UI : PreferenceCategory {
             val Theme: Preference<Theme> = preference(
                 name = "Theme",
                 default = KindlingTheme.themes.getValue(if (SystemInfo.isMacOS) FlatMacLightLaf.NAME else FlatLightLaf.NAME),
@@ -145,10 +175,11 @@ object Kindling {
             )
 
             override val displayName: String = "UI"
+            override val key: String = "ui"
             override val preferences: List<Preference<*>> = listOf(Theme, ScaleFactor)
         }
 
-        object Advanced : PreferenceCategory {
+        data object Advanced : PreferenceCategory {
             val Debug: Preference<Boolean> = preference(
                 name = "Debug Mode",
                 description = null,
@@ -163,7 +194,7 @@ object Kindling {
                 default = LinkHandlingStrategy.OpenInBrowser,
                 serializer = LinkHandlingStrategy.serializer(),
                 editor = {
-                    JComboBox(LinkHandlingStrategy.values()).apply {
+                    JComboBox(Vector(LinkHandlingStrategy.entries)).apply {
                         selectedItem = currentValue
 
                         configureCellRenderer { _, value, _, _, _ ->
@@ -178,6 +209,7 @@ object Kindling {
             )
 
             override val displayName: String = "Advanced"
+            override val key: String = "advanced"
             override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)
         }
 

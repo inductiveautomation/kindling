@@ -6,6 +6,7 @@ import java.awt.Component
 import java.awt.Container
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.awt.event.ComponentListener
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JFrame
@@ -21,7 +22,7 @@ interface PopupMenuCustomizer {
 interface FloatableComponent {
     val icon: Icon?
     val tabName: String
-    val tabTooltip: String
+    val tabTooltip: String?
 }
 
 class TabStrip : FlatTabbedPane() {
@@ -42,40 +43,42 @@ class TabStrip : FlatTabbedPane() {
             val tab = getComponentAt(tabIndex) as JComponent
 
             JPopupMenu().apply {
-                add(
-                    Action("Close") {
-                        removeClosableTabAt(tabIndex)
-                    },
-                )
-                add(
-                    Action("Close Other Tabs") {
-                        for (i in tabCount - 1 downTo 0) {
-                            if (i != tabIndex) {
+                if (isTabsClosable) {
+                    add(
+                        Action("Close") {
+                            removeClosableTabAt(tabIndex)
+                        },
+                    )
+                    add(
+                        Action("Close Other Tabs") {
+                            for (i in tabCount - 1 downTo 0) {
+                                if (i != tabIndex) {
+                                    removeClosableTabAt(i)
+                                }
+                            }
+                        },
+                    )
+                    add(
+                        Action("Close Tabs Left") {
+                            for (i in tabIndex - 1 downTo 0) {
                                 removeClosableTabAt(i)
                             }
-                        }
-                    },
-                )
-                add(
-                    Action("Close Tabs Left") {
-                        for (i in tabIndex - 1 downTo 0) {
-                            removeClosableTabAt(i)
-                        }
-                    },
-                )
-                add(
-                    Action("Close Tabs Right") {
-                        for (i in tabCount - 1 downTo tabIndex + 1) {
-                            removeClosableTabAt(i)
-                        }
-                    },
-                )
-                val closable = isTabClosable(tabIndex)
-                add(
-                    Action(if (closable) "Pin" else "Unpin") {
-                        setTabClosable(tabIndex, !closable)
-                    },
-                )
+                        },
+                    )
+                    add(
+                        Action("Close Tabs Right") {
+                            for (i in tabCount - 1 downTo tabIndex + 1) {
+                                removeClosableTabAt(i)
+                            }
+                        },
+                    )
+                    val closable = isTabClosable(tabIndex)
+                    add(
+                        Action(if (closable) "Pin" else "Unpin") {
+                            setTabClosable(tabIndex, !closable)
+                        },
+                    )
+                }
                 if (tab is FloatableComponent) {
                     add(
                         Action("Float") {
@@ -122,25 +125,36 @@ class TabStrip : FlatTabbedPane() {
         addTab(
             tabName.truncate(30),
             icon,
-            LazyTab(component),
+            LazyTab(tabName, icon, tabTooltip, component),
             tabTooltip,
         )
     }
 
-    private class LazyTab(supplier: () -> Component) : JPanel(BorderLayout()) {
-        private var initialized = false
+    open class LazyTab(
+        override val tabName: String,
+        override val icon: Icon?,
+        override val tabTooltip: String?,
+        supplier: () -> Component,
+    ) : JPanel(BorderLayout()), PopupMenuCustomizer, FloatableComponent {
+        val component = lazy(supplier)
 
         init {
             addComponentListener(
                 object : ComponentAdapter() {
                     override fun componentShown(e: ComponentEvent) {
-                        if (!initialized) {
-                            add(supplier(), BorderLayout.CENTER)
-                            initialized = true
+                        if (!component.isInitialized()) {
+                            val actualComponent = component.value
+                            add(actualComponent, BorderLayout.CENTER)
                         }
                     }
                 },
             )
+        }
+
+        final override fun addComponentListener(l: ComponentListener) = super.addComponentListener(l)
+
+        override fun customizePopupMenu(menu: JPopupMenu) {
+            (component.value as? PopupMenuCustomizer)?.customizePopupMenu(menu)
         }
     }
 

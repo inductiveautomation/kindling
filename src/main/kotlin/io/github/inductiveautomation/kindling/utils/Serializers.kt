@@ -8,6 +8,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.ZoneId
 import kotlin.io.path.Path
@@ -46,4 +47,12 @@ object ZoneIdSerializer : KSerializer<ZoneId> {
     override fun deserialize(decoder: Decoder): ZoneId = ZoneId.of(decoder.decodeString())
 
     override fun serialize(encoder: Encoder, value: ZoneId) = encoder.encodeString(value.id)
+}
+
+object CharsetSerializer : KSerializer<Charset> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(Charset::class.java.name, PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Charset = Charset.forName(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: Charset) = encoder.encodeString(value.name())
 }

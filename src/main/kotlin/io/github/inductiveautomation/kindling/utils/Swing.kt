@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.utils
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatScrollPane
+import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.ListSearchable
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
@@ -52,6 +53,7 @@ import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeNode
 import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
+import kotlin.time.Duration.Companion.milliseconds
 
 typealias StringProvider<T> = (T?) -> String?
 typealias IconProvider<T> = (T?) -> Icon?
@@ -239,6 +241,12 @@ class ReifiedJXTable<T : TableModel>(
 ) : JXTable(model) {
     private val setup = true
 
+    private val packLater: () -> Unit = debounce(
+        waitTime = 500.milliseconds,
+        coroutineScope = EDT_SCOPE,
+        destinationFunction = ::packAll,
+    )
+
     init {
         if (columns != null) {
             columnFactory = columns.toColumnFactory()
@@ -259,7 +267,7 @@ class ReifiedJXTable<T : TableModel>(
             },
         )
 
-        packAll()
+        packLater()
         actionMap.remove("find")
     }
 
@@ -279,13 +287,23 @@ class ReifiedJXTable<T : TableModel>(
 
         val sortOrder = if (sortedColumn >= 0) (rowSorter as SortController<*>).getSortOrder(sortedColumn) else null
 
+        val previousColumnSizes = IntArray(columnCount) { i ->
+            getColumnExt(i).preferredWidth
+        }
+
         super.setModel(model)
 
         if (sortOrder != null && sortedColumnIsVisible) {
             setSortOrder(sortedColumn, sortOrder)
         }
         if (setup) {
-            packAll()
+            for (index in 0..<columnCount) {
+                val previousSize = previousColumnSizes.getOrNull(index)
+                if (previousSize != null) {
+                    getColumnExt(index).preferredWidth = previousSize
+                }
+            }
+            packLater()
         }
     }
 
@@ -360,9 +378,17 @@ inline fun jFrame(
     width: Int,
     height: Int,
     initiallyVisible: Boolean = true,
+    embedContentIntoTitleBar: Boolean = false,
     block: JFrame.() -> Unit,
 ) = JFrame(title).apply {
     setSize(width, height)
+
+    if (embedContentIntoTitleBar && SystemInfo.isMacFullWindowContentSupported) {
+        rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
+        rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+        rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+    }
+
     iconImage = frameIcon
     defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
 

@@ -6,11 +6,14 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.NoSelectionModel
+import io.github.inductiveautomation.kindling.utils.add
+import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.installSearchable
 import io.github.inductiveautomation.kindling.utils.listCellRenderer
 import net.miginfocom.swing.MigLayout
 import javax.swing.AbstractListModel
 import javax.swing.ButtonGroup
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JToggleButton
 import javax.swing.ListModel
@@ -32,23 +35,32 @@ class LoggerNamesModel(val data: List<LoggerName>) : AbstractListModel<Any>() {
 }
 
 class LoggerNamesList(model: LoggerNamesModel) : CheckBoxList(model) {
-    var isShowFullLoggerName = ShowFullLoggerNames.currentValue
-        set(value) {
-            field = value
-            repaint()
+    private fun displayValue(value: Any?): String = when (value) {
+        is LoggerName -> if (ShowFullLoggerNames.currentValue) {
+            value.name
+        } else {
+            value.name.substringAfterLast('.')
         }
 
-    private fun displayValue(value: Any?): String {
-        return when (value) {
-            is LoggerName -> if (!isShowFullLoggerName) {
-                value.name.substringAfterLast('.')
-            } else {
-                value.name
-            }
-
-            else -> value.toString()
-        }
+        else -> value.toString()
     }
+
+    private var cachedLoggerNames: Set<String> = emptySet()
+    private var lastCacheKey: Int = 0
+    val loggerNames: Set<String>
+        get() {
+            val currentCacheKey = checkBoxListSelectionModel.minSelectionIndex * 31 * checkBoxListSelectionModel.maxSelectionIndex
+            if (currentCacheKey != lastCacheKey) {
+                val checkedBoxes = checkBoxListSelectedIndices
+                cachedLoggerNames = buildSet {
+                    for (selectedIndex in checkedBoxes) {
+                        add(model.data[selectedIndex - 1].name)
+                    }
+                }
+                lastCacheKey = currentCacheKey
+            }
+            return cachedLoggerNames
+        }
 
     init {
         installSearchable(
@@ -88,13 +100,14 @@ class LoggerNamesList(model: LoggerNamesModel) : CheckBoxList(model) {
     }
 }
 
-class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")) {
+class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
     val list: LoggerNamesList = run {
         val loggerNames: List<LoggerName> = events.groupingBy { it.logger }
             .eachCount()
             .entries
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.key })
             .map { (key, value) -> LoggerName(key, value) }
+
         LoggerNamesList(LoggerNamesModel(loggerNames))
     }
 
@@ -109,7 +122,9 @@ class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")
                 ) {
                     list.model = LoggerNamesModel(list.model.data.sortedWith(comparator))
                 },
-            )
+            ).apply {
+                isFocusable = false
+            }
         }
 
         val naturalAsc = sortButton(
@@ -142,6 +157,26 @@ class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")
         sortButtons.setSelected(naturalAsc.model, true)
 
         add(FlatScrollPane(list), "newline, push, grow")
+
+        list.checkBoxListSelectionModel.addListSelectionListener { event ->
+            if (!event.valueIsAdjusting) {
+                listenerList.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
+            }
+        }
+    }
+
+    override val component: JComponent = this
+    override val tabName: String = "Logger"
+
+    override val isFilterApplied: Boolean
+        get() = list.checkBoxListSelectedIndices.size < list.model.size - 1
+
+    override fun addFilterChangeListener(listener: FilterChangeListener) {
+        listenerList.add(listener)
+    }
+
+    override fun filter(event: LogEvent): Boolean {
+        return event.logger in list.loggerNames
     }
 
     companion object {

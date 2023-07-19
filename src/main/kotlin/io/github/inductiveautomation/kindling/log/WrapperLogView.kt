@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.ClipboardTool
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Preference
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
@@ -55,16 +56,22 @@ class WrapperLogView(
     }
 }
 
-object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
+data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val title = "Wrapper Log"
     override val description = "wrapper.log(.n) files"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
-    override val extensions = listOf("log", "1", "2", "3", "4", "5")
+    override val extensions = List(21) { i ->
+        if (i == 0) {
+            "log"
+        } else {
+            i.toString()
+        }
+    }
 
     override fun open(paths: List<Path>): ToolPanel {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
         val events = paths.flatMap { path ->
-            path.useLines { lines -> LogPanel.parseLogs(lines) }
+            path.useLines(DefaultEncoding.currentValue) { lines -> LogPanel.parseLogs(lines) }
         }
         return WrapperLogView(
             events = events,
@@ -96,6 +103,18 @@ object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
+    private lateinit var _formatter: DateTimeFormatter
+    val TimeStampFormatter: DateTimeFormatter
+        get() {
+            if (!this::_formatter.isInitialized) {
+                _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss:SSS").withZone(SelectedTimeZone.currentValue)
+            }
+            if (_formatter.zone != SelectedTimeZone.currentValue) {
+                _formatter = _formatter.withZone(SelectedTimeZone.currentValue)
+            }
+            return _formatter
+        }
+
     val ShowDensity = preference(
         name = "Density Display",
         default = true,
@@ -104,6 +123,15 @@ object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
+    val ShowOnlyMarked = preference(
+        name = "Show Marked Only",
+        default = false,
+        editor = {
+            PreferenceCheckbox("Show only marked logs")
+        },
+    )
+
     override val displayName: String = "Log View"
-    override val preferences: List<Preference<*>> = listOf(SelectedTimeZone, ShowDensity)
+    override val key: String = "logview"
+    override val preferences: List<Preference<*>> = listOf(SelectedTimeZone, ShowDensity, ShowOnlyMarked)
 }

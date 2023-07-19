@@ -14,10 +14,6 @@ import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.add
-import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byCountAsc
-import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byCountDesc
-import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byNameAsc
-import io.github.inductiveautomation.kindling.thread.FilterModel.Companion.byNameDesc
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadDump
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
@@ -27,6 +23,13 @@ import io.github.inductiveautomation.kindling.thread.model.ThreadModel.SingleThr
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
+import io.github.inductiveautomation.kindling.utils.FilterComparator
+import io.github.inductiveautomation.kindling.utils.FilterList
+import io.github.inductiveautomation.kindling.utils.FilterModel
+import io.github.inductiveautomation.kindling.utils.FilterModel.Companion.byCountAsc
+import io.github.inductiveautomation.kindling.utils.FilterModel.Companion.byCountDesc
+import io.github.inductiveautomation.kindling.utils.FilterModel.Companion.byNameAsc
+import io.github.inductiveautomation.kindling.utils.FilterModel.Companion.byNameDesc
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
@@ -485,7 +488,7 @@ class MultiThreadView(
     }
 }
 
-object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
+data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val title = "Thread Viewer"
     override val description = "Thread dump (.json or .txt) files"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
@@ -520,5 +523,6 @@ object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     )
 
     override val displayName: String = "Thread View"
+    override val key: String = "threadview"
     override val preferences = listOf(ShowNullThreads, ShowEmptyValues)
 }

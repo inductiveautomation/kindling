@@ -16,12 +16,14 @@ class Action(
     description: String? = null,
     icon: Icon? = null,
     accelerator: KeyStroke? = null,
+    selected: Boolean = false,
     private val action: ActionListener,
 ) : AbstractAction() {
     var name: String? by actionValue(NAME, name)
     var description: String? by actionValue(SHORT_DESCRIPTION, description)
     var icon: Icon? by actionValue(SMALL_ICON, icon)
     var accelerator: KeyStroke? by actionValue(ACCELERATOR_KEY, accelerator)
+    var selected: Boolean by actionValue(SELECTED_KEY, selected)
 
     private fun <V> actionValue(name: String, initialValue: V) = object : ReadWriteProperty<AbstractAction, V> {
         init {

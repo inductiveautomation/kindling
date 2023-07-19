@@ -12,6 +12,7 @@ import java.awt.BorderLayout
 import java.awt.EventQueue
 import java.awt.Font
 import java.awt.event.ItemEvent
+import java.util.Locale
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JComponent
@@ -23,10 +24,10 @@ import javax.swing.border.MatteBorder
 interface PreferenceCategory {
     val displayName: String
     val key: String
-        get() = displayName.lowercase().filter(Char::isJavaIdentifierStart)
 
     val preferences: List<Preference<*>>
 }
+
 
 class Preference<T : Any>(
     val category: PreferenceCategory,
@@ -35,9 +36,9 @@ class Preference<T : Any>(
     val requiresRestart: Boolean = false,
     private val default: T,
     val serializer: KSerializer<T>,
-    createEditor: Preference<T>.() -> JComponent,
+    createEditor: (Preference<T>.() -> JComponent)?,
 ) {
-    val key: String = name.lowercase().filter(Char::isJavaIdentifierStart)
+    val key: String = name.lowercase(Locale.ROOT).filter(Char::isJavaIdentifierStart)
 
     var currentValue
         get() = Kindling.Preferences[category, this] ?: default
@@ -54,7 +55,7 @@ class Preference<T : Any>(
         listeners.add(listener)
     }
 
-    val editor: JComponent by lazy { createEditor(this) }
+    val editor: JComponent? by lazy { createEditor?.invoke(this) }
 
     companion object {
         @Suppress("FunctionName")
@@ -67,13 +68,23 @@ class Preference<T : Any>(
             }
         }
 
+        /**
+         * Creates a new [Preference] instance, automatically contained within the current [PreferenceCategory].
+         *
+         * [description] is optional, but should be provided or set on the editor
+         * component (e.g. [PreferenceCheckbox]).
+         *
+         * [serializer] can be omitted if the type is natively serializable, but is otherwise required.
+         *
+         * [editor] should return null if this is not a 'user-facing' preference.
+         */
         inline fun <reified T : Any> PreferenceCategory.preference(
             name: String,
             description: String? = null,
             requiresRestart: Boolean = false,
             default: T,
             serializer: KSerializer<T> = serializer(),
-            noinline editor: Preference<T>.() -> JComponent,
+            noinline editor: (Preference<T>.() -> JComponent)?,
         ): Preference<T> = Preference(
             name = name,
             category = this,
@@ -109,20 +120,23 @@ val preferencesEditor by lazy {
                                 isCollapsed = category.displayName == "Advanced"
 
                                 for (preference in category.preferences) {
-                                    add(
-                                        StyledLabel {
-                                            add(preference.name, Font.BOLD)
-                                            if (preference.requiresRestart) {
-                                                add(" Requires restart", "superscript")
-                                            }
-                                            if (preference.description != null) {
-                                                add("\n")
-                                                add(preference.description)
-                                            }
-                                        },
-                                        "grow, wrap, gapy 0",
-                                    )
-                                    add(preference.editor, "grow, wrap, gapy 0")
+                                    val editor = preference.editor
+                                    if (editor != null) {
+                                        add(
+                                            StyledLabel {
+                                                add(preference.name, Font.BOLD)
+                                                if (preference.requiresRestart) {
+                                                    add(" Requires restart", "superscript")
+                                                }
+                                                if (preference.description != null) {
+                                                    add("\n")
+                                                    add(preference.description)
+                                                }
+                                            },
+                                            "grow, wrap, gapy 0",
+                                        )
+                                        add(editor, "grow, wrap, gapy 0")
+                                    }
                                 }
                             }
                             add(categoryPane)

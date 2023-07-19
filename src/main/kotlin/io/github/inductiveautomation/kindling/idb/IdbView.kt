@@ -1,13 +1,15 @@
 package io.github.inductiveautomation.kindling.idb
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
 import io.github.inductiveautomation.kindling.log.Level
 import io.github.inductiveautomation.kindling.log.LogPanel
-import io.github.inductiveautomation.kindling.log.SystemLogsEvent
+import io.github.inductiveautomation.kindling.log.MDC
+import io.github.inductiveautomation.kindling.log.SystemLogEvent
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.toList
@@ -26,6 +28,9 @@ class IdbView(val path: Path) : ToolPanel() {
     private val tabs = TabStrip().apply {
         trailingComponent = null
         isTabsClosable = false
+        tabType = TabType.underlined
+        tabHeight = 16
+        isHideTabAreaWithOneTab = true
     }
 
     init {
@@ -40,7 +45,7 @@ class IdbView(val path: Path) : ToolPanel() {
         )
 
         var addedTabs = 0
-        for (tool in IdbTool.values()) {
+        for (tool in IdbTool.entries) {
             if (tool.supports(tables)) {
                 tabs.addLazyTab(
                     tabName = tool.name,
@@ -91,7 +96,7 @@ enum class IdbTool {
                     )
                 }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
-            val mdcKeys: Map<Int, Map<String, String>> = connection.prepareStatement(
+            val mdcKeys: Map<Int, List<MDC>> = connection.prepareStatement(
                 //language=sql
                 """
                 SELECT 
@@ -105,17 +110,12 @@ enum class IdbTool {
                 """.trimIndent(),
             ).executeQuery()
                 .toList { resultSet ->
-                    Triple(
+                    Pair(
                         resultSet.getInt("event_id"),
-                        resultSet.getString("mapped_key"),
-                        resultSet.getString("mapped_value"),
+                        MDC(resultSet.getString("mapped_key"), resultSet.getString("mapped_value")),
                     )
-                }.groupingBy { it.first }
-                .aggregateTo(mutableMapOf<Int, MutableMap<String, String>>()) { _, accumulator, element, _ ->
-                    val acc = accumulator ?: mutableMapOf()
-                    acc[element.second] = element.third ?: "null"
-                    acc
                 }
+                .groupBy(keySelector = Pair<Int, MDC>::first, valueTransform = Pair<Int, MDC>::second)
 
             val events = connection.prepareStatement(
                 //language=sql
@@ -130,12 +130,12 @@ enum class IdbTool {
                 FROM 
                     logging_event
                 ORDER BY
-                    event_id
+                    timestmp
                 """.trimIndent(),
             ).executeQuery()
                 .toList { resultSet ->
                     val eventId = resultSet.getInt("event_id")
-                    SystemLogsEvent(
+                    SystemLogEvent(
                         timestamp = Instant.ofEpochMilli(resultSet.getLong("timestmp")),
                         message = resultSet.getString("formatted_message"),
                         logger = resultSet.getString("logger_name"),

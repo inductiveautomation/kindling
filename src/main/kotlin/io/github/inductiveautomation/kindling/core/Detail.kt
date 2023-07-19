@@ -5,7 +5,7 @@ import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 data class Detail(
     val title: String,
     val message: String? = null,
-    val details: Map<String, String> = emptyMap(),
+    val details: Map<String, String?> = emptyMap(),
     val body: List<BodyLine> = emptyList(),
 ) {
     data class BodyLine(val text: String, val link: String? = null)
@@ -14,7 +14,7 @@ data class Detail(
         operator fun invoke(
             title: String,
             message: String? = null,
-            details: Map<String, String> = emptyMap(),
+            details: Map<String, String?> = emptyMap(),
             body: List<String> = emptyList(),
         ) = Detail(
             title,

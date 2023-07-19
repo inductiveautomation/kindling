@@ -29,7 +29,7 @@ abstract class ToolPanel(
 
     protected fun exportMenu(defaultFileName: String = "", modelSupplier: () -> TableModel): JMenu =
         JMenu("Export").apply {
-            for (format in ExportFormat.values()) {
+            for (format in ExportFormat.entries) {
                 add(
                     Action("Export as ${format.extension.uppercase()}") {
                         exportFileChooser.apply {

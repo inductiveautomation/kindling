@@ -36,7 +36,7 @@ abstract class ColumnList<R> private constructor(
         list.add(column)
     }
 
-    operator fun get(column: Column<R, *>): Int = indexOf(column)
+    operator fun get(column: Column<*, *>): Int = indexOf(column)
 
     fun toColumnFactory() = object : ColumnFactory() {
         override fun configureTableColumn(model: TableModel, columnExt: TableColumnExt) {

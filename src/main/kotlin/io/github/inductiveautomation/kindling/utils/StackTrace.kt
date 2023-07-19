@@ -61,7 +61,7 @@ enum class MajorVersion(val version: String) {
 
         fun lookup(version: String): MajorVersion? {
             return versionCache.getOrPut(version) {
-                values().firstOrNull { majorVersion ->
+                entries.firstOrNull { majorVersion ->
                     version.startsWith(majorVersion.version)
                 }
             }
