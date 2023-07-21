@@ -171,7 +171,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
                                     clipboardTool.open(clipString)
                                 }
                             } else {
-                                println("No string data found on clipboard")
+                                LOGGER.info("No string data found on clipboard")
                             }
                         },
                     )
@@ -302,6 +302,8 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
             applyTheme(false)
 
             UIManager.getDefaults().apply {
+                put("Component.focusWidth", 0)
+                put("Component.innerfocusWidth", 1)
                 put("ScrollBar.width", 16)
                 put("TabbedPane.tabType", "card")
                 put("MenuItem.minimumIconSize", Dimension()) // https://github.com/JFormDesigner/FlatLaf/issues/328

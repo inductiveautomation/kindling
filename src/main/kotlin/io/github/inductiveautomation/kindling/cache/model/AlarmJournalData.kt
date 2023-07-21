@@ -36,18 +36,15 @@ class AlarmJournalData(
 
     val body by lazy {
         data.properties.map { property ->
-            println(property.name)
             "${property.name} (${property.type.simpleName}) = ${data.getOrDefault(property)}"
         }
     }
 
-    fun toDetail(): Detail {
-        return Detail(
-            title = "Alarm Journal Data",
-            details = details,
-            body = body,
-        )
-    }
+    fun toDetail() = Detail(
+        title = "Alarm Journal Data",
+        details = details,
+        body = body,
+    )
 
     companion object {
         @JvmStatic

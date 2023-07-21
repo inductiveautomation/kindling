@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.internal
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import org.jdesktop.swingx.JXTable
 import org.jdesktop.swingx.decorator.HighlighterFactory
 import java.awt.event.MouseAdapter
@@ -41,6 +42,6 @@ class DetailsIcon(details: Map<String, String>) : JLabel(detailsIcon) {
     }
 
     companion object {
-        private val detailsIcon = FlatSVGIcon("icons/bx-search.svg").derive(0.75F)
+        private val detailsIcon = FlatSVGIcon("icons/bx-search.svg").derive(SECONDARY_ACTION_ICON_SCALE)
     }
 }

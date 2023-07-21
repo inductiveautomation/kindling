@@ -12,7 +12,6 @@ import java.awt.BorderLayout
 import java.awt.EventQueue
 import java.awt.Font
 import java.awt.event.ItemEvent
-import java.util.Locale
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JComponent
@@ -38,7 +37,7 @@ class Preference<T : Any>(
     val serializer: KSerializer<T>,
     createEditor: (Preference<T>.() -> JComponent)?,
 ) {
-    val key: String = name.lowercase(Locale.ROOT).filter(Char::isJavaIdentifierStart)
+    val key: String = name.lowercase().filter(Char::isJavaIdentifierStart)
 
     var currentValue
         get() = Kindling.Preferences[category, this] ?: default

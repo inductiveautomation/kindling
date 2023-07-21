@@ -42,6 +42,8 @@ import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTh
 data object Kindling {
     val frameIcon: Image = Toolkit.getDefaultToolkit().getImage(Kindling::class.java.getResource("/icons/kindling.png"))
 
+    const val SECONDARY_ACTION_ICON_SCALE = 0.75F
+
     data object Preferences {
         data object General : PreferenceCategory {
             val HomeLocation: Preference<Path> = preference(

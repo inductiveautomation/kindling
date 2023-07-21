@@ -11,9 +11,11 @@ import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
+import io.github.inductiveautomation.kindling.utils.getValue
 import java.awt.Desktop
 import java.io.File
 import java.nio.file.Path
+import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -54,6 +56,77 @@ class WrapperLogView(
             )
         }
     }
+
+    companion object {
+        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault())
+        private val DEFAULT_WRAPPER_MESSAGE_FORMAT =
+            "^[^|]+\\|(?<jvm>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))\$".toRegex()
+
+        fun parseLogs(lines: Sequence<String>): List<WrapperLogEvent> {
+            val events = mutableListOf<WrapperLogEvent>()
+            val currentStack = mutableListOf<String>()
+            var partialEvent: WrapperLogEvent? = null
+            var lastEventTimestamp: Instant? = null
+
+            fun WrapperLogEvent?.flush() {
+                if (this != null) {
+                    // flush our previously built event
+                    events += this.copy(stacktrace = currentStack.toList())
+                    currentStack.clear()
+                    partialEvent = null
+                }
+            }
+
+            for ((index, line) in lines.withIndex()) {
+                if (line.isBlank()) {
+                    continue
+                }
+
+                val match = DEFAULT_WRAPPER_MESSAGE_FORMAT.matchEntire(line)
+                if (match != null) {
+                    val timestamp by match.groups
+                    val time = DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(timestamp.value.trim(), Instant::from)
+
+                    // we hit an actual logged event
+                    if (match.groups["level"] != null) {
+                        partialEvent.flush()
+
+                        // now build up a new partial (the next line(s) may have stacktrace)
+                        val level by match.groups
+                        val logger by match.groups
+                        val message by match.groups
+                        lastEventTimestamp = time
+                        partialEvent = WrapperLogEvent(
+                            timestamp = time,
+                            message = message.value.trim(),
+                            logger = logger.value.trim(),
+                            level = Level.valueOf(level.value.single()),
+                        )
+                    } else {
+                        val stack by match.groups
+
+                        if (lastEventTimestamp == time) {
+                            // same timestamp - must be attached stacktrace
+                            currentStack += stack.value
+                        } else {
+                            partialEvent.flush()
+                            // different timestamp, but doesn't match our regex - just try to display it in a useful way
+                            events += WrapperLogEvent(
+                                timestamp = time,
+                                message = stack.value,
+                                level = Level.INFO,
+                            )
+                        }
+                    }
+                } else {
+                    throw IllegalArgumentException("Error parsing line $index, unparseable value: $line")
+                }
+            }
+            partialEvent.flush()
+            return events
+        }
+    }
 }
 
 data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
@@ -71,7 +144,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override fun open(paths: List<Path>): ToolPanel {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
         val events = paths.flatMap { path ->
-            path.useLines(DefaultEncoding.currentValue) { lines -> LogPanel.parseLogs(lines) }
+            path.useLines(DefaultEncoding.currentValue) { lines -> WrapperLogView.parseLogs(lines) }
         }
         return WrapperLogView(
             events = events,
@@ -82,7 +155,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
 
     override fun open(data: String): ToolPanel {
         return WrapperLogView(
-            events = LogPanel.parseLogs(data.lineSequence()),
+            events = WrapperLogView.parseLogs(data.lineSequence()),
             tabName = "Paste at ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
             fromFile = false,
         )

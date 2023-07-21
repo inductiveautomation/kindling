@@ -44,11 +44,11 @@ class FilterModel(val rawData: Map<String?, Int>) : AbstractListModel<Any>() {
     }
 }
 
-open class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(emptyMap())) {
+class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(emptyMap())) {
     private var total = 0
-    protected var percentages = emptyMap<String?, String>()
+    private var percentages = emptyMap<String?, String>()
 
-    protected var lastSelection = arrayOf<Any>()
+    private var lastSelection = arrayOf<Any>()
 
     init {
         selectionModel = NoSelectionModel()

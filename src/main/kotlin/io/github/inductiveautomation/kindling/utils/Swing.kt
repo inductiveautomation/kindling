@@ -43,6 +43,7 @@ import javax.swing.JTable
 import javax.swing.JTree
 import javax.swing.ListCellRenderer
 import javax.swing.UIManager
+import javax.swing.border.EmptyBorder
 import javax.swing.event.EventListenerList
 import javax.swing.filechooser.FileFilter
 import javax.swing.plaf.basic.BasicComboBoxRenderer
@@ -272,7 +273,7 @@ class ReifiedJXTable<T : TableModel>(
     }
 
     override fun createDefaultColumnControl(): JComponent {
-        return ColumnControlButton(this, FlatSVGIcon("icons/bx-column.svg").derive(0.5F))
+        return ColumnControlButton(this, FlatSVGIcon("icons/bx-column.svg").derive(0.8F))
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -420,6 +421,8 @@ inline fun <reified T> JComboBox<T>.configureCellRenderer(
 inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel {
     return StyledLabelBuilder().apply(block).createLabel()
 }
+
+fun EmptyBorder(): EmptyBorder = EmptyBorder(0, 0, 0, 0)
 
 val TableModel.rowIndices get() = 0 until rowCount
 val TableModel.columnIndices get() = 0 until columnCount

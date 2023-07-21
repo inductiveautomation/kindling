@@ -3,7 +3,9 @@ package io.github.inductiveautomation.kindling.log
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.CheckBoxList
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
+import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.NoSelectionModel
 import io.github.inductiveautomation.kindling.utils.add
@@ -15,6 +17,7 @@ import javax.swing.AbstractListModel
 import javax.swing.ButtonGroup
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.JToggleButton
 import javax.swing.ListModel
 
@@ -30,6 +33,15 @@ class LoggerNamesModel(val data: List<LoggerName>) : AbstractListModel<Any>() {
             CheckBoxList.ALL_ENTRY
         } else {
             data[index - 1]
+        }
+    }
+
+    fun indexOf(value: String): Int {
+        val indexOf = data.indexOfFirst { it.name == value }
+        return if (indexOf >= 0) {
+            indexOf + 1
+        } else {
+            -1
         }
     }
 }
@@ -49,7 +61,7 @@ class LoggerNamesList(model: LoggerNamesModel) : CheckBoxList(model) {
     private var lastCacheKey: Int = 0
     val loggerNames: Set<String>
         get() {
-            val currentCacheKey = checkBoxListSelectionModel.minSelectionIndex * 31 * checkBoxListSelectionModel.maxSelectionIndex
+            val currentCacheKey = checkBoxListSelectionModel.selectedIndices.contentHashCode()
             if (currentCacheKey != lastCacheKey) {
                 val checkedBoxes = checkBoxListSelectedIndices
                 cachedLoggerNames = buildSet {
@@ -71,7 +83,9 @@ class LoggerNamesList(model: LoggerNamesModel) : CheckBoxList(model) {
             },
             conversion = ::displayValue,
         )
+        isClickInCheckBoxOnly = false
         selectionModel = NoSelectionModel()
+
         cellRenderer = listCellRenderer<Any> { _, value, _, _, _ ->
             when (value) {
                 is LoggerName -> {
@@ -100,7 +114,7 @@ class LoggerNamesList(model: LoggerNamesModel) : CheckBoxList(model) {
     }
 }
 
-class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
+internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
     val list: LoggerNamesList = run {
         val loggerNames: List<LoggerName> = events.groupingBy { it.logger }
             .eachCount()
@@ -151,7 +165,7 @@ class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")
             ),
         ).forEach { sortButton ->
             sortButtons.add(sortButton)
-            add(sortButton, "cell 0 0")
+            add(sortButton, "split, gapx 2")
         }
 
         sortButtons.setSelected(naturalAsc.model, true)
@@ -168,8 +182,7 @@ class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")
     override val component: JComponent = this
     override val tabName: String = "Logger"
 
-    override val isFilterApplied: Boolean
-        get() = list.checkBoxListSelectedIndices.size < list.model.size - 1
+    override fun isFilterApplied(): Boolean = list.checkBoxListSelectedIndices.size < list.model.size - 1
 
     override fun addFilterChangeListener(listener: FilterChangeListener) {
         listenerList.add(listener)
@@ -179,13 +192,36 @@ class LoggerNamesPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")
         return event.logger in list.loggerNames
     }
 
+    override fun customizePopupMenu(
+        menu: JPopupMenu,
+        column: Column<out LogEvent, *>,
+        event: LogEvent,
+    ) {
+        if (column == WrapperLogColumns.Logger || column == SystemLogColumns.Logger) {
+            val loggerIndex = list.model.indexOf(event.logger)
+            menu.add(
+                Action("Show only ${event.logger} events") {
+                    list.checkBoxListSelectedIndex = loggerIndex
+                    list.ensureIndexIsVisible(loggerIndex)
+                },
+            )
+            menu.add(
+                Action("Exclude ${event.logger} events") {
+                    list.removeCheckBoxListSelectedIndex(loggerIndex)
+                },
+            )
+        }
+    }
+
+    override fun reset() = list.selectAll()
+
     companion object {
         private val byName = compareBy(String.CASE_INSENSITIVE_ORDER, LoggerName::name)
         private val byCount = compareBy(LoggerName::eventCount)
 
-        private val NATURAL_SORT_ASCENDING = FlatSVGIcon("icons/bx-sort-a-z.svg")
-        private val NATURAL_SORT_DESCENDING = FlatSVGIcon("icons/bx-sort-z-a.svg")
-        private val NUMERIC_SORT_ASCENDING = FlatSVGIcon("icons/bx-sort-up.svg")
-        private val NUMERIC_SORT_DESCENDING = FlatSVGIcon("icons/bx-sort-down.svg")
+        private val NATURAL_SORT_ASCENDING = FlatSVGIcon("icons/bx-sort-a-z.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+        private val NATURAL_SORT_DESCENDING = FlatSVGIcon("icons/bx-sort-z-a.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+        private val NUMERIC_SORT_ASCENDING = FlatSVGIcon("icons/bx-sort-up.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+        private val NUMERIC_SORT_DESCENDING = FlatSVGIcon("icons/bx-sort-down.svg").derive(SECONDARY_ACTION_ICON_SCALE)
     }
 }

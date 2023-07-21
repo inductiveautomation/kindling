@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTree
 import com.jidesoft.swing.StyledLabelBuilder
 import com.jidesoft.swing.TreeSearchable
+import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.utils.derive
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import java.awt.Font
@@ -65,10 +66,10 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
     }
 
     companion object {
-        private val TABLE_ICON = FlatSVGIcon("icons/bx-table.svg").derive(0.75F)
+        private val TABLE_ICON = FlatSVGIcon("icons/bx-table.svg").derive(SECONDARY_ACTION_ICON_SCALE)
         private val TABLE_ICON_SELECTED = TABLE_ICON.derive { UIManager.getColor("Tree.selectionForeground") }
 
-        private val COLUMN_ICON = FlatSVGIcon("icons/bx-column.svg").derive(0.75F)
+        private val COLUMN_ICON = FlatSVGIcon("icons/bx-column.svg").derive(SECONDARY_ACTION_ICON_SCALE)
         private val COLUMN_ICON_SELECTED = COLUMN_ICON.derive { UIManager.getColor("Tree.selectionForeground") }
     }
 }

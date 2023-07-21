@@ -6,7 +6,6 @@ import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
-import io.github.inductiveautomation.kindling.log.Level
 import io.github.inductiveautomation.kindling.log.LogPanel
 import io.github.inductiveautomation.kindling.log.MDC
 import io.github.inductiveautomation.kindling.log.SystemLogEvent
@@ -109,13 +108,15 @@ enum class IdbTool {
                     event_id
                 """.trimIndent(),
             ).executeQuery()
-                .toList { resultSet ->
-                    Pair(
-                        resultSet.getInt("event_id"),
-                        MDC(resultSet.getString("mapped_key"), resultSet.getString("mapped_value")),
-                    )
+                .use { resultSet ->
+                    buildMap<Int, MutableList<MDC>> {
+                        while (resultSet.next()) {
+                            val key = resultSet.getInt("event_id")
+                            val valueList = getOrPut(key) { mutableListOf() }
+                            valueList.add(MDC(resultSet.getString("mapped_key"), resultSet.getString("mapped_value")))
+                        }
+                    }
                 }
-                .groupBy(keySelector = Pair<Int, MDC>::first, valueTransform = Pair<Int, MDC>::second)
 
             val events = connection.prepareStatement(
                 //language=sql
@@ -140,11 +141,12 @@ enum class IdbTool {
                         message = resultSet.getString("formatted_message"),
                         logger = resultSet.getString("logger_name"),
                         thread = resultSet.getString("thread_name"),
-                        level = Level.valueOf(resultSet.getString("level_string")),
+                        level = enumValueOf(resultSet.getString("level_string")),
                         mdc = mdcKeys[eventId].orEmpty(),
                         stacktrace = stackTraces[eventId].orEmpty(),
                     )
                 }
+
             return LogPanel(events)
         }
     },

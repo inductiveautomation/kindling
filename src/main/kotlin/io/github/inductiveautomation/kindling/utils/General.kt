@@ -62,6 +62,12 @@ fun StringBuilder.tag(tag: String, content: String) {
  */
 fun <T> Grouping<T, Int>.mode(): Int? = eachCount().maxOfOrNull { it.key }
 
+fun <T, U : Comparable<U>> List<T>.isSortedBy(keyFn: (T) -> U): Boolean {
+    return asSequence().zipWithNext { a, b ->
+        keyFn(a) <= keyFn(b)
+    }.all { it }
+}
+
 val JDBCType.javaType: Class<*>
     get() = when (this) {
         JDBCType.BIT -> Boolean::class
