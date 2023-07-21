@@ -378,9 +378,9 @@ class LogPanel(
                 val colAtPoint = columnAtPoint(mouseEvent.point)
                 if (colAtPoint != -1) {
                     JPopupMenu().apply {
-                        val column = table.model.columns[colAtPoint]
+                        val column = table.model.columns[convertColumnIndexToModel(colAtPoint)]
                         for (filterPanel in filterPanels) {
-                            filterPanel.customizePopupMenu(this, column, table.model[rowAtPoint])
+                            filterPanel.customizePopupMenu(this, column, table.model[convertRowIndexToModel(rowAtPoint)])
                         }
                     }.takeIf { it.componentCount > 0 }
                 } else {
