@@ -44,16 +44,20 @@ class LogsModel<T : LogEvent>(
         data[rowIndex].marked = aValue as Boolean
     }
 
-    fun markAll(predicate: (T) -> Boolean?) {
+    /**
+     * Update marks in the model, efficiently.
+     * Return true to set marked, false to clear a mark, or null to bypass the row.
+     */
+    fun markRows(predicate: (T) -> Boolean?) {
         var firstIndex = -1
         var lastIndex = -1
-        for ((rowIndex, datum) in data.withIndex()) {
-            val shouldMark = predicate(datum) ?: continue
+        for ((rowIndex, event) in data.withIndex()) {
+            val shouldMark = predicate(event) ?: continue
             if (firstIndex == -1) {
                 firstIndex = rowIndex
             }
             lastIndex = rowIndex
-            datum.marked = shouldMark
+            event.marked = shouldMark
         }
         fireTableRowsUpdated(firstIndex, lastIndex)
     }

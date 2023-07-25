@@ -164,7 +164,7 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
     }
 
     @Suppress("unused", "MemberVisibilityCanBePrivate")
-    object MultiThreadColumns : ThreadColumnList() {
+    data object MultiThreadColumns : ThreadColumnList() {
         private val MONOSPACED = Font(Font.MONOSPACED, Font.PLAIN, 13)
 
         val state = Column<ThreadLifespan, String>(
@@ -233,7 +233,7 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
     }
 
     @Suppress("unused", "MemberVisibilityCanBePrivate")
-    object SingleThreadColumns : ThreadColumnList() {
+    data object SingleThreadColumns : ThreadColumnList() {
         val state = Column<ThreadLifespan, ThreadState>(
             "State",
             columnCustomization = {

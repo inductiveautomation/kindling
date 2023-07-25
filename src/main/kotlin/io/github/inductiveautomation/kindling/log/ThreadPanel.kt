@@ -15,8 +15,8 @@ import javax.swing.JPopupMenu
 import javax.swing.JToggleButton
 
 internal class ThreadPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
-    private val filterList = FilterList("").apply {
-        model = FilterModel(events.groupingBy { (it as SystemLogEvent).thread }.eachCount())
+    private val filterList = FilterList().apply {
+        setModel(FilterModel(events.groupingBy { (it as SystemLogEvent).thread }.eachCount()))
     }
 
     init {

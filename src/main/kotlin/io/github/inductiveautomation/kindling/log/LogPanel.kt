@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.ui.FlatScrollBarUI
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
@@ -27,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -116,6 +118,7 @@ class LogPanel(
                             event.thread.contains(text, ignoreCase = true) ||
                             event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
                     }
+
                     is WrapperLogEvent -> {
                         text in event.message ||
                             event.logger.contains(text, ignoreCase = true) ||
@@ -128,14 +131,19 @@ class LogPanel(
 
     private fun updateData() {
         BACKGROUND.launch {
-            val filteredData = filters.fold(rawData) { acc, logFilter ->
-                acc.filter(logFilter::filter).also {
-                    println("${it.size} left after $logFilter")
+            val filteredData = if (Debug.currentValue) {
+                // use a less efficient, but more debuggable, filtering sequence
+                filters.fold(rawData) { acc, logFilter ->
+                    acc.filter(logFilter::filter).also {
+                        println("${it.size} left after $logFilter")
+                    }
+                }
+            } else {
+                rawData.filter { event ->
+                    filters.all { filter -> filter.filter(event) }
                 }
             }
-//            val filteredData = rawData.filter { event ->
-//                filters.all { filter -> filter.filter(event) }
-//            }
+
             EDT_SCOPE.launch {
                 table.model = createModel(filteredData)
             }
@@ -177,9 +185,16 @@ class LogPanel(
                 }
             }
             addPropertyChangeListener("model") {
-                header.displayedRows = table.model.rowCount
+                header.displayedRows = model.rowCount
             }
 
+            val clearAllMarks = Action("Clear all marks") {
+                model.markRows { false }
+            }
+            actionMap.put(
+                "${ColumnControlButton.COLUMN_CONTROL_MARKER}.clearAllMarks",
+                clearAllMarks,
+            )
             attachPopupMenu { mouseEvent ->
                 val rowAtPoint = rowAtPoint(mouseEvent.point)
                 if (rowAtPoint != -1) {
@@ -195,17 +210,23 @@ class LogPanel(
                         }
 
                         if (colAtPoint == model.markIndex) {
+                            add(clearAllMarks)
+                        }
+
+                        if (column == SystemLogColumns.Message || column == WrapperLogColumns.Message) {
                             add(
-                                Action("Clear All Marks") {
-                                    model.markAll { false }
-                                },
+                                Action("Mark all with same message") {
+                                    model.markRows { row ->
+                                        (row.message == event.message).takeIf { it }
+                                    }
+                                }
                             )
                         }
 
                         if (event.stacktrace.isNotEmpty()) {
                             add(
                                 Action("Mark all with same stacktrace") {
-                                    model.markAll { row ->
+                                    model.markRows { row ->
                                         (row.stacktrace == event.stacktrace).takeIf { it }
                                     }
                                 },
@@ -215,7 +236,7 @@ class LogPanel(
                         if (column == SystemLogColumns.Thread && event is SystemLogEvent) {
                             add(
                                 Action("Mark all ${event.thread} events") {
-                                    model.markAll { row ->
+                                    model.markRows { row ->
                                         ((row as SystemLogEvent).thread == event.thread).takeIf { it }
                                     }
                                 },

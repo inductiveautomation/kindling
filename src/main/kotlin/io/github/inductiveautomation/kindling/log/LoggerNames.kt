@@ -15,7 +15,6 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JToggleButton
 
-
 internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
     private val countByLogger = events.groupingBy(LogEvent::logger).eachCount()
 
@@ -29,15 +28,15 @@ internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill
     }
 
     private val filterList = FilterList(
-        emptyLabel = "",
-        presentationExtractor = ::getSortKey,
+        toStringFn = ::getSortKey,
+        tooltipToStringFn = Any?::toString
     ).apply {
-        model = FilterModel(countByLogger)
+        setModel(FilterModel(countByLogger, ::getSortKey))
     }
 
     init {
         ShowFullLoggerNames.addChangeListener {
-            filterList.model = filterList.model.copy(filterList.comparator, ::getSortKey)
+            filterList.model = filterList.model.copy(filterList.comparator)
         }
 
         val bg = ButtonGroup()

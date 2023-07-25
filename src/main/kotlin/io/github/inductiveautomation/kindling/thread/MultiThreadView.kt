@@ -15,6 +15,7 @@ import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.add
 import io.github.inductiveautomation.kindling.thread.model.Thread
+import io.github.inductiveautomation.kindling.thread.model.ThreadColumnIdentifier
 import io.github.inductiveautomation.kindling.thread.model.ThreadDump
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
 import io.github.inductiveautomation.kindling.thread.model.ThreadModel
@@ -66,9 +67,9 @@ class MultiThreadView(
         ThreadDump.fromStream(path.inputStream()) ?: throw ToolOpeningException("Failed to open $path as a thread dump")
     }
 
-    private val poolList = FilterList("(No Pool)")
-    private val systemList = FilterList("Unassigned")
-    private val stateList = FilterList("")
+    private val poolList = FilterList { it?.toString() ?: "(No Pool)" }
+    private val systemList = FilterList { it?.toString() ?: "Unassigned" }
+    private val stateList = FilterList()
     private val searchField = JXSearchField("Search")
 
     private var visibleThreadDumps: List<ThreadDump?> = emptyList()
@@ -82,9 +83,9 @@ class MultiThreadView(
             field = value
             val allThreads = value.flatten().filterNotNull()
             if (allThreads.isNotEmpty()) {
-                stateList.model = FilterModel(allThreads.groupingBy { it.state.name }.eachCount())
-                systemList.model = FilterModel(allThreads.groupingBy(Thread::system).eachCount())
-                poolList.model = FilterModel(allThreads.groupingBy(Thread::pool).eachCount())
+                stateList.setModel(FilterModel(allThreads.groupingBy { it.state.name }.eachCount()))
+                systemList.setModel(FilterModel(allThreads.groupingBy(Thread::system).eachCount()))
+                poolList.setModel(FilterModel(allThreads.groupingBy(Thread::pool).eachCount()))
             }
             if (initialized) {
                 updateData()
@@ -99,7 +100,8 @@ class MultiThreadView(
         ReifiedJXTable(initialModel).apply {
             columnFactory = initialModel.columns.toColumnFactory()
             createDefaultColumnsFromModel()
-            setSortOrder(initialModel.columns[initialModel.columns.id], SortOrder.ASCENDING)
+            setSortOrder(ThreadColumnIdentifier.ID, SortOrder.ASCENDING)
+
             selectionMode = ListSelectionModel.SINGLE_SELECTION
 
             addHighlighter(
@@ -155,7 +157,7 @@ class MultiThreadView(
 
             actionMap.put(
                 "${ColumnControlButton.COLUMN_CONTROL_MARKER}.clearAllMarks",
-                Action(name = "Clear All Marks") {
+                Action(name = "Clear all marks") {
                     for (lifespan in model.threadData) {
                         lifespan.forEach { thread ->
                             thread?.marked = false

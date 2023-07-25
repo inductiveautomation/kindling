@@ -12,13 +12,13 @@ import javax.swing.JPopupMenu
 import javax.swing.event.EventListenerList
 
 internal class LevelPanel(rawData: List<LogEvent>) : LogFilterPanel {
-    private val filterList: FilterList = FilterList("")
+    private val filterList: FilterList = FilterList()
     override val component: JComponent = FlatScrollPane(filterList)
 
     private val listenerList = EventListenerList()
 
     init {
-        filterList.model = FilterModel(rawData.groupingBy { it.level?.name }.eachCount())
+        filterList.setModel(FilterModel(rawData.groupingBy { it.level?.name }.eachCount()))
         filterList.selectAll()
 
         filterList.checkBoxListSelectionModel.addListSelectionListener { e ->

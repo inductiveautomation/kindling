@@ -42,10 +42,11 @@ enum class FilterComparator(
     );
 }
 
-fun FilterModel(data: Map<String?, Int>) = FilterModel<String?>(data)
+fun FilterModel(data: Map<String?, Int>) = FilterModel(data) { it }
 
 class FilterModel<T>(
     val data: Map<T, Int>,
+    val sortKey: (T) -> String?,
 ) : AbstractListModel<Any>() {
     private val total = data.values.sum()
     val percentages = data.mapValues { (_, count) ->
@@ -75,15 +76,15 @@ class FilterModel<T>(
 
     fun copy(
         comparator: FilterComparator,
-        presentationExtractor: (key: Any?) -> String?,
     ): FilterModel<T> = FilterModel(
         data.entries
             .sortedWith(
                 compareBy(comparator) { (key, value) ->
-                    FilterModelEntry(presentationExtractor(key), value)
+                    FilterModelEntry(sortKey(key), value)
                 },
             )
             .associate { (key, value) -> key to value },
+        sortKey
     )
 
     companion object {
@@ -91,10 +92,12 @@ class FilterModel<T>(
     }
 }
 
+typealias Stringifier = (Any?) -> String?
+
 class FilterList(
-    private val emptyLabel: String,
-    private val presentationExtractor: (key: Any?) -> String? = { it?.toString() },
     initialComparator: FilterComparator = ByCountDescending,
+    private val tooltipToStringFn: Stringifier? = null,
+    private val toStringFn: Stringifier = { it?.toString() },
 ) : CheckBoxList(FilterModel(emptyMap())) {
     private var lastSelection = arrayOf<Any>()
 
@@ -103,14 +106,17 @@ class FilterList(
         isClickInCheckBoxOnly = false
 
         cellRenderer = listCellRenderer<Any?> { _, value, _, _, _ ->
-            text = when (value) {
-                ALL_ENTRY -> value.toString()
+            when (value) {
+                ALL_ENTRY -> {
+                    text = value.toString()
+                }
                 else -> {
-                    val displayValue = value?.let(presentationExtractor) ?: emptyLabel
-                    "$displayValue [${model.data[value]}] (${model.percentages[value]})"
+                    text = "${toStringFn(value)} [${model.data[value]}] (${model.percentages[value]})"
+                    toolTipText = tooltipToStringFn?.let { stringifier ->
+                        "${stringifier(value)} [${model.data[value]}] (${model.percentages[value]})"
+                    } ?: text
                 }
             }
-            toolTipText = text
         }
 
         object : ListSearchable(this) {
@@ -135,11 +141,12 @@ class FilterList(
 
     var comparator: FilterComparator = initialComparator
         set(newComparator) {
-            model = model.copy(newComparator, presentationExtractor)
+            model = model.copy(newComparator)
             field = newComparator
         }
 
-    override fun getModel(): FilterModel<*> = super.getModel() as FilterModel<*>
+    @Suppress("UNCHECKED_CAST")
+    override fun getModel(): FilterModel<in Any?> = super.getModel() as FilterModel<in Any?>
 
     override fun setModel(model: ListModel<*>) {
         require(model is FilterModel<*>)

@@ -41,6 +41,9 @@ import javax.swing.JPopupMenu
 import javax.swing.JTable
 import javax.swing.JTree
 import javax.swing.ListCellRenderer
+import javax.swing.SortOrder.ASCENDING
+import javax.swing.SortOrder.DESCENDING
+import javax.swing.SortOrder.UNSORTED
 import javax.swing.UIManager
 import javax.swing.border.EmptyBorder
 import javax.swing.event.EventListenerList
@@ -250,6 +253,8 @@ class ReifiedJXTable<T : TableModel>(
             getText = { it },
             getTooltip = { it },
         )
+
+        setSortOrderCycle(ASCENDING, DESCENDING, UNSORTED)
 
         // TODO header name as tooltip without breaking sorting
 
