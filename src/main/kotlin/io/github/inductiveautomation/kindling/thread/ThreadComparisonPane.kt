@@ -3,7 +3,7 @@ package io.github.inductiveautomation.kindling.thread
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatLabel
-import com.formdev.flatlaf.extras.components.FlatTextPane
+import com.jidesoft.swing.StyledLabel
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
@@ -18,19 +18,20 @@ import io.github.inductiveautomation.kindling.utils.add
 import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.jFrame
+import io.github.inductiveautomation.kindling.utils.style
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTaskPane
 import org.jdesktop.swingx.JXTaskPaneContainer
 import java.awt.Color
+import java.awt.Font
 import java.text.DecimalFormat
 import java.util.EventListener
 import javax.swing.JPanel
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
 import javax.swing.event.HyperlinkEvent
-import javax.swing.text.html.HTMLEditorKit
 import kotlin.properties.Delegates
 
 class ThreadComparisonPane(
@@ -88,7 +89,7 @@ class ThreadComparisonPane(
 
     private fun updateData() {
         threads.firstOrNull { it != null }?.let {
-            header.setText(it)
+            header.setThread(it)
         }
 
         val moreThanOneThread = threads.count { it != null } > 1
@@ -132,60 +133,34 @@ class ThreadComparisonPane(
         fun onBlockerSelected(threadId: Int)
     }
 
-    private class ComparisonEditorKit : HTMLEditorKit() {
-        init {
-            styleSheet.apply {
-                //language=CSS
-                addRule(
-                    """
-                b {
-                    font-size: larger;
-                }
-                pre { 
-                    font-size: 10px; 
-                }
-                object { 
-                    padding-left: 16px; 
-                }
-                    """.trimIndent(),
-                )
-            }
-        }
-    }
-
     private class HeaderPanel : JPanel(MigLayout("fill, ins 3")) {
-        private val nameLabel = FlatTextPane().apply {
-            editorKit = ComparisonEditorKit()
-            isEditable = false
+        private val nameLabel = StyledLabel().apply {
+            isLineWrap = false
         }
 
         init {
             add(nameLabel, "pushx, growx")
         }
 
-        fun setText(thread: Thread) {
-            nameLabel.text = buildString {
-                tag("html") {
-                    tag("b", thread.name)
-                    append("<br>")
+        fun setThread(thread: Thread) {
+            nameLabel.style {
+                add(thread.name, Font.BOLD)
+                add("\n")
+                add("ID: ", Font.BOLD)
+                add(thread.id.toString())
+                add(" | ")
+                add("Daemon: ", Font.BOLD)
+                add(thread.isDaemon.toString())
+                add(" | ")
 
-                    tag("b", "ID: ")
-                    append(thread.id)
-                    tag("b", " | ")
-
-                    tag("b", "Daemon: ")
-                    append(thread.isDaemon)
-                    tag("b", " | ")
-
-                    if (thread.system != null) {
-                        tag("b", "System: ")
-                        append(thread.system)
-                        tag("b", " | ")
-                    }
-                    if (thread.scope != null) {
-                        tag("b", "Scope: ")
-                        append(thread.scope)
-                    }
+                if (thread.system != null) {
+                    add("System: ", Font.BOLD)
+                    add(thread.system)
+                    add(" | ")
+                }
+                if (thread.scope != null) {
+                    add("Scope: ", Font.BOLD)
+                    add(thread.scope)
                 }
             }
         }

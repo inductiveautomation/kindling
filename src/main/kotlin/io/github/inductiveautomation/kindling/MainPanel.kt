@@ -28,11 +28,11 @@ import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.chooseFiles
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.jFrame
+import io.github.inductiveautomation.kindling.utils.traverseChildren
 import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
 import net.miginfocom.swing.MigLayout
 import java.awt.BorderLayout
-import java.awt.Container
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.EventQueue
@@ -55,7 +55,9 @@ import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JPanel
 import javax.swing.KeyStroke
+import javax.swing.SwingConstants
 import javax.swing.UIManager
+import javax.swing.filechooser.FileFilter
 
 class MainPanel : JPanel(MigLayout("ins 6, fill")) {
     private val fileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {
@@ -68,20 +70,25 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
             addActionListener {
                 DefaultEncoding.currentValue = selectedItem as Charset
             }
+            isEnabled = DefaultTool.currentValue.respectsEncoding
         }
 
-        val encodingPanel = JPanel(MigLayout("ins 0, fillx")).apply {
-            add(JLabel("Encoding: "))
-            add(encodingSelector, "growx, pushx")
-        }
-
-        (((components[0] as Container).components[3] as Container).components[3] as Container).apply {
-            layout = MigLayout("fillx, ins 5 0, hidemode 0")
-            add(encodingPanel, "growx, pushx", 0)
+        traverseChildren().filterIsInstance<JPanel>().last().apply {
+            add(encodingSelector, 0)
+            add(
+                JLabel("Encoding: ", SwingConstants.RIGHT).apply {
+                    verticalAlignment = SwingConstants.BOTTOM
+                },
+                0,
+            )
         }
 
         Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
         fileFilter = DefaultTool.currentValue.filter
+        addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY) { e ->
+            val relevantTool = Tool.byFilter[e.newValue as FileFilter]
+            encodingSelector.isEnabled = relevantTool?.respectsEncoding != false // null = 'all files', so enabled
+        }
 
         addActionListener {
             if (selectedFile != null) {

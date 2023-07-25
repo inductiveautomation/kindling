@@ -155,22 +155,25 @@ class MultiThreadView(
                 }
             }
 
-            actionMap.put(
-                "${ColumnControlButton.COLUMN_CONTROL_MARKER}.clearAllMarks",
-                Action(name = "Clear all marks") {
-                    for (lifespan in model.threadData) {
-                        lifespan.forEach { thread ->
-                            thread?.marked = false
-                        }
+            val clearAllMarks = Action(name = "Clear all marks") {
+                for (lifespan in model.threadData) {
+                    lifespan.forEach { thread ->
+                        thread?.marked = false
                     }
-                },
-            )
+                }
+            }
+            actionMap.put("${ColumnControlButton.COLUMN_CONTROL_MARKER}.clearAllMarks", clearAllMarks)
 
             attachPopupMenu table@{ event ->
                 val rowAtPoint = rowAtPoint(event.point)
                 selectionModel.setSelectionInterval(rowAtPoint, rowAtPoint)
 
                 JPopupMenu().apply {
+                    val colAtPoint = columnAtPoint(event.point)
+                    if (colAtPoint != -1 && getColumn(convertColumnIndexToModel(colAtPoint)).identifier == ThreadColumnIdentifier.MARK) {
+                        add(clearAllMarks)
+                    }
+
                     add(
                         JMenu("Filter all with same...").apply {
                             for (column in this@table.model.columns.filterableColumns) {
@@ -479,6 +482,7 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val description = "Thread dump (.json or .txt) files"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
     override val extensions = listOf("json", "txt")
+    override val respectsEncoding: Boolean = true
     override fun open(path: Path): ToolPanel = open(listOf(path))
     override fun open(paths: List<Path>): ToolPanel {
         return MultiThreadView(paths.sortedWith(compareBy(AlphanumComparator(), Path::name)))

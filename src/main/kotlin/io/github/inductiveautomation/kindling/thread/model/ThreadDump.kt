@@ -1,7 +1,7 @@
 package io.github.inductiveautomation.kindling.thread.model
 
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
-import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.getValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -22,10 +22,8 @@ data class ThreadDump internal constructor(
             ignoreUnknownKeys = true
         }
 
-        private val logger = getLogger<ThreadDump>()
-
         fun fromStream(stream: InputStream): ThreadDump? {
-            val text = stream.reader().readText()
+            val text = stream.reader(DefaultEncoding.currentValue).readText()
             return try {
                 JSON.decodeFromString(serializer(), text)
             } catch (ex: SerializationException) {

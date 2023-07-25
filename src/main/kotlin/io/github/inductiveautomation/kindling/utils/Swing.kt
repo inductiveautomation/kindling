@@ -22,6 +22,7 @@ import org.jdesktop.swingx.sort.SortController
 import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
 import java.awt.Component
+import java.awt.Container
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -418,6 +419,14 @@ inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel {
     return StyledLabelBuilder().apply(block).createLabel()
 }
 
+inline fun StyledLabel.style(block: StyledLabelBuilder.() -> Unit) {
+    StyledLabelBuilder().apply {
+        block()
+        clearStyleRanges()
+        configure(this@style)
+    }
+}
+
 fun EmptyBorder(): EmptyBorder = EmptyBorder(0, 0, 0, 0)
 
 val TableModel.rowIndices get() = 0 until rowCount
@@ -464,4 +473,14 @@ fun TableModel.exportToXLSX(file: File) = file.outputStream().use { fos ->
             }
         }
     }.xssfWorkbook.write(fos)
+}
+
+fun Component.traverseChildren(): Sequence<Component> = sequence {
+    if (this@traverseChildren is Container) {
+        val childComponents = synchronized(treeLock) { components.copyOf() }
+        for (component in childComponents) {
+            yield(component)
+            yieldAll(component.traverseChildren())
+        }
+    }
 }

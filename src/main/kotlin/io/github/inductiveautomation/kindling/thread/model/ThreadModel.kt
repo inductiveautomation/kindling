@@ -146,8 +146,12 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
     override fun getColumnCount(): Int = columns.size
     override fun getValueAt(row: Int, column: Int): Any? = get(row, columns[column])
     override fun getColumnClass(column: Int): Class<*> = columns[column].clazz
+    operator fun get(row: Int): ThreadLifespan {
+        return threadData[row]
+    }
+
     operator fun <T> get(row: Int, column: Column<ThreadLifespan, T>): T {
-        return threadData[row].let { info ->
+        return get(row).let { info ->
             column.getValue(info)
         }
     }

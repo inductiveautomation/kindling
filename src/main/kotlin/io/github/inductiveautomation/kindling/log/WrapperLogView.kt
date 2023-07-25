@@ -140,6 +140,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
             i.toString()
         }
     }
+    override val respectsEncoding: Boolean = true
 
     override fun open(paths: List<Path>): ToolPanel {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
