@@ -39,7 +39,8 @@ enum class FilterComparator(
         tooltip = "Sort by Count (descending)",
         icon = FlatSVGIcon("icons/bx-sort-down.svg").derive(SECONDARY_ACTION_ICON_SCALE),
         comparator = ByCountAscending.reversed(),
-    );
+    ),
+    ;
 }
 
 fun FilterModel(data: Map<String?, Int>) = FilterModel(data) { it }
@@ -74,17 +75,15 @@ class FilterModel<T>(
         }
     }
 
-    fun copy(
-        comparator: FilterComparator,
-    ): FilterModel<T> = FilterModel(
+    fun copy(comparator: FilterComparator): FilterModel<T> = FilterModel(
         data.entries
             .sortedWith(
                 compareBy(comparator) { (key, value) ->
                     FilterModelEntry(sortKey(key), value)
                 },
             )
-            .associate { (key, value) -> key to value },
-        sortKey
+            .associate(Map.Entry<T, Int>::toPair),
+        sortKey,
     )
 
     companion object {
@@ -110,6 +109,7 @@ class FilterList(
                 ALL_ENTRY -> {
                     text = value.toString()
                 }
+
                 else -> {
                     text = "${toStringFn(value)} [${model.data[value]}] (${model.percentages[value]})"
                     toolTipText = tooltipToStringFn?.let { stringifier ->

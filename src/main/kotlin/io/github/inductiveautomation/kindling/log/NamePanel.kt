@@ -29,7 +29,7 @@ internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill
 
     private val filterList = FilterList(
         toStringFn = ::getSortKey,
-        tooltipToStringFn = Any?::toString
+        tooltipToStringFn = Any?::toString,
     ).apply {
         setModel(FilterModel(countByLogger, ::getSortKey))
     }

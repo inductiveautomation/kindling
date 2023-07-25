@@ -294,7 +294,7 @@ class ReifiedJXTable<T : TableModel>(
             setSortOrder(sortedColumn, sortOrder)
         }
         if (setup) {
-            for (index in 0..<columnCount) {
+            for (index in 0 until columnCount) {
                 val previousSize = previousColumnSizes.getOrNull(index)
                 if (previousSize != null) {
                     getColumnExt(index).preferredWidth = previousSize

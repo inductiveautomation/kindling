@@ -22,7 +22,7 @@ private fun legacyJavadoc(url: String) = JavadocUrl(url, noframe = true)
 class DownloadJavadocsPlugin : Plugin<Project> {
     private val toDownload = mapOf(
         "8.1" to listOf(
-            javadoc("https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.27/"),
+            javadoc("https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.29/"),
             javadoc("https://docs.oracle.com/en/java/javase/11/docs/api/"),
             legacyJavadoc("https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/")
         ),

@@ -77,7 +77,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
 
         (((components[0] as Container).components[3] as Container).components[3] as Container).apply {
             layout = MigLayout("fillx, ins 5 0, hidemode 0")
-            add(encodingPanel, "growx, pushx",0)
+            add(encodingPanel, "growx, pushx", 0)
         }
 
         Tool.byFilter.keys.forEach(this::addChoosableFileFilter)

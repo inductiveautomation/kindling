@@ -27,7 +27,6 @@ interface PreferenceCategory {
     val preferences: List<Preference<*>>
 }
 
-
 class Preference<T : Any>(
     val category: PreferenceCategory,
     val name: String,

@@ -26,7 +26,6 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
 
-
 internal class MDCPanel(events: List<SystemLogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
     private val allMDCs = events.flatMap(SystemLogEvent::mdc)
 
@@ -202,9 +201,7 @@ data class MDCTableRow(
         val any = event.mdc.any { (key, value) ->
             this.key == key && this.value?.equals(value) == true
         }
-        return if (inclusive) any else {
-            !any
-        }
+        return if (inclusive) any else !any
     }
 }
 

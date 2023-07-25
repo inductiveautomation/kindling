@@ -113,16 +113,11 @@ class LogPanel(
             } else {
                 when (event) {
                     is SystemLogEvent -> {
-                        text in event.message ||
-                            event.logger.contains(text, ignoreCase = true) ||
-                            event.thread.contains(text, ignoreCase = true) ||
-                            event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
+                        text in event.message || event.logger.contains(text, ignoreCase = true) || event.thread.contains(text, ignoreCase = true) || event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
                     }
 
                     is WrapperLogEvent -> {
-                        text in event.message ||
-                            event.logger.contains(text, ignoreCase = true) ||
-                            event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
+                        text in event.message || event.logger.contains(text, ignoreCase = true) || event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
                     }
                 }
             }
@@ -219,7 +214,7 @@ class LogPanel(
                                     model.markRows { row ->
                                         (row.message == event.message).takeIf { it }
                                     }
-                                }
+                                },
                             )
                         }
 
@@ -278,31 +273,26 @@ class LogPanel(
     }
 
     private fun ListSelectionModel.updateDetails() {
-        details.events = selectedIndices
-            .filter { isSelectedIndex(it) }
-            .map { table.convertRowIndexToModel(it) }
-            .map { row -> table.model[row] }
-            .map { event ->
-                DetailEvent(
-                    title = when (event) {
-                        is SystemLogEvent -> "${TimeStampFormatter.format(event.timestamp)} ${event.thread}"
-                        else -> TimeStampFormatter.format(event.timestamp)
-                    },
-                    message = event.message,
-                    body = event.stacktrace.map { element ->
-                        if (UseHyperlinks.currentValue) {
-                            element.toBodyLine((header.version.selectedItem as MajorVersion).version + ".0")
-                        } else {
-                            BodyLine(element)
-                        }
-                    },
-                    details = when (event) {
-                        is SystemLogEvent -> event.mdc.associate { (key, value) -> key to value }
-                        is WrapperLogEvent -> emptyMap()
-                    },
-                )
-            }
-
+        details.events = selectedIndices.filter { isSelectedIndex(it) }.map { table.convertRowIndexToModel(it) }.map { row -> table.model[row] }.map { event ->
+            DetailEvent(
+                title = when (event) {
+                    is SystemLogEvent -> "${TimeStampFormatter.format(event.timestamp)} ${event.thread}"
+                    else -> TimeStampFormatter.format(event.timestamp)
+                },
+                message = event.message,
+                body = event.stacktrace.map { element ->
+                    if (UseHyperlinks.currentValue) {
+                        element.toBodyLine((header.version.selectedItem as MajorVersion).version + ".0")
+                    } else {
+                        BodyLine(element)
+                    }
+                },
+                details = when (event) {
+                    is SystemLogEvent -> event.mdc.associate { (key, value) -> key to value }
+                    is WrapperLogEvent -> emptyMap()
+                },
+            )
+        }
     }
 
     inner class GroupingScrollBar : JScrollBar() {

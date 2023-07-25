@@ -114,7 +114,7 @@ data object Kindling {
                     JComboBox(ChoosableEncodings).apply {
                         selectedItem = currentValue
 
-                        configureCellRenderer { _, value, _, selected, focused ->
+                        configureCellRenderer { _, value, _, _, _ ->
                             text = value?.displayName()
                             toolTipText = value?.displayName()
                         }
