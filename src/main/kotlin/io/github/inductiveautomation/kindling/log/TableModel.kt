@@ -21,16 +21,16 @@ class LogsModel<T : LogEvent>(
     override fun getColumnCount(): Int = columns.size
     override fun getValueAt(row: Int, column: Int): Any? = get(row, columns[column])
     override fun getColumnClass(column: Int): Class<*> = columns[column].clazz
-
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        val markIndex = columns[
-            when (columns) {
-                is SystemLogColumns -> SystemLogColumns.Marked
-                is WrapperLogColumns -> WrapperLogColumns.Marked
-            },
-        ]
         return columnIndex == markIndex
     }
+
+    val markIndex = columns[
+        when (columns) {
+            is SystemLogColumns -> SystemLogColumns.Marked
+            is WrapperLogColumns -> WrapperLogColumns.Marked
+        },
+    ]
 
     operator fun get(row: Int): T = data[row]
     operator fun <R> get(row: Int, column: Column<T, R>): R? {
@@ -42,6 +42,20 @@ class LogsModel<T : LogEvent>(
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
         require(isCellEditable(rowIndex, columnIndex))
         data[rowIndex].marked = aValue as Boolean
+    }
+
+    fun markAll(predicate: (T) -> Boolean?) {
+        var firstIndex = -1
+        var lastIndex = -1
+        for ((rowIndex, datum) in data.withIndex()) {
+            val shouldMark = predicate(datum) ?: continue
+            if (firstIndex == -1) {
+                firstIndex = rowIndex
+            }
+            lastIndex = rowIndex
+            datum.marked = shouldMark
+        }
+        fireTableRowsUpdated(firstIndex, lastIndex)
     }
 }
 
@@ -107,6 +121,9 @@ sealed class LogColumnList<T : LogEvent> : ColumnList<T>() {
 
     val Message = Column<T, String>(
         header = "Message",
+        columnCustomization = {
+            isSortable = false
+        },
         getValue = LogEvent::message,
     )
 
@@ -126,6 +143,7 @@ data object SystemLogColumns : LogColumnList<SystemLogEvent>() {
         header = "Thread",
         columnCustomization = {
             minWidth = 50
+            isSortable = false
         },
         getValue = SystemLogEvent::thread,
     )

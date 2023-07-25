@@ -3,7 +3,6 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.formdev.flatlaf.util.SystemInfo
-import com.jidesoft.swing.ListSearchable
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
 import io.github.evanrupert.excelkt.workbook
@@ -138,8 +137,12 @@ inline fun <reified T> listCellRenderer(crossinline customize: JLabel.(list: JLi
             focused: Boolean,
         ): Component {
             return super.getListCellRendererComponent(list, value, index, selected, focused).apply {
-                if (value is T) {
-                    customize.invoke(this as JLabel, list, value, index, selected, focused)
+                try {
+                    if (value is T) {
+                        customize.invoke(this as JLabel, list, value, index, selected, focused)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
@@ -203,18 +206,6 @@ inline fun <T : Component> T.attachPopupMenu(
 fun FlatSVGIcon.derive(colorer: (Color) -> Color): FlatSVGIcon {
     return FlatSVGIcon(name, scale).apply {
         colorFilter = FlatSVGIcon.ColorFilter(colorer)
-    }
-}
-
-fun JList<*>.installSearchable(setup: ListSearchable.() -> Unit, conversion: (Any?) -> String): ListSearchable {
-    return object : ListSearchable(this) {
-        init {
-            setup()
-        }
-
-        override fun convertElementToString(element: Any?): String {
-            return element.let(conversion)
-        }
     }
 }
 

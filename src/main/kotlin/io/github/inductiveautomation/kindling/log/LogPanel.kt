@@ -37,7 +37,9 @@ import java.time.Duration
 import java.time.Instant
 import java.util.EventListener
 import java.util.Vector
+import javax.swing.AbstractAction
 import javax.swing.Icon
+import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -100,7 +102,7 @@ class LogPanel(
             add(panel)
         }
         add { event ->
-            !event.marked || LogViewer.ShowOnlyMarked.currentValue
+            !header.showOnlyMarked.selected || event.marked
         }
         add { event ->
             val text = header.search.text
@@ -114,7 +116,6 @@ class LogPanel(
                             event.thread.contains(text, ignoreCase = true) ||
                             event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
                     }
-
                     is WrapperLogEvent -> {
                         text in event.message ||
                             event.logger.contains(text, ignoreCase = true) ||
@@ -127,9 +128,14 @@ class LogPanel(
 
     private fun updateData() {
         BACKGROUND.launch {
-            val filteredData = rawData.filter { event ->
-                filters.all { filter -> filter.filter(event) }
+            val filteredData = filters.fold(rawData) { acc, logFilter ->
+                acc.filter(logFilter::filter).also {
+                    println("${it.size} left after $logFilter")
+                }
             }
+//            val filteredData = rawData.filter { event ->
+//                filters.all { filter -> filter.filter(event) }
+//            }
             EDT_SCOPE.launch {
                 table.model = createModel(filteredData)
             }
@@ -173,6 +179,53 @@ class LogPanel(
             addPropertyChangeListener("model") {
                 header.displayedRows = table.model.rowCount
             }
+
+            attachPopupMenu { mouseEvent ->
+                val rowAtPoint = rowAtPoint(mouseEvent.point)
+                if (rowAtPoint != -1) {
+                    addRowSelectionInterval(rowAtPoint, rowAtPoint)
+                }
+                val colAtPoint = columnAtPoint(mouseEvent.point)
+                if (colAtPoint != -1) {
+                    JPopupMenu().apply {
+                        val column = model.columns[convertColumnIndexToModel(colAtPoint)]
+                        val event = model[convertRowIndexToModel(rowAtPoint)]
+                        for (filterPanel in sidebar.filterPanels) {
+                            filterPanel.customizePopupMenu(this, column, event)
+                        }
+
+                        if (colAtPoint == model.markIndex) {
+                            add(
+                                Action("Clear All Marks") {
+                                    model.markAll { false }
+                                },
+                            )
+                        }
+
+                        if (event.stacktrace.isNotEmpty()) {
+                            add(
+                                Action("Mark all with same stacktrace") {
+                                    model.markAll { row ->
+                                        (row.stacktrace == event.stacktrace).takeIf { it }
+                                    }
+                                },
+                            )
+                        }
+
+                        if (column == SystemLogColumns.Thread && event is SystemLogEvent) {
+                            add(
+                                Action("Mark all ${event.thread} events") {
+                                    model.markAll { row ->
+                                        ((row as SystemLogEvent).thread == event.thread).takeIf { it }
+                                    }
+                                },
+                            )
+                        }
+                    }.takeIf { it.componentCount > 0 }
+                } else {
+                    null
+                }
+            }
         }
 
         header.apply {
@@ -182,22 +235,24 @@ class LogPanel(
             version.addActionListener {
                 table.selectionModel.updateDetails()
             }
+            showOnlyMarked.addPropertyChangeListener { e ->
+                if (e.propertyName == AbstractAction.SELECTED_KEY) {
+                    updateData()
+                }
+            }
         }
 
-        LogViewer.apply {
-            SelectedTimeZone.addChangeListener {
-                table.model.fireTableDataChanged()
-            }
-            ShowFullLoggerNames.addChangeListener {
-                table.model.fireTableDataChanged()
-            }
-            ShowOnlyMarked.addChangeListener {
-                updateData()
-            }
-            HyperlinkStrategy.addChangeListener {
-                // if the link strategy changes, we need to rebuild all the hyperlinks
-                table.selectionModel.updateDetails()
-            }
+        ShowFullLoggerNames.addChangeListener {
+            table.model.fireTableDataChanged()
+        }
+
+        HyperlinkStrategy.addChangeListener {
+            // if the link strategy changes, we need to rebuild all the hyperlinks
+            table.selectionModel.updateDetails()
+        }
+
+        LogViewer.SelectedTimeZone.addChangeListener {
+            table.model.fireTableDataChanged()
         }
     }
 
@@ -306,6 +361,12 @@ class LogPanel(
         }
         private val versionLabel = JLabel("Version")
 
+        val showOnlyMarked = Action(
+            name = "Show Only Marked",
+            selected = false,
+            action = {},
+        )
+
         private fun updateVersionVisibility() {
             val isVisible = UseHyperlinks.currentValue && HyperlinkStrategy.currentValue == LinkHandlingStrategy.OpenInBrowser
             version.isVisible = isVisible
@@ -314,6 +375,7 @@ class LogPanel(
 
         init {
             add(events, "pushx")
+            add(JCheckBox(showOnlyMarked))
 
             add(versionLabel)
             add(version)
@@ -334,7 +396,15 @@ class LogPanel(
         private val levels = LevelPanel(rawData)
 
         private val mdc: MDCPanel? = if (columnList == SystemLogColumns) {
-            MDCPanel(rawData.filterIsInstance<SystemLogEvent>())
+            @Suppress("UNCHECKED_CAST")
+            MDCPanel(rawData as List<SystemLogEvent>)
+        } else {
+            null
+        }
+
+        private val threads: ThreadPanel? = if (columnList == SystemLogColumns) {
+            @Suppress("UNCHECKED_CAST")
+            ThreadPanel(rawData as List<SystemLogEvent>)
         } else {
             null
         }
@@ -349,11 +419,13 @@ class LogPanel(
             levels,
             time,
             mdc,
+            threads,
         )
 
         init {
             tabLayoutPolicy = SCROLL_TAB_LAYOUT
-            tabsPopupPolicy = TabsPopupPolicy.never
+            tabsPopupPolicy = TabsPopupPolicy.asNeeded
+            scrollButtonsPolicy = ScrollButtonsPolicy.never
             tabWidthMode = TabWidthMode.equal
             tabType = TabType.underlined
             tabHeight = 16
@@ -367,24 +439,6 @@ class LogPanel(
                     updateData()
 
                     selectedIndex = i
-                }
-            }
-
-            table.attachPopupMenu { mouseEvent ->
-                val rowAtPoint = rowAtPoint(mouseEvent.point)
-                if (rowAtPoint != -1) {
-                    table.addRowSelectionInterval(rowAtPoint, rowAtPoint)
-                }
-                val colAtPoint = columnAtPoint(mouseEvent.point)
-                if (colAtPoint != -1) {
-                    JPopupMenu().apply {
-                        val column = table.model.columns[convertColumnIndexToModel(colAtPoint)]
-                        for (filterPanel in filterPanels) {
-                            filterPanel.customizePopupMenu(this, column, table.model[convertRowIndexToModel(rowAtPoint)])
-                        }
-                    }.takeIf { it.componentCount > 0 }
-                } else {
-                    null
                 }
             }
 

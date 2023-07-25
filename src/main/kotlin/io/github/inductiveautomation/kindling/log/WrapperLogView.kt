@@ -196,15 +196,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
-    val ShowOnlyMarked = preference(
-        name = "Show Marked Only",
-        default = false,
-        editor = {
-            PreferenceCheckbox("Show only marked logs")
-        },
-    )
-
     override val displayName: String = "Log View"
     override val key: String = "logview"
-    override val preferences: List<Preference<*>> = listOf(SelectedTimeZone, ShowDensity, ShowOnlyMarked)
+    override val preferences: List<Preference<*>> = listOf(SelectedTimeZone, ShowDensity)
 }

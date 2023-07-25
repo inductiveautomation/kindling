@@ -1,22 +1,59 @@
 package io.github.inductiveautomation.kindling.utils
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.jidesoft.comparator.AlphanumComparator
 import com.jidesoft.swing.CheckBoxList
 import com.jidesoft.swing.ListSearchable
+import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
+import io.github.inductiveautomation.kindling.utils.FilterComparator.ByCountDescending
 import java.text.DecimalFormat
 import javax.swing.AbstractListModel
 import javax.swing.ListModel
 
-typealias FilterComparator = Comparator<Map.Entry<String?, Int>>
+data class FilterModelEntry(
+    val key: String?,
+    val count: Int,
+)
 
-class FilterModel(val rawData: Map<String?, Int>) : AbstractListModel<Any>() {
-    var comparator: FilterComparator = byCountDesc
-        set(value) {
-            values = rawData.entries.sortedWith(value).map { it.key }
-            fireContentsChanged(this, 0, size)
-            field = value
-        }
+enum class FilterComparator(
+    val tooltip: String,
+    val icon: FlatSVGIcon,
+    val comparator: Comparator<FilterModelEntry>,
+) : Comparator<FilterModelEntry> by comparator {
+    ByNameAscending(
+        tooltip = "Sort A-Z",
+        icon = FlatSVGIcon("icons/bx-sort-a-z.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        comparator = compareBy(nullsFirst(AlphanumComparator(false))) { it.key },
+    ),
+    ByNameDescending(
+        tooltip = "Sort Z-A",
+        icon = FlatSVGIcon("icons/bx-sort-z-a.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        comparator = ByNameAscending.reversed(),
+    ),
+    ByCountAscending(
+        tooltip = "Sort by Count",
+        icon = FlatSVGIcon("icons/bx-sort-up.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        comparator = compareBy(FilterModelEntry::count),
+    ),
+    ByCountDescending(
+        tooltip = "Sort by Count (descending)",
+        icon = FlatSVGIcon("icons/bx-sort-down.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        comparator = ByCountAscending.reversed(),
+    );
+}
 
-    private var values = rawData.entries.sortedWith(comparator).map { it.key }
+fun FilterModel(data: Map<String?, Int>) = FilterModel<String?>(data)
+
+class FilterModel<T>(
+    val data: Map<T, Int>,
+) : AbstractListModel<Any>() {
+    private val total = data.values.sum()
+    val percentages = data.mapValues { (_, count) ->
+        val percentage = count.toFloat() / total
+        percentFormat.format(percentage)
+    }
+
+    internal var values: List<*> = data.keys.toList()
 
     override fun getSize(): Int = values.size + 1
     override fun getElementAt(index: Int): Any? {
@@ -27,8 +64,8 @@ class FilterModel(val rawData: Map<String?, Int>) : AbstractListModel<Any>() {
         }
     }
 
-    fun indexOf(value: String): Int {
-        val indexOf = values.indexOf(value)
+    fun indexOf(value: Any?): Int {
+        val indexOf: Int = values.indexOf(value)
         return if (indexOf >= 0) {
             indexOf + 1
         } else {
@@ -36,18 +73,29 @@ class FilterModel(val rawData: Map<String?, Int>) : AbstractListModel<Any>() {
         }
     }
 
+    fun copy(
+        comparator: FilterComparator,
+        presentationExtractor: (key: Any?) -> String?,
+    ): FilterModel<T> = FilterModel(
+        data.entries
+            .sortedWith(
+                compareBy(comparator) { (key, value) ->
+                    FilterModelEntry(presentationExtractor(key), value)
+                },
+            )
+            .associate { (key, value) -> key to value },
+    )
+
     companion object {
-        val byNameAsc: FilterComparator = compareBy(nullsFirst(String.CASE_INSENSITIVE_ORDER)) { it.key }
-        val byNameDesc: FilterComparator = byNameAsc.reversed()
-        val byCountAsc: FilterComparator = compareBy { it.value }
-        val byCountDesc: FilterComparator = byCountAsc.reversed()
+        private val percentFormat = DecimalFormat.getPercentInstance()
     }
 }
 
-class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(emptyMap())) {
-    private var total = 0
-    private var percentages = emptyMap<String?, String>()
-
+class FilterList(
+    private val emptyLabel: String,
+    private val presentationExtractor: (key: Any?) -> String? = { it?.toString() },
+    initialComparator: FilterComparator = ByCountDescending,
+) : CheckBoxList(FilterModel(emptyMap())) {
     private var lastSelection = arrayOf<Any>()
 
     init {
@@ -56,10 +104,13 @@ class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(empt
 
         cellRenderer = listCellRenderer<Any?> { _, value, _, _, _ ->
             text = when (value) {
-                is String -> "$value - ${model.rawData[value]} (${percentages.getValue(value)})"
-                null -> "$emptyLabel - ${model.rawData[null]} (${percentages.getValue(null)})"
-                else -> value.toString()
+                ALL_ENTRY -> value.toString()
+                else -> {
+                    val displayValue = value?.let(presentationExtractor) ?: emptyLabel
+                    "$displayValue [${model.data[value]}] (${model.percentages[value]})"
+                }
             }
+            toolTipText = text
         }
 
         object : ListSearchable(this) {
@@ -77,15 +128,21 @@ class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(empt
         }
     }
 
-    fun select(value: String) {
+    fun select(value: Any?) {
         val rowToSelect = model.indexOf(value)
         checkBoxListSelectionModel.setSelectionInterval(rowToSelect, rowToSelect)
     }
 
-    override fun getModel(): FilterModel = super.getModel() as FilterModel
+    var comparator: FilterComparator = initialComparator
+        set(newComparator) {
+            model = model.copy(newComparator, presentationExtractor)
+            field = newComparator
+        }
+
+    override fun getModel(): FilterModel<*> = super.getModel() as FilterModel<*>
 
     override fun setModel(model: ListModel<*>) {
-        require(model is FilterModel)
+        require(model is FilterModel<*>)
         val currentSelection = checkBoxListSelectedValues
         lastSelection = if (currentSelection.isEmpty()) {
             lastSelection
@@ -98,14 +155,28 @@ class FilterList(private val emptyLabel: String) : CheckBoxList(FilterModel(empt
 
             super.setModel(model)
 
-            total = model.rawData.values.sum()
-            percentages = model.rawData.mapValues { (_, count) ->
-                val percentage = count.toFloat() / total
-                DecimalFormat.getPercentInstance().format(percentage)
+            for (sortAction in sortActions) {
+                sortAction.selected = comparator == sortAction.comparator
             }
             addCheckBoxListSelectedValues(lastSelection)
         } finally {
             checkBoxListSelectionModel.valueIsAdjusting = false
         }
+    }
+
+    val sortActions: List<SortAction> = FilterComparator.entries.map { filterComparator ->
+        SortAction(filterComparator)
+    }
+
+    inner class SortAction(comparator: FilterComparator) : Action(
+        description = comparator.tooltip,
+        icon = comparator.icon,
+        selected = this@FilterList.comparator == comparator,
+        action = {
+            this@FilterList.comparator = comparator
+            selected = true
+        },
+    ) {
+        var comparator: FilterComparator by actionValue("filterComparator", comparator)
     }
 }

@@ -1,6 +1,5 @@
 package io.github.inductiveautomation.kindling.log
 
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.FilterList
@@ -15,31 +14,12 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JToggleButton
 
-
-internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
-    private val countByLogger = events.groupingBy(LogEvent::logger).eachCount()
-
-    private fun getSortKey(key: Any?): String {
-        require(key is String)
-        return if (ShowFullLoggerNames.currentValue) {
-            key
-        } else {
-            key.substringAfterLast('.')
-        }
-    }
-
-    private val filterList = FilterList(
-        emptyLabel = "",
-        presentationExtractor = ::getSortKey,
-    ).apply {
-        model = FilterModel(countByLogger)
+internal class ThreadPanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill")), LogFilterPanel {
+    private val filterList = FilterList("").apply {
+        model = FilterModel(events.groupingBy { (it as SystemLogEvent).thread }.eachCount())
     }
 
     init {
-        ShowFullLoggerNames.addChangeListener {
-            filterList.model = filterList.model.copy(filterList.comparator, ::getSortKey)
-        }
-
         val bg = ButtonGroup()
         for (sortAction in filterList.sortActions) {
             val sortToggle = JToggleButton(sortAction)
@@ -58,7 +38,7 @@ internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill
     }
 
     override val component: JComponent = this
-    override val tabName: String = "Logger"
+    override val tabName: String = "Thread"
 
     override fun isFilterApplied(): Boolean = filterList.checkBoxListSelectedIndices.size < filterList.model.size - 1
 
@@ -67,7 +47,7 @@ internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill
     }
 
     override fun filter(event: LogEvent): Boolean {
-        return event.logger in filterList.checkBoxListSelectedValues
+        return (event as SystemLogEvent).thread in filterList.checkBoxListSelectedValues
     }
 
     override fun customizePopupMenu(
@@ -75,17 +55,17 @@ internal class NamePanel(events: List<LogEvent>) : JPanel(MigLayout("ins 0, fill
         column: Column<out LogEvent, *>,
         event: LogEvent,
     ) {
-        if (column == WrapperLogColumns.Logger || column == SystemLogColumns.Logger) {
-            val loggerIndex = filterList.model.indexOf(event.logger)
+        if (column == SystemLogColumns.Thread) {
+            val threadIndex = filterList.model.indexOf((event as SystemLogEvent).thread)
             menu.add(
-                Action("Show only ${event.logger} events") {
-                    filterList.checkBoxListSelectedIndex = loggerIndex
-                    filterList.ensureIndexIsVisible(loggerIndex)
+                Action("Show only ${event.thread} events") {
+                    filterList.checkBoxListSelectedIndex = threadIndex
+                    filterList.ensureIndexIsVisible(threadIndex)
                 },
             )
             menu.add(
-                Action("Exclude ${event.logger} events") {
-                    filterList.removeCheckBoxListSelectedIndex(loggerIndex)
+                Action("Exclude ${event.thread} events") {
+                    filterList.removeCheckBoxListSelectedIndex(threadIndex)
                 },
             )
         }

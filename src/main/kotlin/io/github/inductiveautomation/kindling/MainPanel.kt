@@ -32,6 +32,7 @@ import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
 import net.miginfocom.swing.MigLayout
 import java.awt.BorderLayout
+import java.awt.Container
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.EventQueue
@@ -74,12 +75,10 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
             add(encodingSelector, "growx, pushx")
         }
 
-        accessory = encodingPanel
-
-//        (((components[0] as JPanel).components[3] as JPanel).components[3] as JPanel).apply {
-//            layout = MigLayout("fillx, ins 5 0, hidemode 0")
-//            add(encodingPanel, "growx, pushx",0)
-//        }
+        (((components[0] as Container).components[3] as Container).components[3] as Container).apply {
+            layout = MigLayout("fillx, ins 5 0, hidemode 0")
+            add(encodingPanel, "growx, pushx",0)
+        }
 
         Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
         fileFilter = DefaultTool.currentValue.filter

@@ -113,7 +113,10 @@ enum class IdbTool {
                         while (resultSet.next()) {
                             val key = resultSet.getInt("event_id")
                             val valueList = getOrPut(key) { mutableListOf() }
-                            valueList.add(MDC(resultSet.getString("mapped_key"), resultSet.getString("mapped_value")))
+                            valueList += MDC(
+                                resultSet.getString("mapped_key"),
+                                resultSet.getString("mapped_value"),
+                            )
                         }
                     }
                 }
