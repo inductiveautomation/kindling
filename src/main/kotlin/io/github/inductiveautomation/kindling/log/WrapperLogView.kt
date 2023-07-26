@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.MultiTool
@@ -144,11 +145,13 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
 
     override fun open(paths: List<Path>): ToolPanel {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
-        val events = paths.flatMap { path ->
+        // flip the paths, so the .5, .4, .3, .2, .1 - this hopefully helps with the per-event sort below
+        val reverseOrder = paths.sortedWith(compareBy(AlphanumComparator(), Path::name).reversed())
+        val events = reverseOrder.flatMap { path ->
             path.useLines(DefaultEncoding.currentValue) { lines -> WrapperLogView.parseLogs(lines) }
         }
         return WrapperLogView(
-            events = events,
+            events = events.sortedBy { it.timestamp },
             tabName = paths.first().name,
             fromFile = true,
         )

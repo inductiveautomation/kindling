@@ -23,6 +23,7 @@ import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
 import java.awt.Component
 import java.awt.Container
+import java.awt.Toolkit
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -484,3 +485,5 @@ fun Component.traverseChildren(): Sequence<Component> = sequence {
         }
     }
 }
+
+val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx

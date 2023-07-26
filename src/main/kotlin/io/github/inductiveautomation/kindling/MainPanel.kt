@@ -28,6 +28,7 @@ import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.chooseFiles
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.jFrame
+import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.traverseChildren
 import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
@@ -101,8 +102,11 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
         }
     }
 
-    private val openFunction: () -> Unit = {
-        fileChooser.chooseFiles(this)?.let { selectedFiles ->
+    private val openAction = Action(
+        name = "Open...",
+        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMaskEx),
+    ) {
+        fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
             val selectedTool: Tool? = Tool.byFilter[fileChooser.fileFilter]
             openFiles(selectedFiles, selectedTool)
         }
@@ -116,12 +120,9 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
 
         trailingComponent = JPanel(BorderLayout()).apply {
             add(
-                JButton(
-                    Action(
-                        icon = FlatSVGIcon("icons/bx-plus.svg"),
-                    ) { openFunction() },
-                ).apply {
-                    isFocusable = false
+                JButton(openAction).apply {
+                    hideActionText = true
+                    icon = FlatSVGIcon("icons/bx-plus.svg")
                 },
                 BorderLayout.WEST,
             )
@@ -141,14 +142,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
     private val menuBar = JMenuBar().apply {
         add(
             JMenu("File").apply {
-                add(
-                    Action(
-                        name = "Open...",
-                        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx),
-                    ) {
-                        openFunction()
-                    },
-                )
+                add(openAction)
                 for (tool in Tool.tools) {
                     add(
                         Action(

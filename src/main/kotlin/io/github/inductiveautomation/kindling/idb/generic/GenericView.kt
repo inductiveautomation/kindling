@@ -5,10 +5,10 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.javaType
+import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import net.miginfocom.swing.MigLayout
 import java.awt.Dimension
-import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.JDBCType
@@ -118,7 +118,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
     private val results = ResultsPanel()
 
     init {
-        val ctrlEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx)
+        val ctrlEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx)
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
         actionMap.put("execute", execute)
 
