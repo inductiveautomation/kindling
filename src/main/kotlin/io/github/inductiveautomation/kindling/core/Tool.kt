@@ -5,7 +5,6 @@ import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.idb.IdbViewer
 import io.github.inductiveautomation.kindling.log.LogViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
-import io.github.inductiveautomation.kindling.utils.FileExtensionFilter
 import io.github.inductiveautomation.kindling.utils.loadService
 import io.github.inductiveautomation.kindling.zip.ZipViewer
 import java.io.File
@@ -16,14 +15,12 @@ interface Tool {
     val title: String
     val description: String
     val icon: FlatSVGIcon
-    val extensions: List<String>
     val respectsEncoding: Boolean
         get() = false
 
     fun open(path: Path): ToolPanel
 
-    val filter: FileExtensionFilter
-        get() = FileExtensionFilter(description, extensions)
+    val filter: FileFilter
 
     companion object {
         val tools: List<Tool> by lazy {
@@ -44,23 +41,11 @@ interface Tool {
             tools.associateBy(Tool::title)
         }
 
-        val byExtension by lazy {
-            buildMap {
-                for (tool in tools) {
-                    for (extension in tool.extensions) {
-                        put(extension, tool)
-                    }
-                }
-            }
+        fun find(file: File): Tool? = tools.find { tool ->
+            tool.filter.accept(file)
         }
 
-        operator fun get(file: File): Tool {
-            return checkNotNull(
-                tools.find { tool ->
-                    tool.filter.accept(file)
-                },
-            ) { "No tool found for $file" }
-        }
+        operator fun get(file: File): Tool = checkNotNull(find(file)) { "No tool found for $file" }
     }
 }
 

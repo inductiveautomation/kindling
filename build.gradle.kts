@@ -20,12 +20,6 @@ repositories {
     maven {
         url = uri("https://nexus.inductiveautomation.com/repository/inductiveautomation-thirdparty/")
     }
-    maven {
-        url = uri("https://jitpack.io")
-        content {
-            includeGroup("com.github.Dansoftowner")
-        }
-    }
 }
 
 dependencies {
@@ -37,7 +31,7 @@ dependencies {
     api(libs.jide.common)
     api(libs.swingx)
     api(libs.logback)
-    api(libs.svgSalamander)
+    api(libs.jsvg)
     api(libs.bundles.coroutines)
     api(libs.bundles.flatlaf)
     api(libs.bundles.ignition) {

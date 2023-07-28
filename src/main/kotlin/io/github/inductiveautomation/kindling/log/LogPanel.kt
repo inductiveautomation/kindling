@@ -28,7 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.table.ColumnControlButton
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -39,7 +39,6 @@ import java.time.Duration
 import java.time.Instant
 import java.util.EventListener
 import java.util.Vector
-import javax.swing.AbstractAction
 import javax.swing.Icon
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
@@ -104,7 +103,7 @@ class LogPanel(
             add(panel)
         }
         add { event ->
-            !header.showOnlyMarked.selected || event.marked
+            !header.showOnlyMarked.isSelected || event.marked
         }
         add { event ->
             val text = header.search.text
@@ -187,7 +186,7 @@ class LogPanel(
                 model.markRows { false }
             }
             actionMap.put(
-                "${ColumnControlButton.COLUMN_CONTROL_MARKER}.clearAllMarks",
+                "$COLUMN_CONTROL_MARKER.clearAllMarks",
                 clearAllMarks,
             )
             attachPopupMenu { mouseEvent ->
@@ -251,10 +250,14 @@ class LogPanel(
             version.addActionListener {
                 table.selectionModel.updateDetails()
             }
-            showOnlyMarked.addPropertyChangeListener { e ->
-                if (e.propertyName == AbstractAction.SELECTED_KEY) {
-                    updateData()
-                }
+            showOnlyMarked.addActionListener {
+                updateData()
+            }
+        }
+
+        sidebar.apply {
+            for (filterPanel in filterPanels) {
+                filterPanel.addFilterChangeListener(::updateData)
             }
         }
 
@@ -372,11 +375,7 @@ class LogPanel(
         }
         private val versionLabel = JLabel("Version")
 
-        val showOnlyMarked = Action(
-            name = "Show Only Marked",
-            selected = false,
-            action = {},
-        )
+        val showOnlyMarked = JCheckBox("Show Only Marked", false)
 
         private fun updateVersionVisibility() {
             val isVisible = UseHyperlinks.currentValue && HyperlinkStrategy.currentValue == LinkHandlingStrategy.OpenInBrowser
@@ -385,10 +384,10 @@ class LogPanel(
         }
 
         init {
-            add(events, "pushx")
-            add(JCheckBox(showOnlyMarked))
+            add(events, "pushx, growx")
+            add(showOnlyMarked)
 
-            add(versionLabel)
+            add(versionLabel, "gapx 30")
             add(version)
             updateVersionVisibility()
             UseHyperlinks.addChangeListener { updateVersionVisibility() }
@@ -402,18 +401,20 @@ class LogPanel(
         }
     }
 
-    private inner class Sidebar(rawData: List<LogEvent>) : FlatTabbedPane() {
+    private class Sidebar(rawData: List<LogEvent>) : FlatTabbedPane() {
         private val names = NamePanel(rawData)
         private val levels = LevelPanel(rawData)
 
-        private val mdc: MDCPanel? = if (columnList == SystemLogColumns) {
+        private val systemLogs: Boolean = rawData.first() is SystemLogEvent
+
+        private val mdc: MDCPanel? = if (systemLogs) {
             @Suppress("UNCHECKED_CAST")
             MDCPanel(rawData as List<SystemLogEvent>)
         } else {
             null
         }
 
-        private val threads: ThreadPanel? = if (columnList == SystemLogColumns) {
+        private val threads: ThreadPanel? = if (systemLogs) {
             @Suppress("UNCHECKED_CAST")
             ThreadPanel(rawData as List<SystemLogEvent>)
         } else {
@@ -447,8 +448,6 @@ class LogPanel(
 
                 filterPanel.addFilterChangeListener {
                     filterPanel.updateTabState()
-                    updateData()
-
                     selectedIndex = i
                 }
             }

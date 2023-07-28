@@ -9,6 +9,7 @@ import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
 import io.github.inductiveautomation.kindling.log.LogPanel
 import io.github.inductiveautomation.kindling.log.MDC
 import io.github.inductiveautomation.kindling.log.SystemLogEvent
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.toList
@@ -172,6 +173,6 @@ object IdbViewer : Tool {
     override val title = "Idb File"
     override val description = ".idb (SQLite3) files"
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")
-    override val extensions = listOf("idb")
+    override val filter = FileFilter(description, listOf("idb"))
     override fun open(path: Path): ToolPanel = IdbView(path)
 }

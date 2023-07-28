@@ -19,9 +19,8 @@ This repository incorporates material as listed below or described in the code.
 - HyperSQL - Modified BSD License - https://hsqldb.org/web/hsqlLicense.html
 - ExcelKt - MIT License - https://github.com/evanrupert/ExcelKt/blob/master/LICENSE
 - MigLayout - BSD License - http://miglayout.com/
-- SvgSalamander - BSD License - https://github.com/JFormDesigner/svgSalamander/blob/master/licenses/license-BSD.txt
+- JSVG - MIT License - https://github.com/weisJ/jsvg/LICENSE
 - Jide Common Layer - GPL with classpath exception - http://www.jidesoft.com/products/oss.htm
-- JSystemThemeDetector - Apache License 2.0 - https://github.com/Dansoftowner/jSystemThemeDetector/blob/master/LICENSE
 - RSyntaxTextArea - BSD 3-Clause - https://github.com/bobbylight/RSyntaxTextArea/blob/master/LICENSE.md
 
 ### Test Dependencies

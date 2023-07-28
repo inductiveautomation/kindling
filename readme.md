@@ -1,5 +1,7 @@
 # Kindling
 
+<img src="src/main/resources/logo.svg" width="250" alt="Kindling">
+
 A standalone collection of utilities to help [Ignition](https://inductiveautomation.com/) users. Features various tools
 to help work with Ignition's custom data export formats.
 

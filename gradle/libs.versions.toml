@@ -22,6 +22,7 @@ logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.4.8
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.2" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version = "2.11.5" }
 excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" }
+jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.0.0" }
 
 # build
 jsoup = { group = "org.jsoup", name = "jsoup", version = "1.16.1" }
@@ -33,8 +34,7 @@ flatlaf-extras = { group = "com.formdev", name = "flatlaf-extras", version.ref =
 flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref = "flatlaf" }
 flatlaf-swingx = { group = "com.formdev", name = "flatlaf-swingx", version.ref = "flatlaf" }
 flatlaf-themes = { group = "com.formdev", name = "flatlaf-intellij-themes", version.ref = "flatlaf" }
-flatlaf-fonts-roboto = { group = "com.formdev", name = "flatlaf-fonts-roboto", version = "2.137"}
-svgSalamander = { group = "com.formdev", name = "svgSalamander", version = "1.1.4" }
+flatlaf-fonts-roboto = { group = "com.formdev", name = "flatlaf-fonts-roboto", version = "2.137" }
 jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.12" }
 swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
 rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = "3.3.3" }

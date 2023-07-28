@@ -26,7 +26,7 @@ class ToolView(
                 tempFile.outputStream().use(file::copyTo)
             }
             /* Tool.get() throws exception if tool not found, but this check is already done with isTool() */
-            toolPanel = Tool.byExtension[path.extension]?.open(tempFile)
+            toolPanel = Tool.find(path.toFile())?.open(tempFile)
                 ?: throw ToolOpeningException("No tool for files of type .${path.extension}")
             add(toolPanel, "push, grow")
         } catch (e: ZipException) {
@@ -39,7 +39,7 @@ class ToolView(
     override fun customizePopupMenu(menu: JPopupMenu) = toolPanel.customizePopupMenu(menu)
 
     companion object {
-        fun maybeIsTool(path: Path) = path.extension in Tool.byExtension
+        fun maybeToolPath(path: Path): Boolean = Tool.find(path.toFile()) != null
 
         fun safelyCreate(provider: FileSystemProvider, path: Path): ToolView? {
             return runCatching { ToolView(provider, path) }.getOrNull()

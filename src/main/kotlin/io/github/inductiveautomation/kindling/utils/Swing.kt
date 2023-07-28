@@ -6,7 +6,7 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
 import io.github.evanrupert.excelkt.workbook
-import io.github.inductiveautomation.kindling.core.Kindling.frameIcon
+import io.github.inductiveautomation.kindling.core.Kindling.frameIcons
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +27,7 @@ import java.awt.Toolkit
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
+import java.io.FileFilter
 import java.util.Collections
 import java.util.Enumeration
 import java.util.EventListener
@@ -49,7 +50,6 @@ import javax.swing.SortOrder.UNSORTED
 import javax.swing.UIManager
 import javax.swing.border.EmptyBorder
 import javax.swing.event.EventListenerList
-import javax.swing.filechooser.FileFilter
 import javax.swing.plaf.basic.BasicComboBoxRenderer
 import javax.swing.table.TableModel
 import javax.swing.text.Document
@@ -59,6 +59,7 @@ import javax.swing.tree.TreeNode
 import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 import kotlin.time.Duration.Companion.milliseconds
+import javax.swing.filechooser.FileFilter as SwingFileFilter
 
 typealias StringProvider<T> = (T?) -> String?
 typealias IconProvider<T> = (T?) -> Icon?
@@ -316,15 +317,14 @@ class ReifiedJXTable<T : TableModel>(
     }
 }
 
-/**
- * Like FileNameExtensionFilter, but with a useful equals and hashcode.
- */
-data class FileExtensionFilter(
+class FileFilter(
     private val description: String,
-    private val extensions: List<String>,
-) : FileFilter() {
+    private val predicate: FileFilter,
+) : SwingFileFilter() {
+    constructor(description: String, extensions: List<String>) : this(description, { f -> f.extension in extensions })
+
     override fun accept(f: File): Boolean {
-        return f.isDirectory || f.extension in extensions
+        return f.isDirectory || predicate.accept(f)
     }
 
     override fun getDescription(): String = description
@@ -388,7 +388,7 @@ inline fun jFrame(
         rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
     }
 
-    iconImage = frameIcon
+    iconImages = frameIcons
     defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
 
     setLocationRelativeTo(null)

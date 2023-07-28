@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.core
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
+import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.utils.CharsetSerializer
@@ -22,7 +23,7 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.jdesktop.swingx.JXTextField
 import java.awt.Image
-import java.awt.Toolkit
+import java.awt.image.BufferedImage
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Vector
@@ -40,7 +41,18 @@ import kotlin.time.Duration.Companion.seconds
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
 
 data object Kindling {
-    val frameIcon: Image = Toolkit.getDefaultToolkit().getImage(Kindling::class.java.getResource("/icons/kindling.png"))
+    val frameIcons: List<Image> = SVGLoader().run {
+        val svgUrl = checkNotNull(Kindling::class.java.getResource("/logo.svg")) { "Unable to load logo SVG" }
+        val svgDocument = checkNotNull(load(svgUrl)) { "Unable to load logo SVG" }
+
+        listOf(16, 32, 44, 64, 128, 150, 256, 512, 1024).map { dim ->
+            BufferedImage(dim, dim, BufferedImage.TYPE_INT_ARGB).apply {
+                val g = createGraphics()
+                svgDocument.render(null, g)
+                g.dispose()
+            }
+        }
+    }
 
     const val SECONDARY_ACTION_ICON_SCALE = 0.75F
 

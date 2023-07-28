@@ -18,6 +18,7 @@ import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.getLogger
@@ -444,6 +445,7 @@ object CacheViewer : Tool {
     override val title = "Cache Dump"
     override val description = "S&F Cache data/script files"
     override val icon = FlatSVGIcon("icons/bx-data.svg")
-    override val extensions = listOf("data", "script", "zip")
+    val extensions = listOf("data", "script", "zip")
+    override val filter = FileFilter(description, extensions)
     override fun open(path: Path): ToolPanel = CacheView(path)
 }

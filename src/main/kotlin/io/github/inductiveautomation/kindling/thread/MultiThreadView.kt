@@ -24,6 +24,7 @@ import io.github.inductiveautomation.kindling.thread.model.ThreadModel.SingleThr
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FilterList
 import io.github.inductiveautomation.kindling.utils.FilterModel
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -38,7 +39,7 @@ import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
-import org.jdesktop.swingx.table.ColumnControlButton
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import org.jdesktop.swingx.table.TableColumnExt
 import java.awt.Desktop
 import java.awt.Rectangle
@@ -162,7 +163,7 @@ class MultiThreadView(
                     }
                 }
             }
-            actionMap.put("${ColumnControlButton.COLUMN_CONTROL_MARKER}.clearAllMarks", clearAllMarks)
+            actionMap.put("$COLUMN_CONTROL_MARKER.clearAllMarks", clearAllMarks)
 
             attachPopupMenu table@{ event ->
                 val rowAtPoint = rowAtPoint(event.point)
@@ -481,7 +482,8 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val title = "Thread Viewer"
     override val description = "Thread dump (.json or .txt) files"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
-    override val extensions = listOf("json", "txt")
+    override val filter = FileFilter(description, listOf("json", "txt"))
+
     override val respectsEncoding: Boolean = true
     override fun open(path: Path): ToolPanel = open(listOf(path))
     override fun open(paths: List<Path>): ToolPanel {

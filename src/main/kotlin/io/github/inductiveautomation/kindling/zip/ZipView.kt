@@ -7,6 +7,7 @@ import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PathNode
 import io.github.inductiveautomation.kindling.utils.TabStrip
@@ -198,11 +199,12 @@ object ZipViewer : Tool {
     override val title = "Ignition Archive"
     override val description = "Archives (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
-    override val extensions = listOf("gwbk", "zip", "modl")
+    override val filter = FileFilter(description, listOf("gwbk", "zip", "modl"))
+
     override fun open(path: Path): ToolPanel = ZipView(path)
 
     private val handlers: Map<PathPredicate, PathViewProvider> = buildMap {
-        put(ToolView::maybeIsTool, ToolView::safelyCreate)
+        put(ToolView::maybeToolPath, ToolView::safelyCreate)
         put(TextFileView::isTextFile, ::TextFileView)
         put(ImageView::isImageFile, ::ImageView)
         put(ProjectView::isProjectDirectory, ::ProjectView)

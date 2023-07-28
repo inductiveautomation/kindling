@@ -3,7 +3,7 @@ package io.github.inductiveautomation.kindling.core
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.utils.Action
-import io.github.inductiveautomation.kindling.utils.FileExtensionFilter
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FloatableComponent
 import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
 import io.github.inductiveautomation.kindling.utils.exportToCSV
@@ -15,7 +15,6 @@ import javax.swing.JFileChooser
 import javax.swing.JMenu
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.filechooser.FileFilter
 import javax.swing.table.TableModel
 
 abstract class ToolPanel(
@@ -71,7 +70,7 @@ abstract class ToolPanel(
             CSV("Comma Separated Values", "csv", TableModel::exportToCSV),
             EXCEL("Excel Workbook", "xlsx", TableModel::exportToXLSX);
 
-            val fileFilter: FileFilter = FileExtensionFilter(description, listOf(extension))
+            val fileFilter = FileFilter(description, listOf(extension))
         }
     }
 }

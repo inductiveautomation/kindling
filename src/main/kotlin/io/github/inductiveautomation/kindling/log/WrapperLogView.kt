@@ -11,6 +11,7 @@ import io.github.inductiveautomation.kindling.core.Preference.Companion.preferen
 import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
 import io.github.inductiveautomation.kindling.utils.getValue
 import java.awt.Desktop
@@ -134,14 +135,11 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val title = "Wrapper Log"
     override val description = "wrapper.log(.n) files"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
-    override val extensions = List(21) { i ->
-        if (i == 0) {
-            "log"
-        } else {
-            i.toString()
-        }
-    }
     override val respectsEncoding: Boolean = true
+
+    override val filter = FileFilter(description) { file ->
+        file.name.endsWith("log") || file.name.substringAfterLast('.').toIntOrNull() != null
+    }
 
     override fun open(paths: List<Path>): ToolPanel {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
