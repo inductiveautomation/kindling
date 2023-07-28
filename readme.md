@@ -7,13 +7,15 @@ to help work with Ignition's custom data export formats.
 
 ### Thread Viewer
 
-Parses Ignition thread dump files, in JSON or plain text format.
+Parses Ignition thread dump files, in JSON or plain text format. Multiple thread dumps from the same system can be
+opened at once and will be automatically aggregated together.
 
 ### IDB Viewer
 
-Opens Ignition .idb files and displays a list of tables and allows arbitrary SQL queries to be executed.
+Opens Ignition .idb files (SQLite DBs) and displays a list of tables and allows arbitrary SQL queries to be executed.
 
 Has special handling for:
+
 - Metrics files
 - System logs
 
@@ -28,25 +30,32 @@ sequence them and present as a single view.
 Opens a zip file (including Ignition files like `.gwbk` or `.modl`). Allows opening other tools against the files within
 the zip, including the .idb files in a gateway backup.
 
-## Store and Forward Cache Viewer
+### Store and Forward Cache Viewer
 
 Opens the [HSQLDB](http://hsqldb.org/) file that contains the Store and Forward disk cache. Attempts to parse the
 Java-serialized data within into its object representation. If unable to deserialize (e.g. due to a missing class),
 falls back to a string explanation of the serialized data.
 
-Note: If you encounter any issues with missing classes, please file an issue. 
+Note: If you encounter any issues with missing classes, please file an issue.
 
 ## Usage
 
-TODO
+1. Download the installer for your OS from the Downloads
+   page: https://inductiveautomation.github.io/kindling/download.html
+2. Run the Kindling application.
+3. Open a supported file - either drag and drop directly onto the application window, click the `+` icon in the tab
+   strip,
+   or select a tool to open from the menubar.
+
+Preferences are stored in `~/.kindling/preferences.json` and can be modified within the application from the menu bar.
 
 ## Development
 
 Kindling uses Java Swing as a GUI framework, but is written almost exclusively in Kotlin, an alternate JVM language.
-Gradle is used as the build tool, and will automatically download the appropriate Gradle and Java version (via the
+Gradle is used as the build tool, and will automatically download the appropriate Gradle and JDK version (via the
 Gradle wrapper). Most IDEs (Eclipse, IntelliJ) should figure out the project structure automatically. You can directly
-run the main class in your IDE ([`MainPanel`](src/main/kotlin/io/github/inductiveautomation/kindling/MainPanel.kt)), or you
-can run the application via`./gradlew run` at the command line.
+run the main class in your IDE ([`MainPanel`](src/main/kotlin/io/github/inductiveautomation/kindling/MainPanel.kt)), or
+you can run the application via`./gradlew run` at the command line.
 
 ## Contribution
 
