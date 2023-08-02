@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.core
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
+import com.github.weisj.jsvg.attributes.ViewBox
 import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
@@ -23,7 +24,9 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.jdesktop.swingx.JXTextField
 import java.awt.Image
+import java.awt.RenderingHints
 import java.awt.image.BufferedImage
+import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Vector
@@ -48,11 +51,14 @@ data object Kindling {
         listOf(16, 32, 44, 64, 128, 150, 256, 512, 1024).map { dim ->
             BufferedImage(dim, dim, BufferedImage.TYPE_INT_ARGB).apply {
                 val g = createGraphics()
-                svgDocument.render(null, g)
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                svgDocument.render(null, g, ViewBox(dim.toFloat(), dim.toFloat()))
                 g.dispose()
             }
         }
     }
+
+    val forumThread = URI("https://forum.inductiveautomation.com/t/54689")
 
     const val SECONDARY_ACTION_ICON_SCALE = 0.75F
 

@@ -15,6 +15,7 @@ import io.github.inductiveautomation.kindling.utils.ZipFileTree
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
+import io.github.inductiveautomation.kindling.utils.transferTo
 import io.github.inductiveautomation.kindling.zip.ZipViewer.createView
 import io.github.inductiveautomation.kindling.zip.views.GenericFileView
 import io.github.inductiveautomation.kindling.zip.views.ImageView
@@ -41,7 +42,6 @@ import kotlin.io.path.extension
 import kotlin.io.path.fileSize
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
-import kotlin.io.path.outputStream
 
 class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
     private val zipFile: FileSystem = FileSystems.newFileSystem(path)
@@ -139,9 +139,7 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
                             Action("Save As") {
                                 exportFileChooser.selectedFile = File(selectedNode.userObject.name)
                                 if (exportFileChooser.showSaveDialog(this@attachPopupMenu) == JFileChooser.APPROVE_OPTION) {
-                                    provider.newInputStream(selectedNode.userObject).use { file ->
-                                        exportFileChooser.selectedFile.toPath().outputStream().use(file::copyTo)
-                                    }
+                                    provider.newInputStream(selectedNode.userObject) transferTo exportFileChooser.selectedFile.outputStream()
                                 }
                             },
                         )

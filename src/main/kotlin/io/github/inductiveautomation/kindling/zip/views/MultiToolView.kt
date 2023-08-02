@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.utils.transferTo
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
@@ -33,13 +34,11 @@ class MultiToolView(
     init {
         val tempFiles = paths.map { path ->
             Files.createTempFile("kindling", path.name).also { tempFile ->
-                provider.newInputStream(path).use { file ->
-                    tempFile.outputStream().use(file::copyTo)
-                }
+                provider.newInputStream(path) transferTo tempFile.outputStream()
             }
         }
 
-        multiTool = Tool[tempFiles.first().toFile()] as MultiTool
+        multiTool = Tool[tempFiles.first()] as MultiTool
         toolPanel = multiTool.open(tempFiles)
 
         add(toolPanel, "push, grow")

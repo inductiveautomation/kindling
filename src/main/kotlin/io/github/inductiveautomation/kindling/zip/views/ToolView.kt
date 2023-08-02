@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.utils.transferTo
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
@@ -22,11 +23,9 @@ class ToolView(
     init {
         val tempFile = Files.createTempFile("kindling", path.name)
         try {
-            provider.newInputStream(path).use { file ->
-                tempFile.outputStream().use(file::copyTo)
-            }
+            provider.newInputStream(path) transferTo tempFile.outputStream()
             /* Tool.get() throws exception if tool not found, but this check is already done with isTool() */
-            toolPanel = Tool.find(path.toFile())?.open(tempFile)
+            toolPanel = Tool.find(path)?.open(tempFile)
                 ?: throw ToolOpeningException("No tool for files of type .${path.extension}")
             add(toolPanel, "push, grow")
         } catch (e: ZipException) {
@@ -39,7 +38,7 @@ class ToolView(
     override fun customizePopupMenu(menu: JPopupMenu) = toolPanel.customizePopupMenu(menu)
 
     companion object {
-        fun maybeToolPath(path: Path): Boolean = Tool.find(path.toFile()) != null
+        fun maybeToolPath(path: Path): Boolean = Tool.find(path) != null
 
         fun safelyCreate(provider: FileSystemProvider, path: Path): ToolView? {
             return runCatching { ToolView(provider, path) }.getOrNull()

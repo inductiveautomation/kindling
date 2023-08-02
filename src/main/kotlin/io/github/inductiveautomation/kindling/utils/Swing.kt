@@ -28,6 +28,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
 import java.io.FileFilter
+import java.nio.file.Path
 import java.util.Collections
 import java.util.Enumeration
 import java.util.EventListener
@@ -56,6 +57,8 @@ import javax.swing.text.Document
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeNode
+import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
 import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 import kotlin.time.Duration.Companion.milliseconds
@@ -319,13 +322,15 @@ class ReifiedJXTable<T : TableModel>(
 
 class FileFilter(
     private val description: String,
-    private val predicate: FileFilter,
-) : SwingFileFilter() {
-    constructor(description: String, extensions: List<String>) : this(description, { f -> f.extension in extensions })
+    private val predicate: (path: Path) -> Boolean,
+) : SwingFileFilter(), FileFilter {
+    constructor(description: String, extensions: List<String>) : this(description, { path -> path.extension in extensions })
 
-    override fun accept(f: File): Boolean {
-        return f.isDirectory || predicate.accept(f)
+    fun accept(path: Path): Boolean {
+        return path.isDirectory() || predicate(path)
     }
+
+    override fun accept(file: File): Boolean = accept(file.toPath())
 
     override fun getDescription(): String = description
 }

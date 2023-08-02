@@ -33,6 +33,7 @@ import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
+import io.github.inductiveautomation.kindling.utils.transferTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -492,9 +493,7 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
 
     override fun open(data: String): ToolPanel {
         val tempFile = Files.createTempFile("kindling", "cb")
-        data.byteInputStream().use { threadDump ->
-            tempFile.outputStream().use(threadDump::copyTo)
-        }
+        data.byteInputStream() transferTo tempFile.outputStream()
         return open(tempFile)
     }
 

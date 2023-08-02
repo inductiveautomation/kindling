@@ -8,6 +8,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.sqlite.SQLiteDataSource
 import java.io.InputStream
+import java.io.OutputStream
 import java.math.BigDecimal
 import java.nio.file.Path
 import java.sql.Connection
@@ -152,5 +153,14 @@ fun debounce(
             delay(waitTime)
             destinationFunction()
         }
+    }
+}
+
+/**
+ * Transfers [this] to [output], closing both streams.
+ */
+infix fun InputStream.transferTo(output: OutputStream) {
+    this.use { input ->
+        output.use(input::transferTo)
     }
 }

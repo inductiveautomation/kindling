@@ -5,11 +5,11 @@ import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.idb.IdbViewer
 import io.github.inductiveautomation.kindling.log.LogViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.loadService
 import io.github.inductiveautomation.kindling.zip.ZipViewer
 import java.io.File
 import java.nio.file.Path
-import javax.swing.filechooser.FileFilter
 
 interface Tool {
     val title: String
@@ -41,11 +41,13 @@ interface Tool {
             tools.associateBy(Tool::title)
         }
 
-        fun find(file: File): Tool? = tools.find { tool ->
-            tool.filter.accept(file)
+        fun find(path: Path): Tool? = tools.find { tool ->
+            tool.filter.accept(path)
         }
+        fun find(file: File): Tool? = find(file.toPath())
 
-        operator fun get(file: File): Tool = checkNotNull(find(file)) { "No tool found for $file" }
+        operator fun get(file: File): Tool = get(file.toPath())
+        operator fun get(path: Path): Tool = checkNotNull(find(path)) { "No tool found for $path" }
     }
 }
 
