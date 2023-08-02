@@ -58,6 +58,7 @@ data object Kindling {
         }
     }
 
+    val homepage = URI("https://github.com/inductiveautomation/kindling")
     val forumThread = URI("https://forum.inductiveautomation.com/t/54689")
 
     const val SECONDARY_ACTION_ICON_SCALE = 0.75F

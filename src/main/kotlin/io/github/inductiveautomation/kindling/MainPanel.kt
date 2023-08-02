@@ -7,6 +7,7 @@ import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
 import com.formdev.flatlaf.extras.components.FlatTextArea
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
 import com.formdev.flatlaf.util.SystemInfo
+import com.jidesoft.swing.StyleRange.STYLE_UNDERLINED
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.CustomIconView
 import io.github.inductiveautomation.kindling.core.Kindling
@@ -25,6 +26,7 @@ import io.github.inductiveautomation.kindling.core.preferencesEditor
 import io.github.inductiveautomation.kindling.internal.FileTransferHandler
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.StyledLabel
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.chooseFiles
 import io.github.inductiveautomation.kindling.utils.getLogger
@@ -35,9 +37,12 @@ import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
 import net.miginfocom.swing.MigLayout
 import java.awt.BorderLayout
+import java.awt.Cursor
+import java.awt.Cursor.HAND_CURSOR
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.EventQueue
+import java.awt.Font.PLAIN
 import java.awt.Menu
 import java.awt.MenuItem
 import java.awt.PopupMenu
@@ -50,10 +55,8 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
-import java.net.URI
 import java.nio.charset.Charset
 import javax.swing.Box
-import javax.swing.ImageIcon
 import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JFileChooser
@@ -168,7 +171,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
                 Action("Preferences") {
                     preferencesEditor.isVisible = true
                     preferencesEditor.toFront()
-                }
+                },
             )
         }
     }
@@ -199,38 +202,58 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
         add(
             JMenu("Help").apply {
                 add(debugMenu)
-                add(Action("Forum") {
-                    Desktop.getDesktop().browse(Kindling.forumThread)
-                })
+                add(
+                    Action("Forum") {
+                        Desktop.getDesktop().browse(Kindling.forumThread)
+                    },
+                )
                 if (!SystemInfo.isMacOS) {
-                    add(Action("About") {
-                        aboutDialog.isVisible = true
-                        aboutDialog.toFront()
-                    })
+                    add(
+                        Action("About") {
+                            aboutDialog.isVisible = true
+                            aboutDialog.toFront()
+                        },
+                    )
                 }
             },
         )
     }
 
     private val aboutDialog by lazy {
-        jFrame("About Kindling", 300, 200, initiallyVisible = false) {
+        jFrame(
+            title = "About Kindling",
+            width = 300,
+            height = 200,
+            embedContentIntoTitleBar = true,
+            initiallyVisible = false,
+        ) {
             defaultCloseOperation = JFrame.HIDE_ON_CLOSE
             isResizable = false
             isUndecorated
             type = Window.Type.UTILITY
 
-            contentPane = JLabel(
-                "Kindling v${System.getProperty("app.version")}",
-                ImageIcon(Kindling.frameIcons[4]),
-                CENTER,
-            ).apply {
-                verticalAlignment = CENTER
-
-                addMouseListener(object : MouseAdapter() {
-                    override fun mouseClicked(e: MouseEvent) {
-                        Desktop.getDesktop().browse(URI(System.getProperty("app.repositoryUrl")))
-                    }
-                })
+            contentPane = JPanel(MigLayout("ins 6, fill, wrap 1", "align center")).apply {
+                add(JLabel(FlatSVGIcon("logo.svg").derive(64, 64), CENTER))
+                add(
+                    JLabel("Kindling", CENTER).apply {
+                        font = UIManager.getFont("h1.font")
+                    },
+                )
+                add(JLabel("Version ${System.getProperty("app.version") ?: "(Dev)"}", CENTER))
+                add(
+                    StyledLabel {
+                        add("Homepage", PLAIN, UIManager.getColor("Hyperlink.linkColor"), STYLE_UNDERLINED)
+                    }.apply {
+                        cursor = Cursor.getPredefinedCursor(HAND_CURSOR)
+                        addMouseListener(
+                            object : MouseAdapter() {
+                                override fun mouseClicked(e: MouseEvent) {
+                                    Desktop.getDesktop().browse(Kindling.homepage)
+                                }
+                            },
+                        )
+                    },
+                )
             }
         }
     }
