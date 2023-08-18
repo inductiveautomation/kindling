@@ -22,6 +22,7 @@ import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.isSortedBy
+import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -125,6 +126,7 @@ class LogPanel(
 
     private fun updateData() {
         BACKGROUND.launch {
+            val selectedEvents = table.selectedRowIndices().map { row -> table.model[row].hashCode() }
             val filteredData = if (Debug.currentValue) {
                 // use a less efficient, but more debuggable, filtering sequence
                 filters.fold(rawData) { acc, logFilter ->
@@ -139,7 +141,18 @@ class LogPanel(
             }
 
             EDT_SCOPE.launch {
-                table.model = createModel(filteredData)
+                table.apply {
+                    model = createModel(filteredData)
+
+                    selectionModel.valueIsAdjusting = true
+                    model.data.forEachIndexed { index, event ->
+                        if (event.hashCode() in selectedEvents) {
+                            val viewIndex = convertRowIndexToView(index)
+                            addRowSelectionInterval(viewIndex, viewIndex)
+                        }
+                    }
+                    selectionModel.valueIsAdjusting = false
+                }
             }
         }
     }
