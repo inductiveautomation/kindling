@@ -3,6 +3,8 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.formdev.flatlaf.util.SystemInfo
+import com.github.weisj.jsvg.SVGDocument
+import com.github.weisj.jsvg.attributes.ViewBox
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
 import io.github.evanrupert.excelkt.workbook
@@ -23,9 +25,11 @@ import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
 import java.awt.Component
 import java.awt.Container
+import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.awt.image.BufferedImage
 import java.io.File
 import java.io.FileFilter
 import java.nio.file.Path
@@ -492,3 +496,12 @@ fun Component.traverseChildren(): Sequence<Component> = sequence {
 }
 
 val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx
+
+fun SVGDocument.render(width: Int, height: Int, x: Int = 0, y: Int = 0): BufferedImage {
+    return BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB).apply {
+        val g = createGraphics()
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        render(null, g, ViewBox(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat()))
+        g.dispose()
+    }
+}

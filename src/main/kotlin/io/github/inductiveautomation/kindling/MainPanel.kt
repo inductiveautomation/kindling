@@ -32,6 +32,7 @@ import io.github.inductiveautomation.kindling.utils.chooseFiles
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
+import io.github.inductiveautomation.kindling.utils.render
 import io.github.inductiveautomation.kindling.utils.traverseChildren
 import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
@@ -54,6 +55,7 @@ import java.awt.desktop.QuitStrategy
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.charset.Charset
 import javax.swing.Box
@@ -394,7 +396,21 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
             if (Taskbar.isTaskbarSupported()) {
                 Taskbar.getTaskbar().apply {
                     if (isSupported(Taskbar.Feature.ICON_IMAGE)) {
-                        setIconImage(Kindling.frameIcons.last())
+                        val image = Kindling.logo.render(1024, 1024)
+                        val padding = 128
+
+                        val paddedImage = BufferedImage(
+                            image.width + 2 * padding,
+                            image.height + 2 * padding,
+                            image.type
+                        ).apply {
+                            createGraphics().apply {
+                                drawImage(image, padding, padding, null)
+                                dispose()
+                            }
+                        }
+
+                        setIconImage(paddedImage)
                     }
                     if (isSupported(Taskbar.Feature.MENU)) {
                         menu = PopupMenu().apply {

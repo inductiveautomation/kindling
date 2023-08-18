@@ -3,7 +3,6 @@ package io.github.inductiveautomation.kindling.core
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
-import com.github.weisj.jsvg.attributes.ViewBox
 import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
@@ -15,6 +14,7 @@ import io.github.inductiveautomation.kindling.utils.ToolSerializer
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.derive
+import io.github.inductiveautomation.kindling.utils.render
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -24,8 +24,6 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.jdesktop.swingx.JXTextField
 import java.awt.Image
-import java.awt.RenderingHints
-import java.awt.image.BufferedImage
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
@@ -44,18 +42,13 @@ import kotlin.time.Duration.Companion.seconds
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
 
 data object Kindling {
-    val frameIcons: List<Image> = SVGLoader().run {
+    val logo = SVGLoader().run {
         val svgUrl = checkNotNull(Kindling::class.java.getResource("/logo.svg")) { "Unable to load logo SVG" }
-        val svgDocument = checkNotNull(load(svgUrl)) { "Unable to load logo SVG" }
+        checkNotNull(load(svgUrl)) { "Unable to load logo SVG" }
+    }
 
-        listOf(16, 32, 44, 64, 128, 150, 256, 512, 1024).map { dim ->
-            BufferedImage(dim, dim, BufferedImage.TYPE_INT_ARGB).apply {
-                val g = createGraphics()
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-                svgDocument.render(null, g, ViewBox(dim.toFloat(), dim.toFloat()))
-                g.dispose()
-            }
-        }
+    val frameIcons: List<Image> = listOf(16, 32, 44, 64, 128, 150, 256, 512, 1024).map { dim ->
+        logo.render(dim, dim)
     }
 
     val homepage = URI("https://github.com/inductiveautomation/kindling")
