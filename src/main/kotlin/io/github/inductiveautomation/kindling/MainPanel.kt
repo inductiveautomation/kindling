@@ -402,7 +402,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
                         val paddedImage = BufferedImage(
                             image.width + 2 * padding,
                             image.height + 2 * padding,
-                            image.type
+                            image.type,
                         ).apply {
                             createGraphics().apply {
                                 drawImage(image, padding, padding, null)
