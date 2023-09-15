@@ -40,7 +40,6 @@ import kotlinx.coroutines.launch
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
-import org.jdesktop.swingx.table.TableColumnExt
 import java.awt.Desktop
 import java.awt.Rectangle
 import java.nio.file.Files
@@ -278,8 +277,8 @@ class MultiThreadView(
                     null
                 }
 
-                val sortedColumnIdentifier = mainTable.sortedColumn.identifier
-                val sortOrder = mainTable.getSortOrder(sortedColumnIdentifier)
+                val sortedColumnIdentifier = mainTable.sortedColumn?.identifier
+                val sortOrder = sortedColumnIdentifier?.let(mainTable::getSortOrder)
 
                 val newModel = ThreadModel(filteredThreadDumps)
                 mainTable.columnFactory = newModel.columns.toColumnFactory()
@@ -299,10 +298,12 @@ class MultiThreadView(
                 }
 
                 // Set visible and/or sort by previously sorted column
-                val columnExt: TableColumnExt? = mainTable.getColumnExt(sortedColumnIdentifier)
+                val columnExt = sortedColumnIdentifier?.let(mainTable::getColumnExt)
                 if (columnExt != null) {
                     columnExt.isVisible = true
-                    mainTable.setSortOrder(sortedColumnIdentifier, sortOrder)
+                    if (sortOrder != null) {
+                        mainTable.setSortOrder(sortedColumnIdentifier, sortOrder)
+                    }
                 }
 
                 threadCountLabel.visibleThreads = mainTable.model.threadData.flatten().filterNotNull().size
