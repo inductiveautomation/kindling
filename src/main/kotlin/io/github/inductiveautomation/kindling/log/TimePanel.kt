@@ -40,7 +40,7 @@ import javax.swing.border.LineBorder
 internal class TimePanel(
     private val lowerBound: Instant,
     private val upperBound: Instant,
-) :  FilterPanel<LogEvent>() {
+) : FilterPanel<LogEvent>() {
     private var coveredRange: ClosedRange<Instant> = lowerBound..upperBound
     private val initialRange = coveredRange
 

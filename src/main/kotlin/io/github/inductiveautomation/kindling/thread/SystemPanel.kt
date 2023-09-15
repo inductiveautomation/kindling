@@ -27,7 +27,6 @@ class SystemPanel : FilterPanel<Thread?>() {
         add(FlatScrollPane(systemList), "newline, push, grow")
     }
 
-
     init {
         systemList.selectAll()
 

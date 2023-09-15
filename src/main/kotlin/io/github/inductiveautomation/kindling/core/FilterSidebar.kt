@@ -4,10 +4,11 @@ import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import javax.swing.JPopupMenu
+import javax.swing.UIManager
 
 class FilterSidebar<T>(
     vararg panels: FilterPanel<T>?,
-    ) : FlatTabbedPane() {
+) : FlatTabbedPane() {
 
     val filterPanels = panels.filterNotNull()
 
@@ -47,10 +48,10 @@ class FilterSidebar<T>(
     private fun FilterPanel<*>.updateTabState() {
         val index = indexOfComponent(component)
         if (isFilterApplied()) {
-            setBackgroundAt(index, javax.swing.UIManager.getColor("TabbedPane.focusColor"))
+            setBackgroundAt(index, UIManager.getColor("TabbedPane.focusColor"))
             setTitleAt(index, "$tabName *")
         } else {
-            setBackgroundAt(index, javax.swing.UIManager.getColor("TabbedPane.background"))
+            setBackgroundAt(index, UIManager.getColor("TabbedPane.background"))
             setTitleAt(index, tabName)
         }
     }

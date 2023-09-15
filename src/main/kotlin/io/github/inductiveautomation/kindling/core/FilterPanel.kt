@@ -24,7 +24,6 @@ abstract class FilterPanel<T> : Filter<T> {
         column: Column<out T, *>,
         event: T,
     )
-
 }
 
 fun interface Filter<T> {

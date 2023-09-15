@@ -58,7 +58,6 @@ internal class NamePanel(events: List<LogEvent>) : FilterPanel<LogEvent>() {
         }
     }
 
-
     override val tabName: String = "Logger"
 
     override fun isFilterApplied(): Boolean = filterList.checkBoxListSelectedIndices.size < filterList.model.size - 1

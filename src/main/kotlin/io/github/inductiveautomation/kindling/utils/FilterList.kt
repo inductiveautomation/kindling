@@ -42,7 +42,6 @@ enum class FilterComparator(
         icon = FlatSVGIcon("icons/bx-sort-down.svg").derive(SECONDARY_ACTION_ICON_SCALE),
         comparator = ByCountAscending.reversed(),
     ),
-    ;
 }
 
 fun FilterModel(data: Map<String?, Int>) = FilterModel(data) { it }
@@ -207,4 +206,3 @@ class FilterList(
         }
     }
 }
-

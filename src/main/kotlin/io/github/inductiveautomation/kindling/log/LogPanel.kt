@@ -55,6 +55,8 @@ import javax.swing.UIManager
 import kotlin.math.absoluteValue
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
+typealias LogFilter = Filter<LogEvent>
+
 class LogPanel(
     /**
      * Pass a **sorted** list of LogEvents, in ascending order.
@@ -196,7 +198,8 @@ class LogPanel(
                     dividerLocation = insets.left + 320
                 },
                 details,
-            ), "push, grow"
+            ),
+            "push, grow",
         )
 
         table.apply {
@@ -428,7 +431,6 @@ class LogPanel(
             }
     }
 
-
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)
 
@@ -453,5 +455,3 @@ class LogPanel(
         )
     }
 }
-
-typealias LogFilter = Filter<LogEvent>

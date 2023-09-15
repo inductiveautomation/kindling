@@ -253,11 +253,11 @@ class MultiThreadView(
             val query = if (!searchField.text.isNullOrEmpty()) searchField.text else return@add true
 
             thread!!.id.toString().contains(query) ||
-                    thread.name.contains(query, ignoreCase = true) ||
-                    thread.system != null && thread.system.contains(query, ignoreCase = true) ||
-                    thread.scope != null && thread.scope.contains(query, ignoreCase = true) ||
-                    thread.state.name.contains(query, ignoreCase = true) ||
-                    thread.stacktrace.any { stack -> stack.contains(query, ignoreCase = true) }
+                thread.name.contains(query, ignoreCase = true) ||
+                thread.system != null && thread.system.contains(query, ignoreCase = true) ||
+                thread.scope != null && thread.scope.contains(query, ignoreCase = true) ||
+                thread.state.name.contains(query, ignoreCase = true) ||
+                thread.stacktrace.any { stack -> stack.contains(query, ignoreCase = true) }
         }
     }
 
@@ -388,7 +388,7 @@ class MultiThreadView(
                 JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
                     sidebar,
-                    FlatScrollPane(mainTable)
+                    FlatScrollPane(mainTable),
                 ).apply { isOneTouchExpandable = true },
                 comparison,
             ).apply {

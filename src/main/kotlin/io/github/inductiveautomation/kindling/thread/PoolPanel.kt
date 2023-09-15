@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.thread
 
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
+import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.FilterList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -10,7 +11,7 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 
-class PoolPanel : FilterPanel<io.github.inductiveautomation.kindling.thread.model.Thread?>() {
+class PoolPanel : FilterPanel<Thread?>() {
     override val tabName = "Pool"
 
     val poolList = FilterList { it?.toString() ?: "(No Pool)" }
@@ -38,7 +39,7 @@ class PoolPanel : FilterPanel<io.github.inductiveautomation.kindling.thread.mode
 
     override fun reset() = poolList.selectAll()
 
-    override fun filter(item: io.github.inductiveautomation.kindling.thread.model.Thread?): Boolean = item?.pool in poolList.checkBoxListSelectedValues
+    override fun filter(item: Thread?): Boolean = item?.pool in poolList.checkBoxListSelectedValues
 
-    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out io.github.inductiveautomation.kindling.thread.model.Thread?, *>, event: io.github.inductiveautomation.kindling.thread.model.Thread?) = Unit
+    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out Thread?, *>, event: Thread?) = Unit
 }
