@@ -16,7 +16,7 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "11.5.1" }
 # core functionality
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.5.1" }
+serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.0" }
 xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.43.0.0" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.4.11" }
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.2" }
