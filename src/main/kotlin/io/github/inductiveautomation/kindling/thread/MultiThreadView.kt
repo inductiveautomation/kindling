@@ -88,8 +88,8 @@ class MultiThreadView(
             val allThreads = value.flatten().filterNotNull()
             if (allThreads.isNotEmpty()) {
                 statePanel.stateList.setModel(FilterModel(allThreads.groupingBy { it.state.name }.eachCount()))
-                systemPanel.systemList.setModel(FilterModel(allThreads.groupingBy(Thread::system).eachCount()))
-                poolPanel.poolList.setModel(FilterModel(allThreads.groupingBy(Thread::pool).eachCount()))
+                systemPanel.filterList.setModel(FilterModel(allThreads.groupingBy(Thread::system).eachCount()))
+                poolPanel.filterList.setModel(FilterModel(allThreads.groupingBy(Thread::pool).eachCount()))
             }
             if (initialized) {
                 updateData()
@@ -165,14 +165,14 @@ class MultiThreadView(
                     SingleThreadColumns.system, MultiThreadColumns.system -> {
                         val system = model[selectedRowIndex, model.columns.system]
                         if (system != null) {
-                            systemPanel.systemList.select(system)
+                            systemPanel.filterList.select(system)
                         }
                     }
 
                     SingleThreadColumns.pool, MultiThreadColumns.pool -> {
                         val pool = model[selectedRowIndex, model.columns.pool]
                         if (pool != null) {
-                            poolPanel.poolList.select(pool)
+                            poolPanel.filterList.select(pool)
                         }
                     }
                 }
@@ -322,9 +322,9 @@ class MultiThreadView(
 
         toolTipText = paths.joinToString("\n", transform = Path::name)
 
-        poolPanel.poolList.selectAll()
+        poolPanel.filterList.selectAll()
         statePanel.stateList.selectAll()
-        systemPanel.systemList.selectAll()
+        systemPanel.filterList.selectAll()
 
         sidebar.filterPanels.forEach { panel ->
             panel.addFilterChangeListener {
