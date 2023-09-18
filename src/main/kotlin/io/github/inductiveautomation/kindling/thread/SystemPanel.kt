@@ -1,9 +1,9 @@
 package io.github.inductiveautomation.kindling.thread
 
-import io.github.inductiveautomation.kindling.core.LIstFilterPanel
+import io.github.inductiveautomation.kindling.core.ListFilterPanel
 import io.github.inductiveautomation.kindling.thread.model.Thread
 
-class SystemPanel : LIstFilterPanel<Thread?>(
+class SystemPanel : ListFilterPanel<Thread?>(
     tabName = "System",
     toStringFn = { it?.toString() ?: "Unassigned" },
 ) {

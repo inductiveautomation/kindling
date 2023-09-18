@@ -1,12 +1,12 @@
 package io.github.inductiveautomation.kindling.log
 
-import io.github.inductiveautomation.kindling.core.LIstFilterPanel
+import io.github.inductiveautomation.kindling.core.ListFilterPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.FilterModel
 import javax.swing.JPopupMenu
 
-internal class ThreadPanel(events: List<LogEvent>) : LIstFilterPanel<LogEvent>("Thread") {
+internal class ThreadPanel(events: List<LogEvent>) : ListFilterPanel<LogEvent>("Thread") {
     init {
         filterList.apply {
             setModel(FilterModel(events.groupingBy { (it as SystemLogEvent).thread }.eachCount()))

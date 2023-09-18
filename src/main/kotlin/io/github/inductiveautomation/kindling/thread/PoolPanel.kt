@@ -1,9 +1,9 @@
 package io.github.inductiveautomation.kindling.thread
 
-import io.github.inductiveautomation.kindling.core.LIstFilterPanel
+import io.github.inductiveautomation.kindling.core.ListFilterPanel
 import io.github.inductiveautomation.kindling.thread.model.Thread
 
-class PoolPanel : LIstFilterPanel<Thread?>(
+class PoolPanel : ListFilterPanel<Thread?>(
     tabName = "Pool",
     toStringFn = { it?.toString() ?: "(No Pool)" },
 ) {

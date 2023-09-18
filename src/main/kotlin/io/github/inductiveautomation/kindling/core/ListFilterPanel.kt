@@ -9,7 +9,7 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 
-abstract class LIstFilterPanel<T>(
+abstract class ListFilterPanel<T>(
     override val tabName: String,
     toStringFn: Stringifier = { it?.toString() },
 ) : FilterPanel<T>() {
