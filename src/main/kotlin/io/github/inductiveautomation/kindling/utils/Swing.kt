@@ -46,12 +46,14 @@ import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JPopupMenu
+import javax.swing.JSplitPane
 import javax.swing.JTable
 import javax.swing.JTree
 import javax.swing.ListCellRenderer
 import javax.swing.SortOrder.ASCENDING
 import javax.swing.SortOrder.DESCENDING
 import javax.swing.SortOrder.UNSORTED
+import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.EmptyBorder
 import javax.swing.event.EventListenerList
@@ -504,4 +506,30 @@ fun SVGDocument.render(width: Int, height: Int, x: Int = 0, y: Int = 0): Buffere
         render(null, g, ViewBox(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat()))
         g.dispose()
     }
+}
+
+@Suppress("FunctionName")
+fun HorizontalSplitPane(
+    left: Component,
+    right: Component,
+    resizeWeight: Double = 0.5,
+    block: JSplitPane.() -> Unit = {},
+) = JSplitPane(SwingConstants.VERTICAL, left, right).apply {
+    isOneTouchExpandable = true
+    this.resizeWeight = resizeWeight
+
+    block()
+}
+
+@Suppress("FunctionName")
+fun VerticalSplitPane(
+    top: Component,
+    bottom: Component,
+    resizeWeight: Double = 0.5,
+    block: JSplitPane.() -> Unit = {},
+) = JSplitPane(SwingConstants.HORIZONTAL, top, bottom).apply {
+    isOneTouchExpandable = true
+    this.resizeWeight = resizeWeight
+
+    block()
 }

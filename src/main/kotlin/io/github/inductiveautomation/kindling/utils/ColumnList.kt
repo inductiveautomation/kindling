@@ -43,6 +43,7 @@ abstract class ColumnList<R> private constructor(
             super.configureTableColumn(model, columnExt)
             val column = list[columnExt.modelIndex]
             columnExt.toolTipText = column.header
+            columnExt.identifier = column
             column.columnCustomization?.invoke(columnExt, model)
         }
     }

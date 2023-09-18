@@ -1,11 +1,13 @@
 package io.github.inductiveautomation.kindling.thread
 
-import io.github.inductiveautomation.kindling.core.ListFilterPanel
-import io.github.inductiveautomation.kindling.thread.model.Thread
+import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
+import io.github.inductiveautomation.kindling.utils.ListFilterPanel
 
-class SystemPanel : ListFilterPanel<Thread?>(
+class SystemPanel : ListFilterPanel<ThreadLifespan>(
     tabName = "System",
     toStringFn = { it?.toString() ?: "Unassigned" },
 ) {
-    override fun filter(item: Thread?): Boolean = item?.system in filterList.checkBoxListSelectedValues
+    override fun filter(item: ThreadLifespan): Boolean = item.any { thread ->
+        thread?.system in filterList.checkBoxListSelectedValues
+    }
 }

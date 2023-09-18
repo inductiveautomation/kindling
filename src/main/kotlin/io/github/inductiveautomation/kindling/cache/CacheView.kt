@@ -20,7 +20,9 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.getValue
 import io.github.inductiveautomation.kindling.utils.jFrame
@@ -41,8 +43,6 @@ import java.sql.PreparedStatement
 import java.util.zip.GZIPInputStream
 import javax.swing.Icon
 import javax.swing.JLabel
-import javax.swing.JSplitPane
-import javax.swing.SwingConstants
 import javax.swing.table.DefaultTableModel
 import kotlin.io.path.CopyActionResult
 import kotlin.io.path.ExperimentalPathApi
@@ -234,19 +234,14 @@ class CacheView(private val path: Path) : ToolPanel() {
         )
     }
 
-    private val mainSplitPane = JSplitPane(
-        SwingConstants.HORIZONTAL,
-        JSplitPane(
-            SwingConstants.VERTICAL,
+    private val mainSplitPane = HorizontalSplitPane(
+        VerticalSplitPane(
             FlatScrollPane(table),
             details,
-        ).apply {
-            resizeWeight = 0.5
-        },
+        ),
         FlatScrollPane(schemaList),
-    ).apply {
-        resizeWeight = 0.75
-    }
+        resizeWeight = 0.75,
+    )
 
     private fun Serializable.toDetail(): Detail = when (this) {
         is BasicHistoricalRecord -> toDetail()

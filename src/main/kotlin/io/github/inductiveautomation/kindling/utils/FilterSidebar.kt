@@ -1,15 +1,14 @@
-package io.github.inductiveautomation.kindling.core
+package io.github.inductiveautomation.kindling.utils
 
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
-import io.github.inductiveautomation.kindling.utils.Action
-import io.github.inductiveautomation.kindling.utils.attachPopupMenu
+import io.github.inductiveautomation.kindling.core.FilterPanel
+import java.awt.Dimension
 import javax.swing.JPopupMenu
 import javax.swing.UIManager
 
 class FilterSidebar<T>(
     vararg panels: FilterPanel<T>?,
 ) : FlatTabbedPane() {
-
     val filterPanels = panels.filterNotNull()
 
     init {
@@ -19,6 +18,8 @@ class FilterSidebar<T>(
         tabWidthMode = TabWidthMode.equal
         tabType = TabType.underlined
         tabHeight = 16
+
+        preferredSize = Dimension(300, 100)
 
         filterPanels.forEachIndexed { i, filterPanel ->
             addTab(filterPanel.tabName, filterPanel.component)

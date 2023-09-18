@@ -1,9 +1,9 @@
 package io.github.inductiveautomation.kindling.log
 
-import io.github.inductiveautomation.kindling.core.ListFilterPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.FilterModel
+import io.github.inductiveautomation.kindling.utils.ListFilterPanel
 import javax.swing.JPopupMenu
 
 internal class ThreadPanel(events: List<LogEvent>) : ListFilterPanel<LogEvent>("Thread") {

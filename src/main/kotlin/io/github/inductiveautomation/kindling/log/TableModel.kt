@@ -51,6 +51,7 @@ class LogsModel<T : LogEvent>(
     fun markRows(predicate: (T) -> Boolean?) {
         var firstIndex = -1
         var lastIndex = -1
+
         for ((rowIndex, event) in data.withIndex()) {
             val shouldMark = predicate(event) ?: continue
             if (firstIndex == -1) {
@@ -138,36 +139,16 @@ sealed class LogColumnList<T : LogEvent> : ColumnList<T>() {
         add(Message)
         add(Timestamp)
     }
-
-    abstract val filterableColumns: List<Column<T, out Any?>>
 }
 
 data object SystemLogColumns : LogColumnList<SystemLogEvent>() {
-    val Thread = Column(
-        header = "Thread",
-        columnCustomization = {
+    val Thread by column(
+        column = {
             minWidth = 50
             isSortable = false
         },
-        getValue = SystemLogEvent::thread,
-    )
-
-    init {
-        add(Thread)
-    }
-
-    override val filterableColumns = listOf(
-        Level,
-        Thread,
-        Logger,
-        Message,
+        value = SystemLogEvent::thread,
     )
 }
 
-data object WrapperLogColumns : LogColumnList<WrapperLogEvent>() {
-    override val filterableColumns = listOf(
-        Level,
-        Logger,
-        Message,
-    )
-}
+data object WrapperLogColumns : LogColumnList<WrapperLogEvent>()
