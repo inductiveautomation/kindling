@@ -17,6 +17,7 @@ import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.border.MatteBorder
 
@@ -27,18 +28,23 @@ interface PreferenceCategory {
     val preferences: List<Preference<*>>
 }
 
-class Preference<T : Any>(
+class PreferenceDependency<T : Any>(
+    val preference: Preference<T>,
+    val requiredValue: T,
+)
+
+open class Preference<T : Any>(
     val category: PreferenceCategory,
     val name: String,
     val description: String? = null,
     val requiresRestart: Boolean = false,
-    private val default: T,
+    protected val default: T,
     val serializer: KSerializer<T>,
     createEditor: (Preference<T>.() -> JComponent)?,
 ) {
     val key: String = name.lowercase().filter(Char::isJavaIdentifierStart)
 
-    var currentValue
+    open var currentValue
         get() = Kindling.Preferences[category, this] ?: default
         set(value) {
             Kindling.Preferences[category, this] = value
@@ -95,6 +101,78 @@ class Preference<T : Any>(
     }
 }
 
+class DependentPreference<T : Any, D : Any>(
+    category: PreferenceCategory,
+    name: String,
+    description: String? = null,
+    requiresRestart: Boolean = false,
+    default: T,
+    serializer: KSerializer<T>,
+    val dependsOn: PreferenceDependency<D>,
+    createEditor: (Preference<T>.() -> JComponent)?,
+) : Preference<T>(
+    category,
+    name,
+    description,
+    requiresRestart,
+    default,
+    serializer,
+    createEditor,
+) {
+    override var currentValue
+        get() = Kindling.Preferences[category, this] ?: default
+        set(value) {
+            Kindling.Preferences[category, this] = value
+            validate(value, dependsOn.preference.currentValue)
+            for (listener in listeners) {
+                listener(value)
+            }
+        }
+
+    init {
+        dependsOn.preference.addChangeListener {
+            validate(currentValue, it)
+        }
+
+        SwingUtilities.invokeLater { // Validate state on startup
+            validate(currentValue, dependsOn.preference.currentValue)
+            preferencesEditor.revalidate()
+        }
+    }
+
+    private fun validate(thisValue: T, otherValue: D) {
+        if (thisValue != default && otherValue != dependsOn.requiredValue) { // invalid state
+            currentValue = default
+            editor?.isEnabled = false
+        } else { // You have to stare at this for a while for it to make sense
+            editor?.isEnabled = thisValue != default || otherValue == dependsOn.requiredValue
+            dependsOn.preference.editor?.isEnabled = thisValue == default || otherValue != dependsOn.requiredValue
+        }
+    }
+
+    companion object {
+        @Suppress("unused")
+        inline fun <reified T : Any, reified D : Any> PreferenceCategory.dependentPreference(
+            name: String,
+            description: String? = null,
+            requiresRestart: Boolean = false,
+            default: T,
+            serializer: KSerializer<T> = serializer(),
+            dependsOn: PreferenceDependency<D>,
+            noinline editor: (Preference<T>.() -> JComponent)?,
+        ): DependentPreference<T, D> = DependentPreference(
+            this,
+            name,
+            description,
+            requiresRestart,
+            default,
+            serializer,
+            dependsOn,
+            editor,
+        )
+    }
+}
+
 val preferencesEditor by lazy {
     jFrame("Preferences", 600, 800, initiallyVisible = false) {
         defaultCloseOperation = JFrame.HIDE_ON_CLOSE
@@ -129,6 +207,12 @@ val preferencesEditor by lazy {
                                                 if (preference.description != null) {
                                                     add("\n")
                                                     add(preference.description)
+                                                    if (preference is DependentPreference<*, *>) {
+                                                        add(
+                                                            "Requires ${preference.dependsOn.preference.name} to be set to ${preference.dependsOn.requiredValue}.",
+                                                            "superscript",
+                                                        )
+                                                    }
                                                 }
                                             },
                                             "grow, wrap, gapy 0",

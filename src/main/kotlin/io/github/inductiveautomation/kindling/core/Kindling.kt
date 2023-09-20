@@ -156,7 +156,8 @@ data object Kindling {
 
             override val displayName: String = "General"
             override val key: String = "general"
-            override val preferences: List<Preference<*>> = listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
+            override val preferences: List<Preference<*>> =
+                listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
         }
 
         data object UI : PreferenceCategory {
@@ -264,7 +265,8 @@ data object Kindling {
         private val preferenceScope = CoroutineScope(Dispatchers.IO)
 
         operator fun <T : Any> set(category: PreferenceCategory, preference: Preference<T>, value: T) {
-            internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] = preferencesJson.encodeToJsonElement(preference.serializer, value)
+            internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] =
+                preferencesJson.encodeToJsonElement(preference.serializer, value)
             syncToDisk()
         }
 
