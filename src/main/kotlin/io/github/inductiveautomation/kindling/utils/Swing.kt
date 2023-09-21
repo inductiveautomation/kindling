@@ -61,8 +61,6 @@ import javax.swing.text.Document
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeNode
-import kotlin.io.path.extension
-import kotlin.io.path.isDirectory
 import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 import kotlin.time.Duration.Companion.milliseconds
@@ -326,15 +324,17 @@ class ReifiedJXTable<T : TableModel>(
 
 class FileFilter(
     private val description: String,
-    private val predicate: (path: Path) -> Boolean,
+    private val predicate: (file: File) -> Boolean,
 ) : SwingFileFilter(), FileFilter {
-    constructor(description: String, extensions: List<String>) : this(description, { path -> path.extension in extensions })
+    constructor(description: String, extensions: List<String>) : this(description, { file -> file.extension in extensions })
 
     fun accept(path: Path): Boolean {
-        return path.isDirectory() || predicate(path)
+        return accept(path.toFile())
     }
 
-    override fun accept(file: File): Boolean = accept(file.toPath())
+    override fun accept(file: File): Boolean {
+        return file.isDirectory || predicate(file)
+    }
 
     override fun getDescription(): String = description
 }
