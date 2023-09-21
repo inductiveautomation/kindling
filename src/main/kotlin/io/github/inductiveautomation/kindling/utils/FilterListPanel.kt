@@ -6,7 +6,7 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 
-abstract class ListFilterPanel<T>(
+abstract class FilterListPanel<T>(
     override val tabName: String,
     toStringFn: Stringifier = { it?.toString() },
 ) : FilterPanel<T>() {
@@ -14,7 +14,7 @@ abstract class ListFilterPanel<T>(
 
     private val sortButtons = filterList.createSortButtons()
 
-    override val component = JPanel(MigLayout("ins 0, fill, gap 5")).apply {
+    override val component = JPanel(MigLayout("ins 0, fill")).apply {
         val sortGroupEnumeration = sortButtons.elements
         add(sortGroupEnumeration.nextElement(), "split ${sortButtons.buttonCount}, flowx")
         for (element in sortGroupEnumeration) {

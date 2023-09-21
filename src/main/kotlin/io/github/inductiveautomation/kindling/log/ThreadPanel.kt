@@ -2,11 +2,11 @@ package io.github.inductiveautomation.kindling.log
 
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
+import io.github.inductiveautomation.kindling.utils.FilterListPanel
 import io.github.inductiveautomation.kindling.utils.FilterModel
-import io.github.inductiveautomation.kindling.utils.ListFilterPanel
 import javax.swing.JPopupMenu
 
-internal class ThreadPanel(events: List<LogEvent>) : ListFilterPanel<LogEvent>("Thread") {
+internal class ThreadPanel(events: List<LogEvent>) : FilterListPanel<LogEvent>("Thread") {
     init {
         filterList.apply {
             setModel(FilterModel(events.groupingBy { (it as SystemLogEvent).thread }.eachCount()))
@@ -36,6 +36,4 @@ internal class ThreadPanel(events: List<LogEvent>) : ListFilterPanel<LogEvent>("
             )
         }
     }
-
-    override fun reset() = filterList.selectAll()
 }

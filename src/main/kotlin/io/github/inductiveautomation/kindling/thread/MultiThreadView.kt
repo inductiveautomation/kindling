@@ -46,6 +46,7 @@ import java.awt.Rectangle
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.JLabel
+import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JPopupMenu
 import javax.swing.ListSelectionModel
@@ -68,7 +69,7 @@ class MultiThreadView(
     private val statePanel = StatePanel()
     private val searchField = JXSearchField("Search")
 
-    private val sidebar: FilterSidebar<ThreadLifespan> = FilterSidebar(
+    private val sidebar = FilterSidebar(
         statePanel,
         systemPanel,
         poolPanel,
@@ -193,36 +194,32 @@ class MultiThreadView(
                 JPopupMenu().apply {
                     val colAtPoint = columnAtPoint(event.point)
 
-                    val column = model.columns[convertColumnIndexToModel(colAtPoint)]
-                    val threadLifespan = model[convertRowIndexToModel(rowAtPoint)]
-
-                    for (filterPanel in sidebar.filterPanels) {
-                        filterPanel.customizePopupMenu(this, column, threadLifespan)
-                    }
-
                     if (colAtPoint == model.markIndex) {
                         add(clearAllMarks)
                     }
 
-                    if (column == MultiThreadColumns.name || column == SingleThreadColumns.name) {
-                        add(
-                            Action("Mark all with same name") {
-                                model.markRows { row ->
-                                    threadLifespan.any { row?.name == it?.name }.takeIf { it }
-                                }
-                            },
-                        )
-                    }
-
-                    if (threadLifespan.any { !it?.stacktrace.isNullOrEmpty() }) {
-                        add(
-                            Action("Mark all with same stacktrace") {
-                                model.markRows { row ->
-                                    threadLifespan.any { row?.stacktrace == it?.stacktrace }.takeIf { it }
-                                }
-                            },
-                        )
-                    }
+                    add(
+                        JMenu("Filter all with same...").apply {
+                            for (column in this@table.model.columns.filterableColumns) {
+                                add(
+                                    Action(column.header) {
+                                        filterAllWithSameValue(column)
+                                    },
+                                )
+                            }
+                        },
+                    )
+                    add(
+                        JMenu("Mark/Unmark all with same...").apply {
+                            for (column in this@table.model.columns.markableColumns) {
+                                add(
+                                    Action(column.header) {
+                                        toggleMarkAllWithSameValue(column)
+                                    },
+                                )
+                            }
+                        },
+                    )
                 }
             }
         }
@@ -247,28 +244,28 @@ class MultiThreadView(
         exportMenu.isEnabled = mainTable.model.isSingleContext
     }
 
-    private val filters = buildList<Filter<ThreadLifespan>> {
-        add { lifespan -> lifespan.any { it != null } }
+    private val filters = buildList<Filter<Thread?>> {
         addAll(sidebar.filterPanels)
-        add { lifespan ->
-            lifespan.any { thread ->
-                val query = if (!searchField.text.isNullOrEmpty()) searchField.text else return@add true
 
-                thread!!.id.toString().contains(query) ||
-                    thread.name.contains(query, ignoreCase = true) ||
-                    thread.system != null && thread.system.contains(query, ignoreCase = true) ||
-                    thread.scope != null && thread.scope.contains(query, ignoreCase = true) ||
-                    thread.state.name.contains(query, ignoreCase = true) ||
-                    thread.stacktrace.any { stack -> stack.contains(query, ignoreCase = true) }
-            }
+        add { thread -> thread != null }
+
+        add { thread ->
+            val query = if (!searchField.text.isNullOrEmpty()) searchField.text else return@add true
+
+            thread!!.id.toString().contains(query) ||
+                thread.name.contains(query, ignoreCase = true) ||
+                thread.system != null && thread.system.contains(query, ignoreCase = true) ||
+                thread.scope != null && thread.scope.contains(query, ignoreCase = true) ||
+                thread.state.name.contains(query, ignoreCase = true) ||
+                thread.stacktrace.any { stack -> stack.contains(query, ignoreCase = true) }
         }
     }
 
     private fun updateData() {
         BACKGROUND.launch {
             val filteredThreadDumps = currentLifespanList.filter { lifespan ->
-                filters.all { threadFilter ->
-                    threadFilter.filter(lifespan)
+                lifespan.any {
+                    filters.all { threadFilter -> threadFilter.filter(it) }
                 }
             }
 
@@ -389,7 +386,11 @@ class MultiThreadView(
         add(searchField, "wmin 300, wrap")
         add(
             VerticalSplitPane(
-                HorizontalSplitPane(sidebar, FlatScrollPane(mainTable), resizeWeight = 0.2),
+                HorizontalSplitPane(
+                    sidebar,
+                    FlatScrollPane(mainTable),
+                    resizeWeight = 0.1,
+                ),
                 comparison,
             ),
             "push, grow, span",

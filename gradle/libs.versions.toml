@@ -35,6 +35,7 @@ flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref =
 flatlaf-swingx = { group = "com.formdev", name = "flatlaf-swingx", version.ref = "flatlaf" }
 flatlaf-themes = { group = "com.formdev", name = "flatlaf-intellij-themes", version.ref = "flatlaf" }
 flatlaf-fonts-roboto = { group = "com.formdev", name = "flatlaf-fonts-roboto", version = "2.137" }
+flatlaf-fonts-roboto-mono = { group = "com.formdev", name = "flatlaf-fonts-roboto-mono", version = "3.000" }
 jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.12" }
 swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
 rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = "3.3.4" }
@@ -64,6 +65,7 @@ flatlaf = [
     "flatlaf-swingx",
     "flatlaf-themes",
     "flatlaf-fonts-roboto",
+    "flatlaf-fonts-roboto-mono",
 ]
 kotest = [
     "kotest-junit",

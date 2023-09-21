@@ -19,7 +19,7 @@ class FilterSidebar<T>(
         tabType = TabType.underlined
         tabHeight = 16
 
-        preferredSize = Dimension(300, 100)
+        preferredSize = Dimension(250, 100)
 
         filterPanels.forEachIndexed { i, filterPanel ->
             addTab(filterPanel.tabName, filterPanel.component)

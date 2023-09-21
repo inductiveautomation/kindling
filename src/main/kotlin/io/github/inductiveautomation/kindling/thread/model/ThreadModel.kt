@@ -57,6 +57,7 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
     val cpu = Column<ThreadLifespan, Double?>(
         header = "CPU",
         columnCustomization = {
+            minWidth = 60
             cellRenderer = DefaultTableRenderer { value ->
                 (value as? Double)?.let { percent.format(it) }.orEmpty()
             }
@@ -103,6 +104,9 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
             threads.firstNotNullOfOrNull { thread -> thread?.pool }
         },
     )
+
+    abstract val filterableColumns: List<Column<ThreadLifespan, out Any?>>
+    abstract val markableColumns: List<Column<ThreadLifespan, out Any?>>
 }
 
 class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
@@ -147,30 +151,9 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
         },
     ]
 
-    /**
-     * Update marks in the model, efficiently.
-     * Return true to set marked, false to clear a mark, or null to bypass the row.
-     */
-    fun markRows(predicate: (Thread?) -> Boolean?) {
-        var firstIndex = -1
-        var lastIndex = -1
-
-        for ((rowIndex, event) in threadData.withIndex()) {
-            for (thread in event) {
-                val shouldMark = predicate(thread) ?: continue
-                if (firstIndex == -1) {
-                    firstIndex = rowIndex
-                }
-                lastIndex = rowIndex
-                thread?.marked = shouldMark
-            }
-        }
-        fireTableRowsUpdated(firstIndex, lastIndex)
-    }
-
     @Suppress("unused", "MemberVisibilityCanBePrivate")
     data object MultiThreadColumns : ThreadColumnList() {
-        private val MONOSPACED = Font(Font.MONOSPACED, Font.PLAIN, 13)
+        private val MONOSPACED = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
         val state = Column<ThreadLifespan, String>(
             "State",
@@ -222,6 +205,17 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
             add(system)
             add(pool)
         }
+
+        override val filterableColumns = listOf(
+            system,
+            pool,
+        )
+
+        override val markableColumns = listOf(
+            system,
+            pool,
+            blocker,
+        )
     }
 
     @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -300,5 +294,19 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
             add(stacktrace)
             add(scope)
         }
+
+        override val filterableColumns = listOf(
+            state,
+            system,
+            pool,
+        )
+
+        override val markableColumns = listOf(
+            state,
+            system,
+            pool,
+            blocker,
+            stacktrace,
+        )
     }
 }

@@ -158,21 +158,15 @@ class FilterList(
             currentSelection
         }
 
-        try {
-            checkBoxListSelectionModel.valueIsAdjusting = true
+        super.setModel(model)
 
-            super.setModel(model)
-
-            for (sortAction in sortActions) {
-                sortAction.selected = comparator == sortAction.comparator
-            }
-            addCheckBoxListSelectedValues(lastSelection)
-        } finally {
-            checkBoxListSelectionModel.valueIsAdjusting = false
+        for (sortAction in sortActions) {
+            sortAction.selected = comparator == sortAction.comparator
         }
+        addCheckBoxListSelectedValues(lastSelection)
     }
 
-    val sortActions: List<SortAction> = FilterComparator.entries.map { filterComparator ->
+    private val sortActions: List<SortAction> = FilterComparator.entries.map { filterComparator ->
         SortAction(filterComparator)
     }
 
@@ -188,10 +182,8 @@ class FilterList(
         var comparator: FilterComparator by actionValue("filterComparator", comparator)
     }
 
-    fun createSortButtons(vararg comparators: FilterComparator): ButtonGroup = ButtonGroup().apply {
-        val actions = if (comparators.isEmpty()) sortActions else comparators.map(::SortAction)
-
-        for (sortAction in actions) {
+    fun createSortButtons(): ButtonGroup = ButtonGroup().apply {
+        for (sortAction in sortActions) {
             add(
                 JToggleButton(
                     Action(

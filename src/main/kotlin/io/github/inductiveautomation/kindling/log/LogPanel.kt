@@ -189,7 +189,11 @@ class LogPanel(
         add(header, "wrap, growx, spanx 2")
         add(
             VerticalSplitPane(
-                HorizontalSplitPane(sidebar, tableScrollPane),
+                HorizontalSplitPane(
+                    sidebar,
+                    tableScrollPane,
+                    resizeWeight = 0.1,
+                ),
                 details,
             ),
             "push, grow",
