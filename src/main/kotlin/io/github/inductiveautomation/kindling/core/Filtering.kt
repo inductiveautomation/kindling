@@ -7,12 +7,24 @@ import javax.swing.JComponent
 import javax.swing.JPopupMenu
 import javax.swing.event.EventListenerList
 
+fun interface Filter<T> {
+    /**
+     * Return true if this filter should display this item.
+     */
+    fun filter(item: T): Boolean
+}
+
+fun interface FilterChangeListener : EventListener {
+    fun filterChanged()
+}
+
 abstract class FilterPanel<T> : Filter<T> {
     abstract val tabName: String
     abstract fun isFilterApplied(): Boolean
     abstract val component: JComponent
 
     protected val listeners = EventListenerList()
+
     fun addFilterChangeListener(listener: FilterChangeListener) {
         listeners.add(listener)
     }
@@ -24,15 +36,4 @@ abstract class FilterPanel<T> : Filter<T> {
         column: Column<out T, *>,
         event: T,
     )
-}
-
-fun interface Filter<T> {
-    /**
-     * Return true if this filter should display this event.
-     */
-    fun filter(item: T): Boolean
-}
-
-fun interface FilterChangeListener : EventListener {
-    fun filterChanged()
 }

@@ -6,7 +6,6 @@ import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.Filter
-import io.github.inductiveautomation.kindling.core.FilterSidebar
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Preference
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
@@ -16,7 +15,6 @@ import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.add
 import io.github.inductiveautomation.kindling.thread.model.Thread
-import io.github.inductiveautomation.kindling.thread.model.ThreadColumnIdentifier
 import io.github.inductiveautomation.kindling.thread.model.ThreadDump
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
 import io.github.inductiveautomation.kindling.thread.model.ThreadModel
@@ -27,8 +25,11 @@ import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FilterModel
+import io.github.inductiveautomation.kindling.utils.FilterSidebar
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
@@ -48,7 +49,6 @@ import javax.swing.JLabel
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JPopupMenu
-import javax.swing.JSplitPane
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import javax.swing.UIManager
@@ -123,7 +123,7 @@ class MultiThreadView(
         ReifiedJXTable(initialModel).apply {
             columnFactory = initialModel.columns.toColumnFactory()
             createDefaultColumnsFromModel()
-            setSortOrder(ThreadColumnIdentifier.ID, SortOrder.ASCENDING)
+            setSortOrder(initialModel.columns.id, SortOrder.ASCENDING)
 
             selectionMode = ListSelectionModel.SINGLE_SELECTION
 
@@ -193,7 +193,8 @@ class MultiThreadView(
 
                 JPopupMenu().apply {
                     val colAtPoint = columnAtPoint(event.point)
-                    if (colAtPoint != -1 && getColumn(convertColumnIndexToModel(colAtPoint)).identifier == ThreadColumnIdentifier.MARK) {
+
+                    if (colAtPoint == model.markIndex) {
                         add(clearAllMarks)
                     }
 
@@ -230,7 +231,7 @@ class MultiThreadView(
         isVisible = !mainTable.model.isSingleContext
     }
 
-    private var listModelsAdjusting = false
+    private var listModelIsAdjusting = false
 
     private val exportMenu = run {
         val firstThreadDump = threadDumps.first()
@@ -243,7 +244,7 @@ class MultiThreadView(
         exportMenu.isEnabled = mainTable.model.isSingleContext
     }
 
-    private val filters = buildList<ThreadFilter> {
+    private val filters = buildList<Filter<Thread?>> {
         addAll(sidebar.filterPanels)
 
         add { thread -> thread != null }
@@ -328,7 +329,7 @@ class MultiThreadView(
 
         sidebar.filterPanels.forEach { panel ->
             panel.addFilterChangeListener {
-                if (!listModelsAdjusting) updateData()
+                if (!listModelIsAdjusting) updateData()
             }
         }
 
@@ -339,7 +340,7 @@ class MultiThreadView(
         threadDumpCheckboxList.checkBoxListSelectionModel.apply {
             addListSelectionListener { event ->
                 if (!event.valueIsAdjusting) {
-                    listModelsAdjusting = true
+                    listModelIsAdjusting = true
 
                     val selectedThreadDumps = List(threadDumps.size) { i ->
                         if (isSelectedIndex(i + 1)) {
@@ -349,7 +350,7 @@ class MultiThreadView(
                         }
                     }
                     visibleThreadDumps = selectedThreadDumps
-                    listModelsAdjusting = false
+                    listModelIsAdjusting = false
                 }
             }
         }
@@ -384,18 +385,14 @@ class MultiThreadView(
         add(exportButton, "gapright 8")
         add(searchField, "wmin 300, wrap")
         add(
-            JSplitPane(
-                JSplitPane.VERTICAL_SPLIT,
-                JSplitPane(
-                    JSplitPane.HORIZONTAL_SPLIT,
+            VerticalSplitPane(
+                HorizontalSplitPane(
                     sidebar,
                     FlatScrollPane(mainTable),
-                ).apply { isOneTouchExpandable = true },
+                    resizeWeight = 0.1,
+                ),
                 comparison,
-            ).apply {
-                resizeWeight = 0.5
-                isOneTouchExpandable = true
-            },
+            ),
             "push, grow, span",
         )
 
@@ -510,5 +507,3 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val key: String = "threadview"
     override val preferences = listOf(ShowNullThreads, ShowEmptyValues)
 }
-
-typealias ThreadFilter = Filter<Thread?>

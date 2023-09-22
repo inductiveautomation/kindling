@@ -4,7 +4,6 @@ import com.formdev.flatlaf.ui.FlatScrollBarUI
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
-import io.github.inductiveautomation.kindling.core.FilterSidebar
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
@@ -16,9 +15,12 @@ import io.github.inductiveautomation.kindling.log.LogViewer.ShowDensity
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
+import io.github.inductiveautomation.kindling.utils.FilterSidebar
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.MajorVersion
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.isSortedBy
@@ -47,7 +49,6 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JScrollBar
-import javax.swing.JSplitPane
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import javax.swing.SwingConstants
@@ -87,7 +88,7 @@ class LogPanel(
     val table = run {
         val initialModel = createModel(rawData)
         ReifiedJXTable(initialModel, columnList).apply {
-            setSortOrder(columnList[columnList.Timestamp], SortOrder.ASCENDING)
+            setSortOrder(initialModel.columns.Timestamp, SortOrder.ASCENDING)
         }
     }
 
@@ -187,16 +188,12 @@ class LogPanel(
     init {
         add(header, "wrap, growx, spanx 2")
         add(
-            JSplitPane(
-                JSplitPane.VERTICAL_SPLIT,
-                JSplitPane(
-                    JSplitPane.HORIZONTAL_SPLIT,
+            VerticalSplitPane(
+                HorizontalSplitPane(
                     sidebar,
                     tableScrollPane,
-                ).apply {
-                    isOneTouchExpandable = true
-                    dividerLocation = insets.left + 320
-                },
+                    resizeWeight = 0.1,
+                ),
                 details,
             ),
             "push, grow",

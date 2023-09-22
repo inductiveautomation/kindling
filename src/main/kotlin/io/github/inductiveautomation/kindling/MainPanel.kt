@@ -6,6 +6,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
 import com.formdev.flatlaf.extras.components.FlatTextArea
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
+import com.formdev.flatlaf.fonts.roboto_mono.FlatRobotoMonoFont
 import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyleRange.STYLE_UNDERLINED
 import io.github.inductiveautomation.kindling.core.ClipboardTool
@@ -358,9 +359,11 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
 
         private fun lafSetup() {
             FlatRobotoFont.install()
+            FlatRobotoMonoFont.install()
             FlatLaf.setPreferredFontFamily(FlatRobotoFont.FAMILY)
             FlatLaf.setPreferredLightFontFamily(FlatRobotoFont.FAMILY_LIGHT)
             FlatLaf.setPreferredSemiboldFontFamily(FlatRobotoFont.FAMILY_SEMIBOLD)
+            FlatLaf.setPreferredMonospacedFontFamily(FlatRobotoMonoFont.FAMILY)
             applyTheme(false)
 
             UIManager.getDefaults().apply {

@@ -21,21 +21,6 @@ import java.lang.Thread.State as ThreadState
 // A thread's lifespan across multiple thread dumps
 typealias ThreadLifespan = List<Thread?>
 
-enum class ThreadColumnIdentifier {
-    MARK,
-    ID,
-    STATE,
-    NAME,
-    DAEMON,
-    DEPTH,
-    CPU,
-    SYSTEM,
-    POOL,
-    BLOCKER,
-    STACKTRACE,
-    SCOPE,
-}
-
 sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
     private val percent = DecimalFormat("0.000'%'")
 
@@ -48,7 +33,6 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
             headerRenderer = DefaultTableRenderer(StringValues.EMPTY) {
                 FlatSVGIcon("icons/bx-search.svg").derive(0.8F)
             }
-            identifier = ThreadColumnIdentifier.MARK
         },
         getValue = { it.firstNotNullOf { thread -> thread?.marked } },
     )
@@ -59,16 +43,12 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
             minWidth = 50
             maxWidth = 75
             cellRenderer = DefaultTableRenderer(Any?::toString)
-            identifier = ThreadColumnIdentifier.ID
         },
         getValue = { it.firstNotNullOf { thread -> thread?.id } },
     )
 
     val name = Column<ThreadLifespan, String>(
         header = "Name",
-        columnCustomization = {
-            identifier = ThreadColumnIdentifier.NAME
-        },
         getValue = { threads ->
             threads.firstNotNullOf { thread -> thread?.name }
         },
@@ -77,10 +57,10 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
     val cpu = Column<ThreadLifespan, Double?>(
         header = "CPU",
         columnCustomization = {
+            minWidth = 60
             cellRenderer = DefaultTableRenderer { value ->
                 (value as? Double)?.let { percent.format(it) }.orEmpty()
             }
-            identifier = ThreadColumnIdentifier.CPU
         },
         getValue = { threads ->
             threads.maxOfOrNull { thread -> thread?.cpuUsage ?: 0.0 }
@@ -91,7 +71,6 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
         header = "Depth",
         columnCustomization = {
             minWidth = 50
-            identifier = ThreadColumnIdentifier.DEPTH
         },
         getValue = { threads ->
             threads.maxOf { thread -> thread?.stacktrace?.size ?: 0 }
@@ -106,7 +85,6 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
             cellRenderer = DefaultTableRenderer { value ->
                 (value as? String) ?: "Unassigned"
             }
-            identifier = ThreadColumnIdentifier.SYSTEM
         },
         getValue = { threads ->
             threads.firstNotNullOfOrNull { thread -> thread?.system }
@@ -121,7 +99,6 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
             cellRenderer = DefaultTableRenderer { value ->
                 (value as? String) ?: "(No Pool)"
             }
-            identifier = ThreadColumnIdentifier.POOL
         },
         getValue = { threads ->
             threads.firstNotNullOfOrNull { thread -> thread?.pool }
@@ -167,9 +144,16 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
         }
     }
 
+    val markIndex = columns[
+        when (columns) {
+            is SingleThreadColumns -> SingleThreadColumns.mark
+            is MultiThreadColumns -> MultiThreadColumns.mark
+        },
+    ]
+
     @Suppress("unused", "MemberVisibilityCanBePrivate")
     data object MultiThreadColumns : ThreadColumnList() {
-        private val MONOSPACED = Font(Font.MONOSPACED, Font.PLAIN, 13)
+        private val MONOSPACED = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
         val state = Column<ThreadLifespan, String>(
             "State",
@@ -184,7 +168,6 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
                         }
                     },
                 )
-                identifier = ThreadColumnIdentifier.STATE
             },
             getValue = { threadList ->
                 threadList.joinToString(" → ") { thread ->
@@ -205,7 +188,6 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
             columnCustomization = {
                 minWidth = 60
                 maxWidth = 60
-                identifier = ThreadColumnIdentifier.BLOCKER
             },
             getValue = { threads ->
                 threads.any { thread -> thread?.blocker?.owner != null }
@@ -243,7 +225,6 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
             columnCustomization = {
                 minWidth = 105
                 maxWidth = 105
-                identifier = ThreadColumnIdentifier.STATE
             },
             getValue = { threads ->
                 threads.firstNotNullOf { thread -> thread?.state }
@@ -255,7 +236,6 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
             columnCustomization = {
                 minWidth = 55
                 maxWidth = 55
-                identifier = ThreadColumnIdentifier.DAEMON
             },
             getValue = { threads ->
                 threads.any { thread -> thread?.isDaemon == true }
@@ -267,7 +247,6 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
             columnCustomization = {
                 minWidth = 60
                 maxWidth = 60
-                identifier = ThreadColumnIdentifier.BLOCKER
             },
             getValue = { threads ->
                 threads.firstNotNullOfOrNull { thread -> thread?.blocker?.owner }
@@ -282,7 +261,6 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
                 cellRenderer = DefaultTableRenderer { value ->
                     (value as? String?) ?: "No Trace"
                 }
-                identifier = ThreadColumnIdentifier.STACKTRACE
             },
             getValue = { threads ->
                 threads.firstNotNullOf { thread -> thread?.stacktrace }.joinToString()
@@ -296,7 +274,6 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
                 cellRenderer = DefaultTableRenderer { value ->
                     (value as? String?) ?: "Unknown"
                 }
-                identifier = ThreadColumnIdentifier.SCOPE
             },
             getValue = { threads ->
                 threads.firstNotNullOfOrNull { thread -> thread?.scope }

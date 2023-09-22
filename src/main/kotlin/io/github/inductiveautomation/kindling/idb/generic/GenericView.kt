@@ -3,6 +3,8 @@ package io.github.inductiveautomation.kindling.idb.generic
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
+import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
@@ -20,7 +22,6 @@ import javax.swing.JButton
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JSplitPane
 import javax.swing.JTextArea
 import javax.swing.KeyStroke
 import javax.swing.tree.DefaultTreeModel
@@ -151,21 +152,17 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
         }
 
         add(
-            JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT,
+            HorizontalSplitPane(
                 FlatScrollPane(tree).apply {
                     preferredSize = Dimension(200, 10)
                 },
-                JSplitPane(
-                    JSplitPane.VERTICAL_SPLIT,
+                VerticalSplitPane(
                     FlatScrollPane(queryPanel),
                     results,
-                ).apply {
-                    resizeWeight = 0.2
-                },
-            ).apply {
-                resizeWeight = 0.1
-            },
+                    resizeWeight = 0.2,
+                ),
+                resizeWeight = 0.1,
+            ),
             "push, grow",
         )
     }

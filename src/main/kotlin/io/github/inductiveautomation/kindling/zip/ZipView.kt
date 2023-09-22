@@ -9,6 +9,7 @@ import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.PathNode
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.ZipFileTree
@@ -34,7 +35,6 @@ import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
 import javax.swing.JFileChooser
 import javax.swing.JLabel
-import javax.swing.JSplitPane
 import javax.swing.tree.TreeSelectionModel
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
@@ -150,15 +150,10 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
 
         add(bundleInfo, "split 2, height 32!")
         add(
-            JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT,
+            HorizontalSplitPane(
                 FlatScrollPane((fileTree)),
                 tabStrip,
-            ).apply {
-                dividerSize += 2
-                isOneTouchExpandable = true
-                dividerLocation = 250
-            },
+            ),
             "push, grow, span",
         )
     }
