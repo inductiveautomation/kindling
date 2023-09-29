@@ -24,17 +24,17 @@ class DownloadJavadocsPlugin : Plugin<Project> {
         "8.1" to listOf(
             javadoc("https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.29/"),
             javadoc("https://docs.oracle.com/en/java/javase/11/docs/api/"),
-            legacyJavadoc("https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/")
+            legacyJavadoc("https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/"),
         ),
         "8.0" to listOf(
             javadoc("https://files.inductiveautomation.com/sdk/javadoc/ignition80/8.0.14/"),
             javadoc("https://docs.oracle.com/en/java/javase/11/docs/api/"),
-            legacyJavadoc("https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/")
+            legacyJavadoc("https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/"),
         ),
         "7.9" to listOf(
             legacyJavadoc("https://files.inductiveautomation.com/sdk/javadoc/ignition79/7921/"),
             legacyJavadoc("https://docs.oracle.com/javase/8/docs/api/"),
-            legacyJavadoc("https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/")
+            legacyJavadoc("https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/"),
         ),
     )
 

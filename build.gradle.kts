@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.conveyor)
+    alias(libs.plugins.dokka)
     application
 }
 

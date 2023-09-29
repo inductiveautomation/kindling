@@ -72,5 +72,4 @@ Contributions of any kind (additional tools, polish to existing tools, test file
 
 ## Disclaimer
 
-This is **not** an official Inductive Automation product and is not affiliated with, supported by, maintained by, or
-otherwise associated with Inductive Automation in any way. This software is provided as-is with no warranty.
+Kindling is **not** an official Inductive Automation product and is provided as-is with no warranty. 
