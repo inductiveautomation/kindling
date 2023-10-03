@@ -1,6 +1,5 @@
 name: Publish new Dokka docs upon new version tag
-on:
-  push
+on: push
 #    tags:
 #      - '[0-9]+.[0-9]+.[0-9]+'
 jobs:
