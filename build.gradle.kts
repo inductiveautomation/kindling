@@ -55,6 +55,29 @@ tasks {
     }
 }
 
+val downloadJavadocs = tasks.register<DownloadJavadocs>("downloadJavadocs") {
+    urlsByVersion.set(
+        mapOf(
+            "8.1" to listOf(
+                "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.32/$java11AllClassPath",
+                "https://docs.oracle.com/en/java/javase/17/docs/api/$java17AllClassPath",
+                "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/$java8AllClassPath",
+            ),
+            "8.0" to listOf(
+                "https://files.inductiveautomation.com/sdk/javadoc/ignition80/8.0.14/$java11AllClassPath",
+                "https://docs.oracle.com/en/java/javase/11/docs/api/$java11AllClassPath",
+                "https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/$java8AllClassPath",
+            ),
+            "7.9" to listOf(
+                "https://files.inductiveautomation.com/sdk/javadoc/ignition79/7921/$java8AllClassPath",
+                "https://docs.oracle.com/javase/8/docs/api/$java8AllClassPath",
+                "https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/$java8AllClassPath",
+            ),
+        ),
+    )
+    outputDir.set(project.layout.buildDirectory.dir("javadocs"))
+}
+
 kotlin {
     jvmToolchain {
         languageVersion.set(libs.versions.java.map(JavaLanguageVersion::of))
@@ -62,36 +85,7 @@ kotlin {
     }
     sourceSets {
         main {
-            resources.srcDir(
-                tasks.register<DownloadJavadocs>("81Javadocs") {
-                    version.set("8.1")
-                    urls.addAll(
-                        "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.32/$java11AllClassPath",
-                        "https://docs.oracle.com/en/java/javase/17/docs/api/$java17AllClassPath",
-                        "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/$java8AllClassPath",
-                    )
-                },
-            )
-            resources.srcDir(
-                tasks.register<DownloadJavadocs>("80Javadocs") {
-                    version.set("8.0")
-                    urls.addAll(
-                        "https://files.inductiveautomation.com/sdk/javadoc/ignition80/8.0.14/$java11AllClassPath",
-                        "https://docs.oracle.com/en/java/javase/11/docs/api/$java11AllClassPath",
-                        "https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/$java8AllClassPath",
-                    )
-                },
-            )
-            resources.srcDir(
-                tasks.register<DownloadJavadocs>("79Javadocs") {
-                    version.set("7.9")
-                    urls.addAll(
-                        "https://files.inductiveautomation.com/sdk/javadoc/ignition79/7921/$java8AllClassPath",
-                        "https://docs.oracle.com/javase/8/docs/api/$java8AllClassPath",
-                        "https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/$java8AllClassPath",
-                    )
-                },
-            )
+            resources.srcDir(downloadJavadocs)
         }
     }
 }

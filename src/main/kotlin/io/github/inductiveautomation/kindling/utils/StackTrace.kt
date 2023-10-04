@@ -26,7 +26,7 @@ fun StackElement.toBodyLine(version: String): BodyLine {
                     BodyLine(escapedLine)
                 }
             } else {
-                val url = it.classMap[path.value] as String?
+                val url = it.classMap?.get(path.value) as String?
                 BodyLine(escapedLine, url)
             }
         } else {
@@ -41,8 +41,10 @@ enum class MajorVersion(val version: String) {
     EightZero("8.0"),
     EightOne("8.1");
 
-    val classMap: Properties by lazy {
-        Properties(requireNotNull(this::class.java.getResourceAsStream("/javadocs/$version/links.properties")))
+    val classMap: Properties? by lazy {
+        Properties().also { properties ->
+            this::class.java.getResourceAsStream("/$version/links.properties")?.use(properties::load)
+        }
     }
 
     companion object {
@@ -54,7 +56,7 @@ enum class MajorVersion(val version: String) {
             repeat(18) { patch ->
                 put("8.0.$patch", EightZero)
             }
-            repeat(30) { patch ->
+            repeat(33) { patch ->
                 put("8.1.$patch", EightOne)
             }
         }

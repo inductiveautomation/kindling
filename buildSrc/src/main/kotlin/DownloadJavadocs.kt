@@ -1,61 +1,69 @@
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.charset
+import io.ktor.utils.io.jvm.javaio.toInputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.jsoup.Jsoup
-import java.net.URI
 
 abstract class DownloadJavadocs : DefaultTask() {
     @get:Input
-    abstract val version: Property<String>
-
-    @get:Input
-    abstract val urls: ListProperty<String>
+    abstract val urlsByVersion: MapProperty<String, List<String>>
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
-    init {
-        outputDir.convention(project.layout.buildDirectory.dir("javadocs"))
-    }
+    private val client = HttpClient(CIO)
 
     @TaskAction
     fun downloadJavadoc() {
         if (project.gradle.startParameter.isOffline) return
 
         val destination = outputDir.asFile.get()
-        val versionKey = version.get()
+        val versionsAndUrls = urlsByVersion.get()
 
-        destination.resolve(versionKey).apply {
-            mkdirs()
-            resolve("links.properties").printWriter().use { writer ->
-                for (javadoc in urls.get()) {
-                    logger.info("Fetching all classes from $javadoc")
+        val async = runBlocking(Dispatchers.IO) {
+            versionsAndUrls.mapValues { (_, urls) ->
+                urls.map { url ->
+                    async {
+                        val response = client.get(url)
+                        val charset = response.charset() ?: Charsets.UTF_8
+                        
+                        Jsoup.parse(response.bodyAsChannel().toInputStream(), charset.name(), url)
+                            .select("""a[href][title*="class"], a[href][title*="interface"]""")
+                            .distinctBy { a -> a.attr("abs:href") }
+                            .map { a ->
+                                val className = a.text()
+                                val packageName = a.attr("title").substringAfterLast(' ')
 
-                    try {
-                        URI.create(javadoc).toURL().openStream().use { inputstream ->
-                            Jsoup.parse(inputstream, Charsets.UTF_8.name(), javadoc)
-                                .select("""a[href][title*="class"], a[href][title*="interface"]""")
-                                .distinctBy { a -> a.attr("abs:href") }
-                                .forEach { a ->
-                                    val className = a.text()
-                                    val packageName = a.attr("title").substringAfterLast(' ')
+                                "$packageName.$className=${a.absUrl("href")}"
+                            }
+                    }
+                }
+                    .awaitAll()
+                    .flatten()
+            }
+        }
 
-                                    writer.append(packageName).append('.').append(className)
-                                        .append('=').append(a.absUrl("href"))
-                                        .appendLine()
-                                }
-                        }
-                    } catch (e: Exception) {
-                        logger.warn("Failed to fetch $javadoc", e)
+        for ((version, property) in async) {
+            destination.resolve(version).apply { 
+                mkdirs()
+                resolve("links.properties").printWriter().use { writer ->
+                    for (line in property) {
+                        writer.println(line)
                     }
                 }
             }
         }
-
-        destination.resolve("versions.txt").appendText(versionKey + "\n")
     }
 }
