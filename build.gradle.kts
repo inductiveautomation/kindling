@@ -11,12 +11,7 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven {
-        url = uri("https://nexus.inductiveautomation.com/repository/inductiveautomation-releases/")
-    }
-    maven {
-        url = uri("https://nexus.inductiveautomation.com/repository/inductiveautomation-thirdparty/")
-    }
+    maven(url = "https://nexus.inductiveautomation.com/repository/public/")
 }
 
 dependencies {
