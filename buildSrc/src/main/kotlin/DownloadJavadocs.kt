@@ -36,18 +36,22 @@ abstract class DownloadJavadocs : DefaultTask() {
             versionsAndUrls.mapValues { (_, urls) ->
                 urls.map { url ->
                     async {
-                        val response = client.get(url)
-                        val charset = response.charset() ?: Charsets.UTF_8
-                        
-                        Jsoup.parse(response.bodyAsChannel().toInputStream(), charset.name(), url)
-                            .select("""a[href][title*="class"], a[href][title*="interface"]""")
-                            .distinctBy { a -> a.attr("abs:href") }
-                            .map { a ->
-                                val className = a.text()
-                                val packageName = a.attr("title").substringAfterLast(' ')
+                        try {
+                            val response = client.get(url)
+                            val charset = response.charset() ?: Charsets.UTF_8
 
-                                "$packageName.$className=${a.absUrl("href")}"
-                            }
+                            Jsoup.parse(response.bodyAsChannel().toInputStream(), charset.name(), url)
+                                .select("""a[href][title*="class"], a[href][title*="interface"]""")
+                                .distinctBy { a -> a.attr("abs:href") }
+                                .map { a ->
+                                    val className = a.text()
+                                    val packageName = a.attr("title").substringAfterLast(' ')
+
+                                    "$packageName.$className=${a.absUrl("href")}"
+                                }
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
                     }
                 }
                     .awaitAll()
