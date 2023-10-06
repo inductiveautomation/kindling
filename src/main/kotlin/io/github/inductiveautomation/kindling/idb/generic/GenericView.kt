@@ -28,7 +28,7 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 
 class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
-    private val tables: List<Table> = connection
+    private var tables: List<Table> = connection
         .prepareStatement("SELECT name FROM main.sqlite_schema WHERE type = \"table\" ORDER BY name")
         .executeQuery()
         .toList { resultSet ->
@@ -51,6 +51,10 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                             _parent = { root.getChildAt(i) },
                         )
                     },
+                    size = connection
+                            .prepareStatement("SELECT SUM(\"pgsize\") FROM \"dbstat\" WHERE name='$tableName'")
+                            .executeQuery()
+                            .getLong(1)
             )
         }
 

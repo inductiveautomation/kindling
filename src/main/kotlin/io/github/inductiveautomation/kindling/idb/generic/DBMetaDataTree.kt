@@ -6,6 +6,7 @@ import com.jidesoft.swing.StyledLabelBuilder
 import com.jidesoft.swing.TreeSearchable
 import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.utils.derive
+import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import java.awt.Font
 import javax.swing.UIManager
@@ -23,7 +24,7 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
             treeCellRenderer { _, value, selected, _, _, _, focused ->
                 when (value) {
                     is Table -> {
-                        text = value.name
+                        text = "<html>${value.name} <i>(${value.size.toFileSizeLabel()})</i>"
                         icon = if (selected && focused) TABLE_ICON_SELECTED else TABLE_ICON
                         this
                     }
