@@ -32,7 +32,7 @@ ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref =
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 
 # appearance/swing
-miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.1" }
+miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.2" }
 flatlaf-core = { group = "com.formdev", name = "flatlaf", version.ref = "flatlaf" }
 flatlaf-extras = { group = "com.formdev", name = "flatlaf-extras", version.ref = "flatlaf" }
 flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref = "flatlaf" }
