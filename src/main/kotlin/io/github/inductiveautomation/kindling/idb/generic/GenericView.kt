@@ -1,5 +1,8 @@
 package io.github.inductiveautomation.kindling.idb.generic
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.jidesoft.comparator.AlphanumComparator
+import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -17,18 +20,113 @@ import java.sql.JDBCType
 import java.sql.Timestamp
 import java.util.Collections
 import java.util.Enumeration
+import javax.swing.ButtonGroup
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JTextArea
+import javax.swing.JToggleButton
 import javax.swing.KeyStroke
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 
+enum class TableComparator(
+    val tooltip: String,
+    val icon: FlatSVGIcon,
+    val comparator: Comparator<Table>,
+) : Comparator<Table> by comparator {
+    ByNameAscending(
+        tooltip = "Sort A-Z",
+        icon = FlatSVGIcon("icons/bx-sort-a-z.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        comparator = compareBy(nullsFirst(AlphanumComparator(false))) { it.name },
+    ),
+    ByNameDescending(
+        tooltip = "Sort Z-A",
+        icon = FlatSVGIcon("icons/bx-sort-z-a.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        comparator = ByNameAscending.reversed(),
+    ),
+    BySizeAscending(
+        tooltip = "Sort by Size",
+        icon = FlatSVGIcon("icons/bx-sort-up.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        comparator = compareBy(Table::size),
+    ),
+    BySizeDescending(
+        tooltip = "Sort by Size (descending)",
+        icon = FlatSVGIcon("icons/bx-sort-down.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        comparator = BySizeAscending.reversed(),
+    ),
+}
+
+class SortableTree(val tables: List<Table>) {
+    var comparator = TableComparator.BySizeDescending
+        set(value) {
+            field = value
+            root = sortTree()
+            tree.model = DefaultTreeModel(root)
+        }
+
+    private fun sortTree() = object : TreeNode {
+        override fun getChildAt(childIndex: Int): TreeNode = tables.sortedWith(comparator)[childIndex]
+        override fun getChildCount(): Int = tables.sortedWith(comparator).size
+        override fun getParent(): TreeNode? = null
+        override fun getIndex(node: TreeNode): Int = tables.sortedWith(comparator).indexOf(node)
+        override fun getAllowsChildren(): Boolean = true
+        override fun isLeaf(): Boolean = false
+        override fun children(): Enumeration<out TreeNode> = Collections.enumeration(tables.sortedWith(comparator))
+    }
+
+    var root: TreeNode = sortTree()
+
+    val tree = DBMetaDataTree(DefaultTreeModel(root))
+
+    private val sortActions: List<SortAction> = TableComparator.entries.map { tableComparator ->
+        SortAction(tableComparator)
+    }
+
+    inner class SortAction(comparator: TableComparator) : Action(
+        description = comparator.tooltip,
+        icon = comparator.icon,
+        selected = this@SortableTree.comparator == comparator,
+        action = {
+            this@SortableTree.comparator = comparator
+            selected = true
+        },
+    ) {
+        var comparator: TableComparator by actionValue("tableComparator", comparator)
+    }
+
+    private fun createSortButtons(): ButtonGroup = ButtonGroup().apply {
+        for (sortAction in sortActions) {
+            add(
+                JToggleButton(
+                    Action(
+                        description = sortAction.description,
+                        icon = sortAction.icon,
+                        selected = sortAction.selected,
+                    ) { e ->
+                        sortAction.actionPerformed(e)
+                    },
+                ),
+            )
+        }
+    }
+
+    private val sortButtons = createSortButtons()
+
+    val component = JPanel(MigLayout("ins 0, fill")).apply {
+        val sortGroupEnumeration = sortButtons.elements
+        add(sortGroupEnumeration.nextElement(), "split ${sortButtons.buttonCount}, flowx")
+        for (element in sortGroupEnumeration) {
+            add(element, "gapx 2")
+        }
+        add(FlatScrollPane(tree), "newline, push, grow")
+    }
+}
+
 class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
-    private var tables: List<Table> = connection
+    private val tables: List<Table> = connection
         .prepareStatement("SELECT name FROM main.sqlite_schema WHERE type = \"table\" ORDER BY name")
         .executeQuery()
         .toList { resultSet ->
@@ -36,7 +134,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
         }.mapIndexed { i, tableName ->
             Table(
                 name = tableName,
-                _parent = { root },
+                _parent = { sortableTree.root },
                 columns = connection
                     .prepareStatement("PRAGMA table_xinfo(\"$tableName\");")
                     .executeQuery()
@@ -48,27 +146,17 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                             defaultValue = resultSet.getString("dflt_value"),
                             primaryKey = resultSet.getInt("pk") == 1,
                             hidden = resultSet.getInt("hidden") == 1,
-                            _parent = { root.getChildAt(i) },
+                            _parent = { sortableTree.root.getChildAt(i) },
                         )
                     },
-                    size = connection
-                            .prepareStatement("SELECT SUM(\"pgsize\") FROM \"dbstat\" WHERE name='$tableName'")
-                            .executeQuery()
-                            .getLong(1)
+                size = connection
+                    .prepareStatement("SELECT SUM(\"pgsize\") FROM \"dbstat\" WHERE name='$tableName'")
+                    .executeQuery()
+                    .getLong(1),
             )
         }
 
-    private val root: TreeNode = object : TreeNode {
-        override fun getChildAt(childIndex: Int): TreeNode = tables[childIndex]
-        override fun getChildCount(): Int = tables.size
-        override fun getParent(): TreeNode? = null
-        override fun getIndex(node: TreeNode): Int = tables.indexOf(node)
-        override fun getAllowsChildren(): Boolean = true
-        override fun isLeaf(): Boolean = false
-        override fun children(): Enumeration<out TreeNode> = Collections.enumeration(tables)
-    }
-
-    private val tree = DBMetaDataTree(DefaultTreeModel(root))
+    private val sortableTree = SortableTree(tables)
 
     private val query = JTextArea(0, 0)
 
@@ -127,7 +215,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
         actionMap.put("execute", execute)
 
-        tree.attachPopupMenu { event ->
+        sortableTree.tree.attachPopupMenu { event ->
             val path = getClosestPathForLocation(event.x, event.y)
             when (val node = path?.lastPathComponent) {
                 is Table -> JPopupMenu().apply {
@@ -157,7 +245,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
 
         add(
             HorizontalSplitPane(
-                FlatScrollPane(tree).apply {
+                FlatScrollPane(sortableTree.component).apply {
                     preferredSize = Dimension(200, 10)
                 },
                 VerticalSplitPane(
