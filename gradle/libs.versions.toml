@@ -4,7 +4,7 @@ kotlin = "1.9.10"
 ktor = "2.3.5"
 coroutines = "1.7.3"
 flatlaf = "3.2.5"
-kotest = "5.7.2"
+kotest = "5.8.0"
 ignition = "8.1.1"
 
 [plugins]
