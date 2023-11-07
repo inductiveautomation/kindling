@@ -1,7 +1,7 @@
 [versions]
 java = "17"
 kotlin = "1.9.10"
-ktor = "2.3.5"
+ktor = "2.3.6"
 coroutines = "1.7.3"
 flatlaf = "3.2.5"
 kotest = "5.7.2"
