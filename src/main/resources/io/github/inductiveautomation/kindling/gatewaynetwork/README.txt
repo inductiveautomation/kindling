@@ -1,0 +1,1 @@
+The source for these files is the 'https://github.ia.local/ia/cytoscape-server' GitHub repository, in the 'cytoscape-server.zip' file. Within the zip file, navigate to 'server/static' to view the actual files.

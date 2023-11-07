@@ -1,0 +1,194 @@
+html {
+    font-size: 100%;
+  }
+
+  body {
+    padding: 0;
+    margin: 0;
+    font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+    font-weight: normal;
+    line-height: 1.5;
+    color: #0a0a0a;
+    background: #fefefe;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }  
+
+  body {
+    line-height: 1.5;
+    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    color: #222222;
+  }
+  
+div,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+pre,
+form,
+p,
+blockquote,
+th,
+td {
+    margin: 0;
+    padding: 0;
+}
+
+label {
+    font-size: 0.875rem;
+    color: #222222;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    line-height: 1.1;
+  }
+  
+.row {
+    margin: 0;
+    max-width: none;
+    /* display: flex; */
+    flex-flow: row wrap;
+}
+
+.table-controls {
+    background-color: #F3F6F9;
+    border: 1px solid #E1E8EE;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    background-clip: padding-box;
+    font-size: 0.875rem;
+  }
+.table-controls .standard-controls {
+    display: inherit;
+    padding: 0.625rem;
+  }  
+.table-controls .standard-controls .control {
+    margin-right: 1rem;
+    display: inline-block;
+  }
+.table-controls label {
+    display: inline;
+    margin-right: 0.25rem;
+  }  
+.table-controls .standard-controls label, .table-controls .standard-controls input {
+    display: inline;
+  }
+
+.tabs-panel {
+    display: none;
+    padding: 1rem;
+  }
+
+.secondary {
+    border: 1px solid #2199E8;
+    background-color: #FFFFFF;
+    color: #2199E8;
+    font-weight: normal;
+  }  
+
+.is-active {
+    display: block;
+  }  
+
+.ganLiveDiagram__tiplabel {
+    display: block;
+    padding: 8px;
+    background-color: #ECF7FF;
+    border: 1px solid #AAC4D7;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+
+.icon-actions-right {
+    /* float: right; */
+    padding: 0.5rem;
+    display: inline-block;
+  }    
+
+  .ganLiveDiagram__diagramToolbar {
+    position: relative;
+    bottom: 592px;
+  }
+  
+  .ganLiveDiagram__chartButton {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+  .ganLiveDiagram__chartButton.active {
+    color: #2199E8;
+    background-color: rgba(33, 153, 232, 0.2);
+    transition: 0.25s;
+  }
+  
+  .ganLiveDiagram__chartButton:hover {
+    color: #2199E8;
+    background-color: rgba(33, 153, 232, 0.2);
+    transition: 0.25s;
+  }
+  
+  .ganLiveDiagram__chartIcon {
+    fill: #FFFFFF;
+    width: 18px;
+    height: 18px;
+  }
+
+.feedbackPanelERROR {
+    color: #EC5840;
+    background-color: #FCE6E3;
+    border: 1px solid #F6BAB1;
+    font-weight: bold;
+}
+
+table {
+  border-collapse:collapse;
+  border-spacing:0;
+ }
+
+table thead {
+  color: #5e6977;
+  border-bottom: 2px solid #e1e8ee;
+}
+
+table tbody {
+  border-bottom: 1px solid #e1e8ee;
+}
+
+table tbody tr:hover, table tbody tr:nth-child(even):hover {
+  background-color: rgba(33, 153, 232, 0.1);
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #F3F6F9;
+}
+
+table td {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.label.running {
+  font-weight: bold;
+  color:#39c16c
+ }
+
+.label.error {
+  font-weight: bold;
+  color: #ec5840;
+}
