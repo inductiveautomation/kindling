@@ -6,6 +6,8 @@ import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import org.json.JSONException
+import org.json.JSONObject
 import java.awt.Desktop
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -14,14 +16,12 @@ import java.net.URI
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.UUID
 import javax.swing.JButton
 import javax.swing.JOptionPane
 import javax.swing.JTextArea
 import kotlin.io.path.name
 import kotlin.io.path.useLines
-import org.json.JSONException
-import org.json.JSONObject
 
 /**
  * Opens the raw file that contains a gateway network diagram as JSON text. After opening, the user can click a
@@ -61,8 +61,12 @@ class GatewayNetworkViewer(path: Path) : ToolPanel() {
                     try {
                         JSONObject(theText)
                     } catch (e: JSONException) {
-                        JOptionPane.showMessageDialog(null, "Error: " + e.message,
-                            "JSON parsing error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(
+                            null,
+                            "Error: " + e.message,
+                            "JSON parsing error",
+                            JOptionPane.ERROR_MESSAGE,
+                        )
                         return
                     }
                     JSONObject(theText)
@@ -75,8 +79,12 @@ class GatewayNetworkViewer(path: Path) : ToolPanel() {
                         try {
                             desktop.browse(URI(tempAddress))
                         } catch (error: Exception) {
-                            JOptionPane.showMessageDialog(null, "Error: " + error.message,
-                                "Error opening browser", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(
+                                null,
+                                "Error: " + error.message,
+                                "Error opening browser",
+                                JOptionPane.ERROR_MESSAGE,
+                            )
                         }
                     }
                 }
@@ -116,8 +124,11 @@ class GatewayNetworkViewer(path: Path) : ToolPanel() {
 
     private fun writeStaticFiles(jsonText: String): String {
         // Make a temp dir for the static html/js files
-        val tmpDir: Path = Path.of(System.getProperty("java.io.tmpdir"), "gateway-network-diagram",
-            UUID.randomUUID().toString())
+        val tmpDir: Path = Path.of(
+            System.getProperty("java.io.tmpdir"),
+            "gateway-network-diagram",
+            UUID.randomUUID().toString(),
+        )
         Files.deleteIfExists(tmpDir)
         Files.createDirectories(tmpDir)
 
