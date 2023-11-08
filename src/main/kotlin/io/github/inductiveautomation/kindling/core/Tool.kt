@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.core
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.cache.CacheViewer
+import io.github.inductiveautomation.kindling.gatewaynetwork.GatewayNetworkTool
 import io.github.inductiveautomation.kindling.idb.IdbViewer
 import io.github.inductiveautomation.kindling.log.LogViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
@@ -30,6 +31,7 @@ interface Tool {
                 LogViewer,
                 IdbViewer,
                 CacheViewer,
+                GatewayNetworkTool,
             ) + loadService<Tool>().sortedBy { it.title }
         }
 
