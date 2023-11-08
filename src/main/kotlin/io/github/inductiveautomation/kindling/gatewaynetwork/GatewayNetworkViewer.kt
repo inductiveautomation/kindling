@@ -102,6 +102,9 @@ class GatewayNetworkViewer(path: Path) : ToolPanel() {
 
     companion object {
         private val FAVICON = "favicon.ico"
+        private val FAVICON_32 = "favicon-32x32.png"
+        private val FAVICON_48 = "favicon-48x48.png"
+        private val FAVICON_160 = "favicon-160x160.png"
         private val INDEX_HTML = "index.html"
         private val MAIN_JS = "main.js"
         private val STYLE_CSS = "style.css"
@@ -132,6 +135,16 @@ class GatewayNetworkViewer(path: Path) : ToolPanel() {
         Files.deleteIfExists(tmpDir)
         Files.createDirectories(tmpDir)
 
+        val favicon32: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON_32)
+        Files.copy(Path.of(favicon32?.toURI()), tmpDir.resolve(FAVICON_32))
+
+        val favicon48: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON_48)
+        Files.copy(Path.of(favicon48?.toURI()), tmpDir.resolve(FAVICON_48))
+
+        val favicon160: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON_160)
+        Files.copy(Path.of(favicon160?.toURI()), tmpDir.resolve(FAVICON_160))
+
+        // Default favicon just in case
         val favicon: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON)
         Files.copy(Path.of(favicon?.toURI()), tmpDir.resolve(FAVICON))
 
