@@ -1,27 +1,27 @@
 package io.github.inductiveautomation.kindling.gatewaynetwork
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
-import io.github.inductiveautomation.kindling.core.Tool
+import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
-import org.json.JSONException
-import org.json.JSONObject
+import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import java.awt.Desktop
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.io.File
 import java.net.URI
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.UUID
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import javax.swing.JButton
 import javax.swing.JOptionPane
 import javax.swing.JTextArea
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.name
-import kotlin.io.path.useLines
 
 /**
  * Opens the raw file that contains a gateway network diagram as JSON text. After opening, the user can click a
@@ -34,141 +34,172 @@ import kotlin.io.path.useLines
  * Set the 'gateway.routes.status.GanRoutes' logger set to DEBUG in an Ignition gateway to generate diagram JSON while
  * viewing the gateway network live diagram page.
  */
-class GatewayNetworkViewer(path: Path) : ToolPanel() {
+@kotlinx.serialization.ExperimentalSerializationApi
+class GatewayNetworkViewer(tabName: String, tooltip: String, json: String) : ToolPanel() {
     override val icon = GatewayNetworkTool.icon
-
     private val browserBtn = JButton("View diagram in browser")
 
     init {
-        name = path.name
-        toolTipText = path.toString()
+        name = tabName
+        toolTipText = tooltip
         add(browserBtn)
 
         val textArea = JTextArea()
         add(FlatScrollPane(textArea), "newline, push, grow, span")
+        textArea.setText(json)
+        textArea.isEditable = false
 
-        // Read the provided file and populate the text area with it
-        path.useLines(DefaultEncoding.currentValue) { lines -> parseLines(lines, textArea) }
+        val diagramButtonAction = Action(
+            name = "View diagram",
+            description = "View diagram in browser",
+            action = {
+                val theText = textArea.text
+                if (!validateJson(theText)) {
+                    return@Action
+                }
 
-        browserBtn.addMouseListener(
-            object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent?) {
-                    // We need to load the contents from the text area and place them in a file
-                    // with the other static files
-                    val theText = textArea.text
+                // We need to load the contents from the text area and place them in a file
+                // with the other static files
+                val tmpDir: URL = writeStaticFiles(theText)
 
-                    // Verify that the provided text is valid JSON, as the user is free to copy and paste in text.
-                    try {
-                        JSONObject(theText)
-                    } catch (e: JSONException) {
-                        JOptionPane.showMessageDialog(
-                            null,
-                            "Error: " + e.message,
-                            "JSON parsing error",
-                            JOptionPane.ERROR_MESSAGE,
-                        )
-                        return
-                    }
-                    JSONObject(theText)
-
-                    val tmpDir: String = writeStaticFiles(theText)
-
-                    val tempAddress = "file://$tmpDir/index.html"
-                    val desktop = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
-                    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-                        try {
-                            desktop.browse(URI(tempAddress))
-                        } catch (error: Exception) {
-                            JOptionPane.showMessageDialog(
-                                null,
-                                "Error: " + error.message,
-                                "Error opening browser",
-                                JOptionPane.ERROR_MESSAGE,
-                            )
-                        }
-                    }
+                val tempAddress = "${tmpDir}index.html"
+                val desktop = Desktop.getDesktop()
+                try {
+                    desktop.browse(URI(tempAddress))
+                } catch (error: Exception) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        ERROR + error.message,
+                        "Error opening browser",
+                        JOptionPane.ERROR_MESSAGE,
+                    )
                 }
             },
         )
 
-        // Temp file cleanup when Kindling exits.
-        val shutdownThread = Thread {
-            val tmpDir: File = Path.of(System.getProperty("java.io.tmpdir"), "gateway-network-diagram").toFile()
-            tmpDir.deleteRecursively()
-        }
-
-        Runtime.getRuntime().addShutdownHook(shutdownThread)
+        browserBtn.action = diagramButtonAction
     }
 
     companion object {
-        private val FAVICON = "favicon.ico"
-        private val FAVICON_32 = "favicon-32x32.png"
-        private val FAVICON_48 = "favicon-48x48.png"
-        private val FAVICON_160 = "favicon-160x160.png"
-        private val INDEX_HTML = "index.html"
-        private val MAIN_JS = "main.js"
-        private val STYLE_CSS = "style.css"
-        private val EXTERNAL_DIAGRAM_JS = "external-diagram.js"
-        private val PREAMBLE = "window.externalDiagram = "
+        private const val FAVICON = "favicon.ico"
+        private const val FAVICON_32 = "favicon-32x32.png"
+        private const val FAVICON_48 = "favicon-48x48.png"
+        private const val FAVICON_160 = "favicon-160x160.png"
+        private const val INDEX_HTML = "index.html"
+        private const val MAIN_JS = "main.js"
+        private const val STYLE_CSS = "style.css"
+        private const val EXTERNAL_DIAGRAM_JS = "external-diagram.js"
+        private const val PREAMBLE = "window.externalDiagram = "
+        private const val ERROR = "Error: "
+
+        private val JSON = Json {
+            ignoreUnknownKeys = true
+        }
     }
 
-    private fun parseLines(lines: Sequence<String>, textArea: JTextArea) {
-        val builder = StringBuilder()
-        for (line in lines) {
-            if (line.isBlank()) {
-                continue
+    /**
+     * @return true if the provided text is valid gateway network diagram JSON
+     */
+    private fun validateJson(theText: String): Boolean {
+        var isValid = true
+        // Verify that the provided text is valid JSON, as the user is free to copy and paste in text.
+        try {
+            val theJson: DiagramModel = JSON.decodeFromString(serializer(), theText)
+            if (theJson.connections.isEmpty()) {
+                isValid = false
+                JOptionPane.showMessageDialog(
+                    null,
+                    "${ERROR}no connections defined in the JSON data",
+                    "JSON missing data",
+                    JOptionPane.ERROR_MESSAGE,
+                )
+            }
+        } catch (e: SerializationException) {
+            isValid = false
+            if (e is MissingFieldException) {
+                val missingEx: MissingFieldException = e
+                val msg = "the JSON data does not represent a valid gateway network diagram. The following fields" +
+                    " are missing: ${missingEx.missingFields}"
+                JOptionPane.showMessageDialog(
+                    null,
+                    ERROR + msg,
+                    "JSON parsing error",
+                    JOptionPane.ERROR_MESSAGE,
+                )
             } else {
-                builder.append(line)
-                builder.append("\n")
+                JOptionPane.showMessageDialog(
+                    null,
+                    ERROR + e.message,
+                    "JSON parsing error",
+                    JOptionPane.ERROR_MESSAGE,
+                )
             }
         }
-        textArea.setText(builder.toString())
+
+        return isValid
     }
 
-    private fun writeStaticFiles(jsonText: String): String {
+    private fun writeStaticFiles(jsonText: String): URL {
         // Make a temp dir for the static html/js files
-        val tmpDir: Path = Path.of(
-            System.getProperty("java.io.tmpdir"),
-            "gateway-network-diagram",
-            UUID.randomUUID().toString(),
-        )
-        Files.deleteIfExists(tmpDir)
-        Files.createDirectories(tmpDir)
+        val tmpDir: Path = createTempDirectory("kindling-gateway-network-diagram")
+        tmpDir.toFile().deleteOnExit()
 
-        val favicon32: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON_32)
-        Files.copy(Path.of(favicon32?.toURI()), tmpDir.resolve(FAVICON_32))
+        writeStaticFile(FAVICON_32, tmpDir)
+        writeStaticFile(FAVICON_48, tmpDir)
+        writeStaticFile(FAVICON_160, tmpDir)
+        writeStaticFile(FAVICON, tmpDir)
+        writeStaticFile(INDEX_HTML, tmpDir)
+        writeStaticFile(MAIN_JS, tmpDir)
+        writeStaticFile(STYLE_CSS, tmpDir)
 
-        val favicon48: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON_48)
-        Files.copy(Path.of(favicon48?.toURI()), tmpDir.resolve(FAVICON_48))
-
-        val favicon160: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON_160)
-        Files.copy(Path.of(favicon160?.toURI()), tmpDir.resolve(FAVICON_160))
-
-        // Default favicon just in case
-        val favicon: URL? = GatewayNetworkViewer::class.java.getResource(FAVICON)
-        Files.copy(Path.of(favicon?.toURI()), tmpDir.resolve(FAVICON))
-
-        val indexHtml: URL? = GatewayNetworkViewer::class.java.getResource(INDEX_HTML)
-        Files.copy(Path.of(indexHtml?.toURI()), tmpDir.resolve(INDEX_HTML))
-
-        val mainJs: URL? = GatewayNetworkViewer::class.java.getResource(MAIN_JS)
-        Files.copy(Path.of(mainJs?.toURI()), tmpDir.resolve(MAIN_JS))
-
-        val styleCss: URL? = GatewayNetworkViewer::class.java.getResource(STYLE_CSS)
-        Files.copy(Path.of(styleCss?.toURI()), tmpDir.resolve(STYLE_CSS))
-
+        // This file is what the compiled React js file uses to populate the gateway network diagram.
         val externalDiagramFile = tmpDir.resolve(EXTERNAL_DIAGRAM_JS)
+        externalDiagramFile.toFile().deleteOnExit()
         Files.writeString(externalDiagramFile, PREAMBLE + jsonText)
-        return tmpDir.toString().replace("\\", "/")
+
+        return tmpDir.toUri().toURL()
+    }
+
+    private fun writeStaticFile(fileName: String, tmpDir: Path) {
+        val fileUrl: URL? = GatewayNetworkViewer::class.java.getResource(fileName)
+        val filePath = tmpDir.resolve(fileName)
+        filePath.toFile().deleteOnExit()
+        Files.copy(Path.of(fileUrl?.toURI()), filePath)
     }
 }
 
-object GatewayNetworkTool : Tool {
+@kotlinx.serialization.ExperimentalSerializationApi
+object GatewayNetworkTool : ClipboardTool {
     override val title = "Gateway Network Diagram"
     override val description = "Gateway network diagram (.json or .txt) files"
     override val icon = FlatSVGIcon("icons/bx-sitemap.svg")
     override val filter = FileFilter(description, listOf("json", "txt"))
+
+    override fun open(data: String): ToolPanel {
+        return GatewayNetworkViewer(
+            tabName = "Paste at ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
+            tooltip = "",
+            json = data,
+        )
+    }
+
     override fun open(path: Path): ToolPanel {
-        return GatewayNetworkViewer(path)
+        val lines: String = parseLines(path.toFile().readLines())
+
+        return GatewayNetworkViewer(
+            tabName = path.name,
+            tooltip = path.toString(),
+            json = lines,
+        )
+    }
+
+    private fun parseLines(lines: List<String>) = buildString {
+        for (line in lines) {
+            if (line.isBlank()) {
+                continue
+            } else {
+                appendLine(line)
+            }
+        }
     }
 }
