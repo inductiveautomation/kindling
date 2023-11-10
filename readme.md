@@ -40,6 +40,17 @@ falls back to a string explanation of the serialized data.
 
 Note: If you encounter any issues with missing classes, please file an issue.
 
+### Gateway Network Diagram Viewer
+
+Validates a Gateway Network Diagram, as exported from the Gateway webpage (see instructions below). You can load from a
+.json or .txt file on disk, or paste directly from the clipboard. Click the 'View Diagram in Browser' button to launch
+the diagram visualization in a local web browser.
+
+#### To Obtain a GAN Diagram JSON
+1. Set the `gateway.routes.status.GanRoutes` logger to DEBUG.
+2. Return to the gateway network status page and view the live graph.
+3. Return to the logs and copy the JSON to the clipboard or save it to a local file.
+
 ## Usage
 
 1. Download the installer for your OS from the Downloads

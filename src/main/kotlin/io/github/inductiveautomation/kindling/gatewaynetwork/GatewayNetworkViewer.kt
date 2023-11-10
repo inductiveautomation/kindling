@@ -2,18 +2,18 @@ package io.github.inductiveautomation.kindling.gatewaynetwork
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.ClipboardTool
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
+import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
-import kotlinx.serialization.MissingFieldException
+import io.github.inductiveautomation.kindling.utils.transferTo
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import java.awt.Desktop
 import java.net.URI
-import java.net.URL
-import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -22,6 +22,9 @@ import javax.swing.JOptionPane
 import javax.swing.JTextArea
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.name
+import kotlin.io.path.outputStream
+import kotlin.io.path.useLines
+import kotlin.io.path.writeText
 
 /**
  * Opens the raw file that contains a gateway network diagram as JSON text. After opening, the user can click a
@@ -34,141 +37,102 @@ import kotlin.io.path.name
  * Set the 'gateway.routes.status.GanRoutes' logger set to DEBUG in an Ignition gateway to generate diagram JSON while
  * viewing the gateway network live diagram page.
  */
-@kotlinx.serialization.ExperimentalSerializationApi
+
 class GatewayNetworkViewer(tabName: String, tooltip: String, json: String) : ToolPanel() {
     override val icon = GatewayNetworkTool.icon
-    private val browserBtn = JButton("View diagram in browser")
+
+    private val textArea = JTextArea().apply {
+        text = json
+        isEditable = false
+    }
+
+    private val openBrowserAction: Action = Action(
+        name = "View diagram in browser",
+        description = "View diagram in browser",
+        action = {
+            // We need to load the contents from the text area and place them in a file
+            // with the other static files
+            val tmpDir = writeStaticFiles(textArea.text)
+
+            try {
+                Desktop.getDesktop().browse(tmpDir.resolve("index.html"))
+            } catch (error: Exception) {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Error: ${error.message}",
+                    "Browser Opening Error",
+                    JOptionPane.ERROR_MESSAGE,
+                )
+            }
+        },
+    )
 
     init {
         name = tabName
         toolTipText = tooltip
-        add(browserBtn)
 
-        val textArea = JTextArea()
+        validateJson(json)
+
+        add(JButton(openBrowserAction))
         add(FlatScrollPane(textArea), "newline, push, grow, span")
-        textArea.setText(json)
-        textArea.isEditable = false
+    }
 
-        val diagramButtonAction = Action(
-            name = "View diagram",
-            description = "View diagram in browser",
-            action = {
-                val theText = textArea.text
-                if (!validateJson(theText)) {
-                    return@Action
-                }
+    /**
+     * Verifies that the provided text is valid gateway network diagram JSON
+     * @throws ToolOpeningException to abort the parsing file early, before we actually create any temp files.
+     */
+    private fun validateJson(json: String) {
+        try {
+            val model: DiagramModel = JSON.decodeFromString(serializer(), json)
+            if (model.connections.isEmpty()) {
+                throw ToolOpeningException("Incomplete GAN diagram - no connections")
+            }
+        } catch (e: SerializationException) {
+            throw ToolOpeningException("Error parsing GAN diagram JSON", e)
+        }
+    }
 
-                // We need to load the contents from the text area and place them in a file
-                // with the other static files
-                val tmpDir: URL = writeStaticFiles(theText)
+    private fun writeStaticFiles(jsonText: String): URI {
+        // Make a temp dir for the static html/js files
+        val tmpDir: Path = createTempDirectory("kindling-gateway-network-diagram").apply {
+            for (resource in RESOURCES) {
+                writeStaticFile(resource)
+            }
 
-                val tempAddress = "${tmpDir}index.html"
-                val desktop = Desktop.getDesktop()
-                try {
-                    desktop.browse(URI(tempAddress))
-                } catch (error: Exception) {
-                    JOptionPane.showMessageDialog(
-                        null,
-                        ERROR + error.message,
-                        "Error opening browser",
-                        JOptionPane.ERROR_MESSAGE,
-                    )
-                }
-            },
-        )
+            // This file is what the compiled React js file uses to populate the gateway network diagram.
+            resolve(EXTERNAL_DIAGRAM_JS).writeText(PREAMBLE + jsonText)
+        }
+        tmpDir.toFile().deleteOnExit()
 
-        browserBtn.action = diagramButtonAction
+        return tmpDir.toUri()
     }
 
     companion object {
-        private const val FAVICON = "favicon.ico"
-        private const val FAVICON_32 = "favicon-32x32.png"
-        private const val FAVICON_48 = "favicon-48x48.png"
-        private const val FAVICON_160 = "favicon-160x160.png"
-        private const val INDEX_HTML = "index.html"
-        private const val MAIN_JS = "main.js"
-        private const val STYLE_CSS = "style.css"
+        private val RESOURCES = listOf(
+            "favicon.ico",
+            "favicon-32x32.png",
+            "favicon-48x48.png",
+            "favicon-160x160.png",
+            "index.html",
+            "main.js",
+            "style.css",
+        )
         private const val EXTERNAL_DIAGRAM_JS = "external-diagram.js"
         private const val PREAMBLE = "window.externalDiagram = "
-        private const val ERROR = "Error: "
+
+        private fun Path.writeStaticFile(file: String) {
+            resolve(file).outputStream().use { fileStream ->
+                val inputStream = GatewayNetworkViewer::class.java.getResourceAsStream(file) ?: return
+                inputStream transferTo fileStream
+            }
+        }
 
         private val JSON = Json {
             ignoreUnknownKeys = true
         }
     }
-
-    /**
-     * @return true if the provided text is valid gateway network diagram JSON
-     */
-    private fun validateJson(theText: String): Boolean {
-        var isValid = true
-        // Verify that the provided text is valid JSON, as the user is free to copy and paste in text.
-        try {
-            val theJson: DiagramModel = JSON.decodeFromString(serializer(), theText)
-            if (theJson.connections.isEmpty()) {
-                isValid = false
-                JOptionPane.showMessageDialog(
-                    null,
-                    "${ERROR}no connections defined in the JSON data",
-                    "JSON missing data",
-                    JOptionPane.ERROR_MESSAGE,
-                )
-            }
-        } catch (e: SerializationException) {
-            isValid = false
-            if (e is MissingFieldException) {
-                val missingEx: MissingFieldException = e
-                val msg = "the JSON data does not represent a valid gateway network diagram. The following fields" +
-                    " are missing: ${missingEx.missingFields}"
-                JOptionPane.showMessageDialog(
-                    null,
-                    ERROR + msg,
-                    "JSON parsing error",
-                    JOptionPane.ERROR_MESSAGE,
-                )
-            } else {
-                JOptionPane.showMessageDialog(
-                    null,
-                    ERROR + e.message,
-                    "JSON parsing error",
-                    JOptionPane.ERROR_MESSAGE,
-                )
-            }
-        }
-
-        return isValid
-    }
-
-    private fun writeStaticFiles(jsonText: String): URL {
-        // Make a temp dir for the static html/js files
-        val tmpDir: Path = createTempDirectory("kindling-gateway-network-diagram")
-        tmpDir.toFile().deleteOnExit()
-
-        writeStaticFile(FAVICON_32, tmpDir)
-        writeStaticFile(FAVICON_48, tmpDir)
-        writeStaticFile(FAVICON_160, tmpDir)
-        writeStaticFile(FAVICON, tmpDir)
-        writeStaticFile(INDEX_HTML, tmpDir)
-        writeStaticFile(MAIN_JS, tmpDir)
-        writeStaticFile(STYLE_CSS, tmpDir)
-
-        // This file is what the compiled React js file uses to populate the gateway network diagram.
-        val externalDiagramFile = tmpDir.resolve(EXTERNAL_DIAGRAM_JS)
-        externalDiagramFile.toFile().deleteOnExit()
-        Files.writeString(externalDiagramFile, PREAMBLE + jsonText)
-
-        return tmpDir.toUri().toURL()
-    }
-
-    private fun writeStaticFile(fileName: String, tmpDir: Path) {
-        val fileUrl: URL? = GatewayNetworkViewer::class.java.getResource(fileName)
-        val filePath = tmpDir.resolve(fileName)
-        filePath.toFile().deleteOnExit()
-        Files.copy(Path.of(fileUrl?.toURI()), filePath)
-    }
 }
 
-@kotlinx.serialization.ExperimentalSerializationApi
 object GatewayNetworkTool : ClipboardTool {
     override val title = "Gateway Network Diagram"
     override val description = "Gateway network diagram (.json or .txt) files"
@@ -184,22 +148,14 @@ object GatewayNetworkTool : ClipboardTool {
     }
 
     override fun open(path: Path): ToolPanel {
-        val lines: String = parseLines(path.toFile().readLines())
+        val diagram: String = path.useLines(DefaultEncoding.currentValue) { lines ->
+            lines.filter(String::isNotBlank).joinToString(separator = "\n")
+        }
 
         return GatewayNetworkViewer(
             tabName = path.name,
             tooltip = path.toString(),
-            json = lines,
+            json = diagram,
         )
-    }
-
-    private fun parseLines(lines: List<String>) = buildString {
-        for (line in lines) {
-            if (line.isBlank()) {
-                continue
-            } else {
-                appendLine(line)
-            }
-        }
     }
 }
