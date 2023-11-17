@@ -331,7 +331,7 @@ public class SerializationDumper {
         if ((flags & SC_BLOCK_DATA) == SC_BLOCK_DATA) {
             classDescFlags += "SC_BLOCKDATA | ";
         }
-        if (classDescFlags.length() > 0) {
+        if (!classDescFlags.isEmpty()) {
             classDescFlags = classDescFlags.substring(0, classDescFlags.length() - 3);
         }
         print("classDescFlags - 0x" + byteToHex(flags) + " - " + classDescFlags);
@@ -607,7 +607,7 @@ public class SerializationDumper {
             case 'I' -> print("(int)" + data.getInt());
             case 'J' -> print("(long)" + data.getLong());
             case 'S' -> print("(short)" + data.getShort());
-            case 'Z' -> print("(boolean)" + (data.get() == 0));
+            case 'Z' -> print("(boolean)" + (data.get() != 0));
             case '[' -> {
                 //Print field type and increase indent
                 print("(array)");
