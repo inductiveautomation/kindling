@@ -50,10 +50,10 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
         }
     }
 
-    fun autoScrollTest(glassPt: Point) {
+    fun invokeTabPaneScroll(glassPt: Point) {
         val r = tabAreaBounds
-        rectBackward.setBounds(r.x, r.y, RWH, r.height)
-        rectForward.setBounds(r.x + r.width - RWH - BUTTON_SIZE, r.y, RWH + BUTTON_SIZE, r.height)
+        rectBackward.setBounds(r.x, r.y, SCROLL_BUTTON_PADDING, r.height)
+        rectForward.setBounds(r.x + r.width - SCROLL_BUTTON_PADDING - SCROLL_BUTTON_SIZE, r.y, SCROLL_BUTTON_PADDING + SCROLL_BUTTON_SIZE, r.height)
 
         rectBackward = SwingUtilities.convertRectangle(parent, rectBackward, glassPane)
         rectForward = SwingUtilities.convertRectangle(parent, rectForward, glassPane)
@@ -165,8 +165,8 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
 
     companion object {
         private const val LINE_SIZE = 3
-        private const val RWH = 20
-        private const val BUTTON_SIZE = 30 // XXX 30 is magic number of scroll button size
+        private const val SCROLL_BUTTON_PADDING = 20
+        private const val SCROLL_BUTTON_SIZE = 30
     }
 }
 
@@ -250,7 +250,7 @@ internal class TabDropTargetListener : DropTargetListener {
             val glassPt = e.location
             val tabbedPane = glassPane.tabbedPane
             tabbedPane.initTargetLine(tabbedPane.getTargetTabIndex(glassPt))
-            tabbedPane.autoScrollTest(glassPt)
+            tabbedPane.invokeTabPaneScroll(glassPt)
             glassPane.setPoint(glassPt)
             glassPane.repaint()
         }
