@@ -47,6 +47,7 @@ Validates a Gateway Network Diagram, as exported from the Gateway webpage (see i
 the diagram visualization in a local web browser.
 
 #### To Obtain a GAN Diagram JSON
+
 1. Set the `gateway.routes.status.GanRoutes` logger to DEBUG.
 2. Return to the gateway network status page and view the live graph.
 3. Return to the logs and copy the JSON to the clipboard or save it to a local file.
@@ -80,6 +81,7 @@ Contributions of any kind (additional tools, polish to existing tools, test file
 - [FlatLaf](https://github.com/JFormDesigner/FlatLaf)
 - [SerializationDumper](https://github.com/NickstaDB/SerializationDumper)
 - [Hydraulic Conveyor](https://www.hydraulic.software/)
+- [Terai Atsuhiro](https://java-swing-tips.blogspot.com/)
 
 ## Disclaimer
 

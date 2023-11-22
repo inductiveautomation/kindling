@@ -1,6 +1,5 @@
 package io.github.inductiveautomation.kindling.utils
 
-import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Container
@@ -25,7 +24,7 @@ interface FloatableComponent {
     val tabTooltip: String?
 }
 
-class TabStrip : FlatTabbedPane() {
+class TabStrip : DnDTabbedPane() {
     init {
         tabPlacement = TOP
         tabLayoutPolicy = SCROLL_TAB_LAYOUT
