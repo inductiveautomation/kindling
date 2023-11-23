@@ -44,7 +44,7 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
         }
 
         add(exportButton, "north")
-        add(TextFileView(provider, path / "project.json"), "push, grow")
+        add(FileView(provider, path / "project.json"), "push, grow")
     }
 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-box.svg").derive(16, 16)
