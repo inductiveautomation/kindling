@@ -27,7 +27,7 @@ excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" 
 jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.2.0" }
 
 # build
-jsoup = { group = "org.jsoup", name = "jsoup", version = "1.16.2" }
+jsoup = { group = "org.jsoup", name = "jsoup", version = "1.17.1" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 
