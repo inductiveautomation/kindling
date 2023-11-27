@@ -1,6 +1,8 @@
 package io.github.inductiveautomation.kindling.zip.views
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.jidesoft.swing.SimpleScrollPane
+import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
 import javax.imageio.ImageIO
@@ -11,19 +13,24 @@ import kotlin.io.path.extension
 
 class ImageView(override val provider: FileSystemProvider, override val path: Path) : SinglePathView() {
     init {
-        val imageInputStream = ImageIO.createImageInputStream(provider.newInputStream(path))
-        val image = imageInputStream.use { iis ->
-            val reader = ImageIO.getImageReaders(iis).next()
-            reader.input = iis
-            reader.read(0)
+        val image = try {
+            ImageIO.createImageInputStream(provider.newInputStream(path)).use { iis ->
+                val reader = ImageIO.getImageReaders(iis).next()
+                reader.input = iis
+                reader.read(0)
+            }
+        } catch (e: Exception) {
+            throw ToolOpeningException("Unable to open ${path.fileName} as an image", e)
         }
 
         add(
-            JLabel().apply {
-                horizontalAlignment = CENTER
-                verticalAlignment = CENTER
-                icon = ImageIcon(image)
-            },
+            SimpleScrollPane(
+                JLabel().apply {
+                    horizontalAlignment = CENTER
+                    verticalAlignment = CENTER
+                    icon = ImageIcon(image)
+                },
+            ),
             "center",
         )
     }
@@ -39,6 +46,6 @@ class ImageView(override val provider: FileSystemProvider, override val path: Pa
             "jpeg",
         )
 
-        fun isImageFile(path: Path) = path.extension in KNOWN_EXTENSIONS
+        fun isImageFile(path: Path) = path.extension.lowercase() in KNOWN_EXTENSIONS
     }
 }
