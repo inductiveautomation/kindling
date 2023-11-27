@@ -83,7 +83,7 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
         Shell(SYNTAX_STYLE_UNIX_SHELL),
         Batch(SYNTAX_STYLE_WINDOWS_BATCH),
         XML(SYNTAX_STYLE_XML),
-        YAML(SYNTAX_STYLE_YAML);
+        YAML(SYNTAX_STYLE_YAML),
     }
 
     private val syntaxCombo = JComboBox(SyntaxStyle.entries.toTypedArray()).apply {
