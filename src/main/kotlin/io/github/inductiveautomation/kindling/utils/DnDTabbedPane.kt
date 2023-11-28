@@ -66,7 +66,7 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
     }
 
     init {
-        glassPane.setName("GlassPane")
+        glassPane.name = "GlassPane"
         DropTarget(glassPane, DnDConstants.ACTION_COPY_OR_MOVE, TabDropTargetListener(), true)
         DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(
             this,
@@ -104,10 +104,10 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
 
         remove(prev)
         insertTab(title, icon, cmp, tip, tgtIndex)
-
+        
         setEnabledAt(tgtIndex, isEnabled)
         if (isEnabled) {
-            setSelectedIndex(tgtIndex)
+            selectedIndex = tgtIndex
         }
         setTabComponentAt(tgtIndex, tab)
     }
@@ -146,12 +146,12 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
         val g2 = image.createGraphics()
         SwingUtilities.paintComponent(g2, copy, glassPane, 0, 0, d.width, d.height)
         g2.dispose()
-        glassPane.setImage(image)
+        glassPane.ghostImage = image
         c?.let { setTabComponentAt(dragTabIndex, it) }
 
         val glassPt = SwingUtilities.convertPoint(this, tabPt, glassPane)
-        glassPane.setPoint(glassPt)
-        glassPane.setVisible(true)
+        glassPane.displayLocation = glassPt
+        glassPane.isVisible = true
     }
 
     private val tabAreaBounds: Rectangle
@@ -189,11 +189,11 @@ internal class TabTransferable(private val tabbedPane: Component) : Transferable
 
 internal class TabDragSourceListener : DragSourceListener {
     override fun dragEnter(e: DragSourceDragEvent) {
-        e.dragSourceContext.setCursor(DragSource.DefaultMoveDrop)
+        e.dragSourceContext.cursor = DragSource.DefaultMoveDrop
     }
 
     override fun dragExit(e: DragSourceEvent) {
-        e.dragSourceContext.setCursor(DragSource.DefaultMoveNoDrop)
+        e.dragSourceContext.cursor = DragSource.DefaultMoveNoDrop
     }
 
     override fun dragOver(e: DragSourceDragEvent) = Unit
@@ -209,7 +209,9 @@ internal class TabDragGestureListener : DragGestureListener {
     private val handler: DragSourceListener = TabDragSourceListener()
 
     override fun dragGestureRecognized(e: DragGestureEvent) {
-        (e.component as? DnDTabbedPane)?.takeIf { it.tabCount > 1 }?.let { startDrag(e, it) }
+        if (!e.triggerEvent.isConsumed) {
+            (e.component as? DnDTabbedPane)?.takeIf { it.tabCount > 1 }?.let { startDrag(e, it) }
+        }
     }
 
     private fun startDrag(e: DragGestureEvent, tabs: DnDTabbedPane) {
@@ -239,7 +241,7 @@ internal class TabDropTargetListener : DropTargetListener {
 
     override fun dragExit(e: DropTargetEvent) {
         e.dropTargetContext.component.asGhostGlassPane()?.let { glassPane: GhostGlassPane ->
-            glassPane.setPoint(HIDDEN_POINT)
+            glassPane.displayLocation = HIDDEN_POINT
             glassPane.setTargetRect(0, 0, 0, 0)
             glassPane.repaint()
         }
@@ -253,7 +255,7 @@ internal class TabDropTargetListener : DropTargetListener {
             val tabbedPane = glassPane.tabbedPane
             tabbedPane.initTargetLine(tabbedPane.getTargetTabIndex(glassPt))
             tabbedPane.invokeTabPaneScroll(glassPt)
-            glassPane.setPoint(glassPt)
+            glassPane.displayLocation = glassPt
             glassPane.repaint()
         }
     }
@@ -271,7 +273,7 @@ internal class TabDropTargetListener : DropTargetListener {
             } else {
                 e.dropComplete(false)
             }
-            glassPane.setVisible(false)
+            glassPane.isVisible = false
         }
     }
 
@@ -285,31 +287,21 @@ internal class TabDropTargetListener : DropTargetListener {
 internal class GhostGlassPane(val tabbedPane: DnDTabbedPane) : JComponent() {
     private val lineRect = Rectangle()
     private val lineColor = UIManager.getColor("textHighlight")
-    private val location = Point()
 
-    private var draggingGhost: BufferedImage? = null
+    var displayLocation = Point()
+    var ghostImage: BufferedImage? = null
 
     fun setTargetRect(x: Int, y: Int, width: Int, height: Int) {
         lineRect.setBounds(x, y, width, height)
     }
 
-    fun setImage(draggingImage: BufferedImage?) {
-        draggingGhost = draggingImage
-    }
+    override fun isOpaque(): Boolean = false
 
-    fun setPoint(pt: Point?) {
-        location.location = pt
-    }
-
-    override fun isOpaque(): Boolean {
-        return false
-    }
-
-    override fun setVisible(v: Boolean) {
-        super.setVisible(v)
-        if (!v) {
+    override fun setVisible(visible: Boolean) {
+        super.setVisible(visible)
+        if (!visible) {
             setTargetRect(0, 0, 0, 0)
-            setImage(null)
+            ghostImage = null
         }
     }
 
@@ -317,10 +309,10 @@ internal class GhostGlassPane(val tabbedPane: DnDTabbedPane) : JComponent() {
         val g2 = g.create() as Graphics2D
         g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .5f)
 
-        val ghost = draggingGhost
+        val ghost = ghostImage
         if (ghost != null) {
-            val xx = location.getX() - ghost.getWidth(this) / 2.0
-            val yy = location.getY() - ghost.getHeight(this) / 2.0
+            val xx = displayLocation.getX() - ghost.getWidth(this) / 2.0
+            val yy = displayLocation.getY() - ghost.getHeight(this) / 2.0
             g2.drawImage(ghost, xx.toInt(), yy.toInt(), this)
         }
         g2.paint = lineColor

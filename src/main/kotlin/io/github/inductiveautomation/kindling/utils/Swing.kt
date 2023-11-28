@@ -211,6 +211,7 @@ inline fun <T : Component> T.attachPopupMenu(
 
             private fun maybeShowPopup(e: MouseEvent) {
                 if (e.isPopupTrigger) {
+                    e.consume()
                     menuFn.invoke(this@attachPopupMenu, e)?.show(e.component, e.x, e.y)
                 }
             }
