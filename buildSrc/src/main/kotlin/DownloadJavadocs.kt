@@ -1,9 +1,3 @@
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.charset
-import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -23,8 +17,6 @@ abstract class DownloadJavadocs : DefaultTask() {
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
-    private val client = HttpClient(CIO)
-
     @TaskAction
     fun downloadJavadoc() {
         if (project.gradle.startParameter.isOffline) return
@@ -37,10 +29,7 @@ abstract class DownloadJavadocs : DefaultTask() {
                 urls.map { url ->
                     async {
                         try {
-                            val response = client.get(url)
-                            val charset = response.charset() ?: Charsets.UTF_8
-
-                            Jsoup.parse(response.bodyAsChannel().toInputStream(), charset.name(), url)
+                            Jsoup.connect(url).get()
                                 .select("""a[href][title*="class"], a[href][title*="interface"]""")
                                 .distinctBy { a -> a.attr("abs:href") }
                                 .map { a ->

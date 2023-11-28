@@ -1,7 +1,6 @@
 [versions]
 java = "17"
 kotlin = "1.9.21"
-ktor = "2.3.6"
 coroutines = "1.7.3"
 flatlaf = "3.2.5"
 kotest = "5.8.0"
@@ -28,8 +27,6 @@ jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.2.0" }
 
 # build
 jsoup = { group = "org.jsoup", name = "jsoup", version = "1.17.1" }
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
-ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 
 # appearance/swing
 miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.2" }

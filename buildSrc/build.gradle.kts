@@ -9,6 +9,5 @@ repositories {
 
 dependencies {
     implementation(libs.jsoup)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
+    implementation(libs.coroutines.core)
 }
