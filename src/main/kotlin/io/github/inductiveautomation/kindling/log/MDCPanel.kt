@@ -71,10 +71,11 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
         }
 
         addActionListener {
+            if (selectedItem == null) return@addActionListener
             valueCombo.model = mdcValuesPerKey.getValue(selectedItem as String).map { it.value }.let { DefaultComboBoxModel(Vector(it)) }
         }
 
-        selectedIndex = 0
+        selectedIndex = -1
     }
 
     private val addFilter = Action(
