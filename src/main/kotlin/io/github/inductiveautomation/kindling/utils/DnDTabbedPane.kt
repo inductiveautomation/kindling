@@ -104,7 +104,7 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
 
         remove(prev)
         insertTab(title, icon, cmp, tip, tgtIndex)
-        
+
         setEnabledAt(tgtIndex, isEnabled)
         if (isEnabled) {
             selectedIndex = tgtIndex
