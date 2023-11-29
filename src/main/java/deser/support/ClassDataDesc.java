@@ -46,13 +46,13 @@ public class ClassDataDesc {
     public ClassDataDesc buildClassDataDescFromIndex(int index) {
         ArrayList<ClassDetails> cd;
 
-        //Build a list of the ClassDetails objects for the new ClassDataDesc
+        // Build a list of the ClassDetails objects for the new ClassDataDesc
         cd = new ArrayList<>();
         for (int i = index; i < this.classDetails.size(); ++i) {
             cd.add(this.classDetails.get(i));
         }
 
-        //Return a new ClassDataDesc describing this subset of classes
+        // Return a new ClassDataDesc describing this subset of classes
         return new ClassDataDesc(cd);
     }
 
@@ -63,7 +63,7 @@ public class ClassDataDesc {
      * @param scdd The ClassDataDesc object describing the super class.
      ******************/
     public void addSuperClassDesc(ClassDataDesc scdd) {
-        //Copy the ClassDetails elements to this ClassDataDesc object
+        // Copy the ClassDetails elements to this ClassDataDesc object
         if (scdd != null) {
             for (int i = 0; i < scdd.getClassCount(); ++i) {
                 this.classDetails.add(scdd.getClassDetails(i));

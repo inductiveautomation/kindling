@@ -34,6 +34,7 @@ public class SerializationDumper {
      * The current handle value. Starts from {@link ObjectStreamConstants#baseWireHandle}
      */
     private int handleCursor = baseWireHandle;
+
     private final List<ClassDataDesc> classDataDescArrayList = new ArrayList<>();
 
     private final StringBuilder buffer = new StringBuilder();
@@ -73,8 +74,7 @@ public class SerializationDumper {
         return data.get(data.position());
     }
 
-    private void checkNextByte(@MagicConstant(flagsFromClass = ObjectStreamConstants.class) byte code,
-                               String name) {
+    private void checkNextByte(@MagicConstant(flagsFromClass = ObjectStreamConstants.class) byte code, String name) {
         byte nextByte = data.get();
         print(name + " - 0x" + byteToHex(nextByte));
         //noinspection MagicConstant
@@ -89,10 +89,10 @@ public class SerializationDumper {
     private int nextHandle() {
         int newHandle = handleCursor;
 
-        //Print the handle value
+        // Print the handle value
         print("newHandle 0x" + intToHex(newHandle));
 
-        //Increment the next handle value and return the one we just assigned
+        // Increment the next handle value and return the one we just assigned
         handleCursor++;
         return newHandle;
     }
@@ -126,7 +126,7 @@ public class SerializationDumper {
      * Read a content element from the data stream.
      **/
     private void readContentElement() {
-        //Peek the next byte and delegate to the appropriate method
+        // Peek the next byte and delegate to the appropriate method
         switch (peek()) {
             case TC_OBJECT -> readNewObject();
             case TC_CLASS -> readNewClass();
@@ -156,7 +156,7 @@ public class SerializationDumper {
         indent++;
         readClassDesc();
         nextHandle();
-        //enumConstantName
+        // enumConstantName
         readNewString();
         indent--;
     }
@@ -177,7 +177,7 @@ public class SerializationDumper {
 
         nextHandle();
 
-        //Read the class data based on the class data description
+        // Read the class data based on the class data description
         // TODO This needs to check if cdd is null before reading anything
         readClassData(cdd);
 
@@ -190,7 +190,7 @@ public class SerializationDumper {
      * Could be: TC_CLASSDESC		(0x72) TC_PROXYCLASSDESC	(0x7d) TC_NULL				(0x70) TC_REFERENCE (0x71)
      **/
     private ClassDataDesc readClassDesc() {
-        //Peek the type and delegate to the appropriate method
+        // Peek the type and delegate to the appropriate method
         switch (peek()) {
             case TC_CLASSDESC, TC_PROXYCLASSDESC -> {
                 return readNewClassDesc();
@@ -200,23 +200,23 @@ public class SerializationDumper {
                 return null;
             }
             case TC_REFERENCE -> {
-                //Look up a referenced class data description object and return it
+                // Look up a referenced class data description object and return it
                 int refHandle = readPrevObject();
-                //Iterate over all class data descriptions
+                // Iterate over all class data descriptions
                 for (ClassDataDesc cdd : classDataDescArrayList) {
-                    //Iterate over all classes in
+                    // Iterate over all classes in
                     // this class data description
                     for (int classIndex = 0; classIndex < cdd.getClassCount(); ++classIndex) {
-                        //Check if the reference handle matches
+                        // Check if the reference handle matches
                         if (cdd.getClassDetails(classIndex).getHandle() == refHandle) {
-                            //Generate a ClassDataDesc
+                            // Generate a ClassDataDesc
                             // starting from the given index and return it
                             return cdd.buildClassDataDescFromIndex(classIndex);
                         }
                     }
                 }
 
-                //Invalid classDesc reference handle
+                // Invalid classDesc reference handle
                 throw new RuntimeException("Error: Invalid classDesc reference (0x" + intToHex(refHandle) + ")");
             }
             default -> {
@@ -234,7 +234,7 @@ public class SerializationDumper {
     private ClassDataDesc readNewClassDesc() {
         ClassDataDesc cdd;
 
-        //Peek the type and delegate to the appropriate method
+        // Peek the type and delegate to the appropriate method
         switch (peek()) {
             case TC_CLASSDESC -> {
                 cdd = readTC_CLASSDESC();
@@ -295,10 +295,10 @@ public class SerializationDumper {
         checkNextByte(TC_PROXYCLASSDESC, "TC_PROXYCLASSDESC");
         indent++;
 
-        //Create the new class descriptor
+        // Create the new class descriptor
         cdd.addClass("<Dynamic Proxy Class>");
 
-        //Set the reference handle for the most recently added class
+        // Set the reference handle for the most recently added class
         cdd.setLastClassHandle(nextHandle());
 
         // Read proxy class desc info, add the super class description to the
@@ -343,20 +343,20 @@ public class SerializationDumper {
         if ((flags & SC_SERIALIZABLE) == SC_SERIALIZABLE) {
             if ((flags & SC_EXTERNALIZABLE) == SC_EXTERNALIZABLE) {
                 throw new RuntimeException(
-                    "Error: Illegal classDescFlags, SC_SERIALIZABLE is not compatible with SC_EXTERNALIZABLE.");
+                        "Error: Illegal classDescFlags, SC_SERIALIZABLE is not compatible with SC_EXTERNALIZABLE.");
             }
             if ((flags & SC_BLOCK_DATA) == SC_BLOCK_DATA) {
                 throw new RuntimeException(
-                    "Error: Illegal classDescFlags, SC_SERIALIZABLE is not compatible with SC_BLOCKDATA.");
+                        "Error: Illegal classDescFlags, SC_SERIALIZABLE is not compatible with SC_BLOCKDATA.");
             }
         } else if ((flags & SC_EXTERNALIZABLE) == SC_EXTERNALIZABLE) {
             if ((flags & SC_WRITE_METHOD) == SC_WRITE_METHOD) {
                 throw new RuntimeException(
-                    "Error: Illegal classDescFlags, SC_EXTERNALIZABLE is not compatible with SC_WRITE_METHOD.");
+                        "Error: Illegal classDescFlags, SC_EXTERNALIZABLE is not compatible with SC_WRITE_METHOD.");
             }
         } else if (flags != 0x00) {
             throw new RuntimeException(
-                "Error: Illegal classDescFlags, must include either SC_SERIALIZABLE or SC_EXTERNALIZABLE.");
+                    "Error: Illegal classDescFlags, must include either SC_SERIALIZABLE or SC_EXTERNALIZABLE.");
         }
 
         // Read field descriptions and add them to the ClassDataDesc
@@ -438,7 +438,7 @@ public class SerializationDumper {
         var count = data.getShort();
         print("fieldCount - " + count);
 
-        //fieldDesc
+        // fieldDesc
         if (count > 0) {
             print("Fields");
             indent++;
@@ -474,18 +474,17 @@ public class SerializationDumper {
             case '[' -> print("Array");
             case 'L' -> print("Object");
             default -> throw new RuntimeException(
-                "Error: Illegal field type code ('%s', 0x%s)".formatted((char) typeCode, byteToHex(typeCode))
-            );
+                    "Error: Illegal field type code ('%s', 0x%s)".formatted((char) typeCode, byteToHex(typeCode)));
         }
 
-        //fieldName
+        // fieldName
         print("fieldName");
         indent++;
-        //Set the name of the most recently added field
+        // Set the name of the most recently added field
         cdd.setLastFieldName(readUtf());
         indent--;
 
-        //className1 (if non-primitive type)
+        // className1 (if non-primitive type)
         if ((char) typeCode == '[' || (char) typeCode == 'L') {
             indent++;
             String cn1 = readNewString();
@@ -541,7 +540,7 @@ public class SerializationDumper {
 
                 // Read object annotations if the right flags are set
                 if ((cd.isSC_SERIALIZABLE() && cd.isSC_WRITE_METHOD())
-                    || (cd.isSC_EXTERNALIZABLE() && cd.isSC_BLOCKDATA())) {
+                        || (cd.isSC_EXTERNALIZABLE() && cd.isSC_BLOCKDATA())) {
                     print("objectAnnotation");
                     indent++;
 
@@ -578,7 +577,7 @@ public class SerializationDumper {
         print(cf.getName());
         indent++;
 
-        //Read the field data
+        // Read the field data
         readFieldValue(cf.getTypeCode());
 
         indent--;
@@ -594,10 +593,10 @@ public class SerializationDumper {
             case 'B' -> {
                 byte b1 = data.get();
                 if (((int) b1) >= 0x20 && ((int) b1) <= 0x7e) {
-                    //Print with ASCII
+                    // Print with ASCII
                     print("(byte)%s (ASCII: %s) - 0x%s".formatted(b1, (char) b1, byteToHex(b1)));
                 } else {
-                    //Just print byte value
+                    // Just print byte value
                     print("(byte)%s - 0x%s".formatted(b1, byteToHex(b1)));
                 }
             }
@@ -609,18 +608,17 @@ public class SerializationDumper {
             case 'S' -> print("(short)" + data.getShort());
             case 'Z' -> print("(boolean)" + (data.get() != 0));
             case '[' -> {
-                //Print field type and increase indent
+                // Print field type and increase indent
                 print("(array)");
                 indent++;
 
-                //Array could be null
+                // Array could be null
                 switch (peek()) {
                     case TC_NULL -> readNullReference();
                     case TC_ARRAY -> readNewArray();
                     case TC_REFERENCE -> readPrevObject();
                     default -> throw new RuntimeException(
-                        "Error: Unexpected array field value type (0x%s".formatted(byteToHex(peek()))
-                    );
+                            "Error: Unexpected array field value type (0x%s".formatted(byteToHex(peek())));
                 }
 
                 indent--;
@@ -629,7 +627,7 @@ public class SerializationDumper {
                 print("(object)");
                 indent++;
 
-                //Object fields can have various types of values...
+                // Object fields can have various types of values...
                 switch (peek()) {
                     case TC_OBJECT -> readNewObject();
                     case TC_REFERENCE -> readPrevObject();
@@ -640,14 +638,12 @@ public class SerializationDumper {
                     case TC_ARRAY -> readNewArray();
                     case TC_ENUM -> readNewEnum();
                     default -> throw new RuntimeException(
-                        "Error: Unexpected identifier for object field value 0x%s".formatted(byteToHex(peek()))
-                    );
+                            "Error: Unexpected identifier for object field value 0x%s".formatted(byteToHex(peek())));
                 }
                 indent--;
             }
             default -> throw new RuntimeException(
-                "Error: Illegal field type code ('%s', 0x%s)".formatted(typeCode, byteToHex(typeCode))
-            );
+                    "Error: Illegal field type code ('%s', 0x%s)".formatted(typeCode, byteToHex(typeCode)));
         }
     }
 
@@ -660,8 +656,8 @@ public class SerializationDumper {
         checkNextByte(TC_ARRAY, "TC_ARRAY");
         indent++;
 
-        //classDesc
-        //Read the class data description to enable array elements to be read
+        // classDesc
+        // Read the class data description to enable array elements to be read
         ClassDataDesc cdd = readClassDesc();
         if (cdd == null) {
             throw new RuntimeException("Error: Array class missing class description");
@@ -674,22 +670,22 @@ public class SerializationDumper {
             throw new RuntimeException("Error: Array class name does not begin with '['.");
         }
 
-        //newHandle
+        // newHandle
         nextHandle();
 
-        //Array size
+        // Array size
         int size = data.getInt();
         print("Array size - " + size);
 
-        //Array data
+        // Array data
         print("Values");
         indent++;
         for (int i = 0; i < size; ++i) {
-            //Print element index
+            // Print element index
             print("Index " + i + ":");
             indent++;
 
-            //Read the field values based on the classDesc read above
+            // Read the field values based on the classDesc read above
             readFieldValue((byte) cd.getClassName().charAt(1));
 
             indent--;
@@ -720,7 +716,7 @@ public class SerializationDumper {
         checkNextByte(TC_REFERENCE, "TC_REFERENCE");
         indent++;
 
-        //Reference handle
+        // Reference handle
         int handle = data.getInt();
         print("Handle - " + handle);
 
@@ -752,7 +748,7 @@ public class SerializationDumper {
         int len = data.get() & 0xFF;
         print("Length - " + len + " - 0x" + byteToHex((byte) (len & 0xff)));
 
-        //contents
+        // contents
         for (int i = 0; i < len; ++i) {
             contents.append(byteToHex(data.get()));
         }
@@ -789,7 +785,7 @@ public class SerializationDumper {
      * Could be: TC_STRING		(0x74) TC_LONGSTRING	(0x7c)
      **/
     private String readNewString() {
-        //Peek the type and delegate to the appropriate method
+        // Peek the type and delegate to the appropriate method
         return switch (peek()) {
             case TC_STRING -> readTC_STRING();
             case TC_LONGSTRING -> readTC_LONGSTRING();
@@ -842,11 +838,11 @@ public class SerializationDumper {
     private String readUtf() {
         StringBuilder content = new StringBuilder();
 
-        //length
+        // length
         int len = data.getShort();
         print("Length - " + len);
 
-        //Contents
+        // Contents
         for (int i = 0; i < len; ++i) {
             var nextChar = (char) data.get();
             switch (nextChar) {
@@ -869,11 +865,11 @@ public class SerializationDumper {
         StringBuilder content = new StringBuilder();
         StringBuilder hex = new StringBuilder();
 
-        //Length
+        // Length
         long len = data.getLong();
         print("Length - " + len);
 
-        //Contents
+        // Contents
         for (long l = 0; l < len; ++l) {
             var b1 = data.get();
             content.append((char) b1);

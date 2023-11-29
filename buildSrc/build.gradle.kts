@@ -1,6 +1,6 @@
 plugins {
     `kotlin-dsl`
-    alias(libs.plugins.ktlint)
+    alias(libs.plugins.spotless)
 }
 
 repositories {

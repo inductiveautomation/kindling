@@ -53,5 +53,4 @@ public class ClassField {
     public String getName() {
         return this.name;
     }
-
 }

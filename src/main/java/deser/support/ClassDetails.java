@@ -140,5 +140,4 @@ public class ClassDetails {
     public void setLastFieldName(String name) {
         this.fieldDescriptions.get(this.fieldDescriptions.size() - 1).setName(name);
     }
-
 }
