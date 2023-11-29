@@ -50,26 +50,27 @@ tasks {
 
 val downloadJavadocs =
     tasks.register<DownloadJavadocs>("downloadJavadocs") {
-        urlsByVersion = mapOf(
-            "8.1" to
-                listOf(
-                    "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.32/allclasses.html",
-                    "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
-                    "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
-                ),
-            "8.0" to
-                listOf(
-                    "https://files.inductiveautomation.com/sdk/javadoc/ignition80/8.0.14/allclasses.html",
-                    "https://docs.oracle.com/en/java/javase/11/docs/api/allclasses.html",
-                    "https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/allclasses-noframe.html",
-                ),
-            "7.9" to
-                listOf(
-                    "https://files.inductiveautomation.com/sdk/javadoc/ignition79/7921/allclasses-noframe.html",
-                    "https://docs.oracle.com/javase/8/docs/api/allclasses-noframe.html",
-                    "https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/allclasses-noframe.html",
-                ),
-        )
+        urlsByVersion =
+            mapOf(
+                "8.1" to
+                    listOf(
+                        "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.32/allclasses.html",
+                        "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
+                        "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
+                    ),
+                "8.0" to
+                    listOf(
+                        "https://files.inductiveautomation.com/sdk/javadoc/ignition80/8.0.14/allclasses.html",
+                        "https://docs.oracle.com/en/java/javase/11/docs/api/allclasses.html",
+                        "https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/allclasses-noframe.html",
+                    ),
+                "7.9" to
+                    listOf(
+                        "https://files.inductiveautomation.com/sdk/javadoc/ignition79/7921/allclasses-noframe.html",
+                        "https://docs.oracle.com/javase/8/docs/api/allclasses-noframe.html",
+                        "https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/allclasses-noframe.html",
+                    ),
+            )
         outputDir.set(project.layout.buildDirectory.dir("javadocs"))
     }
 
@@ -86,7 +87,7 @@ kotlin {
 }
 
 spotless {
-    ratchetFrom = "main"
+    ratchetFrom = "1646d3396c20f2b8aa1a0b91d8938988221ab089"
 
     format("misc") {
         target("*.gradle", ".gitattributes", ".gitignore")
