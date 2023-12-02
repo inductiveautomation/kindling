@@ -18,12 +18,11 @@ import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
 import io.github.inductiveautomation.kindling.utils.transferTo
 import io.github.inductiveautomation.kindling.zip.ZipViewer.createView
-import io.github.inductiveautomation.kindling.zip.views.GenericFileView
+import io.github.inductiveautomation.kindling.zip.views.FileView
 import io.github.inductiveautomation.kindling.zip.views.ImageView
 import io.github.inductiveautomation.kindling.zip.views.MultiToolView
 import io.github.inductiveautomation.kindling.zip.views.PathView
 import io.github.inductiveautomation.kindling.zip.views.ProjectView
-import io.github.inductiveautomation.kindling.zip.views.TextFileView
 import io.github.inductiveautomation.kindling.zip.views.ToolView
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -35,6 +34,7 @@ import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
 import javax.swing.JFileChooser.APPROVE_OPTION
 import javax.swing.JLabel
+import javax.swing.filechooser.FileView
 import javax.swing.tree.TreeSelectionModel
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
@@ -202,17 +202,16 @@ object ZipViewer : Tool {
     override val title = "Ignition Archive"
     override val description = "Archives (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
-    override val filter = FileFilter(description, listOf("gwbk", "zip", "modl"))
+    override val filter = FileFilter(description, listOf("gwbk", "zip", "modl", "jar"))
 
     override fun open(path: Path): ToolPanel = ZipView(path)
 
     private val handlers: Map<PathPredicate, PathViewProvider> =
         buildMap {
             put(ToolView::maybeToolPath, ToolView::safelyCreate)
-            put(TextFileView::isTextFile, ::TextFileView)
             put(ImageView::isImageFile, ::ImageView)
             put(ProjectView::isProjectDirectory, ::ProjectView)
-            put(Path::isRegularFile, ::GenericFileView)
+            put(Path::isRegularFile, ::FileView)
         }
 
     fun createView(
