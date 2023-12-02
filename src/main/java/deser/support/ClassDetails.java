@@ -1,9 +1,9 @@
 package deser.support;
 
+import static java.io.ObjectStreamConstants.*;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.io.ObjectStreamConstants.*;
 
 /***********************************************************
  * Support class for serialization data parsing that holds

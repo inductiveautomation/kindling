@@ -1,17 +1,16 @@
 package deser;
 
+import static java.io.ObjectStreamConstants.*;
+
 import deser.support.ClassDataDesc;
 import deser.support.ClassDetails;
 import deser.support.ClassField;
-import org.intellij.lang.annotations.MagicConstant;
-
 import java.io.ObjectStreamConstants;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
-
-import static java.io.ObjectStreamConstants.*;
+import org.intellij.lang.annotations.MagicConstant;
 
 /**
  * Helper program to dump a hex-ascii encoded serialization stream in a more readable form for debugging purposes.
