@@ -13,15 +13,16 @@ import kotlin.io.path.extension
 
 class ImageView(override val provider: FileSystemProvider, override val path: Path) : SinglePathView() {
     init {
-        val image = try {
-            ImageIO.createImageInputStream(provider.newInputStream(path)).use { iis ->
-                val reader = ImageIO.getImageReaders(iis).next()
-                reader.input = iis
-                reader.read(0)
+        val image =
+            try {
+                ImageIO.createImageInputStream(provider.newInputStream(path)).use { iis ->
+                    val reader = ImageIO.getImageReaders(iis).next()
+                    reader.input = iis
+                    reader.read(0)
+                }
+            } catch (e: Exception) {
+                throw ToolOpeningException("Unable to open ${path.fileName} as an image", e)
             }
-        } catch (e: Exception) {
-            throw ToolOpeningException("Unable to open ${path.fileName} as an image", e)
-        }
 
         add(
             SimpleScrollPane(

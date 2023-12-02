@@ -44,25 +44,27 @@ import kotlin.io.path.extension
 import kotlin.io.path.name
 
 class FileView(override val provider: FileSystemProvider, override val path: Path) : SinglePathView() {
-    private val encodingCombo = JComboBox(
-        arrayOf(
-            null,
-            Charsets.UTF_8,
-            Charsets.ISO_8859_1,
-            Charsets.US_ASCII,
-            Charsets.UTF_16,
-        ),
-    ).apply {
-        selectedItem = Charsets.UTF_8.takeIf { isTextFile(path) }
+    private val encodingCombo =
+        JComboBox(
+            arrayOf(
+                null,
+                Charsets.UTF_8,
+                Charsets.ISO_8859_1,
+                Charsets.US_ASCII,
+                Charsets.UTF_16,
+            ),
+        ).apply {
+            selectedItem = Charsets.UTF_8.takeIf { isTextFile(path) }
 
-        configureCellRenderer { _, value, _, _, _ ->
-            text = if (value != null) {
-                value.displayName()
-            } else {
-                "Binary"
+            configureCellRenderer { _, value, _, _, _ ->
+                text =
+                    if (value != null) {
+                        value.displayName()
+                    } else {
+                        "Binary"
+                    }
             }
         }
-    }
 
     private enum class SyntaxStyle(val style: String) {
         Plaintext(SYNTAX_STYLE_NONE),
@@ -86,20 +88,22 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
         YAML(SYNTAX_STYLE_YAML),
     }
 
-    private val syntaxCombo = JComboBox(SyntaxStyle.entries.toTypedArray()).apply {
-        selectedItem = guessSyntaxScheme()
+    private val syntaxCombo =
+        JComboBox(SyntaxStyle.entries.toTypedArray()).apply {
+            selectedItem = guessSyntaxScheme()
 
-        configureCellRenderer { _, value, _, _, _ ->
-            text = value?.name
+            configureCellRenderer { _, value, _, _, _ ->
+                text = value?.name
+            }
         }
-    }
 
-    private val textArea = RSyntaxTextArea().apply {
-        isEditable = false
-        syntaxEditingStyle = (syntaxCombo.selectedItem as SyntaxStyle).style
+    private val textArea =
+        RSyntaxTextArea().apply {
+            isEditable = false
+            syntaxEditingStyle = (syntaxCombo.selectedItem as SyntaxStyle).style
 
-        theme = Theme.currentValue
-    }
+            theme = Theme.currentValue
+        }
 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-file.svg").derive(16, 16)
 
@@ -111,11 +115,12 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
         }
 
         encodingCombo.addActionListener {
-            syntaxCombo.selectedItem = if (encodingCombo.selectedItem == null) {
-                Plaintext
-            } else {
-                guessSyntaxScheme()
-            }
+            syntaxCombo.selectedItem =
+                if (encodingCombo.selectedItem == null) {
+                    Plaintext
+                } else {
+                    guessSyntaxScheme()
+                }
             updateText()
         }
         syntaxCombo.addActionListener {
@@ -131,20 +136,22 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
 
     private fun updateText() {
         val charset = encodingCombo.selectedItem as? Charset
-        val text = if (charset != null) {
-            readFileAsString(charset)
-        } else {
-            readFileAsBytes()
-        }
-
-        textArea.text = if (syntaxCombo.selectedItem as SyntaxStyle == JSON) {
-            // pretty-print/normalize json
-            JSON_FORMAT.run {
-                encodeToString(JsonElement.serializer(), parseToJsonElement(text))
+        val text =
+            if (charset != null) {
+                readFileAsString(charset)
+            } else {
+                readFileAsBytes()
             }
-        } else {
-            text
-        }
+
+        textArea.text =
+            if (syntaxCombo.selectedItem as SyntaxStyle == JSON) {
+                // pretty-print/normalize json
+                JSON_FORMAT.run {
+                    encodeToString(JsonElement.serializer(), parseToJsonElement(text))
+                }
+            } else {
+                text
+            }
         EventQueue.invokeLater {
             textArea.scrollRectToVisible(Rectangle(0, 0))
         }
@@ -191,42 +198,46 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
 
     companion object {
         @OptIn(ExperimentalSerializationApi::class)
-        private val JSON_FORMAT = Json {
-            prettyPrint = true
-            prettyPrintIndent = "  "
-        }
+        private val JSON_FORMAT =
+            Json {
+                prettyPrint = true
+                prettyPrintIndent = "  "
+            }
 
         @OptIn(ExperimentalStdlibApi::class)
-        private val HEX_FORMAT = HexFormat {
-            bytes {
-                byteSeparator = " "
+        private val HEX_FORMAT =
+            HexFormat {
+                bytes {
+                    byteSeparator = " "
+                }
             }
-        }
 
-        private val KNOWN_EXTENSIONS: Map<String, SyntaxStyle> = mapOf(
-            "conf" to Properties,
-            "properties" to Properties,
-            "py" to Python,
-            "json" to JSON,
-            "svg" to XML,
-            "xml" to XML,
-            "css" to CSS,
-            "txt" to Plaintext,
-            "md" to Plaintext,
-            "p7b" to Plaintext,
-            "log" to Plaintext,
-            "ini" to Plaintext,
-        )
+        private val KNOWN_EXTENSIONS: Map<String, SyntaxStyle> =
+            mapOf(
+                "conf" to Properties,
+                "properties" to Properties,
+                "py" to Python,
+                "json" to JSON,
+                "svg" to XML,
+                "xml" to XML,
+                "css" to CSS,
+                "txt" to Plaintext,
+                "md" to Plaintext,
+                "p7b" to Plaintext,
+                "log" to Plaintext,
+                "ini" to Plaintext,
+            )
 
-        private val KNOWN_FILENAMES = setOf(
-            "readme",
-            ".uuid",
-            "wrapper.log.1",
-            "wrapper.log.2",
-            "wrapper.log.3",
-            "wrapper.log.4",
-            "wrapper.log.5",
-        )
+        private val KNOWN_FILENAMES =
+            setOf(
+                "readme",
+                ".uuid",
+                "wrapper.log.1",
+                "wrapper.log.2",
+                "wrapper.log.3",
+                "wrapper.log.4",
+                "wrapper.log.5",
+            )
 
         fun isTextFile(path: Path) = path.extension.lowercase() in KNOWN_EXTENSIONS || path.name.lowercase() in KNOWN_FILENAMES
     }
