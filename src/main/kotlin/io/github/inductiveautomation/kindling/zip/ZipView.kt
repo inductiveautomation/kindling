@@ -34,7 +34,6 @@ import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
 import javax.swing.JFileChooser.APPROVE_OPTION
 import javax.swing.JLabel
-import javax.swing.filechooser.FileView
 import javax.swing.tree.TreeSelectionModel
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
