@@ -47,9 +47,10 @@ internal class TimePanel(
     private val startSelector = DateTimeSelector(lowerBound, initialRange)
     private val endSelector = DateTimeSelector(upperBound, initialRange)
 
-    private val resetRange = Action("Reset") {
-        reset()
-    }
+    private val resetRange =
+        Action("Reset") {
+            reset()
+        }
 
     override val tabName: String = "Time"
 
@@ -85,6 +86,7 @@ internal class TimePanel(
     }
 
     override fun filter(item: LogEvent): Boolean = item.timestamp in coveredRange
+
     override fun customizePopupMenu(
         menu: JPopupMenu,
         column: Column<out LogEvent, *>,
@@ -114,10 +116,11 @@ internal class TimePanel(
 private var JXDatePicker.localDate: LocalDate?
     get() = date?.toInstant()?.let { LocalDate.ofInstant(it, LogViewer.SelectedTimeZone.currentValue) }
     set(value) {
-        date = value?.atStartOfDay()
-            ?.atOffset(LogViewer.SelectedTimeZone.currentValue.rules.getOffset(value.atStartOfDay()))
-            ?.toInstant()
-            .let(Date::from)
+        date =
+            value?.atStartOfDay()
+                ?.atOffset(LogViewer.SelectedTimeZone.currentValue.rules.getOffset(value.atStartOfDay()))
+                ?.toInstant()
+                .let(Date::from)
     }
 
 class DateTimeSelector(
@@ -126,33 +129,35 @@ class DateTimeSelector(
 ) : JPanel(MigLayout("ins 0, fillx")) {
     private val initialZonedTime = initialValue.atZone(LogViewer.SelectedTimeZone.currentValue)
 
-    private var datePicker = JXDatePicker().apply {
-        localDate = initialZonedTime.toLocalDate()
-        editor.horizontalAlignment = SwingConstants.CENTER
-        monthView.apply {
-            // adjust calendar from java.time to java.util weekday numbering
-            firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.value % 7 + 1
+    private var datePicker =
+        JXDatePicker().apply {
+            localDate = initialZonedTime.toLocalDate()
+            editor.horizontalAlignment = SwingConstants.CENTER
+            monthView.apply {
+                // adjust calendar from java.time to java.util weekday numbering
+                firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.value % 7 + 1
 
-            lowerBound = Date.from(range.start)
-            upperBound = Date.from(range.endInclusive)
+                lowerBound = Date.from(range.start)
+                upperBound = Date.from(range.endInclusive)
+            }
+            linkPanel = JPanel() // can't be null or BasicDatePickerUI throws an NPE on theme change
+
+            addActionListener {
+                if (date == null) { // out of range selection sets null in JXDatePicker - we'll be nicer and reset
+                    localDate = initialZonedTime.toLocalDate()
+                } else {
+                    firePropertyChange("time", null, time)
+                }
+            }
         }
-        linkPanel = JPanel() // can't be null or BasicDatePickerUI throws an NPE on theme change
 
-        addActionListener {
-            if (date == null) { // out of range selection sets null in JXDatePicker - we'll be nicer and reset
-                localDate = initialZonedTime.toLocalDate()
-            } else {
+    private val timeSelector =
+        TimeSelector().apply {
+            localTime = initialZonedTime.toLocalTime()
+            addPropertyChangeListener("localTime") {
                 firePropertyChange("time", null, time)
             }
         }
-    }
-
-    private val timeSelector = TimeSelector().apply {
-        localTime = initialZonedTime.toLocalTime()
-        addPropertyChangeListener("localTime") {
-            firePropertyChange("time", null, time)
-        }
-    }
 
     var time: Instant
         get() {
@@ -210,17 +215,20 @@ class TimeSelector : JPanel(MigLayout("fill, ins 0")) {
     }
 
     var localTime: LocalTime
-        get() = LocalTime.of(
-            hourSelector.value.toInt(),
-            minuteSelector.value.toInt(),
-            secondSelector.value.toInt(),
-            (milliSelector.value * 1_000_000).toInt(), // milli-of-second to nano-of-second
-        )
+        get() =
+            LocalTime.of(
+                hourSelector.value.toInt(),
+                minuteSelector.value.toInt(),
+                secondSelector.value.toInt(),
+                // milli-of-second to nano-of-second
+                (milliSelector.value * 1_000_000).toInt(),
+            )
         set(value) {
             hourSelector.value = value.hour.toLong()
             minuteSelector.value = value.minute.toLong()
             secondSelector.value = value.second.toLong()
-            milliSelector.value = (value.nano / 1_000_000).toLong() // milli-of-second to nano-of-second
+            // milli-of-second to nano-of-second
+            milliSelector.value = (value.nano / 1_000_000).toLong()
         }
 }
 
@@ -230,31 +238,32 @@ private class TimePartSpinner(
 ) : JSpinner(model) {
     var isSelection = true
 
-    private val dragListener = object : MouseAdapter() {
-        private var previousY = 0
+    private val dragListener =
+        object : MouseAdapter() {
+            private var previousY = 0
 
-        override fun mouseDragged(e: MouseEvent) {
-            if (e.y < 0 || e.y > height) {
-                val deltaY = previousY - (e.y / pixelsPerValueChange)
-                var currentValue = value + deltaY
-                if (deltaY < 0 && previousY == 0) {
-                    currentValue += height
+            override fun mouseDragged(e: MouseEvent) {
+                if (e.y < 0 || e.y > height) {
+                    val deltaY = previousY - (e.y / pixelsPerValueChange)
+                    var currentValue = value + deltaY
+                    if (deltaY < 0 && previousY == 0) {
+                        currentValue += height
+                    }
+                    value = currentValue.coerceIn(0, model.maximum)
                 }
-                value = currentValue.coerceIn(0, model.maximum)
+                previousY = e.y / pixelsPerValueChange
             }
-            previousY = e.y / pixelsPerValueChange
-        }
 
-        override fun mouseReleased(e: MouseEvent) {
-            isSelection = true
-            previousY = 0
-            fireStateChanged()
-        }
+            override fun mouseReleased(e: MouseEvent) {
+                isSelection = true
+                previousY = 0
+                fireStateChanged()
+            }
 
-        override fun mousePressed(e: MouseEvent) {
-            isSelection = false
+            override fun mousePressed(e: MouseEvent) {
+                isSelection = false
+            }
         }
-    }
 
     override fun createEditor(model: SpinnerModel): JComponent {
         check(model is ChronoSpinnerModel)

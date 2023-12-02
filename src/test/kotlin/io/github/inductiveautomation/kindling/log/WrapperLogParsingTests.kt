@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:max-line-length")
+
 package io.github.inductiveautomation.kindling.log
 
 import io.kotest.assertions.asClue
@@ -142,14 +144,15 @@ class WrapperLogParsingTests : FunSpec(
         }
 
         test("Wrapper file sorting test") {
-            val input = listOf(
-                "wrapper.log",
-                "wrapper.log.1",
-                "wrapper.log.2",
-                "wrapper.log.3",
-                "wrapper.log.4",
-                "wrapper.log.5",
-            ).map { Path(it) }.shuffled()
+            val input =
+                listOf(
+                    "wrapper.log",
+                    "wrapper.log.1",
+                    "wrapper.log.2",
+                    "wrapper.log.3",
+                    "wrapper.log.4",
+                    "wrapper.log.5",
+                ).map { Path(it) }.shuffled()
             input.sorted().map { it.name }.asClue { sorted ->
                 sorted[0] shouldBe "wrapper.log"
                 sorted[1] shouldBe "wrapper.log.1"

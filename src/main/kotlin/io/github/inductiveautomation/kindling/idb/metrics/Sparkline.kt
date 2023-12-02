@@ -12,12 +12,18 @@ import org.jfree.data.time.TimeSeries
 import org.jfree.data.time.TimeSeriesCollection
 import java.text.NumberFormat
 
-fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart {
+fun sparkline(
+    data: List<MetricData>,
+    formatter: NumberFormat,
+): JFreeChart {
     return ChartFactory.createTimeSeriesChart(
-        /* title = */ null,
-        /* timeAxisLabel = */ null,
-        /* valueAxisLabel = */ null,
-        /* dataset = */
+        // title =
+        null,
+        // timeAxisLabel =
+        null,
+        // valueAxisLabel =
+        null,
+        // dataset =
         TimeSeriesCollection(
             TimeSeries("Series").apply {
                 for ((value, timestamp) in data) {
@@ -25,9 +31,12 @@ fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart {
                 }
             },
         ),
-        /* legend = */ false,
-        /* tooltips = */ true,
-        /* urls = */ false,
+        // legend =
+        false,
+        // tooltips =
+        true,
+        // urls =
+        false,
     ).apply {
         xyPlot.apply {
             domainAxis.isPositiveArrowVisible = true

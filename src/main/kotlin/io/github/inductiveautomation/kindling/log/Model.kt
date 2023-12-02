@@ -43,7 +43,7 @@ data class SystemLogEvent(
     override var marked: Boolean = false,
 ) : LogEvent
 
-@Suppress("ktlint:trailing-comma-on-declaration-site")
+@Suppress("ktlint:standard:trailing-comma-on-declaration-site")
 enum class Level {
     TRACE,
     DEBUG,

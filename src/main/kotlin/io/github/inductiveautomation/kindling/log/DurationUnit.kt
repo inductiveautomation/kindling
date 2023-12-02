@@ -11,15 +11,23 @@ class DurationUnit(private val duration: Duration) : TemporalUnit {
     }
 
     override fun getDuration(): Duration = duration
+
     override fun isDurationEstimated(): Boolean = duration.seconds >= SECONDS_PER_DAY
+
     override fun isDateBased(): Boolean = duration.nano == 0 && duration.seconds % SECONDS_PER_DAY == 0L
+
     override fun isTimeBased(): Boolean = duration.seconds < SECONDS_PER_DAY && NANOS_PER_DAY % duration.toNanos() == 0L
 
     @Suppress("UNCHECKED_CAST")
-    override fun <R : Temporal?> addTo(temporal: R, amount: Long): R =
-        duration.multipliedBy(amount).addTo(temporal) as R
+    override fun <R : Temporal?> addTo(
+        temporal: R,
+        amount: Long,
+    ): R = duration.multipliedBy(amount).addTo(temporal) as R
 
-    override fun between(temporal1Inclusive: Temporal, temporal2Exclusive: Temporal): Long {
+    override fun between(
+        temporal1Inclusive: Temporal,
+        temporal2Exclusive: Temporal,
+    ): Long {
         return Duration.between(temporal1Inclusive, temporal2Exclusive).dividedBy(duration)
     }
 

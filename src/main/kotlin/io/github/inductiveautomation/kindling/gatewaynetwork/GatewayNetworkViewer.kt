@@ -41,31 +41,33 @@ import kotlin.io.path.writeText
 class GatewayNetworkViewer(tabName: String, tooltip: String, json: String) : ToolPanel() {
     override val icon = GatewayNetworkTool.icon
 
-    private val textArea = JTextArea().apply {
-        text = json
-        isEditable = false
-    }
+    private val textArea =
+        JTextArea().apply {
+            text = json
+            isEditable = false
+        }
 
-    private val openBrowserAction: Action = Action(
-        name = "View diagram in browser",
-        description = "View diagram in browser",
-        action = {
-            // We need to load the contents from the text area and place them in a file
-            // with the other static files
-            val tmpDir = writeStaticFiles(textArea.text)
+    private val openBrowserAction: Action =
+        Action(
+            name = "View diagram in browser",
+            description = "View diagram in browser",
+            action = {
+                // We need to load the contents from the text area and place them in a file
+                // with the other static files
+                val tmpDir = writeStaticFiles(textArea.text)
 
-            try {
-                Desktop.getDesktop().browse(tmpDir.resolve("index.html"))
-            } catch (error: Exception) {
-                JOptionPane.showMessageDialog(
-                    null,
-                    "Error: ${error.message}",
-                    "Browser Opening Error",
-                    JOptionPane.ERROR_MESSAGE,
-                )
-            }
-        },
-    )
+                try {
+                    Desktop.getDesktop().browse(tmpDir.resolve("index.html"))
+                } catch (error: Exception) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Error: ${error.message}",
+                        "Browser Opening Error",
+                        JOptionPane.ERROR_MESSAGE,
+                    )
+                }
+            },
+        )
 
     init {
         name = tabName
@@ -94,29 +96,31 @@ class GatewayNetworkViewer(tabName: String, tooltip: String, json: String) : Too
 
     private fun writeStaticFiles(jsonText: String): URI {
         // Make a temp dir for the static html/js files
-        val tmpDir: Path = createTempDirectory("kindling-gateway-network-diagram").apply {
-            for (resource in RESOURCES) {
-                writeStaticFile(resource)
-            }
+        val tmpDir: Path =
+            createTempDirectory("kindling-gateway-network-diagram").apply {
+                for (resource in RESOURCES) {
+                    writeStaticFile(resource)
+                }
 
-            // This file is what the compiled React js file uses to populate the gateway network diagram.
-            resolve(EXTERNAL_DIAGRAM_JS).writeText(PREAMBLE + jsonText)
-        }
+                // This file is what the compiled React js file uses to populate the gateway network diagram.
+                resolve(EXTERNAL_DIAGRAM_JS).writeText(PREAMBLE + jsonText)
+            }
         tmpDir.toFile().deleteOnExit()
 
         return tmpDir.toUri()
     }
 
     companion object {
-        private val RESOURCES = listOf(
-            "favicon.ico",
-            "favicon-32x32.png",
-            "favicon-48x48.png",
-            "favicon-160x160.png",
-            "index.html",
-            "main.js",
-            "style.css",
-        )
+        private val RESOURCES =
+            listOf(
+                "favicon.ico",
+                "favicon-32x32.png",
+                "favicon-48x48.png",
+                "favicon-160x160.png",
+                "index.html",
+                "main.js",
+                "style.css",
+            )
         private const val EXTERNAL_DIAGRAM_JS = "external-diagram.js"
         private const val PREAMBLE = "window.externalDiagram = "
 
@@ -127,9 +131,10 @@ class GatewayNetworkViewer(tabName: String, tooltip: String, json: String) : Too
             }
         }
 
-        private val JSON = Json {
-            ignoreUnknownKeys = true
-        }
+        private val JSON =
+            Json {
+                ignoreUnknownKeys = true
+            }
     }
 }
 
@@ -148,9 +153,10 @@ object GatewayNetworkTool : ClipboardTool {
     }
 
     override fun open(path: Path): ToolPanel {
-        val diagram: String = path.useLines(DefaultEncoding.currentValue) { lines ->
-            lines.filter(String::isNotBlank).joinToString(separator = "\n")
-        }
+        val diagram: String =
+            path.useLines(DefaultEncoding.currentValue) { lines ->
+                lines.filter(String::isNotBlank).joinToString(separator = "\n")
+            }
 
         return GatewayNetworkViewer(
             tabName = path.name,

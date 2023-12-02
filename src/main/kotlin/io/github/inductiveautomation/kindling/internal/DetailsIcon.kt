@@ -11,10 +11,11 @@ import javax.swing.Popup
 import javax.swing.PopupFactory
 
 class DetailsIcon(details: Map<String, String>) : JLabel(detailsIcon) {
-    private val table = JXTable(DetailsModel(details.entries.toList())).apply {
-        addHighlighter(HighlighterFactory.createSimpleStriping())
-        packAll()
-    }
+    private val table =
+        JXTable(DetailsModel(details.entries.toList())).apply {
+            addHighlighter(HighlighterFactory.createSimpleStriping())
+            packAll()
+        }
 
     init {
         alignmentY = 0.7F
@@ -24,14 +25,15 @@ class DetailsIcon(details: Map<String, String>) : JLabel(detailsIcon) {
                 var popup: Popup? = null
 
                 override fun mouseEntered(e: MouseEvent) {
-                    popup = PopupFactory.getSharedInstance().getPopup(
-                        this@DetailsIcon,
-                        table,
-                        locationOnScreen.x + detailsIcon.iconWidth,
-                        locationOnScreen.y,
-                    ).also {
-                        it.show()
-                    }
+                    popup =
+                        PopupFactory.getSharedInstance().getPopup(
+                            this@DetailsIcon,
+                            table,
+                            locationOnScreen.x + detailsIcon.iconWidth,
+                            locationOnScreen.y,
+                        ).also {
+                            it.show()
+                        }
                 }
 
                 override fun mouseExited(e: MouseEvent) {

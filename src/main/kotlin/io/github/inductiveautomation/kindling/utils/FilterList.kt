@@ -44,6 +44,7 @@ enum class FilterComparator(
     ),
 }
 
+@Suppress("ktlint:standard:function-naming")
 fun FilterModel(data: Map<String?, Int>) = FilterModel(data) { it }
 
 class FilterModel<T>(
@@ -51,14 +52,16 @@ class FilterModel<T>(
     val sortKey: (T) -> String?,
 ) : AbstractListModel<Any>() {
     private val total = data.values.sum()
-    val percentages = data.mapValues { (_, count) ->
-        val percentage = count.toFloat() / total
-        percentFormat.format(percentage)
-    }
+    val percentages =
+        data.mapValues { (_, count) ->
+            val percentage = count.toFloat() / total
+            percentFormat.format(percentage)
+        }
 
     internal var values: List<*> = data.keys.toList()
 
     override fun getSize(): Int = values.size + 1
+
     override fun getElementAt(index: Int): Any? {
         return if (index == 0) {
             CheckBoxList.ALL_ENTRY
@@ -76,16 +79,17 @@ class FilterModel<T>(
         }
     }
 
-    fun copy(comparator: FilterComparator): FilterModel<T> = FilterModel(
-        data.entries
-            .sortedWith(
-                compareBy(comparator) { (key, value) ->
-                    FilterModelEntry(sortKey(key), value)
-                },
-            )
-            .associate(Map.Entry<T, Int>::toPair),
-        sortKey,
-    )
+    fun copy(comparator: FilterComparator): FilterModel<T> =
+        FilterModel(
+            data.entries
+                .sortedWith(
+                    compareBy(comparator) { (key, value) ->
+                        FilterModelEntry(sortKey(key), value)
+                    },
+                )
+                .associate(Map.Entry<T, Int>::toPair),
+            sortKey,
+        )
 
     companion object {
         private val percentFormat = DecimalFormat.getPercentInstance()
@@ -105,20 +109,21 @@ class FilterList(
         selectionModel = NoSelectionModel()
         isClickInCheckBoxOnly = false
 
-        cellRenderer = listCellRenderer<Any?> { _, value, _, _, _ ->
-            when (value) {
-                ALL_ENTRY -> {
-                    text = value.toString()
-                }
+        cellRenderer =
+            listCellRenderer<Any?> { _, value, _, _, _ ->
+                when (value) {
+                    ALL_ENTRY -> {
+                        text = value.toString()
+                    }
 
-                else -> {
-                    text = "${toStringFn(value)} [${model.data[value]}] (${model.percentages[value]})"
-                    toolTipText = tooltipToStringFn?.let { stringifier ->
-                        "${stringifier(value)} [${model.data[value]}] (${model.percentages[value]})"
-                    } ?: text
+                    else -> {
+                        text = "${toStringFn(value)} [${model.data[value]}] (${model.percentages[value]})"
+                        toolTipText = tooltipToStringFn?.let { stringifier ->
+                            "${stringifier(value)} [${model.data[value]}] (${model.percentages[value]})"
+                        } ?: text
+                    }
                 }
             }
-        }
 
         object : ListSearchable(this) {
             init {
@@ -129,7 +134,10 @@ class FilterList(
 
             override fun convertElementToString(element: Any?): String = element.toString()
 
-            override fun setSelectedIndex(index: Int, incremental: Boolean) {
+            override fun setSelectedIndex(
+                index: Int,
+                incremental: Boolean,
+            ) {
                 checkBoxListSelectedIndex = index
             }
         }
@@ -152,11 +160,12 @@ class FilterList(
     override fun setModel(model: ListModel<*>) {
         require(model is FilterModel<*>)
         val currentSelection = checkBoxListSelectedValues
-        lastSelection = if (currentSelection.isEmpty()) {
-            lastSelection
-        } else {
-            currentSelection
-        }
+        lastSelection =
+            if (currentSelection.isEmpty()) {
+                lastSelection
+            } else {
+                currentSelection
+            }
 
         super.setModel(model)
 
@@ -166,9 +175,10 @@ class FilterList(
         addCheckBoxListSelectedValues(lastSelection)
     }
 
-    private val sortActions: List<SortAction> = FilterComparator.entries.map { filterComparator ->
-        SortAction(filterComparator)
-    }
+    private val sortActions: List<SortAction> =
+        FilterComparator.entries.map { filterComparator ->
+            SortAction(filterComparator)
+        }
 
     inner class SortAction(comparator: FilterComparator) : Action(
         description = comparator.tooltip,
@@ -182,19 +192,20 @@ class FilterList(
         var comparator: FilterComparator by actionValue("filterComparator", comparator)
     }
 
-    fun createSortButtons(): ButtonGroup = ButtonGroup().apply {
-        for (sortAction in sortActions) {
-            add(
-                JToggleButton(
-                    Action(
-                        description = sortAction.description,
-                        icon = sortAction.icon,
-                        selected = sortAction.selected,
-                    ) { e ->
-                        sortAction.actionPerformed(e)
-                    },
-                ),
-            )
+    fun createSortButtons(): ButtonGroup =
+        ButtonGroup().apply {
+            for (sortAction in sortActions) {
+                add(
+                    JToggleButton(
+                        Action(
+                            description = sortAction.description,
+                            icon = sortAction.icon,
+                            selected = sortAction.selected,
+                        ) { e ->
+                            sortAction.actionPerformed(e)
+                        },
+                    ),
+                )
+            }
         }
-    }
 }

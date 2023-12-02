@@ -20,24 +20,26 @@ import javax.swing.JPanel
 import javax.swing.filechooser.FileNameExtensionFilter
 
 class ResultsPanel : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
-    private val table = ReifiedJXTable(QueryResult.Success()).apply {
-        setDefaultRenderer<ByteArray>(
-            getText = {
-                if (it != null) {
-                    "${it.size.toLong().toFileSizeLabel()} BLOB"
-                } else {
-                    ""
-                }
-            },
-            getTooltip = { "Export to CSV to view full data (b64 encoded)" },
-        )
-    }
+    private val table =
+        ReifiedJXTable(QueryResult.Success()).apply {
+            setDefaultRenderer<ByteArray>(
+                getText = {
+                    if (it != null) {
+                        "${it.size.toLong().toFileSizeLabel()} BLOB"
+                    } else {
+                        ""
+                    }
+                },
+                getTooltip = { "Export to CSV to view full data (b64 encoded)" },
+            )
+        }
 
     private val errorDisplay = JLabel("No results - run a query in the text area above")
 
-    private val tableDisplay = FlatScrollPane(table).apply {
-        isVisible = false
-    }
+    private val tableDisplay =
+        FlatScrollPane(table).apply {
+            isVisible = false
+        }
 
     var result: QueryResult? = null
         set(value) {
@@ -62,58 +64,61 @@ class ResultsPanel : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
             field = value
         }
 
-    private val copy = Action(
-        description = "Copy to Clipboard",
-        icon = FlatSVGIcon("icons/bx-clipboard.svg"),
-    ) {
-        val tsv = buildString {
-            table.model.columnNames.joinTo(buffer = this, separator = "\t")
-            appendLine()
-            val rowsToExport = table.selectedOrAllRowIndices()
-            rowsToExport.map { table.model.data[it] }
-                .forEach { line ->
-                    line.joinTo(buffer = this, separator = "\t") { cell ->
-                        when (cell) {
-                            is ByteArray -> BASE64.encodeToString(cell)
-                            else -> cell?.toString().orEmpty()
-                        }
-                    }
+    private val copy =
+        Action(
+            description = "Copy to Clipboard",
+            icon = FlatSVGIcon("icons/bx-clipboard.svg"),
+        ) {
+            val tsv =
+                buildString {
+                    table.model.columnNames.joinTo(buffer = this, separator = "\t")
                     appendLine()
-                }
-        }
-
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        clipboard.setContents(StringSelection(tsv), null)
-    }
-
-    private val save = Action(
-        description = "Save to File",
-        icon = FlatSVGIcon("icons/bx-save.svg"),
-    ) {
-        JFileChooser().apply {
-            fileSelectionMode = JFileChooser.FILES_ONLY
-            fileFilter = FileNameExtensionFilter("CSV File", "csv")
-            selectedFile = File("query results.csv")
-            val save = showSaveDialog(this@ResultsPanel)
-            if (save == JFileChooser.APPROVE_OPTION) {
-                CSVWriter(selectedFile.writer()).use { csv ->
-                    csv.writeNext(table.model.columnNames)
                     val rowsToExport = table.selectedOrAllRowIndices()
                     rowsToExport.map { table.model.data[it] }
                         .forEach { line ->
-                            csv.writeNext(
-                                line.map { cell ->
-                                    when (cell) {
-                                        is ByteArray -> BASE64.encodeToString(cell)
-                                        else -> cell?.toString()
-                                    }
-                                },
-                            )
+                            line.joinTo(buffer = this, separator = "\t") { cell ->
+                                when (cell) {
+                                    is ByteArray -> BASE64.encodeToString(cell)
+                                    else -> cell?.toString().orEmpty()
+                                }
+                            }
+                            appendLine()
                         }
+                }
+
+            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+            clipboard.setContents(StringSelection(tsv), null)
+        }
+
+    private val save =
+        Action(
+            description = "Save to File",
+            icon = FlatSVGIcon("icons/bx-save.svg"),
+        ) {
+            JFileChooser().apply {
+                fileSelectionMode = JFileChooser.FILES_ONLY
+                fileFilter = FileNameExtensionFilter("CSV File", "csv")
+                selectedFile = File("query results.csv")
+                val save = showSaveDialog(this@ResultsPanel)
+                if (save == JFileChooser.APPROVE_OPTION) {
+                    CSVWriter(selectedFile.writer()).use { csv ->
+                        csv.writeNext(table.model.columnNames)
+                        val rowsToExport = table.selectedOrAllRowIndices()
+                        rowsToExport.map { table.model.data[it] }
+                            .forEach { line ->
+                                csv.writeNext(
+                                    line.map { cell ->
+                                        when (cell) {
+                                            is ByteArray -> BASE64.encodeToString(cell)
+                                            else -> cell?.toString()
+                                        }
+                                    },
+                                )
+                            }
+                    }
                 }
             }
         }
-    }
 
     init {
         add(errorDisplay, "cell 0 0, push, grow")

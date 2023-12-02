@@ -10,10 +10,15 @@ class DetailsModel(details: List<Map.Entry<String, String>>) : AbstractTableMode
     }
 
     override fun getColumnName(column: Int): String = DetailsColumns[column].header
+
     override fun getRowCount(): Int = details.size
+
     override fun getColumnCount(): Int = size
 
-    override fun getValueAt(row: Int, column: Int): Any? {
+    override fun getValueAt(
+        row: Int,
+        column: Int,
+    ): Any? {
         return details[row].let { entry ->
             DetailsColumns[column].getValue(entry)
         }

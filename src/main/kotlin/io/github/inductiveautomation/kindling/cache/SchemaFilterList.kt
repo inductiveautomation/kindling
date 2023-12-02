@@ -32,25 +32,27 @@ class SchemaFilterList(modelData: List<SchemaRecord>) : CheckBoxList(SchemaModel
 
         val txGroupRegex = """(.*)\{.*}""".toRegex()
 
-        cellRenderer = listCellRenderer<Any?> { _, schemaEntry, _, _, _ ->
-            text = when (schemaEntry) {
-                is SchemaRecord -> {
-                    buildString {
-                        append("%4d".format(schemaEntry.id))
-                        val name = txGroupRegex.find(schemaEntry.name)?.groups?.get(1)?.value ?: schemaEntry.name
-                        append(": ").append(name)
+        cellRenderer =
+            listCellRenderer<Any?> { _, schemaEntry, _, _, _ ->
+                text =
+                    when (schemaEntry) {
+                        is SchemaRecord -> {
+                            buildString {
+                                append("%4d".format(schemaEntry.id))
+                                val name = txGroupRegex.find(schemaEntry.name)?.groups?.get(1)?.value ?: schemaEntry.name
+                                append(": ").append(name)
 
-                        when (val size = schemaEntry.errors.size) {
-                            0 -> Unit
-                            1 -> append(" ($size error. Click to view.)")
-                            else -> append(" ($size errors. Click to view.)")
+                                when (val size = schemaEntry.errors.size) {
+                                    0 -> Unit
+                                    1 -> append(" ($size error. Click to view.)")
+                                    else -> append(" ($size errors. Click to view.)")
+                                }
+                            }
                         }
+                        else -> schemaEntry.toString()
                     }
-                }
-                else -> schemaEntry.toString()
+                font = Font(MONOSPACED, Font.PLAIN, 14)
             }
-            font = Font(MONOSPACED, Font.PLAIN, 14)
-        }
         selectAll()
     }
 

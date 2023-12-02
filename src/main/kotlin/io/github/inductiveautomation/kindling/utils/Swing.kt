@@ -98,13 +98,14 @@ class ReifiedLabelProvider<T : Any>(
     companion object {
         private val NULL_ICON = FlatSVGIcon("icons/null.svg")
 
-        fun <T> defaultIconFunction(): IconProvider<T> = {
-            if (it == null) {
-                NULL_ICON
-            } else {
-                null
+        fun <T> defaultIconFunction(): IconProvider<T> =
+            {
+                if (it == null) {
+                    NULL_ICON
+                } else {
+                    null
+                }
             }
-        }
 
         inline operator fun <reified T : Any> invoke(
             noinline getText: StringProvider<T>,
@@ -142,7 +143,9 @@ fun JTable.selectedOrAllRowIndices(): IntArray {
     }
 }
 
-inline fun <reified T> listCellRenderer(crossinline customize: JLabel.(list: JList<*>, value: T, index: Int, selected: Boolean, focused: Boolean) -> Unit): ListCellRenderer<Any> {
+inline fun <reified T> listCellRenderer(
+    crossinline customize: JLabel.(list: JList<*>, value: T, index: Int, selected: Boolean, focused: Boolean) -> Unit,
+): ListCellRenderer<Any> {
     return object : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>,
@@ -164,7 +167,17 @@ inline fun <reified T> listCellRenderer(crossinline customize: JLabel.(list: JLi
     }
 }
 
-fun treeCellRenderer(customize: JLabel.(tree: JTree, value: Any?, selected: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean) -> Component): TreeCellRenderer {
+fun treeCellRenderer(
+    customize: JLabel.(
+        tree: JTree,
+        value: Any?,
+        selected: Boolean,
+        expanded: Boolean,
+        leaf: Boolean,
+        row: Int,
+        hasFocus: Boolean,
+    ) -> Component,
+): TreeCellRenderer {
     return object : DefaultTreeCellRenderer() {
         override fun getTreeCellRendererComponent(
             tree: JTree,
@@ -181,7 +194,10 @@ fun treeCellRenderer(customize: JLabel.(tree: JTree, value: Any?, selected: Bool
     }
 }
 
-inline fun FlatScrollPane(component: Component, block: FlatScrollPane.() -> Unit = {}): FlatScrollPane {
+inline fun FlatScrollPane(
+    component: Component,
+    block: FlatScrollPane.() -> Unit = {},
+): FlatScrollPane {
     return FlatScrollPane().apply {
         setViewportView(component)
         block(this)
@@ -196,9 +212,7 @@ val Document.text: String
  */
 val EDT_SCOPE by lazy { CoroutineScope(Dispatchers.Swing) }
 
-inline fun <T : Component> T.attachPopupMenu(
-    crossinline menuFn: T.(event: MouseEvent) -> JPopupMenu?,
-) {
+inline fun <T : Component> T.attachPopupMenu(crossinline menuFn: T.(event: MouseEvent) -> JPopupMenu?) {
     addMouseListener(
         object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
@@ -226,20 +240,49 @@ fun FlatSVGIcon.derive(colorer: (Color) -> Color): FlatSVGIcon {
 }
 
 class NoSelectionModel : DefaultListSelectionModel() {
-    override fun setSelectionInterval(index0: Int, index1: Int) = Unit
-    override fun addSelectionInterval(index0: Int, index1: Int) = Unit
-    override fun removeSelectionInterval(index0: Int, index1: Int) = Unit
+    override fun setSelectionInterval(
+        index0: Int,
+        index1: Int,
+    ) = Unit
+
+    override fun addSelectionInterval(
+        index0: Int,
+        index1: Int,
+    ) = Unit
+
+    override fun removeSelectionInterval(
+        index0: Int,
+        index1: Int,
+    ) = Unit
+
     override fun getMinSelectionIndex(): Int = -1
+
     override fun getMaxSelectionIndex(): Int = -1
+
     override fun isSelectedIndex(index: Int): Boolean = false
+
     override fun getAnchorSelectionIndex(): Int = -1
+
     override fun setAnchorSelectionIndex(index: Int) = Unit
+
     override fun getLeadSelectionIndex(): Int = -1
+
     override fun setLeadSelectionIndex(index: Int) = Unit
+
     override fun clearSelection() = Unit
+
     override fun isSelectionEmpty(): Boolean = true
-    override fun insertIndexInterval(index: Int, length: Int, before: Boolean) = Unit
-    override fun removeIndexInterval(index0: Int, index1: Int) = Unit
+
+    override fun insertIndexInterval(
+        index: Int,
+        length: Int,
+        before: Boolean,
+    ) = Unit
+
+    override fun removeIndexInterval(
+        index0: Int,
+        index1: Int,
+    ) = Unit
 }
 
 class ReifiedJXTable<T : TableModel>(
@@ -249,11 +292,12 @@ class ReifiedJXTable<T : TableModel>(
 ) : JXTable(model) {
     private val setup = true
 
-    private val packLater: () -> Unit = debounce(
-        waitTime = 500.milliseconds,
-        coroutineScope = EDT_SCOPE,
-        destinationFunction = ::packAll,
-    )
+    private val packLater: () -> Unit =
+        debounce(
+            waitTime = 500.milliseconds,
+            coroutineScope = EDT_SCOPE,
+            destinationFunction = ::packAll,
+        )
 
     init {
         if (columns != null) {
@@ -297,9 +341,10 @@ class ReifiedJXTable<T : TableModel>(
 
         val sortOrder = if (sortedColumn >= 0) (rowSorter as SortController<*>).getSortOrder(sortedColumn) else null
 
-        val previousColumnSizes = IntArray(columnCount) { i ->
-            getColumnExt(i).preferredWidth
-        }
+        val previousColumnSizes =
+            IntArray(columnCount) { i ->
+                getColumnExt(i).preferredWidth
+            }
 
         super.setModel(model)
 
@@ -351,21 +396,28 @@ fun JFileChooser.chooseFiles(parent: JComponent): List<File>? {
 }
 
 abstract class AbstractTreeNode : TreeNode {
-    open val children: MutableList<TreeNode> = object : ArrayList<TreeNode>() {
-        override fun add(element: TreeNode): Boolean {
-            element as AbstractTreeNode
-            element.parent = this@AbstractTreeNode
-            return super.add(element)
+    open val children: MutableList<TreeNode> =
+        object : ArrayList<TreeNode>() {
+            override fun add(element: TreeNode): Boolean {
+                element as AbstractTreeNode
+                element.parent = this@AbstractTreeNode
+                return super.add(element)
+            }
         }
-    }
     var parent: AbstractTreeNode? = null
 
     override fun getAllowsChildren(): Boolean = true
+
     override fun getChildCount(): Int = children.size
+
     override fun isLeaf(): Boolean = children.isEmpty()
+
     override fun getChildAt(childIndex: Int): TreeNode = children[childIndex]
+
     override fun getIndex(node: TreeNode?): Int = children.indexOf(node)
+
     override fun getParent(): TreeNode? = this.parent
+
     override fun children(): Enumeration<out TreeNode> = Collections.enumeration(children)
 }
 
@@ -413,19 +465,20 @@ inline fun jFrame(
 inline fun <reified T> JComboBox<T>.configureCellRenderer(
     noinline block: BasicComboBoxRenderer.(list: JList<*>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) -> Unit,
 ) {
-    renderer = object : BasicComboBoxRenderer() {
-        override fun getListCellRendererComponent(
-            list: JList<*>,
-            value: Any?,
-            index: Int,
-            isSelected: Boolean,
-            cellHasFocus: Boolean,
-        ): Component {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-            block(list, value as T?, index, isSelected, cellHasFocus)
-            return this
+    renderer =
+        object : BasicComboBoxRenderer() {
+            override fun getListCellRendererComponent(
+                list: JList<*>,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean,
+            ): Component {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                block(list, value as T?, index, isSelected, cellHasFocus)
+                return this
+            }
         }
-    }
 }
 
 inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel {
@@ -460,47 +513,55 @@ fun TableModel.exportToCSV(file: File) {
     }
 }
 
-fun TableModel.exportToXLSX(file: File) = file.outputStream().use { fos ->
-    workbook {
-        sheet("Sheet 1") { // TODO: Some way to pipe in a more useful sheet name (or multiple sheets?)
-            row {
-                for (col in columnIndices) {
-                    cell(getColumnName(col))
-                }
-            }
-            for (row in rowIndices) {
+fun TableModel.exportToXLSX(file: File) =
+    file.outputStream().use { fos ->
+        workbook {
+            sheet("Sheet 1") { // TODO: Some way to pipe in a more useful sheet name (or multiple sheets?)
                 row {
                     for (col in columnIndices) {
-                        when (val value = getValueAt(row, col)) {
-                            is Double -> cell(
-                                value,
-                                createCellStyle {
-                                    dataFormat = xssfWorkbook.createDataFormat().getFormat("0.00")
-                                },
-                            )
+                        cell(getColumnName(col))
+                    }
+                }
+                for (row in rowIndices) {
+                    row {
+                        for (col in columnIndices) {
+                            when (val value = getValueAt(row, col)) {
+                                is Double ->
+                                    cell(
+                                        value,
+                                        createCellStyle {
+                                            dataFormat = xssfWorkbook.createDataFormat().getFormat("0.00")
+                                        },
+                                    )
 
-                            else -> cell(value ?: "")
+                                else -> cell(value ?: "")
+                            }
                         }
                     }
                 }
             }
-        }
-    }.xssfWorkbook.write(fos)
-}
+        }.xssfWorkbook.write(fos)
+    }
 
-fun Component.traverseChildren(): Sequence<Component> = sequence {
-    if (this@traverseChildren is Container) {
-        val childComponents = synchronized(treeLock) { components.copyOf() }
-        for (component in childComponents) {
-            yield(component)
-            yieldAll(component.traverseChildren())
+fun Component.traverseChildren(): Sequence<Component> =
+    sequence {
+        if (this@traverseChildren is Container) {
+            val childComponents = synchronized(treeLock) { components.copyOf() }
+            for (component in childComponents) {
+                yield(component)
+                yieldAll(component.traverseChildren())
+            }
         }
     }
-}
 
 val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx
 
-fun SVGDocument.render(width: Int, height: Int, x: Int = 0, y: Int = 0): BufferedImage {
+fun SVGDocument.render(
+    width: Int,
+    height: Int,
+    x: Int = 0,
+    y: Int = 0,
+): BufferedImage {
     return BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB).apply {
         val g = createGraphics()
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)

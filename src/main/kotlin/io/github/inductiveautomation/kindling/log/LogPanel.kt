@@ -79,86 +79,101 @@ class LogPanel(
 
     private val header = Header(totalRows)
 
-    private val columnList = if (rawData.first() is SystemLogEvent) {
-        SystemLogColumns
-    } else {
-        WrapperLogColumns
-    }
-
-    val table = run {
-        val initialModel = createModel(rawData)
-        ReifiedJXTable(initialModel, columnList).apply {
-            setSortOrder(initialModel.columns.Timestamp, SortOrder.ASCENDING)
+    private val columnList =
+        if (rawData.first() is SystemLogEvent) {
+            SystemLogColumns
+        } else {
+            WrapperLogColumns
         }
-    }
 
-    private val tableScrollPane = FlatScrollPane(table) {
-        verticalScrollBar = densityDisplay
-    }
+    val table =
+        run {
+            val initialModel = createModel(rawData)
+            ReifiedJXTable(initialModel, columnList).apply {
+                setSortOrder(initialModel.columns.Timestamp, SortOrder.ASCENDING)
+            }
+        }
 
-    private val sidebar = FilterSidebar(
-        NamePanel(rawData),
-        LevelPanel(rawData),
-        if (rawData.first() is SystemLogEvent) {
-            @Suppress("UNCHECKED_CAST")
-            MDCPanel(rawData as List<SystemLogEvent>)
-        } else {
-            null
-        },
-        if (rawData.first() is SystemLogEvent) {
-            @Suppress("UNCHECKED_CAST")
-            ThreadPanel(rawData as List<SystemLogEvent>)
-        } else {
-            null
-        },
-        TimePanel(
-            lowerBound = rawData.first().timestamp,
-            upperBound = rawData.last().timestamp,
-        ),
-    )
+    private val tableScrollPane =
+        FlatScrollPane(table) {
+            verticalScrollBar = densityDisplay
+        }
+
+    private val sidebar =
+        FilterSidebar(
+            NamePanel(rawData),
+            LevelPanel(rawData),
+            if (rawData.first() is SystemLogEvent) {
+                @Suppress("UNCHECKED_CAST")
+                MDCPanel(rawData as List<SystemLogEvent>)
+            } else {
+                null
+            },
+            if (rawData.first() is SystemLogEvent) {
+                @Suppress("UNCHECKED_CAST")
+                ThreadPanel(rawData as List<SystemLogEvent>)
+            } else {
+                null
+            },
+            TimePanel(
+                lowerBound = rawData.first().timestamp,
+                upperBound = rawData.last().timestamp,
+            ),
+        )
 
     private val details = DetailsPane()
 
-    private val filters: List<LogFilter> = buildList {
-        for (panel in sidebar.filterPanels) {
-            add(panel)
-        }
-        add { event ->
-            !header.showOnlyMarked.isSelected || event.marked
-        }
-        add { event ->
-            val text = header.search.text
-            if (text.isNullOrEmpty()) {
-                true
-            } else {
-                when (event) {
-                    is SystemLogEvent -> {
-                        text in event.message || event.logger.contains(text, ignoreCase = true) || event.thread.contains(text, ignoreCase = true) || event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
-                    }
+    private val filters: List<LogFilter> =
+        buildList {
+            for (panel in sidebar.filterPanels) {
+                add(panel)
+            }
+            add { event ->
+                !header.showOnlyMarked.isSelected || event.marked
+            }
+            add { event ->
+                val text = header.search.text
+                if (text.isNullOrEmpty()) {
+                    true
+                } else {
+                    when (event) {
+                        is SystemLogEvent -> {
+                            text in event.message ||
+                                event.logger.contains(text, ignoreCase = true) ||
+                                event.thread.contains(text, ignoreCase = true) ||
+                                event.stacktrace.any { stacktrace ->
+                                    stacktrace.contains(text, ignoreCase = true)
+                                }
+                        }
 
-                    is WrapperLogEvent -> {
-                        text in event.message || event.logger.contains(text, ignoreCase = true) || event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
+                        is WrapperLogEvent -> {
+                            text in event.message ||
+                                event.logger.contains(text, ignoreCase = true) ||
+                                event.stacktrace.any { stacktrace ->
+                                    stacktrace.contains(text, ignoreCase = true)
+                                }
+                        }
                     }
                 }
             }
         }
-    }
 
     private fun updateData() {
         BACKGROUND.launch {
             val selectedEvents = table.selectedRowIndices().map { row -> table.model[row].hashCode() }
-            val filteredData = if (Debug.currentValue) {
-                // use a less efficient, but more debuggable, filtering sequence
-                filters.fold(rawData) { acc, logFilter ->
-                    acc.filter(logFilter::filter).also {
-                        println("${it.size} left after $logFilter")
+            val filteredData =
+                if (Debug.currentValue) {
+                    // use a less efficient, but more debuggable, filtering sequence
+                    filters.fold(rawData) { acc, logFilter ->
+                        acc.filter(logFilter::filter).also {
+                            println("${it.size} left after $logFilter")
+                        }
+                    }
+                } else {
+                    rawData.filter { event ->
+                        filters.all { filter -> filter.filter(event) }
                     }
                 }
-            } else {
-                rawData.filter { event ->
-                    filters.all { filter -> filter.filter(event) }
-                }
-            }
 
             EDT_SCOPE.launch {
                 table.apply {
@@ -178,10 +193,11 @@ class LogPanel(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun createModel(rawData: List<LogEvent>): LogsModel<out LogEvent> = when (columnList) {
-        is WrapperLogColumns -> LogsModel(rawData as List<WrapperLogEvent>, columnList)
-        is SystemLogColumns -> LogsModel(rawData as List<SystemLogEvent>, columnList)
-    }
+    private fun createModel(rawData: List<LogEvent>): LogsModel<out LogEvent> =
+        when (columnList) {
+            is WrapperLogColumns -> LogsModel(rawData as List<WrapperLogEvent>, columnList)
+            is SystemLogColumns -> LogsModel(rawData as List<SystemLogEvent>, columnList)
+        }
 
     override val icon: Icon? = null
 
@@ -209,9 +225,10 @@ class LogPanel(
                 header.displayedRows = model.rowCount
             }
 
-            val clearAllMarks = Action("Clear all marks") {
-                model.markRows { false }
-            }
+            val clearAllMarks =
+                Action("Clear all marks") {
+                    model.markRows { false }
+                }
             actionMap.put(
                 "$COLUMN_CONTROL_MARKER.clearAllMarks",
                 clearAllMarks,
@@ -301,26 +318,33 @@ class LogPanel(
     }
 
     private fun ListSelectionModel.updateDetails() {
-        details.events = selectedIndices.filter { isSelectedIndex(it) }.map { table.convertRowIndexToModel(it) }.map { row -> table.model[row] }.map { event ->
-            DetailEvent(
-                title = when (event) {
-                    is SystemLogEvent -> "${TimeStampFormatter.format(event.timestamp)} ${event.thread}"
-                    else -> TimeStampFormatter.format(event.timestamp)
-                },
-                message = event.message,
-                body = event.stacktrace.map { element ->
-                    if (UseHyperlinks.currentValue) {
-                        element.toBodyLine((header.version.selectedItem as MajorVersion).version + ".0")
-                    } else {
-                        BodyLine(element)
-                    }
-                },
-                details = when (event) {
-                    is SystemLogEvent -> event.mdc.associate { (key, value) -> key to value }
-                    is WrapperLogEvent -> emptyMap()
-                },
-            )
-        }
+        details.events =
+            selectedIndices.filter { isSelectedIndex(it) }.map { table.convertRowIndexToModel(it) }.map {
+                    row ->
+                table.model[row]
+            }.map { event ->
+                DetailEvent(
+                    title =
+                        when (event) {
+                            is SystemLogEvent -> "${TimeStampFormatter.format(event.timestamp)} ${event.thread}"
+                            else -> TimeStampFormatter.format(event.timestamp)
+                        },
+                    message = event.message,
+                    body =
+                        event.stacktrace.map { element ->
+                            if (UseHyperlinks.currentValue) {
+                                element.toBodyLine((header.version.selectedItem as MajorVersion).version + ".0")
+                            } else {
+                                BodyLine(element)
+                            }
+                        },
+                    details =
+                        when (event) {
+                            is SystemLogEvent -> event.mdc.associate { (key, value) -> key to value }
+                            is WrapperLogEvent -> emptyMap()
+                        },
+                )
+            }
     }
 
     inner class GroupingScrollBar : JScrollBar() {
@@ -335,9 +359,10 @@ class LogPanel(
 
             toolTipText = aggregate.toString()
 
-            density = rawData.groupingBy {
-                it.timestamp.truncatedTo(DurationUnit(aggregate))
-            }.eachCount()
+            density =
+                rawData.groupingBy {
+                    it.timestamp.truncatedTo(DurationUnit(aggregate))
+                }.eachCount()
             rangex = density.values.maxOf { it }
         }
 
@@ -349,33 +374,38 @@ class LogPanel(
             return table.getScrollableBlockIncrement(tableScrollPane.viewport.viewRect, SwingConstants.VERTICAL, direction)
         }
 
-        private val customUI = object : FlatScrollBarUI() {
-            override fun paintTrack(g: Graphics, c: JComponent, trackBounds: Rectangle) {
-                super.paintTrack(g, c, trackBounds)
-                if (ShowDensity.currentValue) {
-                    g as Graphics2D
-                    g.color = UIManager.getColor("Actions.Red")
+        private val customUI =
+            object : FlatScrollBarUI() {
+                override fun paintTrack(
+                    g: Graphics,
+                    c: JComponent,
+                    trackBounds: Rectangle,
+                ) {
+                    super.paintTrack(g, c, trackBounds)
+                    if (ShowDensity.currentValue) {
+                        g as Graphics2D
+                        g.color = UIManager.getColor("Actions.Red")
 
-                    val old = g.transform
-                    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-                    g.transform(
-                        AffineTransform.getScaleInstance(
-                            trackBounds.width / rangex.toDouble(),
-                            trackBounds.height / density.size.toDouble(),
-                        ),
-                    )
-                    density.values.forEachIndexed { index, count ->
-                        g.drawLine(
-                            trackBounds.x,
-                            trackBounds.y + index,
-                            trackBounds.x + count,
-                            trackBounds.y + index,
+                        val old = g.transform
+                        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                        g.transform(
+                            AffineTransform.getScaleInstance(
+                                trackBounds.width / rangex.toDouble(),
+                                trackBounds.height / density.size.toDouble(),
+                            ),
                         )
+                        density.values.forEachIndexed { index, count ->
+                            g.drawLine(
+                                trackBounds.x,
+                                trackBounds.y + index,
+                                trackBounds.x + count,
+                                trackBounds.y + index,
+                            )
+                        }
+                        g.transform = old
                     }
-                    g.transform = old
                 }
             }
-        }
 
         init {
             preferredSize = Dimension(30, 100)
@@ -392,12 +422,13 @@ class LogPanel(
 
         val search = JXSearchField("Search")
 
-        val version: JComboBox<MajorVersion> = JComboBox(Vector(MajorVersion.entries)).apply {
-            selectedItem = MajorVersion.EightOne
-            configureCellRenderer { _, value, _, _, _ ->
-                text = "${value?.version}.*"
+        val version: JComboBox<MajorVersion> =
+            JComboBox(Vector(MajorVersion.entries)).apply {
+                selectedItem = MajorVersion.EightOne
+                configureCellRenderer { _, value, _, _, _ ->
+                    text = "${value?.version}.*"
+                }
             }
-        }
         private val versionLabel = JLabel("Version")
 
         val showOnlyMarked = JCheckBox("Show Only Marked", false)
@@ -431,24 +462,25 @@ class LogPanel(
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)
 
-        private val DURATIONS = listOf(
-            Duration.ofMillis(100),
-            Duration.ofMillis(500),
-            Duration.ofSeconds(1),
-            Duration.ofSeconds(5),
-            Duration.ofSeconds(10),
-            Duration.ofSeconds(30),
-            Duration.ofMinutes(1),
-            Duration.ofMinutes(2),
-            Duration.ofMinutes(5),
-            Duration.ofMinutes(10),
-            Duration.ofMinutes(15),
-            Duration.ofMinutes(30),
-            Duration.ofHours(1),
-            Duration.ofHours(2),
-            Duration.ofHours(6),
-            Duration.ofHours(12),
-            Duration.ofDays(1),
-        )
+        private val DURATIONS =
+            listOf(
+                Duration.ofMillis(100),
+                Duration.ofMillis(500),
+                Duration.ofSeconds(1),
+                Duration.ofSeconds(5),
+                Duration.ofSeconds(10),
+                Duration.ofSeconds(30),
+                Duration.ofMinutes(1),
+                Duration.ofMinutes(2),
+                Duration.ofMinutes(5),
+                Duration.ofMinutes(10),
+                Duration.ofMinutes(15),
+                Duration.ofMinutes(30),
+                Duration.ofHours(1),
+                Duration.ofHours(2),
+                Duration.ofHours(6),
+                Duration.ofHours(12),
+                Duration.ofDays(1),
+            )
     }
 }

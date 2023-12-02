@@ -23,19 +23,20 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
     init {
         val tree = JTree(DefaultTreeModel(RootImageNode(connection)))
         tree.isRootVisible = false
-        tree.cellRenderer = treeCellRenderer { _, value, _, _, _, _, _ ->
-            when (value) {
-                is ImageNode -> {
-                    text = value.userObject.path
-                    toolTipText = value.userObject.description
-                }
+        tree.cellRenderer =
+            treeCellRenderer { _, value, _, _, _, _, _ ->
+                when (value) {
+                    is ImageNode -> {
+                        text = value.userObject.path
+                        toolTipText = value.userObject.description
+                    }
 
-                is ImageFolderNode -> {
-                    text = value.userObject
+                    is ImageFolderNode -> {
+                        text = value.userObject
+                    }
                 }
+                this
             }
-            this
-        }
 
         add(FlatScrollPane(tree), "push, grow, w 30%!")
         val imageDisplay = JLabel()
@@ -44,26 +45,28 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
         tree.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
         tree.addTreeSelectionListener {
             val node = it.newLeadSelectionPath?.lastPathComponent as? AbstractTreeNode
-            imageDisplay.icon = if (node is ImageNode) {
-                runCatching {
-                    val data = node.userObject.data
-                    val readers = ImageIO.getImageReadersByFormatName(node.userObject.type.name)
-                    val image = readers.asSequence().firstNotNullOfOrNull { reader ->
-                        ImageIO.createImageInputStream(data.inputStream())?.use { iis ->
-                            reader.input = iis
-                            reader.read(
-                                0,
-                                reader.defaultReadParam.apply {
-                                    sourceRenderSize = Dimension(200, 200)
-                                },
-                            )
-                        }
-                    }
-                    image?.let(::ImageIcon)
-                }.getOrNull()
-            } else {
-                null
-            }
+            imageDisplay.icon =
+                if (node is ImageNode) {
+                    runCatching {
+                        val data = node.userObject.data
+                        val readers = ImageIO.getImageReadersByFormatName(node.userObject.type.name)
+                        val image =
+                            readers.asSequence().firstNotNullOfOrNull { reader ->
+                                ImageIO.createImageInputStream(data.inputStream())?.use { iis ->
+                                    reader.input = iis
+                                    reader.read(
+                                        0,
+                                        reader.defaultReadParam.apply {
+                                            sourceRenderSize = Dimension(200, 200)
+                                        },
+                                    )
+                                }
+                            }
+                        image?.let(::ImageIcon)
+                    }.getOrNull()
+                } else {
+                    null
+                }
         }
     }
 }
@@ -106,26 +109,28 @@ private data class ImageRow(
 private data class ImageFolderNode(override val userObject: String) : TypedTreeNode<String>()
 
 class RootImageNode(connection: Connection) : AbstractTreeNode() {
-    private val listAll = connection.prepareStatement(
-        """
+    private val listAll =
+        connection.prepareStatement(
+            """
             SELECT path, type, description, data
             FROM images
             WHERE type IS NOT NULL
             ORDER BY path
-        """.trimIndent(),
-    )
+            """.trimIndent(),
+        )
 
     init {
-        val images = listAll.use {
-            it.executeQuery().toList { rs ->
-                ImageRow(
-                    rs.getString("path"),
-                    rs.getString("type").let(ImageFormat::valueOf),
-                    rs.getString("description"),
-                    rs.getBytes("data"),
-                )
+        val images =
+            listAll.use {
+                it.executeQuery().toList { rs ->
+                    ImageRow(
+                        rs.getString("path"),
+                        rs.getString("type").let(ImageFormat::valueOf),
+                        rs.getString("description"),
+                        rs.getBytes("data"),
+                    )
+                }
             }
-        }
 
         val seen = mutableMapOf<List<String>, AbstractTreeNode>()
         for (row in images) {
@@ -133,15 +138,17 @@ class RootImageNode(connection: Connection) : AbstractTreeNode() {
             val currentLeadingPath = mutableListOf<String>()
             for (pathPart in row.path.split('/')) {
                 currentLeadingPath.add(pathPart)
-                val next = seen.getOrPut(currentLeadingPath.toList()) {
-                    val newChild = if (pathPart.contains('.')) {
-                        ImageNode(row)
-                    } else {
-                        ImageFolderNode(currentLeadingPath.joinToString("/"))
+                val next =
+                    seen.getOrPut(currentLeadingPath.toList()) {
+                        val newChild =
+                            if (pathPart.contains('.')) {
+                                ImageNode(row)
+                            } else {
+                                ImageFolderNode(currentLeadingPath.joinToString("/"))
+                            }
+                        lastSeen.children.add(newChild)
+                        newChild
                     }
-                    lastSeen.children.add(newChild)
-                    newChild
-                }
                 lastSeen = next
             }
         }

@@ -60,8 +60,11 @@ class WrapperLogView(
     }
 
     companion object {
-        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault())
+        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault())
+
+        @Suppress("ktlint:standard:max-line-length")
         private val DEFAULT_WRAPPER_MESSAGE_FORMAT =
             "^[^|]+\\|(?<jvm>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))\$".toRegex()
 
@@ -99,12 +102,13 @@ class WrapperLogView(
                         val logger by match.groups
                         val message by match.groups
                         lastEventTimestamp = time
-                        partialEvent = WrapperLogEvent(
-                            timestamp = time,
-                            message = message.value.trim(),
-                            logger = logger.value.trim(),
-                            level = Level.valueOf(level.value.single()),
-                        )
+                        partialEvent =
+                            WrapperLogEvent(
+                                timestamp = time,
+                                message = message.value.trim(),
+                                logger = logger.value.trim(),
+                                level = Level.valueOf(level.value.single()),
+                            )
                     } else {
                         val stack by match.groups
 
@@ -114,11 +118,12 @@ class WrapperLogView(
                         } else {
                             partialEvent.flush()
                             // different timestamp, but doesn't match our regex - just try to display it in a useful way
-                            events += WrapperLogEvent(
-                                timestamp = time,
-                                message = stack.value,
-                                level = Level.INFO,
-                            )
+                            events +=
+                                WrapperLogEvent(
+                                    timestamp = time,
+                                    message = stack.value,
+                                    level = Level.INFO,
+                                )
                         }
                     }
                 } else {
@@ -137,17 +142,19 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val icon = FlatSVGIcon("icons/bx-file.svg")
     override val respectsEncoding: Boolean = true
 
-    override val filter = FileFilter(description) { file ->
-        file.name.endsWith("log") || file.name.substringAfterLast('.').toIntOrNull() != null
-    }
+    override val filter =
+        FileFilter(description) { file ->
+            file.name.endsWith("log") || file.name.substringAfterLast('.').toIntOrNull() != null
+        }
 
     override fun open(paths: List<Path>): ToolPanel {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
         // flip the paths, so the .5, .4, .3, .2, .1 - this hopefully helps with the per-event sort below
         val reverseOrder = paths.sortedWith(compareBy(AlphanumComparator(), Path::name).reversed())
-        val events = reverseOrder.flatMap { path ->
-            path.useLines(DefaultEncoding.currentValue) { lines -> WrapperLogView.parseLogs(lines) }
-        }
+        val events =
+            reverseOrder.flatMap { path ->
+                path.useLines(DefaultEncoding.currentValue) { lines -> WrapperLogView.parseLogs(lines) }
+            }
         return WrapperLogView(
             events = events.sortedBy { it.timestamp },
             tabName = paths.first().name,
@@ -163,40 +170,43 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         )
     }
 
-    val SelectedTimeZone = preference(
-        name = "Timezone",
-        description = "Timezone to use when displaying logs",
-        default = ZoneId.systemDefault(),
-        serializer = ZoneIdSerializer,
-        editor = {
-            JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
-                selectedItem = currentValue.id
-                addActionListener {
-                    currentValue = ZoneId.of(selectedItem as String)
+    val SelectedTimeZone =
+        preference(
+            name = "Timezone",
+            description = "Timezone to use when displaying logs",
+            default = ZoneId.systemDefault(),
+            serializer = ZoneIdSerializer,
+            editor = {
+                JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
+                    selectedItem = currentValue.id
+                    addActionListener {
+                        currentValue = ZoneId.of(selectedItem as String)
+                    }
                 }
-            }
-        },
-    )
+            },
+        )
 
-    private lateinit var _formatter: DateTimeFormatter
+    private lateinit var formatter: DateTimeFormatter
+
     val TimeStampFormatter: DateTimeFormatter
         get() {
-            if (!this::_formatter.isInitialized) {
-                _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss:SSS").withZone(SelectedTimeZone.currentValue)
+            if (!this::formatter.isInitialized) {
+                formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss:SSS").withZone(SelectedTimeZone.currentValue)
             }
-            if (_formatter.zone != SelectedTimeZone.currentValue) {
-                _formatter = _formatter.withZone(SelectedTimeZone.currentValue)
+            if (formatter.zone != SelectedTimeZone.currentValue) {
+                formatter = formatter.withZone(SelectedTimeZone.currentValue)
             }
-            return _formatter
+            return formatter
         }
 
-    val ShowDensity = preference(
-        name = "Density Display",
-        default = true,
-        editor = {
-            PreferenceCheckbox("Show 'minimap' of log events in scrollbar")
-        },
-    )
+    val ShowDensity =
+        preference(
+            name = "Density Display",
+            default = true,
+            editor = {
+                PreferenceCheckbox("Show 'minimap' of log events in scrollbar")
+            },
+        )
 
     override val displayName: String = "Log View"
     override val key: String = "logview"

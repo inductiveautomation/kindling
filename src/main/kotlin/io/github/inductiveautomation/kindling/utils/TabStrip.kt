@@ -161,23 +161,24 @@ class TabStrip : DnDTabbedPane() {
         return jFrame(tab.tabName, 1024, 768) {
             contentPane = tab
 
-            jMenuBar = JMenuBar().apply {
-                add(
-                    JMenu("Actions").apply {
-                        add(
-                            Action(name = "Unfloat") {
-                                addTab(
-                                    tab.tabName,
-                                    tab.icon,
-                                    tab,
-                                    tab.tabTooltip,
-                                )
-                                dispose()
-                            },
-                        )
-                    },
-                )
-            }
+            jMenuBar =
+                JMenuBar().apply {
+                    add(
+                        JMenu("Actions").apply {
+                            add(
+                                Action(name = "Unfloat") {
+                                    addTab(
+                                        tab.tabName,
+                                        tab.icon,
+                                        tab,
+                                        tab.tabTooltip,
+                                    )
+                                    dispose()
+                                },
+                            )
+                        },
+                    )
+                }
         }
     }
 }

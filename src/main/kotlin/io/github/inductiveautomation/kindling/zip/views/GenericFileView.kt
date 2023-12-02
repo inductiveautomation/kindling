@@ -13,26 +13,28 @@ import javax.swing.JTextArea
 class GenericFileView(override val provider: FileSystemProvider, override val path: Path) : SinglePathView() {
     override val icon: Icon? = null
 
-    private val textArea = JTextArea().apply {
-        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
-    }
+    private val textArea =
+        JTextArea().apply {
+            font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+        }
 
     init {
         provider.newInputStream(path).use { file ->
             val windowSize = 16
-            textArea.text = sequence {
-                val buffer = ByteArray(windowSize)
-                var numberOfBytesRead: Int
-                do {
-                    numberOfBytesRead = file.readNBytes(buffer, 0, windowSize)
+            textArea.text =
+                sequence {
+                    val buffer = ByteArray(windowSize)
+                    var numberOfBytesRead: Int
+                    do {
+                        numberOfBytesRead = file.readNBytes(buffer, 0, windowSize)
 
-                    // the last read might not be complete, so there could be stale data in the buffer
-                    val toRead = buffer.sliceArray(0 until numberOfBytesRead)
-                    val hexBytes = HEX_FORMAT.formatHex(toRead)
-                    val decodedBytes = decodeBytes(toRead)
-                    yield("${hexBytes.padEnd(47)}  $decodedBytes")
-                } while (numberOfBytesRead == windowSize)
-            }.joinToString(separator = "\n")
+                        // the last read might not be complete, so there could be stale data in the buffer
+                        val toRead = buffer.sliceArray(0 until numberOfBytesRead)
+                        val hexBytes = HEX_FORMAT.formatHex(toRead)
+                        val decodedBytes = decodeBytes(toRead)
+                        yield("${hexBytes.padEnd(47)}  $decodedBytes")
+                    } while (numberOfBytesRead == windowSize)
+                }.joinToString(separator = "\n")
         }
 
         add(FlatScrollPane(textArea), "push, grow")

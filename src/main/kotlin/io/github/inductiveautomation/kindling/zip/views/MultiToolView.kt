@@ -22,9 +22,10 @@ class MultiToolView(
     private val toolPanel: ToolPanel
 
     override val tabName by lazy {
-        val roots = paths.mapTo(mutableSetOf()) { path ->
-            path.nameWithoutExtension.trimEnd { it.isDigit() || it == '-' || it == '.' }
-        }
+        val roots =
+            paths.mapTo(mutableSetOf()) { path ->
+                path.nameWithoutExtension.trimEnd { it.isDigit() || it == '-' || it == '.' }
+            }
         "[${paths.size}] ${roots.joinToString()}.${paths.first().extension}"
     }
     override val tabTooltip by lazy { paths.joinToString("\n") { it.toString().substring(1) } }
@@ -32,11 +33,12 @@ class MultiToolView(
     override fun toString(): String = "MultiToolView(paths=$paths)"
 
     init {
-        val tempFiles = paths.map { path ->
-            Files.createTempFile("kindling", path.name).also { tempFile ->
-                provider.newInputStream(path) transferTo tempFile.outputStream()
+        val tempFiles =
+            paths.map { path ->
+                Files.createTempFile("kindling", path.name).also { tempFile ->
+                    provider.newInputStream(path) transferTo tempFile.outputStream()
+                }
             }
-        }
 
         multiTool = Tool[tempFiles.first()] as MultiTool
         toolPanel = multiTool.open(tempFiles)

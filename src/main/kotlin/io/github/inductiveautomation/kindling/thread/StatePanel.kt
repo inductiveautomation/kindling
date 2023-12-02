@@ -31,5 +31,9 @@ class StatePanel : FilterPanel<Thread?>() {
 
     override fun filter(item: Thread?): Boolean = item?.state?.name in stateList.checkBoxListSelectedValues
 
-    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out Thread?, *>, event: Thread?) = Unit
+    override fun customizePopupMenu(
+        menu: JPopupMenu,
+        column: Column<out Thread?, *>,
+        event: Thread?,
+    ) = Unit
 }

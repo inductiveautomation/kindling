@@ -20,9 +20,10 @@ data class PathNode(override val userObject: Path) : TypedTreeNode<Path>()
 class RootNode(zipFile: FileSystem) : AbstractTreeNode() {
     init {
         val pathComparator = compareBy<Path> { it.isDirectory() }.thenBy(AlphanumComparator()) { it.name }
-        val zipFilePaths = zipFile.rootDirectories.asSequence()
-            .flatMap { it.walk(INCLUDE_DIRECTORIES) }
-            .sortedWith(pathComparator)
+        val zipFilePaths =
+            zipFile.rootDirectories.asSequence()
+                .flatMap { it.walk(INCLUDE_DIRECTORIES) }
+                .sortedWith(pathComparator)
 
         val seen = mutableMapOf<Path, PathNode>()
         for (path in zipFilePaths) {
@@ -30,11 +31,12 @@ class RootNode(zipFile: FileSystem) : AbstractTreeNode() {
             var currentDepth = zipFile.getPath("/")
             for (part in path) {
                 currentDepth /= part
-                val next = seen.getOrPut(currentDepth) {
-                    val newChild = PathNode(currentDepth)
-                    lastSeen.children.add(newChild)
-                    newChild
-                }
+                val next =
+                    seen.getOrPut(currentDepth) {
+                        val newChild = PathNode(currentDepth)
+                        lastSeen.children.add(newChild)
+                        newChild
+                    }
                 lastSeen = next
             }
         }
@@ -61,6 +63,7 @@ class ZipFileTree(fileSystem: FileSystem) : JTree(ZipFileModel(fileSystem)) {
     }
 
     override fun getModel(): ZipFileModel? = super.getModel() as ZipFileModel?
+
     override fun setModel(newModel: TreeModel?) {
         newModel as ZipFileModel
         super.setModel(newModel)

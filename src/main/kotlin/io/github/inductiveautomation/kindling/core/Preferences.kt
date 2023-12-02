@@ -83,15 +83,16 @@ class Preference<T : Any>(
             default: T,
             serializer: KSerializer<T> = serializer(),
             noinline editor: (Preference<T>.() -> JComponent)?,
-        ): Preference<T> = Preference(
-            name = name,
-            category = this,
-            description = description,
-            requiresRestart = requiresRestart,
-            default = default,
-            serializer = serializer,
-            createEditor = editor,
-        )
+        ): Preference<T> =
+            Preference(
+                name = name,
+                category = this,
+                description = description,
+                requiresRestart = requiresRestart,
+                default = default,
+                serializer = serializer,
+                createEditor = editor,
+            )
     }
 }
 
@@ -99,63 +100,66 @@ val preferencesEditor by lazy {
     jFrame("Preferences", 600, 800, initiallyVisible = false) {
         defaultCloseOperation = JFrame.HIDE_ON_CLOSE
 
-        val closeButton = JButton("Close").apply {
-            addActionListener {
-                this@jFrame.isVisible = false
+        val closeButton =
+            JButton("Close").apply {
+                addActionListener {
+                    this@jFrame.isVisible = false
+                }
+                EventQueue.invokeLater {
+                    rootPane.defaultButton = this
+                }
             }
-            EventQueue.invokeLater {
-                rootPane.defaultButton = this
-            }
-        }
 
-        contentPane = JPanel(BorderLayout()).apply {
-            add(
-                FlatScrollPane(
-                    JXTaskPaneContainer().apply {
-                        for (category in Kindling.Preferences.categories) {
-                            val categoryPane = JXTaskPane(category.displayName).apply {
-                                isAnimated = false
-                                isCollapsed = category.displayName == "Advanced"
+        contentPane =
+            JPanel(BorderLayout()).apply {
+                add(
+                    FlatScrollPane(
+                        JXTaskPaneContainer().apply {
+                            for (category in Kindling.Preferences.categories) {
+                                val categoryPane =
+                                    JXTaskPane(category.displayName).apply {
+                                        isAnimated = false
+                                        isCollapsed = category.displayName == "Advanced"
 
-                                for (preference in category.preferences) {
-                                    val editor = preference.editor
-                                    if (editor != null) {
-                                        add(
-                                            StyledLabel {
-                                                add(preference.name, Font.BOLD)
-                                                if (preference.requiresRestart) {
-                                                    add(" Requires restart", "superscript")
-                                                }
-                                                if (preference.description != null) {
-                                                    add("\n")
-                                                    add(preference.description)
-                                                }
-                                            },
-                                            "grow, wrap, gapy 0",
-                                        )
-                                        add(editor, "grow, wrap, gapy 0")
+                                        for (preference in category.preferences) {
+                                            val editor = preference.editor
+                                            if (editor != null) {
+                                                add(
+                                                    StyledLabel {
+                                                        add(preference.name, Font.BOLD)
+                                                        if (preference.requiresRestart) {
+                                                            add(" Requires restart", "superscript")
+                                                        }
+                                                        if (preference.description != null) {
+                                                            add("\n")
+                                                            add(preference.description)
+                                                        }
+                                                    },
+                                                    "grow, wrap, gapy 0",
+                                                )
+                                                add(editor, "grow, wrap, gapy 0")
+                                            }
+                                        }
                                     }
-                                }
+                                add(categoryPane)
                             }
-                            add(categoryPane)
+                        },
+                    ) {
+                        border = null
+                        verticalScrollBar.apply {
+                            unitIncrement = 5
+                            blockIncrement = 15
                         }
                     },
-                ) {
-                    border = null
-                    verticalScrollBar.apply {
-                        unitIncrement = 5
-                        blockIncrement = 15
-                    }
-                },
-                BorderLayout.CENTER,
-            )
-            add(
-                JPanel(MigLayout("fill, ins 10")).apply {
-                    border = MatteBorder(1, 0, 0, 0, UIManager.getColor("Component.borderColor"))
-                    add(closeButton, "east, gap 10 10 10 10")
-                },
-                BorderLayout.SOUTH,
-            )
-        }
+                    BorderLayout.CENTER,
+                )
+                add(
+                    JPanel(MigLayout("fill, ins 10")).apply {
+                        border = MatteBorder(1, 0, 0, 0, UIManager.getColor("Component.borderColor"))
+                        add(closeButton, "east, gap 10 10 10 10")
+                    },
+                    BorderLayout.SOUTH,
+                )
+            }
     }
 }

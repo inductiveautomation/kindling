@@ -22,28 +22,31 @@ import kotlin.io.path.extension
 import kotlin.io.path.name
 
 class TextFileView(override val provider: FileSystemProvider, override val path: Path) : SinglePathView() {
-    private val textArea = RSyntaxTextArea().apply {
-        isEditable = false
-        syntaxEditingStyle = KNOWN_EXTENSIONS[path.extension] ?: SYNTAX_STYLE_NONE
+    private val textArea =
+        RSyntaxTextArea().apply {
+            isEditable = false
+            syntaxEditingStyle = KNOWN_EXTENSIONS[path.extension] ?: SYNTAX_STYLE_NONE
 
-        theme = Theme.currentValue
-    }
+            theme = Theme.currentValue
+        }
 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-file.svg").derive(16, 16)
 
     init {
-        val text = provider.newInputStream(path).use {
-            it.bufferedReader().readText()
-        }
-
-        textArea.text = if (path.extension == "json") {
-            // pretty-print/normalize json
-            JSON_FORMAT.run {
-                encodeToString(JsonElement.serializer(), parseToJsonElement(text))
+        val text =
+            provider.newInputStream(path).use {
+                it.bufferedReader().readText()
             }
-        } else {
-            text
-        }
+
+        textArea.text =
+            if (path.extension == "json") {
+                // pretty-print/normalize json
+                JSON_FORMAT.run {
+                    encodeToString(JsonElement.serializer(), parseToJsonElement(text))
+                }
+            } else {
+                text
+            }
 
         Theme.addChangeListener { newTheme ->
             textArea.theme = newTheme
@@ -57,34 +60,37 @@ class TextFileView(override val provider: FileSystemProvider, override val path:
 
     companion object {
         @OptIn(ExperimentalSerializationApi::class)
-        private val JSON_FORMAT = Json {
-            prettyPrint = true
-            prettyPrintIndent = "  "
-        }
+        private val JSON_FORMAT =
+            Json {
+                prettyPrint = true
+                prettyPrintIndent = "  "
+            }
 
-        private val KNOWN_EXTENSIONS = mapOf(
-            "conf" to SYNTAX_STYLE_PROPERTIES_FILE,
-            "properties" to SYNTAX_STYLE_PROPERTIES_FILE,
-            "py" to SYNTAX_STYLE_PYTHON,
-            "json" to SYNTAX_STYLE_JSON,
-            "svg" to SYNTAX_STYLE_XML,
-            "xml" to SYNTAX_STYLE_XML,
-            "css" to SYNTAX_STYLE_CSS,
-            "txt" to SYNTAX_STYLE_NONE,
-            "md" to SYNTAX_STYLE_NONE,
-            "p7b" to SYNTAX_STYLE_NONE,
-            "log" to SYNTAX_STYLE_NONE,
-        )
+        private val KNOWN_EXTENSIONS =
+            mapOf(
+                "conf" to SYNTAX_STYLE_PROPERTIES_FILE,
+                "properties" to SYNTAX_STYLE_PROPERTIES_FILE,
+                "py" to SYNTAX_STYLE_PYTHON,
+                "json" to SYNTAX_STYLE_JSON,
+                "svg" to SYNTAX_STYLE_XML,
+                "xml" to SYNTAX_STYLE_XML,
+                "css" to SYNTAX_STYLE_CSS,
+                "txt" to SYNTAX_STYLE_NONE,
+                "md" to SYNTAX_STYLE_NONE,
+                "p7b" to SYNTAX_STYLE_NONE,
+                "log" to SYNTAX_STYLE_NONE,
+            )
 
-        private val KNOWN_FILENAMES = setOf(
-            "README",
-            ".uuid",
-            "wrapper.log.1",
-            "wrapper.log.2",
-            "wrapper.log.3",
-            "wrapper.log.4",
-            "wrapper.log.5",
-        )
+        private val KNOWN_FILENAMES =
+            setOf(
+                "README",
+                ".uuid",
+                "wrapper.log.1",
+                "wrapper.log.2",
+                "wrapper.log.3",
+                "wrapper.log.4",
+                "wrapper.log.5",
+            )
 
         fun isTextFile(path: Path) = path.extension in KNOWN_EXTENSIONS || path.name in KNOWN_FILENAMES
     }

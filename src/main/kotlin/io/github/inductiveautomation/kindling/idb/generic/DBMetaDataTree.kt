@@ -37,11 +37,12 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
                             .createLabel()
                             .apply {
                                 icon = if (selected && focused) COLUMN_ICON_SELECTED else COLUMN_ICON
-                                foreground = when {
-                                    selected && focused -> UIManager.getColor("Tree.selectionForeground")
-                                    selected -> UIManager.getColor("Tree.selectionInactiveForeground")
-                                    else -> UIManager.getColor("Tree.textForeground")
-                                }
+                                foreground =
+                                    when {
+                                        selected && focused -> UIManager.getColor("Tree.selectionForeground")
+                                        selected -> UIManager.getColor("Tree.selectionInactiveForeground")
+                                        else -> UIManager.getColor("Tree.textForeground")
+                                    }
                             }
                     }
 

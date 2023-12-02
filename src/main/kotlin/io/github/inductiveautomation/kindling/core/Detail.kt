@@ -25,6 +25,9 @@ data class Detail(
     }
 }
 
-fun MutableList<BodyLine>.add(line: String, link: String? = null) {
+fun MutableList<BodyLine>.add(
+    line: String,
+    link: String? = null,
+) {
     add(BodyLine(line, link))
 }

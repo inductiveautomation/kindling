@@ -15,10 +15,17 @@ sealed interface QueryResult {
         }
 
         override fun getRowCount(): Int = data.size
+
         override fun getColumnCount(): Int = columnNames.size
+
         override fun getColumnName(columnIndex: Int): String = columnNames[columnIndex]
+
         override fun getColumnClass(columnIndex: Int): Class<*> = columnTypes[columnIndex]
-        override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = data[rowIndex][columnIndex]
+
+        override fun getValueAt(
+            rowIndex: Int,
+            columnIndex: Int,
+        ): Any? = data[rowIndex][columnIndex]
     }
 
     class Error(

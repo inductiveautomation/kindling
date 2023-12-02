@@ -28,34 +28,41 @@ import javax.swing.UIManager
 class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout("fill, ins 10")) {
     private val presentation = metric.presentation
 
-    private val sparkLine = ChartPanel(
-        /* chart = */ sparkline(data, presentation.formatter),
-        /* properties = */ false,
-        /* save = */ false,
-        /* print = */ false,
-        /* zoom = */ true,
-        /* tooltips = */ true,
-    ).apply {
-        popupMenu.addSeparator()
-        popupMenu.add(
-            Action("Popout") {
-                jFrame(
-                    title = metric.name,
-                    width = 800,
-                    height = 600,
-                ) {
-                    add(
-                        ChartPanel(
-                            sparkline(
-                                data,
-                                presentation.formatter,
+    private val sparkLine =
+        ChartPanel(
+            // chart =
+            sparkline(data, presentation.formatter),
+            // properties =
+            false,
+            // save =
+            false,
+            // print =
+            false,
+            // zoom =
+            true,
+            // tooltips =
+            true,
+        ).apply {
+            popupMenu.addSeparator()
+            popupMenu.add(
+                Action("Popout") {
+                    jFrame(
+                        title = metric.name,
+                        width = 800,
+                        height = 600,
+                    ) {
+                        add(
+                            ChartPanel(
+                                sparkline(
+                                    data,
+                                    presentation.formatter,
+                                ),
                             ),
-                        ),
-                    )
-                }
-            },
-        )
-    }
+                        )
+                    }
+                },
+            )
+        }
 
     init {
         add(
@@ -93,27 +100,46 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
         add(sparkLine, "span, w 300, h 170, pushx, growx")
         add(JLabel("${DATE_FORMAT.format(minTimestamp)} - ${DATE_FORMAT.format(maxTimestamp)}", CENTER), "pushx, growx, span")
 
-        border = DropShadowBorder().apply {
-            isShowRightShadow = true
-            isShowBottomShadow = true
-            shadowSize = 10
-        }
+        border =
+            DropShadowBorder().apply {
+                isShowRightShadow = true
+                isShowBottomShadow = true
+                shadowSize = 10
+            }
     }
 
     companion object {
         val DATE_FORMAT = SimpleDateFormat("MM/dd/yy HH:mm:ss")
 
         private val mbFormatter = DecimalFormat("0.0 'mB'")
-        private val heapFormatter = object : NumberFormat() {
-            override fun format(number: Double, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer {
-                return mbFormatter.format(number / 1_000_000, toAppendTo, pos)
+        private val heapFormatter =
+            object : NumberFormat() {
+                override fun format(
+                    number: Double,
+                    toAppendTo: StringBuffer,
+                    pos: FieldPosition,
+                ): StringBuffer {
+                    return mbFormatter.format(number / 1_000_000, toAppendTo, pos)
+                }
+
+                override fun format(
+                    number: Long,
+                    toAppendTo: StringBuffer,
+                    pos: FieldPosition,
+                ): StringBuffer =
+                    mbFormatter.format(
+                        number,
+                        toAppendTo,
+                        pos,
+                    )
+
+                override fun parse(
+                    source: String,
+                    parsePosition: ParsePosition,
+                ): Number = mbFormatter.parse(source, parsePosition)
             }
 
-            override fun format(number: Long, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer = mbFormatter.format(number, toAppendTo, pos)
-            override fun parse(source: String, parsePosition: ParsePosition): Number = mbFormatter.parse(source, parsePosition)
-        }
-
-        @Suppress("ktlint:trailing-comma-on-declaration-site")
+        @Suppress("ktlint:standard:trailing-comma-on-declaration-site")
         enum class MetricPresentation(val formatter: NumberFormat, val isShowTrend: Boolean) {
             Heap(heapFormatter, true),
             Queue(NumberFormat.getIntegerInstance(), false),
@@ -124,19 +150,23 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
                 },
                 true,
             ),
-            Default(NumberFormat.getInstance(), false);
+            Default(NumberFormat.getInstance(), false)
         }
 
         private val Metric.presentation: MetricPresentation
-            get() = when {
-                name.contains("heap", true) -> Heap
-                name.contains("queue", true) -> Queue
-                name.contains("throughput", true) -> Throughput
-                name.contains("cpu", true) -> Cpu
-                else -> Default
-            }
+            get() =
+                when {
+                    name.contains("heap", true) -> Heap
+                    name.contains("queue", true) -> Queue
+                    name.contains("throughput", true) -> Throughput
+                    name.contains("cpu", true) -> Cpu
+                    else -> Default
+                }
 
-        fun regressionFunction(dataset: XYDataset, series: Int): (Double) -> Double {
+        fun regressionFunction(
+            dataset: XYDataset,
+            series: Int,
+        ): (Double) -> Double {
             val (a, b) = Regression.getOLSRegression(dataset, series)
             return { x ->
                 a + b * x

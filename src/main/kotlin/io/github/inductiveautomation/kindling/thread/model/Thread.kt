@@ -37,11 +37,12 @@ data class Thread(
         val lock: String,
         val owner: Int? = null,
     ) {
-        override fun toString(): String = if (owner != null) {
-            "$lock (owned by $owner)"
-        } else {
-            lock
-        }
+        override fun toString(): String =
+            if (owner != null) {
+                "$lock (owned by $owner)"
+            } else {
+                lock
+            }
     }
 
     companion object {

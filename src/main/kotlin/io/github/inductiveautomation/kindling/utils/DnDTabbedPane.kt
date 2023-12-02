@@ -40,11 +40,12 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
     private var rectForward = Rectangle()
 
     private fun clickArrowButton(actionKey: String) {
-        val b = if ("scrollTabsForwardAction" == actionKey) {
-            components?.find { it is JButton }
-        } else {
-            components?.findLast { it is JButton }
-        }
+        val b =
+            if ("scrollTabsForwardAction" == actionKey) {
+                components?.find { it is JButton }
+            } else {
+                components?.findLast { it is JButton }
+            }
         if (b?.isEnabled == true && b is JButton) {
             b.doClick()
         }
@@ -53,7 +54,12 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
     fun invokeTabPaneScroll(glassPt: Point) {
         val r = tabAreaBounds
         rectBackward.setBounds(r.x, r.y, SCROLL_BUTTON_PADDING, r.height)
-        rectForward.setBounds(r.x + r.width - SCROLL_BUTTON_PADDING - SCROLL_BUTTON_SIZE, r.y, SCROLL_BUTTON_PADDING + SCROLL_BUTTON_SIZE, r.height)
+        rectForward.setBounds(
+            r.x + r.width - SCROLL_BUTTON_PADDING - SCROLL_BUTTON_SIZE,
+            r.y,
+            SCROLL_BUTTON_PADDING + SCROLL_BUTTON_SIZE,
+            r.height,
+        )
 
         rectBackward = SwingUtilities.convertRectangle(parent, rectBackward, glassPane)
         rectForward = SwingUtilities.convertRectangle(parent, rectForward, glassPane)
@@ -90,7 +96,10 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
         }
     }
 
-    fun convertTab(prev: Int, next: Int) {
+    fun convertTab(
+        prev: Int,
+        next: Int,
+    ) {
         if (next < 0 || prev == next) {
             return
         }
@@ -134,13 +143,14 @@ sealed class DnDTabbedPane : FlatTabbedPane() {
     fun initGlassPane(tabPt: Point) {
         rootPane.setGlassPane(glassPane)
         val c = getTabComponentAt(dragTabIndex)
-        val copy: Component = c ?: run {
-            val title = getTitleAt(dragTabIndex)
-            val icon = getIconAt(dragTabIndex)
-            val label = JLabel(title, icon, LEADING)
-            label.setIconTextGap(UIManager.getInt("TabbedPane.textIconGap"))
-            label
-        }
+        val copy: Component =
+            c ?: run {
+                val title = getTitleAt(dragTabIndex)
+                val icon = getIconAt(dragTabIndex)
+                val label = JLabel(title, icon, LEADING)
+                label.setIconTextGap(UIManager.getInt("TabbedPane.textIconGap"))
+                label
+            }
         val d = copy.preferredSize
         val image = BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB)
         val g2 = image.createGraphics()
@@ -214,7 +224,10 @@ internal class TabDragGestureListener : DragGestureListener {
         }
     }
 
-    private fun startDrag(e: DragGestureEvent, tabs: DnDTabbedPane) {
+    private fun startDrag(
+        e: DragGestureEvent,
+        tabs: DnDTabbedPane,
+    ) {
         val tabLocation = e.dragOrigin
         val idx = tabs.indexAtLocation(tabLocation.x, tabLocation.y)
 
@@ -291,7 +304,12 @@ internal class GhostGlassPane(val tabbedPane: DnDTabbedPane) : JComponent() {
     var displayLocation = Point()
     var ghostImage: BufferedImage? = null
 
-    fun setTargetRect(x: Int, y: Int, width: Int, height: Int) {
+    fun setTargetRect(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+    ) {
         lineRect.setBounds(x, y, width, height)
     }
 

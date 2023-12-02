@@ -18,9 +18,10 @@ data class ThreadDump internal constructor(
     val deadlockIds: List<Int> = emptyList(),
 ) {
     companion object {
-        private val JSON = Json {
-            ignoreUnknownKeys = true
-        }
+        private val JSON =
+            Json {
+                ignoreUnknownKeys = true
+            }
 
         fun fromStream(stream: InputStream): ThreadDump? {
             val text = stream.reader(DefaultEncoding.currentValue).readText()
@@ -31,19 +32,22 @@ data class ThreadDump internal constructor(
                 if (lines.size <= 2) throw ToolOpeningException("Not a fully formed thread dump")
                 val firstLine = lines.first()
 
-                val deadlockIds = if (lines[2].contains("Deadlock")) {
-                    deadlocksPattern.findAll(lines[3]).map { match -> match.value.toInt() }.toList()
-                } else {
-                    emptyList()
-                }
+                val deadlockIds =
+                    if (lines[2].contains("Deadlock")) {
+                        deadlocksPattern.findAll(lines[3]).map { match -> match.value.toInt() }.toList()
+                    } else {
+                        emptyList()
+                    }
 
                 ThreadDump(
-                    version = versionPattern.find(firstLine)?.value
-                        ?: throw ToolOpeningException("No version, not a thread dump"),
-                    threads = when {
-                        firstLine.contains(":") -> parseScript(text)
-                        else -> parseWebPage(text)
-                    },
+                    version =
+                        versionPattern.find(firstLine)?.value
+                            ?: throw ToolOpeningException("No version, not a thread dump"),
+                    threads =
+                        when {
+                            firstLine.contains(":") -> parseScript(text)
+                            else -> parseWebPage(text)
+                        },
                     deadlockIds = deadlockIds,
                 )
             }
@@ -53,18 +57,20 @@ data class ThreadDump internal constructor(
 
         private val deadlocksPattern = """\d+""".toRegex()
 
-        private val scriptThreadRegex = """
+        private val scriptThreadRegex =
+            """
             "(?<name>.*)"
             \s*CPU:\s(?<cpu>\d{1,3}\.\d{2})%
             \s*java\.lang\.Thread\.State:\s(?<state>\w+_?\w+)
             \s*(?<stack>[\S\s]+?)[\r\n]{2,}
-        """.trimIndent().toRegex(RegexOption.COMMENTS)
+            """.trimIndent().toRegex(RegexOption.COMMENTS)
 
-        private val webThreadRegex = """
+        private val webThreadRegex =
+            """
             (?<isDaemon>Daemon )?Thread \[(?<name>.*)] id=(?<id>\d*), \((?<state>\w*)\)\s*(?:\(native\))?\s*
             ?(?<stack>\s{4}[\S\s]+?)?
             ?(?=(?:Daemon )?Thread |")
-        """.trimIndent().toRegex()
+            """.trimIndent().toRegex()
         private val webThreadMonitorRegex = "owns monitor: (?<monitor>.*)".toRegex()
         private val webThreadSynchronizerRegex = "owns synchronizer: (?<synchronizer>.*)".toRegex()
         private val webThreadBlockerRegex = "waiting for: (?<lock>\\S+)(?: \\(owned by (?<owner>\\d*))?".toRegex()
@@ -95,20 +101,24 @@ data class ThreadDump internal constructor(
                 val id by matcher.groups
                 val state by matcher.groups
                 val stack = matcher.groups["stack"]?.value?.trimIndent() ?: ""
-                val monitors = webThreadMonitorRegex.findAll(stack).mapNotNull { monitorMatcher ->
-                    monitorMatcher.groups["monitor"]?.value?.let {
-                        Thread.Monitors(it)
+                val monitors =
+                    webThreadMonitorRegex.findAll(stack).mapNotNull { monitorMatcher ->
+                        monitorMatcher.groups["monitor"]?.value?.let {
+                            Thread.Monitors(it)
+                        }
+                    }.toList()
+                val synchronizers =
+                    webThreadSynchronizerRegex.findAll(stack).mapNotNull { synchronizerMatcher ->
+                        synchronizerMatcher.groups["synchronizer"]?.value
+                    }.toList()
+                val blocker =
+                    webThreadBlockerRegex.find(stack)?.groups?.let { blockerMatcher ->
+                        Thread.Blocker(blockerMatcher["lock"]!!.value, blockerMatcher["owner"]?.value?.toIntOrNull())
                     }
-                }.toList()
-                val synchronizers = webThreadSynchronizerRegex.findAll(stack).mapNotNull { synchronizerMatcher ->
-                    synchronizerMatcher.groups["synchronizer"]?.value
-                }.toList()
-                val blocker = webThreadBlockerRegex.find(stack)?.groups?.let { blockerMatcher ->
-                    Thread.Blocker(blockerMatcher["lock"]!!.value, blockerMatcher["owner"]?.value?.toIntOrNull())
-                }
-                val parsedStack = webThreadStackRegex.findAll(stack).mapNotNull { stackMatcher ->
-                    stackMatcher.groups["line"]?.value
-                }.toList()
+                val parsedStack =
+                    webThreadStackRegex.findAll(stack).mapNotNull { stackMatcher ->
+                        stackMatcher.groups["line"]?.value
+                    }.toList()
 
                 Thread(
                     id = id.value.toInt(),

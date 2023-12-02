@@ -11,10 +11,16 @@ data class Table(
     val size: Long,
 ) : TreeNode {
     override fun getChildAt(childIndex: Int): TreeNode = columns[childIndex]
+
     override fun getChildCount(): Int = columns.size
+
     override fun getParent(): TreeNode = _parent()
+
     override fun getIndex(node: TreeNode): Int = columns.indexOf(node)
+
     override fun getAllowsChildren(): Boolean = true
+
     override fun isLeaf(): Boolean = false
+
     override fun children(): Enumeration<out TreeNode> = Collections.enumeration(columns)
 }

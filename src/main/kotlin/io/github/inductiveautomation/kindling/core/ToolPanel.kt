@@ -26,7 +26,10 @@ abstract class ToolPanel(
 
     override fun customizePopupMenu(menu: JPopupMenu) = Unit
 
-    protected fun exportMenu(defaultFileName: String = "", modelSupplier: () -> TableModel): JMenu =
+    protected fun exportMenu(
+        defaultFileName: String = "",
+        modelSupplier: () -> TableModel,
+    ): JMenu =
         JMenu("Export").apply {
             for (format in ExportFormat.entries) {
                 add(
@@ -51,17 +54,18 @@ abstract class ToolPanel(
         }
 
     companion object {
-        val exportFileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {
-            isMultiSelectionEnabled = false
-            isAcceptAllFileFilterUsed = false
-            fileView = CustomIconView()
+        val exportFileChooser =
+            JFileChooser(HomeLocation.currentValue.toFile()).apply {
+                isMultiSelectionEnabled = false
+                isAcceptAllFileFilterUsed = false
+                fileView = CustomIconView()
 
-            Theme.addChangeListener {
-                updateUI()
+                Theme.addChangeListener {
+                    updateUI()
+                }
             }
-        }
 
-        @Suppress("ktlint:trailing-comma-on-declaration-site")
+        @Suppress("ktlint:standard:trailing-comma-on-declaration-site")
         private enum class ExportFormat(
             description: String,
             val extension: String,

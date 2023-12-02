@@ -20,7 +20,9 @@ fun interface FilterChangeListener : EventListener {
 
 abstract class FilterPanel<T> : Filter<T> {
     abstract val tabName: String
+
     abstract fun isFilterApplied(): Boolean
+
     abstract val component: JComponent
 
     protected val listeners = EventListenerList()

@@ -25,7 +25,10 @@ data class Theme(
     }
 
     companion object {
-        private inline fun <reified T> MutableMap<String, Theme>.putLaf(name: String, isDark: Boolean = false) {
+        private inline fun <reified T> MutableMap<String, Theme>.putLaf(
+            name: String,
+            isDark: Boolean = false,
+        ) {
             put(
                 name,
                 Theme(
@@ -37,24 +40,25 @@ data class Theme(
             )
         }
 
-        val themes = buildMap {
-            putLaf<FlatLightLaf>(FlatLightLaf.NAME)
-            putLaf<FlatMacLightLaf>(FlatMacLightLaf.NAME)
-            putLaf<FlatDarkLaf>(FlatDarkLaf.NAME, isDark = true)
-            putLaf<FlatMacDarkLaf>(FlatMacDarkLaf.NAME, isDark = true)
+        val themes =
+            buildMap {
+                putLaf<FlatLightLaf>(FlatLightLaf.NAME)
+                putLaf<FlatMacLightLaf>(FlatMacLightLaf.NAME)
+                putLaf<FlatDarkLaf>(FlatDarkLaf.NAME, isDark = true)
+                putLaf<FlatMacDarkLaf>(FlatMacDarkLaf.NAME, isDark = true)
 
-            for (info in FlatAllIJThemes.INFOS) {
-                put(
-                    info.name,
-                    Theme(
-                        name = info.name,
-                        lookAndFeelClassname = info.className,
-                        isDark = info.isDark,
-                        rSyntaxThemeName = if (info.isDark) "dark.xml" else "idea.xml",
-                    ),
-                )
+                for (info in FlatAllIJThemes.INFOS) {
+                    put(
+                        info.name,
+                        Theme(
+                            name = info.name,
+                            lookAndFeelClassname = info.className,
+                            isDark = info.isDark,
+                            rSyntaxThemeName = if (info.isDark) "dark.xml" else "idea.xml",
+                        ),
+                    )
+                }
             }
-        }
 
         var RSyntaxTextArea.theme: Theme
             get() = throw NotImplementedError("Write only property")

@@ -23,13 +23,20 @@ object PathSerializer : KSerializer<Path> {
 
     override fun deserialize(decoder: Decoder): Path = fromString(decoder.decodeString())
 
-    override fun serialize(encoder: Encoder, value: Path) = encoder.encodeString(value.serializedForm)
+    override fun serialize(
+        encoder: Encoder,
+        value: Path,
+    ) = encoder.encodeString(value.serializedForm)
 }
 
 object ThemeSerializer : KSerializer<Theme> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(Theme::class.java.name, PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: Theme) = encoder.encodeString(value.name)
+    override fun serialize(
+        encoder: Encoder,
+        value: Theme,
+    ) = encoder.encodeString(value.name)
+
     override fun deserialize(decoder: Decoder): Theme = Theme.themes.getValue(decoder.decodeString())
 }
 
@@ -38,7 +45,10 @@ object ToolSerializer : KSerializer<Tool> {
 
     override fun deserialize(decoder: Decoder): Tool = Tool.byTitle.getValue(decoder.decodeString())
 
-    override fun serialize(encoder: Encoder, value: Tool) = encoder.encodeString(value.title)
+    override fun serialize(
+        encoder: Encoder,
+        value: Tool,
+    ) = encoder.encodeString(value.title)
 }
 
 object ZoneIdSerializer : KSerializer<ZoneId> {
@@ -46,7 +56,10 @@ object ZoneIdSerializer : KSerializer<ZoneId> {
 
     override fun deserialize(decoder: Decoder): ZoneId = ZoneId.of(decoder.decodeString())
 
-    override fun serialize(encoder: Encoder, value: ZoneId) = encoder.encodeString(value.id)
+    override fun serialize(
+        encoder: Encoder,
+        value: ZoneId,
+    ) = encoder.encodeString(value.id)
 }
 
 object CharsetSerializer : KSerializer<Charset> {
@@ -54,5 +67,8 @@ object CharsetSerializer : KSerializer<Charset> {
 
     override fun deserialize(decoder: Decoder): Charset = Charset.forName(decoder.decodeString())
 
-    override fun serialize(encoder: Encoder, value: Charset) = encoder.encodeString(value.name())
+    override fun serialize(
+        encoder: Encoder,
+        value: Charset,
+    ) = encoder.encodeString(value.name())
 }

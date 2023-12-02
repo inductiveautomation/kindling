@@ -76,151 +76,160 @@ import javax.swing.UIManager
 import javax.swing.filechooser.FileFilter
 
 class MainPanel : JPanel(MigLayout("ins 6, fill")) {
-    private val fileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {
-        isMultiSelectionEnabled = true
-        fileView = CustomIconView()
+    private val fileChooser =
+        JFileChooser(HomeLocation.currentValue.toFile()).apply {
+            isMultiSelectionEnabled = true
+            fileView = CustomIconView()
 
-        val encodingSelector = JComboBox(ChoosableEncodings).apply {
-            toolTipText = "Charset Encoding for Wrapper Logs"
-            selectedItem = DefaultEncoding.currentValue
-            addActionListener {
-                DefaultEncoding.currentValue = selectedItem as Charset
-            }
-            isEnabled = DefaultTool.currentValue.respectsEncoding
-        }
-
-        traverseChildren().filterIsInstance<JPanel>().last().apply {
-            add(encodingSelector, 0)
-            add(
-                JLabel("Encoding: ", SwingConstants.RIGHT).apply {
-                    verticalAlignment = SwingConstants.BOTTOM
-                },
-                0,
-            )
-        }
-
-        Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
-        fileFilter = DefaultTool.currentValue.filter
-        addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY) { e ->
-            val relevantTool = Tool.byFilter[e.newValue as FileFilter]
-            encodingSelector.isEnabled = relevantTool?.respectsEncoding != false // null = 'all files', so enabled
-        }
-
-        addActionListener {
-            if (selectedFile != null) {
-                HomeLocation.currentValue = selectedFile.parentFile.toPath()
-            }
-        }
-
-        Theme.addChangeListener {
-            updateUI()
-        }
-    }
-
-    private val openAction = Action(
-        name = "Open...",
-        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMaskEx),
-    ) {
-        fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
-            val selectedTool: Tool? = Tool.byFilter[fileChooser.fileFilter]
-            openFiles(selectedFiles, selectedTool)
-        }
-    }
-
-    private val tabs = TabStrip().apply {
-        if (SystemInfo.isMacFullWindowContentSupported) {
-            // add padding component for macOS window controls
-            leadingComponent = Box.createHorizontalStrut(70)
-        }
-
-        trailingComponent = JPanel(BorderLayout()).apply {
-            add(
-                JButton(openAction).apply {
-                    hideActionText = true
-                    icon = FlatSVGIcon("icons/bx-plus.svg")
-                },
-                BorderLayout.WEST,
-            )
-        }
-    }
-
-    private val debugMenu = JMenu("Debug").apply {
-        add(
-            Action("UI Inspector") {
-                FlatUIDefaultsInspector.show()
-            },
-        )
-
-        isVisible = Debug.currentValue
-    }
-
-    private val fileMenu = JMenu("File").apply {
-        add(openAction)
-        for (tool in Tool.tools) {
-            add(
-                Action(
-                    name = "Open ${tool.title}",
-                ) {
-                    fileChooser.fileFilter = tool.filter
-                    fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
-                        openFiles(selectedFiles, tool)
+            val encodingSelector =
+                JComboBox(ChoosableEncodings).apply {
+                    toolTipText = "Charset Encoding for Wrapper Logs"
+                    selectedItem = DefaultEncoding.currentValue
+                    addActionListener {
+                        DefaultEncoding.currentValue = selectedItem as Charset
                     }
-                },
-            )
-        }
-        if (!SystemInfo.isMacOS) {
-            addSeparator()
-            add(
-                Action("Preferences") {
-                    preferencesEditor.isVisible = true
-                    preferencesEditor.toFront()
-                },
-            )
-        }
-    }
+                    isEnabled = DefaultTool.currentValue.respectsEncoding
+                }
 
-    private val pasteMenu = JMenu("Paste").apply {
-        for (clipboardTool in Tool.tools.filterIsInstance<ClipboardTool>()) {
-            add(
-                Action(
-                    name = "Paste ${clipboardTool.title}",
-                ) {
-                    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                    if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-                        val clipString = clipboard.getData(DataFlavor.stringFlavor) as String
-                        openOrError(clipboardTool.title, "clipboard data") {
-                            clipboardTool.open(clipString)
-                        }
-                    } else {
-                        LOGGER.info("No string data found on clipboard")
-                    }
-                },
-            )
-        }
-    }
-
-    private val menuBar = JMenuBar().apply {
-        add(fileMenu)
-        add(pasteMenu)
-        add(
-            JMenu("Help").apply {
-                add(debugMenu)
+            traverseChildren().filterIsInstance<JPanel>().last().apply {
+                add(encodingSelector, 0)
                 add(
-                    Action("Forum") {
-                        Desktop.getDesktop().browse(Kindling.forumThread)
+                    JLabel("Encoding: ", SwingConstants.RIGHT).apply {
+                        verticalAlignment = SwingConstants.BOTTOM
                     },
+                    0,
                 )
-                if (!SystemInfo.isMacOS) {
+            }
+
+            Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
+            fileFilter = DefaultTool.currentValue.filter
+            addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY) { e ->
+                val relevantTool = Tool.byFilter[e.newValue as FileFilter]
+                encodingSelector.isEnabled = relevantTool?.respectsEncoding != false // null = 'all files', so enabled
+            }
+
+            addActionListener {
+                if (selectedFile != null) {
+                    HomeLocation.currentValue = selectedFile.parentFile.toPath()
+                }
+            }
+
+            Theme.addChangeListener {
+                updateUI()
+            }
+        }
+
+    private val openAction =
+        Action(
+            name = "Open...",
+            accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMaskEx),
+        ) {
+            fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
+                val selectedTool: Tool? = Tool.byFilter[fileChooser.fileFilter]
+                openFiles(selectedFiles, selectedTool)
+            }
+        }
+
+    private val tabs =
+        TabStrip().apply {
+            if (SystemInfo.isMacFullWindowContentSupported) {
+                // add padding component for macOS window controls
+                leadingComponent = Box.createHorizontalStrut(70)
+            }
+
+            trailingComponent =
+                JPanel(BorderLayout()).apply {
                     add(
-                        Action("About") {
-                            aboutDialog.isVisible = true
-                            aboutDialog.toFront()
+                        JButton(openAction).apply {
+                            hideActionText = true
+                            icon = FlatSVGIcon("icons/bx-plus.svg")
                         },
+                        BorderLayout.WEST,
                     )
                 }
-            },
-        )
-    }
+        }
+
+    private val debugMenu =
+        JMenu("Debug").apply {
+            add(
+                Action("UI Inspector") {
+                    FlatUIDefaultsInspector.show()
+                },
+            )
+
+            isVisible = Debug.currentValue
+        }
+
+    private val fileMenu =
+        JMenu("File").apply {
+            add(openAction)
+            for (tool in Tool.tools) {
+                add(
+                    Action(
+                        name = "Open ${tool.title}",
+                    ) {
+                        fileChooser.fileFilter = tool.filter
+                        fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
+                            openFiles(selectedFiles, tool)
+                        }
+                    },
+                )
+            }
+            if (!SystemInfo.isMacOS) {
+                addSeparator()
+                add(
+                    Action("Preferences") {
+                        preferencesEditor.isVisible = true
+                        preferencesEditor.toFront()
+                    },
+                )
+            }
+        }
+
+    private val pasteMenu =
+        JMenu("Paste").apply {
+            for (clipboardTool in Tool.tools.filterIsInstance<ClipboardTool>()) {
+                add(
+                    Action(
+                        name = "Paste ${clipboardTool.title}",
+                    ) {
+                        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                        if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+                            val clipString = clipboard.getData(DataFlavor.stringFlavor) as String
+                            openOrError(clipboardTool.title, "clipboard data") {
+                                clipboardTool.open(clipString)
+                            }
+                        } else {
+                            LOGGER.info("No string data found on clipboard")
+                        }
+                    },
+                )
+            }
+        }
+
+    private val menuBar =
+        JMenuBar().apply {
+            add(fileMenu)
+            add(pasteMenu)
+            add(
+                JMenu("Help").apply {
+                    add(debugMenu)
+                    add(
+                        Action("Forum") {
+                            Desktop.getDesktop().browse(Kindling.forumThread)
+                        },
+                    )
+                    if (!SystemInfo.isMacOS) {
+                        add(
+                            Action("About") {
+                                aboutDialog.isVisible = true
+                                aboutDialog.toFront()
+                            },
+                        )
+                    }
+                },
+            )
+        }
 
     private val aboutDialog by lazy {
         jFrame(
@@ -235,36 +244,41 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
             isUndecorated
             type = Window.Type.UTILITY
 
-            contentPane = JPanel(MigLayout("ins 6, fill, wrap 1", "align center")).apply {
-                add(JLabel(FlatSVGIcon("logo.svg").derive(64, 64), CENTER))
-                add(
-                    JLabel("Kindling", CENTER).apply {
-                        font = UIManager.getFont("h1.font")
-                    },
-                )
-                add(JLabel("Version ${System.getProperty("app.version") ?: "(Dev)"}", CENTER))
-                add(
-                    StyledLabel {
-                        add("Homepage", PLAIN, UIManager.getColor("Hyperlink.linkColor"), STYLE_UNDERLINED)
-                    }.apply {
-                        cursor = Cursor.getPredefinedCursor(HAND_CURSOR)
-                        addMouseListener(
-                            object : MouseAdapter() {
-                                override fun mouseClicked(e: MouseEvent) {
-                                    Desktop.getDesktop().browse(Kindling.homepage)
-                                }
-                            },
-                        )
-                    },
-                )
-            }
+            contentPane =
+                JPanel(MigLayout("ins 6, fill, wrap 1", "align center")).apply {
+                    add(JLabel(FlatSVGIcon("logo.svg").derive(64, 64), CENTER))
+                    add(
+                        JLabel("Kindling", CENTER).apply {
+                            font = UIManager.getFont("h1.font")
+                        },
+                    )
+                    add(JLabel("Version ${System.getProperty("app.version") ?: "(Dev)"}", CENTER))
+                    add(
+                        StyledLabel {
+                            add("Homepage", PLAIN, UIManager.getColor("Hyperlink.linkColor"), STYLE_UNDERLINED)
+                        }.apply {
+                            cursor = Cursor.getPredefinedCursor(HAND_CURSOR)
+                            addMouseListener(
+                                object : MouseAdapter() {
+                                    override fun mouseClicked(e: MouseEvent) {
+                                        Desktop.getDesktop().browse(Kindling.homepage)
+                                    }
+                                },
+                            )
+                        },
+                    )
+                }
         }
     }
 
     /**
      * Opens a path in a tool (blocking). In the event of any error, opens an 'Error' tab instead.
      */
-    private fun openOrError(title: String, description: String, openFunction: () -> ToolPanel) {
+    private fun openOrError(
+        title: String,
+        description: String,
+        openFunction: () -> ToolPanel,
+    ) {
         runCatching {
             val toolPanel = openFunction()
             tabs.addTab(component = toolPanel, select = true)
@@ -276,14 +290,15 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
                 FlatScrollPane(
                     FlatTextArea().apply {
                         isEditable = false
-                        text = buildString {
-                            if (ex is ToolOpeningException) {
-                                appendLine(ex.message)
-                            } else {
-                                appendLine("Error opening $description: ${ex.message}")
+                        text =
+                            buildString {
+                                if (ex is ToolOpeningException) {
+                                    appendLine(ex.message)
+                                } else {
+                                    appendLine("Error opening $description: ${ex.message}")
+                                }
+                                append((ex.cause ?: ex).stackTraceToString())
                             }
-                            append((ex.cause ?: ex).stackTraceToString())
-                        }
                     },
                 ),
             )
@@ -291,7 +306,10 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
         }
     }
 
-    fun openFiles(files: List<File>, tool: Tool? = null) {
+    fun openFiles(
+        files: List<File>,
+        tool: Tool? = null,
+    ) {
         if (tool is MultiTool) {
             openOrError(tool.title, files.joinToString()) {
                 tool.open(files.map(File::toPath))
@@ -402,24 +420,26 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
                         val image = Kindling.logo.render(1024, 1024)
                         val padding = 128
 
-                        val paddedImage = BufferedImage(
-                            image.width + 2 * padding,
-                            image.height + 2 * padding,
-                            image.type,
-                        ).apply {
-                            createGraphics().apply {
-                                drawImage(image, padding, padding, null)
-                                dispose()
+                        val paddedImage =
+                            BufferedImage(
+                                image.width + 2 * padding,
+                                image.height + 2 * padding,
+                                image.type,
+                            ).apply {
+                                createGraphics().apply {
+                                    drawImage(image, padding, padding, null)
+                                    dispose()
+                                }
                             }
-                        }
 
                         setIconImage(paddedImage)
                     }
                     if (isSupported(Taskbar.Feature.MENU)) {
-                        menu = PopupMenu().apply {
-                            add(fileMenu.toAwtMenu())
-                            add(pasteMenu.toAwtMenu())
-                        }
+                        menu =
+                            PopupMenu().apply {
+                                add(fileMenu.toAwtMenu())
+                                add(pasteMenu.toAwtMenu())
+                            }
                     }
                 }
             }

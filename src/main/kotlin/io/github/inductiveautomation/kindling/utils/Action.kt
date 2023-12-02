@@ -24,17 +24,27 @@ open class Action(
     var accelerator: KeyStroke? by actionValue(ACCELERATOR_KEY, accelerator)
     var selected: Boolean by actionValue(SELECTED_KEY, selected)
 
-    protected fun <V> actionValue(name: String, initialValue: V) = object : ReadWriteProperty<AbstractAction, V> {
+    protected fun <V> actionValue(
+        name: String,
+        initialValue: V,
+    ) = object : ReadWriteProperty<AbstractAction, V> {
         init {
             putValue(name, initialValue)
         }
 
         @Suppress("UNCHECKED_CAST")
-        override fun getValue(thisRef: AbstractAction, property: KProperty<*>): V {
+        override fun getValue(
+            thisRef: AbstractAction,
+            property: KProperty<*>,
+        ): V {
             return thisRef.getValue(name) as V
         }
 
-        override fun setValue(thisRef: AbstractAction, property: KProperty<*>, value: V) {
+        override fun setValue(
+            thisRef: AbstractAction,
+            property: KProperty<*>,
+            value: V,
+        ) {
             return thisRef.putValue(name, value)
         }
     }

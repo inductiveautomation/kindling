@@ -44,16 +44,17 @@ class ThreadComparisonPane(
         updateData()
     }
 
-    private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) {
-        ThreadContainer(version).apply {
-            blockerButton.addActionListener {
-                val blocker = blockerButton.blocker
-                if (blocker != null) {
-                    fireBlockerSelectedEvent(blocker)
+    private val threadContainers: List<ThreadContainer> =
+        List(totalThreadDumps) {
+            ThreadContainer(version).apply {
+                blockerButton.addActionListener {
+                    val blocker = blockerButton.blocker
+                    if (blocker != null) {
+                        fireBlockerSelectedEvent(blocker)
+                    }
                 }
             }
         }
-    }
 
     private val header = HeaderPanel()
 
@@ -94,23 +95,25 @@ class ThreadComparisonPane(
 
         val moreThanOneThread = threads.count { it != null } > 1
 
-        val highestCpu = if (moreThanOneThread) {
-            val cpuUsages = threads.map { it?.cpuUsage ?: 0.0 }
-            cpuUsages.max().takeIf { maxVal ->
-                cpuUsages.count { it == maxVal } == 1
+        val highestCpu =
+            if (moreThanOneThread) {
+                val cpuUsages = threads.map { it?.cpuUsage ?: 0.0 }
+                cpuUsages.max().takeIf { maxVal ->
+                    cpuUsages.count { it == maxVal } == 1
+                }
+            } else {
+                null
             }
-        } else {
-            null
-        }
 
-        val largestDepth = if (moreThanOneThread) {
-            val sizes = threads.map { it?.stacktrace?.size ?: 0 }
-            sizes.max().takeIf { maxVal ->
-                sizes.count { it == maxVal } == 1
+        val largestDepth =
+            if (moreThanOneThread) {
+                val sizes = threads.map { it?.stacktrace?.size ?: 0 }
+                sizes.max().takeIf { maxVal ->
+                    sizes.count { it == maxVal } == 1
+                }
+            } else {
+                null
             }
-        } else {
-            null
-        }
 
         for ((container, thread) in threadContainers.zip(threads)) {
             container.highlightCpu = highestCpu != null && thread?.cpuUsage == highestCpu
@@ -134,9 +137,10 @@ class ThreadComparisonPane(
     }
 
     private class HeaderPanel : JPanel(MigLayout("fill, ins 3")) {
-        private val nameLabel = StyledLabel().apply {
-            isLineWrap = false
-        }
+        private val nameLabel =
+            StyledLabel().apply {
+                isLineWrap = false
+            }
 
         init {
             add(nameLabel, "pushx, growx")
@@ -188,13 +192,14 @@ class ThreadComparisonPane(
                 field = value
             }
 
-        private val scrollingTextPane = ScrollingTextPane().apply {
-            addHyperlinkListener { event ->
-                if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                    HyperlinkStrategy.currentValue.handleEvent(event)
+        private val scrollingTextPane =
+            ScrollingTextPane().apply {
+                addHyperlinkListener { event ->
+                    if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
+                        HyperlinkStrategy.currentValue.handleEvent(event)
+                    }
                 }
             }
-        }
 
         var text: String? by scrollingTextPane::text
 
@@ -215,25 +220,27 @@ class ThreadComparisonPane(
         var highlightStacktrace: Boolean = true
 
         private val titleLabel = FlatLabel()
-        private val detailsButton = FlatButton().apply {
-            icon = detailIcon
-            toolTipText = "Open in details popup"
-            addActionListener {
-                thread?.let {
-                    jFrame("Thread ${it.id} Details", 900, 500) {
-                        contentPane = DetailsPane(listOf(it.toDetail(version)))
+        private val detailsButton =
+            FlatButton().apply {
+                icon = detailIcon
+                toolTipText = "Open in details popup"
+                addActionListener {
+                    thread?.let {
+                        jFrame("Thread ${it.id} Details", 900, 500) {
+                            contentPane = DetailsPane(listOf(it.toDetail(version)))
+                        }
                     }
                 }
             }
-        }
 
         val blockerButton = BlockerButton()
 
         private val monitors = DetailContainer("Locked Monitors")
         private val synchronizers = DetailContainer("Synchronizers")
-        private val stacktrace = DetailContainer("Stacktrace").apply {
-            isCollapsed = false
-        }
+        private val stacktrace =
+            DetailContainer("Stacktrace").apply {
+                isCollapsed = false
+            }
 
         init {
             add(
@@ -252,21 +259,23 @@ class ThreadComparisonPane(
         fun updateThreadInfo() {
             isVisible = thread != null || ShowNullThreads.currentValue
 
-            titleLabel.text = buildString {
-                tag("html") {
-                    tag("div") {
-                        tag("b", (thread?.state?.toString() ?: "NO THREAD"))
-                        append(" - ")
-                        append(percent.format(thread?.cpuUsage ?: 0.0))
+            titleLabel.text =
+                buildString {
+                    tag("html") {
+                        tag("div") {
+                            tag("b", (thread?.state?.toString() ?: "NO THREAD"))
+                            append(" - ")
+                            append(percent.format(thread?.cpuUsage ?: 0.0))
+                        }
                     }
                 }
-            }
 
-            titleLabel.foreground = if (highlightCpu) {
-                threadHighlightColor
-            } else {
-                UIManager.getColor("Label.foreground")
-            }
+            titleLabel.foreground =
+                if (highlightCpu) {
+                    threadHighlightColor
+                } else {
+                    UIManager.getColor("Label.foreground")
+                }
 
             blockerButton.blocker = thread?.blocker?.owner
             detailsButton.isVisible = thread != null
@@ -275,18 +284,19 @@ class ThreadComparisonPane(
                 isVisible = ShowEmptyValues.currentValue || thread?.lockedMonitors?.isNotEmpty() == true
                 if (isVisible) {
                     itemCount = thread?.lockedMonitors?.size ?: 0
-                    text = thread?.lockedMonitors
-                        ?.joinToString(
-                            separator = "\n",
-                            prefix = "<html><pre>",
-                            postfix = "</pre></html>",
-                        ) { monitor ->
-                            if (monitor.frame == null) {
-                                "lock: ${monitor.lock}"
-                            } else {
-                                "lock: ${monitor.lock}\n${monitor.frame}"
+                    text =
+                        thread?.lockedMonitors
+                            ?.joinToString(
+                                separator = "\n",
+                                prefix = "<html><pre>",
+                                postfix = "</pre></html>",
+                            ) { monitor ->
+                                if (monitor.frame == null) {
+                                    "lock: ${monitor.lock}"
+                                } else {
+                                    "lock: ${monitor.lock}\n${monitor.frame}"
+                                }
                             }
-                        }
                 }
             }
 
@@ -294,13 +304,14 @@ class ThreadComparisonPane(
                 isVisible = ShowEmptyValues.currentValue || thread?.lockedSynchronizers?.isNotEmpty() == true
                 if (isVisible) {
                     itemCount = thread?.lockedSynchronizers?.size ?: 0
-                    text = thread?.lockedSynchronizers
-                        ?.joinToString(
-                            separator = "\n",
-                            prefix = "<html><pre>",
-                            postfix = "</pre></html>",
-                            transform = String::escapeHtml,
-                        )
+                    text =
+                        thread?.lockedSynchronizers
+                            ?.joinToString(
+                                separator = "\n",
+                                prefix = "<html><pre>",
+                                postfix = "</pre></html>",
+                                transform = String::escapeHtml,
+                            )
                 }
             }
 
@@ -308,24 +319,25 @@ class ThreadComparisonPane(
                 isVisible = ShowEmptyValues.currentValue || thread?.stacktrace?.isNotEmpty() == true
                 if (isVisible) {
                     itemCount = thread?.stacktrace?.size ?: 0
-                    text = thread?.stacktrace
-                        ?.joinToString(
-                            separator = "\n",
-                            prefix = "<html><pre>",
-                            postfix = "</pre></html>",
-                        ) { stackLine ->
-                            if (UseHyperlinks.currentValue) {
-                                stackLine.toBodyLine(version).let { (text, link) ->
-                                    if (link != null) {
-                                        """<a href="$link">$text</a>"""
-                                    } else {
-                                        text
+                    text =
+                        thread?.stacktrace
+                            ?.joinToString(
+                                separator = "\n",
+                                prefix = "<html><pre>",
+                                postfix = "</pre></html>",
+                            ) { stackLine ->
+                                if (UseHyperlinks.currentValue) {
+                                    stackLine.toBodyLine(version).let { (text, link) ->
+                                        if (link != null) {
+                                            """<a href="$link">$text</a>"""
+                                        } else {
+                                            text
+                                        }
                                     }
+                                } else {
+                                    stackLine
                                 }
-                            } else {
-                                stackLine
                             }
-                        }
                     isSpecial = highlightStacktrace
                 }
             }

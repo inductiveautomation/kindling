@@ -12,6 +12,7 @@ import kotlin.io.path.name
 sealed class PathView(constraints: String) : JPanel(MigLayout(constraints)), FloatableComponent, PopupMenuCustomizer {
     abstract val paths: List<Path>
     abstract val provider: FileSystemProvider
+
     override fun customizePopupMenu(menu: JPopupMenu) = Unit
 }
 
@@ -21,5 +22,6 @@ abstract class SinglePathView(constraints: String = "ins 6, fill") : PathView(co
     override val paths: List<Path> by lazy { listOf(path) }
     override val tabName by lazy { path.name }
     override val tabTooltip by lazy { path.toString().substring(1) }
+
     override fun toString(): String = "${this::class.simpleName}(path=$path)"
 }

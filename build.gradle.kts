@@ -87,8 +87,6 @@ kotlin {
 }
 
 spotless {
-    ratchetFrom = "1646d3396c20f2b8aa1a0b91d8938988221ab089"
-
     format("misc") {
         target("*.gradle", ".gitattributes", ".gitignore")
         trimTrailingWhitespace()

@@ -43,12 +43,15 @@ interface Tool {
             tools.associateBy(Tool::title)
         }
 
-        fun find(path: Path): Tool? = tools.find { tool ->
-            tool.filter.accept(path)
-        }
+        fun find(path: Path): Tool? =
+            tools.find { tool ->
+                tool.filter.accept(path)
+            }
+
         fun find(file: File): Tool? = find(file.toPath())
 
         operator fun get(file: File): Tool = get(file.toPath())
+
         operator fun get(path: Path): Tool = checkNotNull(find(path)) { "No tool found for $path" }
     }
 }

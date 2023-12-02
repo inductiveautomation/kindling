@@ -13,20 +13,22 @@ abstract class ColumnList<R> private constructor(
 
     /**
      * Defines a new column (type T). Uses the name of the property if [name] isn't provided.
+     *
+     * NB: This is some real Kotlin 'magic', but makes it very easy to define JTable models that can be used type-safely
      */
-    // This is some real Kotlin 'magic', but makes it very easy to define JTable models that can be used type-safely
     protected inline fun <reified T> column(
         name: String? = null,
         noinline column: (TableColumnExt.(model: TableModel) -> Unit)? = null,
         noinline value: (R) -> T,
     ): PropertyDelegateProvider<ColumnList<R>, ReadOnlyProperty<ColumnList<R>, Column<R, T>>> {
         return PropertyDelegateProvider { thisRef, prop ->
-            val actual = Column(
-                header = name ?: prop.name,
-                getValue = value,
-                columnCustomization = column,
-                clazz = T::class.java,
-            )
+            val actual =
+                Column(
+                    header = name ?: prop.name,
+                    getValue = value,
+                    columnCustomization = column,
+                    clazz = T::class.java,
+                )
             thisRef.add(actual)
             ReadOnlyProperty { _, _ -> actual }
         }
@@ -38,13 +40,17 @@ abstract class ColumnList<R> private constructor(
 
     operator fun get(column: Column<*, *>): Int = indexOf(column)
 
-    fun toColumnFactory() = object : ColumnFactory() {
-        override fun configureTableColumn(model: TableModel, columnExt: TableColumnExt) {
-            super.configureTableColumn(model, columnExt)
-            val column = list[columnExt.modelIndex]
-            columnExt.toolTipText = column.header
-            columnExt.identifier = column
-            column.columnCustomization?.invoke(columnExt, model)
+    fun toColumnFactory() =
+        object : ColumnFactory() {
+            override fun configureTableColumn(
+                model: TableModel,
+                columnExt: TableColumnExt,
+            ) {
+                super.configureTableColumn(model, columnExt)
+                val column = list[columnExt.modelIndex]
+                columnExt.toolTipText = column.header
+                columnExt.identifier = column
+                column.columnCustomization?.invoke(columnExt, model)
+            }
         }
-    }
 }

@@ -11,10 +11,12 @@ import kotlin.io.path.name
 
 class ThreadDumpListModel(private val values: List<Path>) : AbstractListModel<Any>() {
     override fun getSize(): Int = values.size + 1
-    override fun getElementAt(index: Int): Any? = when (index) {
-        0 -> CheckBoxList.ALL_ENTRY
-        else -> values[index - 1]
-    }
+
+    override fun getElementAt(index: Int): Any? =
+        when (index) {
+            0 -> CheckBoxList.ALL_ENTRY
+            else -> values[index - 1]
+        }
 }
 
 class ThreadDumpCheckboxList(data: List<Path>) : CheckBoxList(ThreadDumpListModel(data)) {
@@ -24,16 +26,19 @@ class ThreadDumpCheckboxList(data: List<Path>) : CheckBoxList(ThreadDumpListMode
         isClickInCheckBoxOnly = false
         selectionModel = NoSelectionModel()
 
-        cellRenderer = listCellRenderer<Any?> { _, value, index, _, _ ->
-            text = when (index) {
-                0 -> "All"
-                else -> index.toString()
+        cellRenderer =
+            listCellRenderer<Any?> { _, value, index, _, _ ->
+                text =
+                    when (index) {
+                        0 -> "All"
+                        else -> index.toString()
+                    }
+                toolTipText =
+                    when (value) {
+                        is Path -> value.name
+                        else -> null
+                    }
             }
-            toolTipText = when (value) {
-                is Path -> value.name
-                else -> null
-            }
-        }
         selectAll()
     }
 

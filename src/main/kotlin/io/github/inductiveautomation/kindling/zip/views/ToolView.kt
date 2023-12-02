@@ -24,7 +24,7 @@ class ToolView(
         val tempFile = Files.createTempFile("kindling", path.name)
         try {
             provider.newInputStream(path) transferTo tempFile.outputStream()
-            /* Tool.get() throws exception if tool not found, but this check is already done with isTool() */
+            // Tool.get() throws exception if tool not found, but this check is already done with isTool()
             toolPanel = Tool.find(path)?.open(tempFile)
                 ?: throw ToolOpeningException("No tool for files of type .${path.extension}")
             add(toolPanel, "push, grow")
@@ -40,7 +40,10 @@ class ToolView(
     companion object {
         fun maybeToolPath(path: Path): Boolean = Tool.find(path) != null
 
-        fun safelyCreate(provider: FileSystemProvider, path: Path): ToolView? {
+        fun safelyCreate(
+            provider: FileSystemProvider,
+            path: Path,
+        ): ToolView? {
             return runCatching { ToolView(provider, path) }.getOrNull()
         }
     }

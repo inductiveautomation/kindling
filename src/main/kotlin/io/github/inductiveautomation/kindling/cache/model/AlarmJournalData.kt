@@ -40,11 +40,12 @@ class AlarmJournalData(
         }
     }
 
-    fun toDetail() = Detail(
-        title = "Alarm Journal Data",
-        details = details,
-        body = body,
-    )
+    fun toDetail() =
+        Detail(
+            title = "Alarm Journal Data",
+            details = details,
+            body = body,
+        )
 
     companion object {
         @JvmStatic
@@ -56,17 +57,20 @@ class AlarmJournalSFGroup(
     private val groupId: String,
     private val entries: List<AlarmJournalData>,
 ) : Serializable {
-    fun toDetail() = Detail(
-        title = "Grouped Alarm Journal Data ($groupId)",
-        details = entries.fold(mutableMapOf()) { acc, nextData ->
-            acc.putAll(nextData.details)
-            acc
-        },
-        body = entries.flatMap {
-            it.data.timestamp
-            it.body
-        },
-    )
+    fun toDetail() =
+        Detail(
+            title = "Grouped Alarm Journal Data ($groupId)",
+            details =
+                entries.fold(mutableMapOf()) { acc, nextData ->
+                    acc.putAll(nextData.details)
+                    acc
+                },
+            body =
+                entries.flatMap {
+                    it.data.timestamp
+                    it.body
+                },
+        )
 
     companion object {
         @JvmStatic

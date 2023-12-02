@@ -35,55 +35,60 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
         }
     }
 
-    private val textPane = FlatTextPane().apply {
-        isEditable = false
-        editorKit = DetailsEditorKit()
+    private val textPane =
+        FlatTextPane().apply {
+            isEditable = false
+            editorKit = DetailsEditorKit()
 
-        addHyperlinkListener { event ->
-            if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                HyperlinkStrategy.currentValue.handleEvent(event)
+            addHyperlinkListener { event ->
+                if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
+                    HyperlinkStrategy.currentValue.handleEvent(event)
+                }
             }
         }
-    }
 
-    private val copy = Action(
-        description = "Copy to Clipboard",
-        icon = FlatSVGIcon("icons/bx-clipboard.svg"),
-    ) {
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        clipboard.setContents(StringSelection(events.toClipboardFormat()), null)
-    }
+    private val copy =
+        Action(
+            description = "Copy to Clipboard",
+            icon = FlatSVGIcon("icons/bx-clipboard.svg"),
+        ) {
+            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+            clipboard.setContents(StringSelection(events.toClipboardFormat()), null)
+        }
 
-    private val save = Action(
-        description = "Save to File",
-        icon = FlatSVGIcon("icons/bx-save.svg"),
-    ) {
-        JFileChooser().apply {
-            fileSelectionMode = JFileChooser.FILES_ONLY
-            fileFilter = FileNameExtensionFilter("Text File", "txt")
-            val save = showSaveDialog(this@DetailsPane)
-            if (save == JFileChooser.APPROVE_OPTION) {
-                selectedFile.writeText(events.toClipboardFormat())
+    private val save =
+        Action(
+            description = "Save to File",
+            icon = FlatSVGIcon("icons/bx-save.svg"),
+        ) {
+            JFileChooser().apply {
+                fileSelectionMode = JFileChooser.FILES_ONLY
+                fileFilter = FileNameExtensionFilter("Text File", "txt")
+                val save = showSaveDialog(this@DetailsPane)
+                if (save == JFileChooser.APPROVE_OPTION) {
+                    selectedFile.writeText(events.toClipboardFormat())
+                }
             }
         }
-    }
 
     private val actionPanel = JPanel(MigLayout("flowy, top, ins 0"))
 
-    val actions: MutableList<Action> = object : ArrayList<Action>() {
-        init {
-            add(copy)
-            add(save)
-        }
+    val actions: MutableList<Action> =
+        object : ArrayList<Action>() {
+            init {
+                add(copy)
+                add(save)
+            }
 
-        override fun add(element: Action) = super.add(element).also {
-            actionPanel.add(
-                JButton(element).apply {
-                    hideActionText = true
-                },
-            )
+            override fun add(element: Action) =
+                super.add(element).also {
+                    actionPanel.add(
+                        JButton(element).apply {
+                            hideActionText = true
+                        },
+                    )
+                }
         }
-    }
 
     init {
         add(FlatScrollPane(textPane), "push, grow")
@@ -98,7 +103,7 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
                 if (event.details.isNotEmpty()) {
                     append("&nbsp;<object ")
                     event.details.entries.joinTo(buffer = this, separator = " ") { (key, value) ->
-                        "$detailPrefix$key = \"$value\""
+                        "$DETAIL_PREFIX$key = \"$value\""
                     }
                     append("/>")
                 }
@@ -135,7 +140,7 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
     }
 }
 
-private const val detailPrefix = "data-"
+private const val DETAIL_PREFIX = "data-"
 
 class DetailsEditorKit : HTMLEditorKit() {
     init {
@@ -169,7 +174,7 @@ class DetailsEditorKit : HTMLEditorKit() {
                                 elem.attributes.attributeNames.asSequence()
                                     .filterIsInstance<String>()
                                     .associate { rawAttribute ->
-                                        rawAttribute.removePrefix(detailPrefix) to elem.attributes.getAttribute(rawAttribute) as String
+                                        rawAttribute.removePrefix(DETAIL_PREFIX) to elem.attributes.getAttribute(rawAttribute) as String
                                     }
                             return DetailsIcon(details)
                         }

@@ -18,10 +18,11 @@ class ScrollingTextPane : FlatScrollPane() {
             viewport.scrollRectToVisible(Rectangle(0, 0))
         }
 
-    private val textPane = JTextPane().apply {
-        isEditable = false
-        contentType = "text/html"
-    }
+    private val textPane =
+        JTextPane().apply {
+            isEditable = false
+            contentType = "text/html"
+        }
 
     fun addHyperlinkListener(listener: HyperlinkListener) {
         textPane.addHyperlinkListener(listener)

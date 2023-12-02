@@ -21,17 +21,19 @@ import kotlin.io.path.name
 class IdbView(val path: Path) : ToolPanel() {
     private val connection = SQLiteConnection(path)
 
-    private val tables: List<String> = connection.metaData.getTables("", "", "", null).toList { rs ->
-        rs.getString(3)
-    }
+    private val tables: List<String> =
+        connection.metaData.getTables("", "", "", null).toList { rs ->
+            rs.getString(3)
+        }
 
-    private val tabs = TabStrip().apply {
-        trailingComponent = null
-        isTabsClosable = false
-        tabType = TabType.underlined
-        tabHeight = 16
-        isHideTabAreaWithOneTab = true
-    }
+    private val tabs =
+        TabStrip().apply {
+            trailingComponent = null
+            isTabsClosable = false
+            tabType = TabType.underlined
+            tabHeight = 16
+            isHideTabAreaWithOneTab = true
+        }
 
     init {
         name = path.name
@@ -74,88 +76,94 @@ enum class IdbTool {
     @Suppress("SqlResolve")
     Logs {
         override fun supports(tables: List<String>): Boolean = "logging_event" in tables
-        override fun open(connection: Connection): ToolPanel {
-            val stackTraces: Map<Int, List<String>> = connection.prepareStatement(
-                //language=sql
-                """
-                SELECT
-                    event_id,
-                    i,
-                    trace_line
-                FROM 
-                    logging_event_exception
-                ORDER BY
-                    event_id,
-                    i
-                """.trimIndent(),
-            ).executeQuery()
-                .toList { resultSet ->
-                    Pair(
-                        resultSet.getInt("event_id"),
-                        resultSet.getString("trace_line"),
-                    )
-                }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
-            val mdcKeys: Map<Int, List<MDC>> = connection.prepareStatement(
-                //language=sql
-                """
-                SELECT 
-                    event_id,
-                    mapped_key,
-                    mapped_value
-                FROM 
-                    logging_event_property
-                ORDER BY 
-                    event_id
-                """.trimIndent(),
-            ).executeQuery()
-                .use { resultSet ->
-                    buildMap<Int, MutableList<MDC>> {
-                        while (resultSet.next()) {
-                            val key = resultSet.getInt("event_id")
-                            val valueList = getOrPut(key) { mutableListOf() }
-                            valueList += MDC(
-                                resultSet.getString("mapped_key"),
-                                resultSet.getString("mapped_value"),
-                            )
+        override fun open(connection: Connection): ToolPanel {
+            val stackTraces: Map<Int, List<String>> =
+                connection.prepareStatement(
+                    //language=sql
+                    """
+                    SELECT
+                        event_id,
+                        i,
+                        trace_line
+                    FROM 
+                        logging_event_exception
+                    ORDER BY
+                        event_id,
+                        i
+                    """.trimIndent(),
+                ).executeQuery()
+                    .toList { resultSet ->
+                        Pair(
+                            resultSet.getInt("event_id"),
+                            resultSet.getString("trace_line"),
+                        )
+                    }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
+
+            val mdcKeys: Map<Int, List<MDC>> =
+                connection.prepareStatement(
+                    //language=sql
+                    """
+                    SELECT 
+                        event_id,
+                        mapped_key,
+                        mapped_value
+                    FROM 
+                        logging_event_property
+                    ORDER BY 
+                        event_id
+                    """.trimIndent(),
+                ).executeQuery()
+                    .use { resultSet ->
+                        buildMap<Int, MutableList<MDC>> {
+                            while (resultSet.next()) {
+                                val key = resultSet.getInt("event_id")
+                                val valueList = getOrPut(key) { mutableListOf() }
+                                valueList +=
+                                    MDC(
+                                        resultSet.getString("mapped_key"),
+                                        resultSet.getString("mapped_value"),
+                                    )
+                            }
                         }
                     }
-                }
 
-            val events = connection.prepareStatement(
-                //language=sql
-                """
-                SELECT
-                       event_id,
-                       timestmp,
-                       formatted_message,
-                       logger_name,
-                       level_string,
-                       thread_name
-                FROM 
-                    logging_event
-                ORDER BY
-                    timestmp
-                """.trimIndent(),
-            ).executeQuery()
-                .toList { resultSet ->
-                    val eventId = resultSet.getInt("event_id")
-                    SystemLogEvent(
-                        timestamp = Instant.ofEpochMilli(resultSet.getLong("timestmp")),
-                        message = resultSet.getString("formatted_message"),
-                        logger = resultSet.getString("logger_name"),
-                        thread = resultSet.getString("thread_name"),
-                        level = enumValueOf(resultSet.getString("level_string")),
-                        mdc = mdcKeys[eventId].orEmpty(),
-                        stacktrace = stackTraces[eventId].orEmpty(),
-                    )
-                }
+            val events =
+                connection.prepareStatement(
+                    //language=sql
+                    """
+                    SELECT
+                           event_id,
+                           timestmp,
+                           formatted_message,
+                           logger_name,
+                           level_string,
+                           thread_name
+                    FROM 
+                        logging_event
+                    ORDER BY
+                        timestmp
+                    """.trimIndent(),
+                ).executeQuery()
+                    .toList { resultSet ->
+                        val eventId = resultSet.getInt("event_id")
+                        SystemLogEvent(
+                            timestamp = Instant.ofEpochMilli(resultSet.getLong("timestmp")),
+                            message = resultSet.getString("formatted_message"),
+                            logger = resultSet.getString("logger_name"),
+                            thread = resultSet.getString("thread_name"),
+                            level = enumValueOf(resultSet.getString("level_string")),
+                            mdc = mdcKeys[eventId].orEmpty(),
+                            stacktrace = stackTraces[eventId].orEmpty(),
+                        )
+                    }
 
             return LogPanel(events)
         }
     },
     Metrics {
         override fun supports(tables: List<String>): Boolean = "SYSTEM_METRICS" in tables
+
         override fun open(connection: Connection): ToolPanel = MetricsView(connection)
     },
 //    Images {
@@ -174,5 +182,6 @@ object IdbViewer : Tool {
     override val description = ".idb (SQLite3) files"
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")
     override val filter = FileFilter(description, listOf("idb"))
+
     override fun open(path: Path): ToolPanel = IdbView(path)
 }

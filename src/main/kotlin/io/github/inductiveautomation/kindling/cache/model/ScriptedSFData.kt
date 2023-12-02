@@ -9,16 +9,19 @@ class ScriptedSFData(
     val datasource: String,
     val values: Array<Any?>,
 ) : Serializable {
-    fun toDetail() = Detail(
-        title = "system.db.runSFUpdate query data",
-        message = query,
-        details = mapOf(
-            "datasource" to datasource,
-        ),
-        body = values.mapIndexed { index, parameterValue ->
-            "param${index + 1} (${parameterValue?.javaClass?.simpleName}) = $parameterValue"
-        },
-    )
+    fun toDetail() =
+        Detail(
+            title = "system.db.runSFUpdate query data",
+            message = query,
+            details =
+                mapOf(
+                    "datasource" to datasource,
+                ),
+            body =
+                values.mapIndexed { index, parameterValue ->
+                    "param${index + 1} (${parameterValue?.javaClass?.simpleName}) = $parameterValue"
+                },
+        )
 
     companion object {
         @JvmStatic

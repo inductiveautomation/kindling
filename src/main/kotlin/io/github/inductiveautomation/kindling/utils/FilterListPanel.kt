@@ -14,14 +14,15 @@ abstract class FilterListPanel<T>(
 
     private val sortButtons = filterList.createSortButtons()
 
-    override val component = JPanel(MigLayout("ins 0, fill")).apply {
-        val sortGroupEnumeration = sortButtons.elements
-        add(sortGroupEnumeration.nextElement(), "split ${sortButtons.buttonCount}, flowx")
-        for (element in sortGroupEnumeration) {
-            add(element, "gapx 2")
+    override val component =
+        JPanel(MigLayout("ins 0, fill")).apply {
+            val sortGroupEnumeration = sortButtons.elements
+            add(sortGroupEnumeration.nextElement(), "split ${sortButtons.buttonCount}, flowx")
+            for (element in sortGroupEnumeration) {
+                add(element, "gapx 2")
+            }
+            add(FlatScrollPane(filterList), "newline, push, grow")
         }
-        add(FlatScrollPane(filterList), "newline, push, grow")
-    }
 
     init {
         filterList.checkBoxListSelectionModel.addListSelectionListener { e ->
@@ -35,5 +36,9 @@ abstract class FilterListPanel<T>(
 
     override fun reset() = filterList.selectAll()
 
-    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out T, *>, event: T) = Unit
+    override fun customizePopupMenu(
+        menu: JPopupMenu,
+        column: Column<out T, *>,
+        event: T,
+    ) = Unit
 }

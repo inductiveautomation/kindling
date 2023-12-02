@@ -35,7 +35,7 @@ fun StackElement.toBodyLine(version: String): BodyLine {
     } ?: BodyLine(this)
 }
 
-@Suppress("ktlint:trailing-comma-on-declaration-site")
+@Suppress("ktlint:standard:trailing-comma-on-declaration-site")
 enum class MajorVersion(val version: String) {
     SevenNine("7.9"),
     EightZero("8.0"),
@@ -48,18 +48,19 @@ enum class MajorVersion(val version: String) {
     }
 
     companion object {
-        private val versionCache = LinkedHashMap<String, MajorVersion?>().apply {
-            put("dev", EightOne)
-            repeat(22) { patch ->
-                put("7.9.$patch", SevenNine)
+        private val versionCache =
+            LinkedHashMap<String, MajorVersion?>().apply {
+                put("dev", EightOne)
+                repeat(22) { patch ->
+                    put("7.9.$patch", SevenNine)
+                }
+                repeat(18) { patch ->
+                    put("8.0.$patch", EightZero)
+                }
+                repeat(33) { patch ->
+                    put("8.1.$patch", EightOne)
+                }
             }
-            repeat(18) { patch ->
-                put("8.0.$patch", EightZero)
-            }
-            repeat(33) { patch ->
-                put("8.1.$patch", EightOne)
-            }
-        }
 
         fun lookup(version: String): MajorVersion? {
             return versionCache.getOrPut(version) {

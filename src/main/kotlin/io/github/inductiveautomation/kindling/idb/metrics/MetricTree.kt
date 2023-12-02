@@ -25,11 +25,12 @@ class RootNode(metrics: List<Metric>) : AbstractTreeNode() {
             val currentLeadingPath = mutableListOf(lastSeen.name)
             for (part in metric.name.split('.')) {
                 currentLeadingPath.add(part)
-                val next = seen.getOrPut(currentLeadingPath.toList()) {
-                    val newChild = MetricNode(currentLeadingPath.drop(1))
-                    lastSeen.children.add(newChild)
-                    newChild
-                }
+                val next =
+                    seen.getOrPut(currentLeadingPath.toList()) {
+                        val newChild = MetricNode(currentLeadingPath.drop(1))
+                        lastSeen.children.add(newChild)
+                        newChild
+                    }
                 lastSeen = next
             }
         }
@@ -81,20 +82,22 @@ class MetricTree(metrics: List<Metric>) : CheckBoxTree(MetricModel(metrics)) {
     }
 
     val selectedLeafNodes: List<MetricNode>
-        get() = checkBoxTreeSelectionModel.selectionPaths
-            .flatMap {
-                (it.lastPathComponent as AbstractTreeNode).depthFirstChildren()
-            }.filterIsInstance<MetricNode>()
+        get() =
+            checkBoxTreeSelectionModel.selectionPaths
+                .flatMap {
+                    (it.lastPathComponent as AbstractTreeNode).depthFirstChildren()
+                }.filterIsInstance<MetricNode>()
 
-    private fun TreeNode.depthFirstChildren(): Sequence<AbstractTreeNode> = sequence {
-        if (isLeaf) {
-            yield(this@depthFirstChildren as AbstractTreeNode)
-        } else {
-            for (child in children()) {
-                yieldAll(child.depthFirstChildren())
+    private fun TreeNode.depthFirstChildren(): Sequence<AbstractTreeNode> =
+        sequence {
+            if (isLeaf) {
+                yield(this@depthFirstChildren as AbstractTreeNode)
+            } else {
+                for (child in children()) {
+                    yieldAll(child.depthFirstChildren())
+                }
             }
         }
-    }
 
     private fun expandAll() {
         var i = 0

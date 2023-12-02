@@ -42,14 +42,16 @@ import kotlin.time.Duration.Companion.seconds
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
 
 data object Kindling {
-    val logo = SVGLoader().run {
-        val svgUrl = checkNotNull(Kindling::class.java.getResource("/logo.svg")) { "Unable to load logo SVG" }
-        checkNotNull(load(svgUrl)) { "Unable to load logo SVG" }
-    }
+    val logo =
+        SVGLoader().run {
+            val svgUrl = checkNotNull(Kindling::class.java.getResource("/logo.svg")) { "Unable to load logo SVG" }
+            checkNotNull(load(svgUrl)) { "Unable to load logo SVG" }
+        }
 
-    val frameIcons: List<Image> = listOf(16, 32, 44, 64, 128, 150, 256, 512, 1024).map { dim ->
-        logo.render(dim, dim)
-    }
+    val frameIcons: List<Image> =
+        listOf(16, 32, 44, 64, 128, 150, 256, 512, 1024).map { dim ->
+            logo.render(dim, dim)
+        }
 
     val homepage = URI("https://github.com/inductiveautomation/kindling")
     val forumThread = URI("https://forum.inductiveautomation.com/t/54689")
@@ -58,101 +60,110 @@ data object Kindling {
 
     data object Preferences {
         data object General : PreferenceCategory {
-            val HomeLocation: Preference<Path> = preference(
-                name = "Browse Location",
-                description = "The default path to start looking for files.",
-                default = Path(System.getProperty("user.home"), "Downloads"),
-                serializer = PathSerializer,
-                editor = {
-                    JXTextField("The fully qualified location to open by default").apply {
-                        text = currentValue.serializedForm
+            val HomeLocation: Preference<Path> =
+                preference(
+                    name = "Browse Location",
+                    description = "The default path to start looking for files.",
+                    default = Path(System.getProperty("user.home"), "Downloads"),
+                    serializer = PathSerializer,
+                    editor = {
+                        JXTextField("The fully qualified location to open by default").apply {
+                            text = currentValue.serializedForm
 
-                        document.addDocumentListener(
-                            object : DocumentListener {
-                                fun onChange() {
-                                    currentValue = PathSerializer.fromString(text)
-                                }
+                            document.addDocumentListener(
+                                object : DocumentListener {
+                                    fun onChange() {
+                                        currentValue = PathSerializer.fromString(text)
+                                    }
 
-                                override fun insertUpdate(e: DocumentEvent?) = onChange()
-                                override fun removeUpdate(e: DocumentEvent?) = onChange()
-                                override fun changedUpdate(e: DocumentEvent?) = onChange()
-                            },
-                        )
-                    }
-                },
-            )
+                                    override fun insertUpdate(e: DocumentEvent?) = onChange()
 
-            val DefaultTool: Preference<Tool> = preference(
-                name = "Default Tool",
-                description = "The default tool to use when invoking the file selector",
-                default = Tool.tools.first(),
-                serializer = ToolSerializer,
-                editor = {
-                    JComboBox(Vector(Tool.tools)).apply {
-                        selectedItem = currentValue
+                                    override fun removeUpdate(e: DocumentEvent?) = onChange()
 
-                        configureCellRenderer { _, value, _, selected, focused ->
-                            text = value?.title
-                            toolTipText = value?.description
+                                    override fun changedUpdate(e: DocumentEvent?) = onChange()
+                                },
+                            )
+                        }
+                    },
+                )
 
-                            icon = value?.icon?.derive(0.8f)?.let {
-                                if (selected || focused) {
-                                    it.derive { UIManager.getColor("Tree.selectionForeground") }
-                                } else {
-                                    it
-                                }
+            val DefaultTool: Preference<Tool> =
+                preference(
+                    name = "Default Tool",
+                    description = "The default tool to use when invoking the file selector",
+                    default = Tool.tools.first(),
+                    serializer = ToolSerializer,
+                    editor = {
+                        JComboBox(Vector(Tool.tools)).apply {
+                            selectedItem = currentValue
+
+                            configureCellRenderer { _, value, _, selected, focused ->
+                                text = value?.title
+                                toolTipText = value?.description
+
+                                icon =
+                                    value?.icon?.derive(0.8f)?.let {
+                                        if (selected || focused) {
+                                            it.derive { UIManager.getColor("Tree.selectionForeground") }
+                                        } else {
+                                            it
+                                        }
+                                    }
+                            }
+
+                            addActionListener {
+                                currentValue = selectedItem as Tool
                             }
                         }
+                    },
+                )
 
-                        addActionListener {
-                            currentValue = selectedItem as Tool
+            val ChoosableEncodings =
+                arrayOf(
+                    Charsets.UTF_8,
+                    Charsets.ISO_8859_1,
+                    Charsets.US_ASCII,
+                )
+
+            val DefaultEncoding: Preference<Charset> =
+                preference(
+                    name = "Encoding",
+                    description = "The default encoding to use when loading text files",
+                    default = if (SystemInfo.isWindows) Charsets.ISO_8859_1 else Charsets.UTF_8,
+                    serializer = CharsetSerializer,
+                    editor = {
+                        JComboBox(ChoosableEncodings).apply {
+                            selectedItem = currentValue
+
+                            configureCellRenderer { _, value, _, _, _ ->
+                                text = value?.displayName()
+                                toolTipText = value?.displayName()
+                            }
+
+                            addActionListener {
+                                currentValue = selectedItem as Charset
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
 
-            val ChoosableEncodings = arrayOf(
-                Charsets.UTF_8,
-                Charsets.ISO_8859_1,
-                Charsets.US_ASCII,
-            )
+            val ShowFullLoggerNames: Preference<Boolean> =
+                preference(
+                    name = "Logger Names",
+                    default = false,
+                    editor = {
+                        PreferenceCheckbox("Always show full logger names in tools")
+                    },
+                )
 
-            val DefaultEncoding: Preference<Charset> = preference(
-                name = "Encoding",
-                description = "The default encoding to use when loading text files",
-                default = if (SystemInfo.isWindows) Charsets.ISO_8859_1 else Charsets.UTF_8,
-                serializer = CharsetSerializer,
-                editor = {
-                    JComboBox(ChoosableEncodings).apply {
-                        selectedItem = currentValue
-
-                        configureCellRenderer { _, value, _, _, _ ->
-                            text = value?.displayName()
-                            toolTipText = value?.displayName()
-                        }
-
-                        addActionListener {
-                            currentValue = selectedItem as Charset
-                        }
-                    }
-                },
-            )
-
-            val ShowFullLoggerNames: Preference<Boolean> = preference(
-                name = "Logger Names",
-                default = false,
-                editor = {
-                    PreferenceCheckbox("Always show full logger names in tools")
-                },
-            )
-
-            val UseHyperlinks: Preference<Boolean> = preference(
-                name = "Hyperlinks",
-                default = true,
-                editor = {
-                    PreferenceCheckbox("Enable hyperlinks in stacktraces")
-                },
-            )
+            val UseHyperlinks: Preference<Boolean> =
+                preference(
+                    name = "Hyperlinks",
+                    default = true,
+                    editor = {
+                        PreferenceCheckbox("Enable hyperlinks in stacktraces")
+                    },
+                )
 
             override val displayName: String = "General"
             override val key: String = "general"
@@ -160,33 +171,35 @@ data object Kindling {
         }
 
         data object UI : PreferenceCategory {
-            val Theme: Preference<Theme> = preference(
-                name = "Theme",
-                default = KindlingTheme.themes.getValue(if (SystemInfo.isMacOS) FlatMacLightLaf.NAME else FlatLightLaf.NAME),
-                serializer = ThemeSerializer,
-                editor = {
-                    ThemeSelectionDropdown().apply {
-                        addActionListener {
-                            currentValue = selectedItem
+            val Theme: Preference<Theme> =
+                preference(
+                    name = "Theme",
+                    default = KindlingTheme.themes.getValue(if (SystemInfo.isMacOS) FlatMacLightLaf.NAME else FlatLightLaf.NAME),
+                    serializer = ThemeSerializer,
+                    editor = {
+                        ThemeSelectionDropdown().apply {
+                            addActionListener {
+                                currentValue = selectedItem
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
 
-            val ScaleFactor: Preference<Double> = preference(
-                name = "Scale Factor",
-                description = "Percentage to scale the UI.",
-                requiresRestart = true,
-                default = 1.0,
-                editor = {
-                    JSpinner(SpinnerNumberModel(currentValue, 1.0, 2.0, 0.1)).apply {
-                        editor = JSpinner.NumberEditor(this, "0%")
-                        addChangeListener {
-                            currentValue = value as Double
+            val ScaleFactor: Preference<Double> =
+                preference(
+                    name = "Scale Factor",
+                    description = "Percentage to scale the UI.",
+                    requiresRestart = true,
+                    default = 1.0,
+                    editor = {
+                        JSpinner(SpinnerNumberModel(currentValue, 1.0, 2.0, 0.1)).apply {
+                            editor = JSpinner.NumberEditor(this, "0%")
+                            addChangeListener {
+                                currentValue = value as Double
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
 
             override val displayName: String = "UI"
             override val key: String = "ui"
@@ -194,68 +207,77 @@ data object Kindling {
         }
 
         data object Advanced : PreferenceCategory {
-            val Debug: Preference<Boolean> = preference(
-                name = "Debug Mode",
-                description = null,
-                default = false,
-                editor = {
-                    PreferenceCheckbox("Enable debug features")
-                },
-            )
+            val Debug: Preference<Boolean> =
+                preference(
+                    name = "Debug Mode",
+                    description = null,
+                    default = false,
+                    editor = {
+                        PreferenceCheckbox("Enable debug features")
+                    },
+                )
 
-            val HyperlinkStrategy: Preference<LinkHandlingStrategy> = preference(
-                name = "Hyperlink Strategy",
-                default = LinkHandlingStrategy.OpenInBrowser,
-                serializer = LinkHandlingStrategy.serializer(),
-                editor = {
-                    JComboBox(Vector(LinkHandlingStrategy.entries)).apply {
-                        selectedItem = currentValue
+            val HyperlinkStrategy: Preference<LinkHandlingStrategy> =
+                preference(
+                    name = "Hyperlink Strategy",
+                    default = LinkHandlingStrategy.OpenInBrowser,
+                    serializer = LinkHandlingStrategy.serializer(),
+                    editor = {
+                        JComboBox(Vector(LinkHandlingStrategy.entries)).apply {
+                            selectedItem = currentValue
 
-                        configureCellRenderer { _, value, _, _, _ ->
-                            text = value?.description
+                            configureCellRenderer { _, value, _, _, _ ->
+                                text = value?.description
+                            }
+
+                            addActionListener {
+                                currentValue = selectedItem as LinkHandlingStrategy
+                            }
                         }
-
-                        addActionListener {
-                            currentValue = selectedItem as LinkHandlingStrategy
-                        }
-                    }
-                },
-            )
+                    },
+                )
 
             override val displayName: String = "Advanced"
             override val key: String = "advanced"
             override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)
         }
 
-        private val preferencesPath: Path = Path(System.getProperty("user.home"), ".kindling").also {
-            it.createDirectories()
-        }.resolve("preferences.json")
+        private val preferencesPath: Path =
+            Path(System.getProperty("user.home"), ".kindling").also {
+                it.createDirectories()
+            }.resolve("preferences.json")
 
-        private val preferencesJson = Json {
-            ignoreUnknownKeys = true
-            prettyPrint = true
-        }
-
-        val categories: List<PreferenceCategory> = buildList {
-            add(General)
-            add(UI)
-            addAll(Tool.tools.filterIsInstance<PreferenceCategory>())
-            // put advanced last
-            add(Advanced)
-        }
-
-        private val internalState: MutableMap<String, MutableMap<String, JsonElement>> = try {
-            // try to deserialize from file
-            preferencesPath.inputStream().use { inputStream ->
-                @OptIn(ExperimentalSerializationApi::class)
-                preferencesJson.decodeFromStream(inputStream)
+        private val preferencesJson =
+            Json {
+                ignoreUnknownKeys = true
+                prettyPrint = true
             }
-        } catch (e: Exception) {
-            // Fallback to empty; defaults will be read and serialized if modified
-            mutableMapOf()
-        }
 
-        operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? {
+        val categories: List<PreferenceCategory> =
+            buildList {
+                add(General)
+                add(UI)
+                addAll(Tool.tools.filterIsInstance<PreferenceCategory>())
+                // put advanced last
+                add(Advanced)
+            }
+
+        private val internalState: MutableMap<String, MutableMap<String, JsonElement>> =
+            try {
+                // try to deserialize from file
+                preferencesPath.inputStream().use { inputStream ->
+                    @OptIn(ExperimentalSerializationApi::class)
+                    preferencesJson.decodeFromStream(inputStream)
+                }
+            } catch (e: Exception) {
+                // Fallback to empty; defaults will be read and serialized if modified
+                mutableMapOf()
+            }
+
+        operator fun <T : Any> get(
+            category: PreferenceCategory,
+            preference: Preference<T>,
+        ): T? {
             return internalState.getOrPut(category.key) { mutableMapOf() }[preference.key]?.let { currentValue ->
                 preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
             }
@@ -263,36 +285,32 @@ data object Kindling {
 
         private val preferenceScope = CoroutineScope(Dispatchers.IO)
 
-        operator fun <T : Any> set(category: PreferenceCategory, preference: Preference<T>, value: T) {
-            internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] = preferencesJson.encodeToJsonElement(preference.serializer, value)
+        operator fun <T : Any> set(
+            category: PreferenceCategory,
+            preference: Preference<T>,
+            value: T,
+        ) {
+            internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] =
+                preferencesJson.encodeToJsonElement(preference.serializer, value)
             syncToDisk()
         }
 
         // debounced store to disk operation, prevents unnecessarily clashing of file updates
-        private val syncToDisk: () -> Unit = debounce(
-            waitTime = 2.seconds,
-            coroutineScope = preferenceScope,
-        ) {
-            preferencesPath.outputStream().use { outputStream ->
-                @OptIn(ExperimentalSerializationApi::class)
-                preferencesJson.encodeToStream(
-                    // (deeply) sort keys
-                    buildMap {
-                        for (category in internalState.keys.sorted()) {
-                            put(
-                                category,
-                                buildMap {
-                                    val categoryMap = internalState.getValue(category)
-                                    for (preference in categoryMap.keys.sorted()) {
-                                        put(preference, categoryMap.getValue(preference))
-                                    }
-                                },
-                            )
-                        }
-                    },
-                    outputStream,
-                )
+        private val syncToDisk: () -> Unit =
+            debounce(
+                waitTime = 2.seconds,
+                coroutineScope = preferenceScope,
+            ) {
+                preferencesPath.outputStream().use { outputStream ->
+                    @OptIn(ExperimentalSerializationApi::class)
+                    preferencesJson.encodeToStream(
+                        // (deeply) sort keys
+                        internalState.toSortedMap().mapValues { (_, category) ->
+                            category.toSortedMap()
+                        },
+                        outputStream,
+                    )
+                }
             }
-        }
     }
 }

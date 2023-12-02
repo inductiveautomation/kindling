@@ -14,7 +14,11 @@ internal class LevelPanel(rawData: List<LogEvent>) : FilterListPanel<LogEvent>("
 
     override fun filter(item: LogEvent): Boolean = item.level?.name in filterList.checkBoxListSelectedValues
 
-    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out LogEvent, *>, event: LogEvent) {
+    override fun customizePopupMenu(
+        menu: JPopupMenu,
+        column: Column<out LogEvent, *>,
+        event: LogEvent,
+    ) {
         val level = event.level
         if ((column == WrapperLogColumns.Level || column == SystemLogColumns.Level) && level != null) {
             val levelIndex = filterList.model.indexOf(level.name)

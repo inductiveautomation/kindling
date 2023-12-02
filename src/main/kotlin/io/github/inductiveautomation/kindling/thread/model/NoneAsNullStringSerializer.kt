@@ -13,7 +13,10 @@ object NoneAsNullStringSerializer : KSerializer<String?> {
         return decoder.decodeString().takeIf { it != "None" }
     }
 
-    override fun serialize(encoder: Encoder, value: String?) {
+    override fun serialize(
+        encoder: Encoder,
+        value: String?,
+    ) {
         when (value) {
             "None" -> Unit
             null -> Unit
