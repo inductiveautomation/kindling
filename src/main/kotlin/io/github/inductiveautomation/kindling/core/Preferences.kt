@@ -38,7 +38,7 @@ open class Preference<T : Any>(
     val name: String,
     val description: String? = null,
     val requiresRestart: Boolean = false,
-    protected val default: T,
+    val default: T,
     val serializer: KSerializer<T>,
     createEditor: (Preference<T>.() -> JComponent)?,
 ) {
@@ -59,7 +59,7 @@ open class Preference<T : Any>(
         listeners.add(listener)
     }
 
-    val editor: JComponent? by lazy { createEditor?.invoke(this) }
+    open val editor: JComponent? by lazy { createEditor?.invoke(this) }
 
     companion object {
         @Suppress("FunctionName")
@@ -101,7 +101,7 @@ open class Preference<T : Any>(
     }
 }
 
-class DependentPreference<T : Any, D : Any>(
+class DependentPreference<T : Any, D : Any, E : JComponent>(
     category: PreferenceCategory,
     name: String,
     description: String? = null,
@@ -109,7 +109,8 @@ class DependentPreference<T : Any, D : Any>(
     default: T,
     serializer: KSerializer<T>,
     val dependsOn: PreferenceDependency<D>,
-    createEditor: (Preference<T>.() -> JComponent)?,
+    createEditor: (Preference<T>.() -> E)?,
+    private val resetEditor: Preference<T>.(E?) -> Unit,
 ) : Preference<T>(
     category,
     name,
@@ -129,6 +130,8 @@ class DependentPreference<T : Any, D : Any>(
             }
         }
 
+    override val editor: E? by lazy { createEditor?.invoke(this) }
+
     init {
         dependsOn.preference.addChangeListener {
             validate(currentValue, it)
@@ -144,23 +147,24 @@ class DependentPreference<T : Any, D : Any>(
         if (thisValue != default && !dependsOn.predicate(otherValue)) { // invalid state
             currentValue = default
             editor?.isEnabled = false
-        } else { // Set editors enabled/disabled based on current value and predicate of dependency
+            resetEditor(editor)
+        } else { // Set editor enabled/disabled based on current value and predicate of dependency
             editor?.isEnabled = thisValue != default || dependsOn.predicate(otherValue)
-            dependsOn.preference.editor?.isEnabled = thisValue == default || !dependsOn.predicate(otherValue)
         }
     }
 
     companion object {
         @Suppress("unused")
-        inline fun <reified T : Any, reified D : Any> PreferenceCategory.dependentPreference(
+        inline fun <reified T : Any, reified D : Any, reified E : JComponent> PreferenceCategory.dependentPreference(
             name: String,
             description: String? = null,
             requiresRestart: Boolean = false,
             default: T,
             serializer: KSerializer<T> = serializer(),
             dependsOn: PreferenceDependency<D>,
-            noinline editor: (Preference<T>.() -> JComponent)?,
-        ): DependentPreference<T, D> = DependentPreference(
+            noinline editor: (Preference<T>.() -> E)?,
+            noinline resetEditor: Preference<T>.(E?) -> Unit,
+        ): DependentPreference<T, D, E> = DependentPreference(
             this,
             name,
             description,
@@ -169,6 +173,7 @@ class DependentPreference<T : Any, D : Any>(
             serializer,
             dependsOn,
             editor,
+            resetEditor,
         )
     }
 }
@@ -207,7 +212,7 @@ val preferencesEditor by lazy {
                                                 if (preference.description != null) {
                                                     add("\n")
                                                     add(preference.description)
-                                                    if (preference is DependentPreference<*, *>) {
+                                                    if (preference is DependentPreference<*, *, *>) {
                                                         add(
                                                             "Depends on ${preference.dependsOn.preference.name}",
                                                             "superscript",

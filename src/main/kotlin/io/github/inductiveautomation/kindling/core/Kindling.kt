@@ -174,6 +174,36 @@ data object Kindling {
                 },
             )
 
+            /* Can only set a string value if in dark mode
+            val ThemeExample = dependentPreference(
+                name = "Test dependent Theme",
+                default = "",
+                editor = {
+                    JXTextField("Test").apply {
+                        text = currentValue
+
+                        document.addDocumentListener(
+                            object : DocumentListener {
+                                fun onChange() {
+                                    currentValue = text
+                                }
+
+                                override fun insertUpdate(e: DocumentEvent?) = onChange()
+                                override fun removeUpdate(e: DocumentEvent?) = onChange()
+                                override fun changedUpdate(e: DocumentEvent?) = onChange()
+                            },
+                        )
+                    }
+                },
+                resetEditor = {
+                      it?.text = this.default
+                },
+                dependsOn = PreferenceDependency(Theme) {
+                    it.isDark
+                },
+            )
+             */
+
             val ScaleFactor: Preference<Double> = preference(
                 name = "Scale Factor",
                 description = "Percentage to scale the UI.",
@@ -223,7 +253,7 @@ data object Kindling {
                 },
             )
 
-            /*
+            /* Checkbox can only be checked if Debug is set to true
             val DependentExample = dependentPreference(
                 name = "Dependent Example",
                 description = null,
@@ -231,9 +261,12 @@ data object Kindling {
                 editor = {
                     PreferenceCheckbox("Example Boolean")
                 },
+                resetEditor = {
+                    it?.isSelected = this.default
+                },
                 dependsOn = PreferenceDependency(Debug) { it },
             )
-            */
+             */
 
             override val displayName: String = "Advanced"
             override val key: String = "advanced"
