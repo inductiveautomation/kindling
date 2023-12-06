@@ -223,6 +223,18 @@ data object Kindling {
                 },
             )
 
+            /*
+            val DependentExample = dependentPreference(
+                name = "Dependent Example",
+                description = null,
+                default = false,
+                editor = {
+                    PreferenceCheckbox("Example Boolean")
+                },
+                dependsOn = PreferenceDependency(Debug) { it },
+            )
+            */
+
             override val displayName: String = "Advanced"
             override val key: String = "advanced"
             override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)

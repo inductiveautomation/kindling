@@ -30,7 +30,7 @@ interface PreferenceCategory {
 
 class PreferenceDependency<T : Any>(
     val preference: Preference<T>,
-    val requiredValue: T,
+    val predicate: (dependencyValue: T) -> Boolean,
 )
 
 open class Preference<T : Any>(
@@ -141,12 +141,12 @@ class DependentPreference<T : Any, D : Any>(
     }
 
     private fun validate(thisValue: T, otherValue: D) {
-        if (thisValue != default && otherValue != dependsOn.requiredValue) { // invalid state
+        if (thisValue != default && !dependsOn.predicate(otherValue)) { // invalid state
             currentValue = default
             editor?.isEnabled = false
-        } else { // You have to stare at this for a while for it to make sense
-            editor?.isEnabled = thisValue != default || otherValue == dependsOn.requiredValue
-            dependsOn.preference.editor?.isEnabled = thisValue == default || otherValue != dependsOn.requiredValue
+        } else { // Set editors enabled/disabled based on current value and predicate of dependency
+            editor?.isEnabled = thisValue != default || dependsOn.predicate(otherValue)
+            dependsOn.preference.editor?.isEnabled = thisValue == default || !dependsOn.predicate(otherValue)
         }
     }
 
@@ -209,7 +209,7 @@ val preferencesEditor by lazy {
                                                     add(preference.description)
                                                     if (preference is DependentPreference<*, *>) {
                                                         add(
-                                                            "Requires ${preference.dependsOn.preference.name} to be set to ${preference.dependsOn.requiredValue}.",
+                                                            "Depends on ${preference.dependsOn.preference.name}",
                                                             "superscript",
                                                         )
                                                     }
