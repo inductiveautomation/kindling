@@ -174,10 +174,11 @@ data object Kindling {
                 },
             )
 
-            /* Can only set a string value if in dark mode
-            val ThemeExample = dependentPreference(
+            // Can only set a string value if in dark mode
+            val ThemeExample = preference(
                 name = "Test dependent Theme",
                 default = "",
+                requiresRestart = true,
                 editor = {
                     JXTextField("Test").apply {
                         text = currentValue
@@ -193,16 +194,16 @@ data object Kindling {
                                 override fun changedUpdate(e: DocumentEvent?) = onChange()
                             },
                         )
+
+                        dependsOn(Theme) {
+                            isEnabled = it.isDark
+                            if (!it.isDark) {
+                                text = default
+                            }
+                        }
                     }
                 },
-                resetEditor = {
-                      it?.text = this.default
-                },
-                dependsOn = PreferenceDependency(Theme) {
-                    it.isDark
-                },
             )
-             */
 
             val ScaleFactor: Preference<Double> = preference(
                 name = "Scale Factor",
@@ -221,13 +222,12 @@ data object Kindling {
 
             override val displayName: String = "UI"
             override val key: String = "ui"
-            override val preferences: List<Preference<*>> = listOf(Theme, ScaleFactor)
+            override val preferences: List<Preference<*>> = listOf(Theme, ThemeExample, ScaleFactor)
         }
 
         data object Advanced : PreferenceCategory {
             val Debug: Preference<Boolean> = preference(
                 name = "Debug Mode",
-                description = null,
                 default = false,
                 editor = {
                     PreferenceCheckbox("Enable debug features")
@@ -253,24 +253,20 @@ data object Kindling {
                 },
             )
 
-            /* Checkbox can only be checked if Debug is set to true
-            val DependentExample = dependentPreference(
+            // Checkbox can only be checked if Debug is set to true
+            val DependentExample = preference(
                 name = "Dependent Example",
-                description = null,
                 default = false,
                 editor = {
-                    PreferenceCheckbox("Example Boolean")
+                    PreferenceCheckbox("Example Boolean").dependsOn(Debug) { newValue ->
+                        isEnabled = newValue
+                    }
                 },
-                resetEditor = {
-                    it?.isSelected = this.default
-                },
-                dependsOn = PreferenceDependency(Debug) { it },
             )
-             */
 
             override val displayName: String = "Advanced"
             override val key: String = "advanced"
-            override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)
+            override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy, DependentExample)
         }
 
         private val preferencesPath: Path = Path(System.getProperty("user.home"), ".kindling").also {
@@ -307,13 +303,13 @@ data object Kindling {
             }
         }
 
-        private val preferenceScope = CoroutineScope(Dispatchers.IO)
-
         operator fun <T : Any> set(category: PreferenceCategory, preference: Preference<T>, value: T) {
             internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] =
                 preferencesJson.encodeToJsonElement(preference.serializer, value)
             syncToDisk()
         }
+
+        private val preferenceScope = CoroutineScope(Dispatchers.IO)
 
         // debounced store to disk operation, prevents unnecessarily clashing of file updates
         private val syncToDisk: () -> Unit = debounce(
@@ -324,19 +320,9 @@ data object Kindling {
                 @OptIn(ExperimentalSerializationApi::class)
                 preferencesJson.encodeToStream(
                     // (deeply) sort keys
-                    buildMap {
-                        for (category in internalState.keys.sorted()) {
-                            put(
-                                category,
-                                buildMap {
-                                    val categoryMap = internalState.getValue(category)
-                                    for (preference in categoryMap.keys.sorted()) {
-                                        put(preference, categoryMap.getValue(preference))
-                                    }
-                                },
-                            )
-                        }
-                    },
+                    internalState.mapValues { (_, value) ->
+                        value.toSortedMap().toMap()
+                    }.toSortedMap().toMap(),
                     outputStream,
                 )
             }

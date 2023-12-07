@@ -17,7 +17,6 @@ import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.border.MatteBorder
 
@@ -28,12 +27,7 @@ interface PreferenceCategory {
     val preferences: List<Preference<*>>
 }
 
-class PreferenceDependency<T : Any>(
-    val preference: Preference<T>,
-    val predicate: (dependencyValue: T) -> Boolean,
-)
-
-open class Preference<T : Any>(
+class Preference<T : Any>(
     val category: PreferenceCategory,
     val name: String,
     val description: String? = null,
@@ -44,7 +38,9 @@ open class Preference<T : Any>(
 ) {
     val key: String = name.lowercase().filter(Char::isJavaIdentifierStart)
 
-    open var currentValue
+    var dependency: Preference<*>? = null
+
+    var currentValue
         get() = Kindling.Preferences[category, this] ?: default
         set(value) {
             Kindling.Preferences[category, this] = value
@@ -59,7 +55,20 @@ open class Preference<T : Any>(
         listeners.add(listener)
     }
 
-    open val editor: JComponent? by lazy { createEditor?.invoke(this) }
+    val editor: JComponent? by lazy { createEditor?.invoke(this) }
+
+    fun <C : JComponent, U : Any> C.dependsOn(
+        preference: Preference<U>,
+        onChange: C.(U) -> Unit,
+    ): C = apply {
+        check(dependency == null) { "Cannot set a dependency on multiple preferences" }
+        dependency = preference
+
+        onChange(preference.currentValue)
+        preference.addChangeListener { newValue ->
+            onChange(newValue)
+        }
+    }
 
     companion object {
         @Suppress("FunctionName")
@@ -101,83 +110,6 @@ open class Preference<T : Any>(
     }
 }
 
-class DependentPreference<T : Any, D : Any, E : JComponent>(
-    category: PreferenceCategory,
-    name: String,
-    description: String? = null,
-    requiresRestart: Boolean = false,
-    default: T,
-    serializer: KSerializer<T>,
-    val dependsOn: PreferenceDependency<D>,
-    createEditor: (Preference<T>.() -> E)?,
-    private val resetEditor: Preference<T>.(E?) -> Unit,
-) : Preference<T>(
-    category,
-    name,
-    description,
-    requiresRestart,
-    default,
-    serializer,
-    createEditor,
-) {
-    override var currentValue
-        get() = Kindling.Preferences[category, this] ?: default
-        set(value) {
-            Kindling.Preferences[category, this] = value
-            validate(value, dependsOn.preference.currentValue)
-            for (listener in listeners) {
-                listener(value)
-            }
-        }
-
-    override val editor: E? by lazy { createEditor?.invoke(this) }
-
-    init {
-        dependsOn.preference.addChangeListener {
-            validate(currentValue, it)
-        }
-
-        SwingUtilities.invokeLater { // Validate state on startup
-            validate(currentValue, dependsOn.preference.currentValue)
-            preferencesEditor.revalidate()
-        }
-    }
-
-    private fun validate(thisValue: T, otherValue: D) {
-        if (thisValue != default && !dependsOn.predicate(otherValue)) { // invalid state
-            currentValue = default
-            editor?.isEnabled = false
-            resetEditor(editor)
-        } else { // Set editor enabled/disabled based on current value and predicate of dependency
-            editor?.isEnabled = thisValue != default || dependsOn.predicate(otherValue)
-        }
-    }
-
-    companion object {
-        @Suppress("unused")
-        inline fun <reified T : Any, reified D : Any, reified E : JComponent> PreferenceCategory.dependentPreference(
-            name: String,
-            description: String? = null,
-            requiresRestart: Boolean = false,
-            default: T,
-            serializer: KSerializer<T> = serializer(),
-            dependsOn: PreferenceDependency<D>,
-            noinline editor: (Preference<T>.() -> E)?,
-            noinline resetEditor: Preference<T>.(E?) -> Unit,
-        ): DependentPreference<T, D, E> = DependentPreference(
-            this,
-            name,
-            description,
-            requiresRestart,
-            default,
-            serializer,
-            dependsOn,
-            editor,
-            resetEditor,
-        )
-    }
-}
-
 val preferencesEditor by lazy {
     jFrame("Preferences", 600, 800, initiallyVisible = false) {
         defaultCloseOperation = JFrame.HIDE_ON_CLOSE
@@ -206,23 +138,24 @@ val preferencesEditor by lazy {
                                         add(
                                             StyledLabel {
                                                 add(preference.name, Font.BOLD)
-                                                if (preference.requiresRestart) {
-                                                    add(" Requires restart", "superscript")
+                                                val notes = listOfNotNull(
+                                                    "Requires restart".takeIf { preference.requiresRestart },
+                                                    preference.dependency?.let { "Depends on ${it.name}" },
+                                                )
+                                                if (notes.isNotEmpty()) {
+                                                    add(
+                                                        notes.joinToString(separator = " | ", prefix = "  "),
+                                                        "superscript",
+                                                    )
                                                 }
+
                                                 if (preference.description != null) {
                                                     add("\n")
                                                     add(preference.description)
-                                                    if (preference is DependentPreference<*, *, *>) {
-                                                        add(
-                                                            "Depends on ${preference.dependsOn.preference.name}",
-                                                            "superscript",
-                                                        )
-                                                    }
                                                 }
                                             },
-                                            "grow, wrap, gapy 0",
                                         )
-                                        add(editor, "grow, wrap, gapy 0")
+                                        add(editor)
                                     }
                                 }
                             }
