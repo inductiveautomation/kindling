@@ -1,5 +1,3 @@
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE
-
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.serialization)
@@ -11,7 +9,7 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven(url = "https://nexus.inductiveautomation.com/repository/public/")
+    maven("https://nexus.inductiveautomation.com/repository/public/")
 }
 
 dependencies {
@@ -41,7 +39,11 @@ dependencies {
 group = "io.github.inductiveautomation"
 
 application {
-    mainClass.set("io.github.inductiveautomation.kindling.MainPanel")
+    mainClass = "io.github.inductiveautomation.kindling.MainPanel"
+    applicationDefaultJvmArgs += listOf(
+        "-XX:+UseZGC",
+        "-XX:+ZGenerational",
+    )
 }
 
 tasks {
@@ -51,10 +53,10 @@ tasks {
 }
 
 val downloadJavadocs = tasks.register<DownloadJavadocs>("downloadJavadocs") {
-    urlsByVersion.set(
+    urlsByVersion =
         mapOf(
             "8.1" to listOf(
-                "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.32/allclasses.html",
+                "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.35/allclasses.html",
                 "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
                 "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
             ),
@@ -68,25 +70,18 @@ val downloadJavadocs = tasks.register<DownloadJavadocs>("downloadJavadocs") {
                 "https://docs.oracle.com/javase/8/docs/api/allclasses-noframe.html",
                 "https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/allclasses-noframe.html",
             ),
-        ),
-    )
-    outputDir.set(project.layout.buildDirectory.dir("javadocs"))
+        )
+    outputDir = project.layout.buildDirectory.dir("javadocs")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(libs.versions.java.map(JavaLanguageVersion::of))
-        vendor.set(JvmVendorSpec.AMAZON)
+        languageVersion = libs.versions.java.map(JavaLanguageVersion::of)
+        vendor = JvmVendorSpec.AMAZON
     }
     sourceSets {
         main {
             resources.srcDir(downloadJavadocs)
         }
-    }
-}
-
-ktlint {
-    reporters {
-        reporter(CHECKSTYLE)
     }
 }
