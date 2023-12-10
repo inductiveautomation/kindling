@@ -32,14 +32,24 @@ import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
+import org.jfree.chart.JFreeChart
+import org.jfree.chart.axis.DateAxis
+import org.jfree.chart.axis.LogAxis
+import org.jfree.chart.plot.PlotOrientation
+import org.jfree.chart.plot.XYPlot
+import org.jfree.chart.renderer.xy.XYAreaRenderer
+import org.jfree.data.time.Second
+import org.jfree.data.time.TimeSeries
+import org.jfree.data.time.TimeSeriesCollection
+import org.jfree.data.xy.XYDataset
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Rectangle
-import java.awt.RenderingHints
-import java.awt.geom.AffineTransform
-import java.time.Duration
+import java.text.DateFormat
 import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.Date
 import java.util.Vector
 import javax.swing.Icon
 import javax.swing.JCheckBox
@@ -52,8 +62,6 @@ import javax.swing.JScrollBar
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import javax.swing.SwingConstants
-import javax.swing.UIManager
-import kotlin.math.absoluteValue
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
 typealias LogFilter = Filter<LogEvent>
@@ -75,7 +83,9 @@ class LogPanel(
 
     private val totalRows: Int = rawData.size
 
-    private val densityDisplay = GroupingScrollBar()
+    private val densityDisplay = GroupingScrollBar().apply {
+        data = rawData.groupingBy { it.timestamp.truncatedTo(ChronoUnit.SECONDS) }.eachCount()
+    }
 
     private val header = Header(totalRows)
 
@@ -172,6 +182,7 @@ class LogPanel(
                         }
                     }
                     selectionModel.valueIsAdjusting = false
+                    densityDisplay.data = filteredData.groupingBy { it.timestamp.truncatedTo(ChronoUnit.SECONDS) }.eachCount()
                 }
             }
         }
@@ -324,21 +335,45 @@ class LogPanel(
     }
 
     inner class GroupingScrollBar : JScrollBar() {
-        private val density: Map<Instant, Int>
-        private val rangex: Int
+        var data: Map<Instant, Int> = emptyMap()
+            set(value) {
+                field = value
+                chart.xyPlot.dataset = createDataset(value)
+            }
 
-        init {
-            val delta = Duration.between(rawData.first().timestamp, rawData.last().timestamp)
-            val slice = delta.dividedBy((rawData.size.toLong() / 60).coerceAtLeast(1))
-            val insertionPoint = DURATIONS.binarySearch { it.compareTo(slice) }
-            val aggregate = DURATIONS[insertionPoint.absoluteValue - 1]
+        private val chart: JFreeChart = createChart(createDataset(data))
 
-            toolTipText = aggregate.toString()
+        private fun createDataset(data: Map<Instant, Int>): TimeSeriesCollection {
+            val series = TimeSeries("Events")
+            data.entries.sortedBy { it.key }.forEach { (timestamp, count) ->
+                series.add(Second(Date.from(timestamp)), count)
+            }
+            return TimeSeriesCollection(series)
+        }
 
-            density = rawData.groupingBy {
-                it.timestamp.truncatedTo(DurationUnit(aggregate))
-            }.eachCount()
-            rangex = density.values.maxOf { it }
+        private fun createChart(dataset: XYDataset): JFreeChart {
+            return JFreeChart(
+                null,
+                null,
+                XYPlot(
+                    dataset,
+                    DateAxis().apply {
+//                        isVisible = false
+                        upperMargin = 0.0
+                        lowerMargin = 0.0
+                        dateFormatOverride = DateFormat.getDateTimeInstance()
+                    },
+                    LogAxis().apply {
+                        isVisible = false
+                        upperMargin = 0.0
+                        lowerMargin = 0.0
+                    },
+                    XYAreaRenderer(),
+                ).apply {
+                    orientation = PlotOrientation.HORIZONTAL
+                },
+                false,
+            )
         }
 
         override fun getUnitIncrement(direction: Int): Int {
@@ -352,33 +387,18 @@ class LogPanel(
         private val customUI = object : FlatScrollBarUI() {
             override fun paintTrack(g: Graphics, c: JComponent, trackBounds: Rectangle) {
                 super.paintTrack(g, c, trackBounds)
-                if (ShowDensity.currentValue) {
-                    g as Graphics2D
-                    g.color = UIManager.getColor("Actions.Red")
+                g as Graphics2D
 
-                    val old = g.transform
-                    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-                    g.transform(
-                        AffineTransform.getScaleInstance(
-                            trackBounds.width / rangex.toDouble(),
-                            trackBounds.height / density.size.toDouble(),
-                        ),
-                    )
-                    density.values.forEachIndexed { index, count ->
-                        g.drawLine(
-                            trackBounds.x,
-                            trackBounds.y + index,
-                            trackBounds.x + count,
-                            trackBounds.y + index,
-                        )
-                    }
-                    g.transform = old
+                val old = g.transform
+                if (ShowDensity.currentValue) {
+                    chart.draw(g, trackBounds)
                 }
+                g.transform = old
             }
         }
 
         init {
-            preferredSize = Dimension(30, 100)
+            preferredSize = Dimension(300, 100)
             setUI(customUI)
         }
 
@@ -431,24 +451,24 @@ class LogPanel(
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)
 
-        private val DURATIONS = listOf(
-            Duration.ofMillis(100),
-            Duration.ofMillis(500),
-            Duration.ofSeconds(1),
-            Duration.ofSeconds(5),
-            Duration.ofSeconds(10),
-            Duration.ofSeconds(30),
-            Duration.ofMinutes(1),
-            Duration.ofMinutes(2),
-            Duration.ofMinutes(5),
-            Duration.ofMinutes(10),
-            Duration.ofMinutes(15),
-            Duration.ofMinutes(30),
-            Duration.ofHours(1),
-            Duration.ofHours(2),
-            Duration.ofHours(6),
-            Duration.ofHours(12),
-            Duration.ofDays(1),
-        )
+//        private val DURATIONS = listOf(
+//            Duration.ofMillis(100),
+//            Duration.ofMillis(500),
+//            Duration.ofSeconds(1),
+//            Duration.ofSeconds(5),
+//            Duration.ofSeconds(10),
+//            Duration.ofSeconds(30),
+//            Duration.ofMinutes(1),
+//            Duration.ofMinutes(2),
+//            Duration.ofMinutes(5),
+//            Duration.ofMinutes(10),
+//            Duration.ofMinutes(15),
+//            Duration.ofMinutes(30),
+//            Duration.ofHours(1),
+//            Duration.ofHours(2),
+//            Duration.ofHours(6),
+//            Duration.ofHours(12),
+//            Duration.ofDays(1),
+//        )
     }
 }
