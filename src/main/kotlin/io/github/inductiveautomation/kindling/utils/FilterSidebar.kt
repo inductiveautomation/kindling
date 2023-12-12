@@ -15,7 +15,7 @@ class FilterSidebar<T>(
         tabLayoutPolicy = SCROLL_TAB_LAYOUT
         tabsPopupPolicy = TabsPopupPolicy.asNeeded
         scrollButtonsPolicy = ScrollButtonsPolicy.never
-        tabWidthMode = TabWidthMode.equal
+        tabWidthMode = TabWidthMode.compact
         tabType = TabType.underlined
         tabHeight = 16
 

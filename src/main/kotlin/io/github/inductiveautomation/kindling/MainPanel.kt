@@ -336,8 +336,8 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
 
                 jFrame(
                     title = "Kindling",
-                    width = 1280,
-                    height = 800,
+                    width = 1680,
+                    height = 1050,
                     embedContentIntoTitleBar = true,
                 ) {
                     defaultCloseOperation = JFrame.EXIT_ON_CLOSE

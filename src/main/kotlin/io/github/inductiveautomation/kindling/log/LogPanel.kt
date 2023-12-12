@@ -1,9 +1,9 @@
 package io.github.inductiveautomation.kindling.log
 
-import com.formdev.flatlaf.ui.FlatScrollBarUI
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
+import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
@@ -11,7 +11,6 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.
 import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.log.LogViewer.ShowDensity
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
@@ -23,6 +22,7 @@ import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
+import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.isSortedBy
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
@@ -32,36 +32,16 @@ import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
-import org.jfree.chart.JFreeChart
-import org.jfree.chart.axis.DateAxis
-import org.jfree.chart.axis.LogAxis
-import org.jfree.chart.plot.PlotOrientation
-import org.jfree.chart.plot.XYPlot
-import org.jfree.chart.renderer.xy.XYAreaRenderer
-import org.jfree.data.time.Second
-import org.jfree.data.time.TimeSeries
-import org.jfree.data.time.TimeSeriesCollection
-import org.jfree.data.xy.XYDataset
-import java.awt.Dimension
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.Rectangle
-import java.text.DateFormat
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.Date
 import java.util.Vector
 import javax.swing.Icon
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
-import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JScrollBar
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
-import javax.swing.SwingConstants
+import kotlin.time.Duration.Companion.milliseconds
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
 typealias LogFilter = Filter<LogEvent>
@@ -83,10 +63,6 @@ class LogPanel(
 
     private val totalRows: Int = rawData.size
 
-    private val densityDisplay = GroupingScrollBar().apply {
-        data = rawData.groupingBy { it.timestamp.truncatedTo(ChronoUnit.SECONDS) }.eachCount()
-    }
-
     private val header = Header(totalRows)
 
     private val columnList = if (rawData.first() is SystemLogEvent) {
@@ -102,9 +78,7 @@ class LogPanel(
         }
     }
 
-    private val tableScrollPane = FlatScrollPane(table) {
-        verticalScrollBar = densityDisplay
-    }
+    private val tableScrollPane = FlatScrollPane(table)
 
     private val sidebar = FilterSidebar(
         NamePanel(rawData),
@@ -122,8 +96,7 @@ class LogPanel(
             null
         },
         TimePanel(
-            lowerBound = rawData.first().timestamp,
-            upperBound = rawData.last().timestamp,
+            rawData,
         ),
     )
 
@@ -154,38 +127,42 @@ class LogPanel(
         }
     }
 
-    private fun updateData() {
-        BACKGROUND.launch {
-            val selectedEvents = table.selectedRowIndices().map { row -> table.model[row].hashCode() }
-            val filteredData = if (Debug.currentValue) {
-                // use a less efficient, but more debuggable, filtering sequence
-                filters.fold(rawData) { acc, logFilter ->
-                    acc.filter(logFilter::filter).also {
-                        println("${it.size} left after $logFilter")
-                    }
-                }
-            } else {
-                rawData.filter { event ->
-                    filters.all { filter -> filter.filter(event) }
+    private val dataUpdater = debounce(50.milliseconds, BACKGROUND) {
+        val selectedEvents = table.selectedRowIndices().map { row -> table.model[row].hashCode() }
+        val filteredData = if (Debug.currentValue) {
+            // use a less efficient, but more debuggable, filtering sequence
+            filters.fold(rawData) { acc, logFilter ->
+                acc.filter(logFilter::filter).also {
+                    println("${it.size} left after $logFilter")
                 }
             }
-
-            EDT_SCOPE.launch {
-                table.apply {
-                    model = createModel(filteredData)
-
-                    selectionModel.valueIsAdjusting = true
-                    model.data.forEachIndexed { index, event ->
-                        if (event.hashCode() in selectedEvents) {
-                            val viewIndex = convertRowIndexToView(index)
-                            addRowSelectionInterval(viewIndex, viewIndex)
-                        }
-                    }
-                    selectionModel.valueIsAdjusting = false
-                    densityDisplay.data = filteredData.groupingBy { it.timestamp.truncatedTo(ChronoUnit.SECONDS) }.eachCount()
-                }
+        } else {
+            rawData.filter { event ->
+                filters.all { filter -> filter.filter(event) }
             }
         }
+
+        EDT_SCOPE.launch {
+            table.apply {
+                model = createModel(filteredData)
+
+                selectionModel.valueIsAdjusting = true
+                model.data.forEachIndexed { index, event ->
+                    if (event.hashCode() in selectedEvents) {
+                        val viewIndex = convertRowIndexToView(index)
+                        addRowSelectionInterval(viewIndex, viewIndex)
+                    }
+                }
+                selectionModel.valueIsAdjusting = false
+            }
+        }
+    }
+
+    private fun updateData() = dataUpdater()
+
+    fun reset() {
+        sidebar.filterPanels.forEach(FilterPanel<LogEvent>::reset)
+        header.search.text = null
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -334,79 +311,6 @@ class LogPanel(
         }
     }
 
-    inner class GroupingScrollBar : JScrollBar() {
-        var data: Map<Instant, Int> = emptyMap()
-            set(value) {
-                field = value
-                chart.xyPlot.dataset = createDataset(value)
-            }
-
-        private val chart: JFreeChart = createChart(createDataset(data))
-
-        private fun createDataset(data: Map<Instant, Int>): TimeSeriesCollection {
-            val series = TimeSeries("Events")
-            data.entries.sortedBy { it.key }.forEach { (timestamp, count) ->
-                series.add(Second(Date.from(timestamp)), count)
-            }
-            return TimeSeriesCollection(series)
-        }
-
-        private fun createChart(dataset: XYDataset): JFreeChart {
-            return JFreeChart(
-                null,
-                null,
-                XYPlot(
-                    dataset,
-                    DateAxis().apply {
-//                        isVisible = false
-                        upperMargin = 0.0
-                        lowerMargin = 0.0
-                        dateFormatOverride = DateFormat.getDateTimeInstance()
-                    },
-                    LogAxis().apply {
-                        isVisible = false
-                        upperMargin = 0.0
-                        lowerMargin = 0.0
-                    },
-                    XYAreaRenderer(),
-                ).apply {
-                    orientation = PlotOrientation.HORIZONTAL
-                },
-                false,
-            )
-        }
-
-        override fun getUnitIncrement(direction: Int): Int {
-            return table.getScrollableUnitIncrement(tableScrollPane.viewport.viewRect, SwingConstants.VERTICAL, direction)
-        }
-
-        override fun getBlockIncrement(direction: Int): Int {
-            return table.getScrollableBlockIncrement(tableScrollPane.viewport.viewRect, SwingConstants.VERTICAL, direction)
-        }
-
-        private val customUI = object : FlatScrollBarUI() {
-            override fun paintTrack(g: Graphics, c: JComponent, trackBounds: Rectangle) {
-                super.paintTrack(g, c, trackBounds)
-                g as Graphics2D
-
-                val old = g.transform
-                if (ShowDensity.currentValue) {
-                    chart.draw(g, trackBounds)
-                }
-                g.transform = old
-            }
-        }
-
-        init {
-            preferredSize = Dimension(300, 100)
-            setUI(customUI)
-        }
-
-        override fun updateUI() {
-            setUI(customUI)
-        }
-    }
-
     private class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
         private val events = JLabel("Showing $totalRows of $totalRows events")
 
@@ -450,25 +354,5 @@ class LogPanel(
 
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)
-
-//        private val DURATIONS = listOf(
-//            Duration.ofMillis(100),
-//            Duration.ofMillis(500),
-//            Duration.ofSeconds(1),
-//            Duration.ofSeconds(5),
-//            Duration.ofSeconds(10),
-//            Duration.ofSeconds(30),
-//            Duration.ofMinutes(1),
-//            Duration.ofMinutes(2),
-//            Duration.ofMinutes(5),
-//            Duration.ofMinutes(10),
-//            Duration.ofMinutes(15),
-//            Duration.ofMinutes(30),
-//            Duration.ofHours(1),
-//            Duration.ofHours(2),
-//            Duration.ofHours(6),
-//            Duration.ofHours(12),
-//            Duration.ofDays(1),
-//        )
     }
 }

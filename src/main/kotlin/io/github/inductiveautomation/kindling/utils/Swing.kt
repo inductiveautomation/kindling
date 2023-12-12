@@ -54,6 +54,7 @@ import javax.swing.SortOrder.ASCENDING
 import javax.swing.SortOrder.DESCENDING
 import javax.swing.SortOrder.UNSORTED
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.border.EmptyBorder
 import javax.swing.event.EventListenerList
@@ -533,4 +534,8 @@ fun VerticalSplitPane(
     this.resizeWeight = resizeWeight
 
     block()
+}
+
+inline fun <reified C> Component.getAncestorOfClass(): C? {
+    return SwingUtilities.getAncestorOfClass(C::class.java, this) as? C
 }

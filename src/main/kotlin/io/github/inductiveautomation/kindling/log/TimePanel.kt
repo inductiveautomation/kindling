@@ -1,27 +1,40 @@
 package io.github.inductiveautomation.kindling.log
 
+import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
+import io.github.inductiveautomation.kindling.log.InterestingTimesModel.TimeColumns
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
+import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.EmptyBorder
+import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.getAll
+import io.github.inductiveautomation.kindling.utils.getAncestorOfClass
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXDatePicker
+import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import java.awt.Cursor
+import java.awt.Dimension
+import java.awt.EventQueue
+import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoField.HOUR_OF_DAY
 import java.time.temporal.ChronoField.MILLI_OF_SECOND
 import java.time.temporal.ChronoField.MINUTE_OF_HOUR
 import java.time.temporal.ChronoField.SECOND_OF_MINUTE
+import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.Date
 import java.util.Locale
@@ -30,44 +43,134 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
+import javax.swing.JSeparator
 import javax.swing.JSpinner
+import javax.swing.ListSelectionModel
+import javax.swing.SortOrder
 import javax.swing.SpinnerModel
 import javax.swing.SpinnerNumberModel
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
+import javax.swing.table.AbstractTableModel
 
 internal class TimePanel(
-    private val lowerBound: Instant,
-    private val upperBound: Instant,
+    data: List<LogEvent>,
 ) : FilterPanel<LogEvent>() {
+    private val lowerBound: Instant = data.first().timestamp
+    private val upperBound: Instant = data.last().timestamp
+
     private var coveredRange: ClosedRange<Instant> = lowerBound..upperBound
     private val initialRange = coveredRange
 
     private val startSelector = DateTimeSelector(lowerBound, initialRange)
     private val endSelector = DateTimeSelector(upperBound, initialRange)
 
+    private val interestingTable = ReifiedJXTable(
+        InterestingTimesModel(
+            data.groupingBy { it.timestamp.truncatedTo(ChronoUnit.MINUTES) }
+                .eachCount()
+                .entries
+                .filter { it.value > 60 }
+                .map { entry ->
+                    InterestingTime(entry.key, entry.value)
+                },
+        ),
+        TimeColumns,
+    ).apply {
+        isColumnControlVisible = false
+        tableHeader.apply {
+            reorderingAllowed = false
+        }
+        setSortOrder(TimeColumns.Count, SortOrder.DESCENDING)
+
+        selectionMode = ListSelectionModel.SINGLE_SELECTION
+
+        attachPopupMenu { mouseEvent ->
+            val rowAtPoint = rowAtPoint(mouseEvent.point)
+            if (rowAtPoint == -1) {
+                null
+            } else {
+                setRowSelectionInterval(rowAtPoint, rowAtPoint)
+                val table = containingLogPanel?.table ?: return@attachPopupMenu null
+
+                val timeToSelect = model[convertRowIndexToModel(rowAtPoint), InterestingTimesModel.Minute]
+                JPopupMenu().apply {
+                    add(
+                        Action("Select") {
+                            val modelIndex = (table.model as LogsModel<*>).data.indexOfFirst { it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect }
+                            if (modelIndex == -1) return@Action
+
+                            println(timeToSelect)
+                            println(modelIndex)
+                            val viewIndex = table.convertRowIndexToView(modelIndex)
+                            println(viewIndex)
+
+                            table.setRowSelectionInterval(viewIndex, viewIndex)
+                            table.scrollRectToVisible(table.getCellRect(viewIndex, 0, true))
+                        },
+                    )
+                }
+            }
+        }
+    }
+
     private val resetRange = Action("Reset") {
         reset()
     }
 
+    private val captureRange = Action(
+        name = "Capture Range",
+        description = "Sets the time filter to the current visible range and resets all other filters",
+    ) {
+        val logPanel = containingLogPanel ?: return@Action
+
+        val events = logPanel.table.model.data
+        logPanel.reset()
+
+        EventQueue.invokeLater {
+            startSelector.time = events.first().timestamp
+            endSelector.time = events.last().timestamp
+        }
+    }
+
     override val tabName: String = "Time"
 
-    override val component = JPanel(MigLayout("ins 0, fill, wrap 1"))
+    override val component = JPanel(MigLayout("ins 0, fill, wrap 1")).apply {
+        add(startSelector, "pushx, growx")
+        add(
+            JLabel("To").apply {
+                horizontalAlignment = SwingConstants.CENTER
+            },
+            "align center, growx",
+        )
+        add(endSelector, "pushx, growx")
+
+        add(
+            JSeparator(JSeparator.HORIZONTAL).apply {
+                preferredSize = Dimension(Int.MAX_VALUE, 1)
+            },
+            "gap 0 0 10 10"
+        )
+
+        add(JButton(captureRange), "split 2, gapright push")
+        add(JButton(resetRange))
+
+        add(
+            JSeparator(JSeparator.HORIZONTAL).apply {
+                preferredSize = Dimension(Int.MAX_VALUE, 10)
+            },
+            "gap 0 0 10 10"
+        )
+
+        add(JLabel("Dense Times"))
+        add(FlatScrollPane(interestingTable), "pushx, growx")
+    }
+
+    private val containingLogPanel: LogPanel?
+        get() = component.getAncestorOfClass<LogPanel>()
 
     init {
-        component.apply {
-            add(startSelector, "pushx, growx")
-            add(
-                JLabel("To").apply {
-                    horizontalAlignment = SwingConstants.CENTER
-                },
-                "align center, growx",
-            )
-            add(endSelector, "pushx, growx")
-            add(JButton(resetRange), "top, right, pushy")
-        }
-
         startSelector.addPropertyChangeListener("time") {
             updateCoveredRange()
         }
@@ -123,7 +226,7 @@ private var JXDatePicker.localDate: LocalDate?
 class DateTimeSelector(
     private val initialValue: Instant,
     private val range: ClosedRange<Instant>,
-) : JPanel(MigLayout("ins 0, fillx")) {
+) : JPanel(MigLayout("ins 0")) {
     private val initialZonedTime = initialValue.atZone(LogViewer.SelectedTimeZone.currentValue)
 
     private var datePicker = JXDatePicker().apply {
@@ -174,8 +277,21 @@ class DateTimeSelector(
         }
 
     init {
-        add(datePicker, "growx, pushx, wrap")
-        add(timeSelector, "growx, pushx")
+        add(datePicker, "growx, spanx, pushx, wrap")
+        add(timeSelector, "growx, spanx, pushx, wrap")
+
+        for (amount in listOf(-30L, -15, -5, -1, 1L, 5, 15, 30)) {
+            add(
+                FlatButton().apply {
+                    action = Action("%+d".format(amount)) {
+                        time = time.plusSeconds(amount * 60)
+                    }
+//                    buttonType = FlatButton.ButtonType.square
+                    margin = Insets(1, 1, 1, 1)
+                },
+                "w 12.5%, sgx",
+            )
+        }
     }
 }
 
@@ -285,4 +401,58 @@ private class ChronoSpinnerModel(
     val pattern: String,
 ) : SpinnerNumberModel(0L, field.range().minimum, field.range().maximum, 1L) {
     override fun getMaximum(): Long = super.getMaximum() as Long
+}
+
+private data class InterestingTime(
+    val time: Instant,
+    val count: Int,
+)
+
+private class InterestingTimesModel(
+    private val data: List<InterestingTime>,
+) : AbstractTableModel() {
+    override fun getRowCount(): Int = data.size
+
+    @Suppress("RedundantCompanionReference")
+    override fun getColumnCount(): Int = TimeColumns.size
+    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = get(rowIndex, TimeColumns[columnIndex])
+    override fun getColumnName(column: Int): String = TimeColumns[column].header
+    override fun getColumnClass(columnIndex: Int): Class<*> = TimeColumns[columnIndex].clazz
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
+        return columnIndex == TimeColumns[MDCTableModel.Inclusive]
+    }
+
+    operator fun <T> get(row: Int, column: Column<InterestingTime, T>): T {
+        return data[row].let { info ->
+            column.getValue(info)
+        }
+    }
+
+    companion object TimeColumns : ColumnList<InterestingTime>() {
+        private lateinit var _formatter: DateTimeFormatter
+
+        private val TimeFormatter: DateTimeFormatter
+            get() {
+                if (!this::_formatter.isInitialized) {
+                    _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withZone(LogViewer.SelectedTimeZone.currentValue)
+                }
+                if (_formatter.zone != LogViewer.SelectedTimeZone.currentValue) {
+                    _formatter = _formatter.withZone(LogViewer.SelectedTimeZone.currentValue)
+                }
+                return _formatter
+            }
+
+        val Minute by column(
+            column = {
+                cellRenderer = DefaultTableRenderer {
+                    (it as? Instant)?.let(TimeFormatter::format)
+                }
+            },
+            value = InterestingTime::time,
+        )
+        val Count by column(
+            name = "Event Count",
+            value = InterestingTime::count,
+        )
+    }
 }

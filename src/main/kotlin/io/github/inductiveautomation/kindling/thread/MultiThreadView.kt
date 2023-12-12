@@ -69,12 +69,6 @@ class MultiThreadView(
     private val statePanel = StatePanel()
     private val searchField = JXSearchField("Search")
 
-    private val sidebar = FilterSidebar(
-        statePanel,
-        systemPanel,
-        poolPanel,
-    )
-
     private var visibleThreadDumps: List<ThreadDump?> = emptyList()
         set(value) {
             field = value
@@ -224,6 +218,12 @@ class MultiThreadView(
             }
         }
     }
+
+    private val sidebar = FilterSidebar(
+        statePanel,
+        systemPanel,
+        poolPanel,
+    )
 
     private var comparison = ThreadComparisonPane(threadDumps.size, threadDumps[0].version)
 
