@@ -6,7 +6,6 @@ import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Preference
-import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
@@ -190,15 +189,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
             return _formatter
         }
 
-    val ShowDensity = preference(
-        name = "Density Display",
-        default = true,
-        editor = {
-            PreferenceCheckbox("Show 'minimap' of log events in scrollbar")
-        },
-    )
-
     override val displayName: String = "Log View"
     override val key: String = "logview"
-    override val preferences: List<Preference<*>> = listOf(SelectedTimeZone, ShowDensity)
+    override val preferences: List<Preference<*>> = listOf(SelectedTimeZone)
 }
