@@ -311,7 +311,7 @@ class LogPanel(
         }
     }
 
-    private class Header(private val totalRows: Int) : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
+    private class Header(private val totalRows: Int) : JPanel(MigLayout("ins 2, fill, hidemode 3")) {
         private val events = JLabel("Showing $totalRows of $totalRows events")
 
         val search = JXSearchField("Search")

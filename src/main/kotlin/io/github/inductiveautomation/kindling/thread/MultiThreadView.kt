@@ -32,6 +32,7 @@ import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.escapeHtml
+import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import io.github.inductiveautomation.kindling.utils.transferTo
@@ -369,7 +370,7 @@ class MultiThreadView(
         }
 
         comparison.addBlockerSelectedListener { selectedID ->
-            for (i in 0 until mainTable.model.rowCount) {
+            for (i in mainTable.model.rowIndices) {
                 if (selectedID == mainTable.model[i, mainTable.model.columns.id]) {
                     val rowIndex = mainTable.convertRowIndexToView(i)
                     mainTable.selectionModel.setSelectionInterval(0, rowIndex)
@@ -473,7 +474,7 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val title = "Thread Viewer"
     override val description = "Thread dump (.json or .txt) files"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
-    override val filter = FileFilter(description, listOf("json", "txt"))
+    override val filter = FileFilter(description, "json", "txt")
 
     override val respectsEncoding: Boolean = true
     override fun open(path: Path): ToolPanel = open(listOf(path))

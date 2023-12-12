@@ -137,7 +137,7 @@ object GatewayNetworkTool : ClipboardTool {
     override val title = "Gateway Network Diagram"
     override val description = "Gateway network diagram (.json or .txt) files"
     override val icon = FlatSVGIcon("icons/bx-sitemap.svg")
-    override val filter = FileFilter(description, listOf("json", "txt"))
+    override val filter = FileFilter(description, "json", "txt")
 
     override fun open(data: String): ToolPanel {
         return GatewayNetworkViewer(

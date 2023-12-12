@@ -7,6 +7,7 @@ import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider
+import io.github.inductiveautomation.kindling.utils.StringProvider
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import org.jdesktop.swingx.renderer.StringValues
 import java.time.Instant
@@ -105,7 +106,7 @@ sealed class LogColumnList<T : LogEvent> : ColumnList<T>() {
         columnCustomization = {
             minWidth = 50
 
-            val valueExtractor: (String?) -> String? = {
+            val valueExtractor: StringProvider<String> = {
                 if (ShowFullLoggerNames.currentValue) {
                     it
                 } else {

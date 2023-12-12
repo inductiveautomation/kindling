@@ -440,7 +440,7 @@ object CacheViewer : Tool {
     override val title = "Cache Dump"
     override val description = "S&F Cache data/script files"
     override val icon = FlatSVGIcon("icons/bx-data.svg")
-    val extensions = listOf("data", "script", "zip")
-    override val filter = FileFilter(description, extensions)
+    internal val extensions = arrayOf("data", "script", "zip")
+    override val filter = FileFilter(description, *extensions)
     override fun open(path: Path): ToolPanel = CacheView(path)
 }
