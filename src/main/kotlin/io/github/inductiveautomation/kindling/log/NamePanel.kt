@@ -5,9 +5,14 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.FilterListPanel
 import io.github.inductiveautomation.kindling.utils.FilterModel
+import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
+import java.awt.event.ItemEvent
+import javax.swing.JCheckBoxMenuItem
 import javax.swing.JPopupMenu
 
-internal class NamePanel(events: List<LogEvent>) : FilterListPanel<LogEvent>("Logger", ::getSortKey) {
+internal class NamePanel(
+    events: List<LogEvent>,
+) : FilterListPanel<LogEvent>("Logger", ::getSortKey), PopupMenuCustomizer {
     init {
         filterList.setModel(FilterModel(events.groupingBy(LogEvent::logger).eachCount(), ::getSortKey))
         filterList.selectAll()
@@ -19,6 +24,7 @@ internal class NamePanel(events: List<LogEvent>) : FilterListPanel<LogEvent>("Lo
 
     override fun filter(item: LogEvent) = item.logger in filterList.checkBoxListSelectedValues
 
+    // customize the popup menu on the primary log panel table
     override fun customizePopupMenu(
         menu: JPopupMenu,
         column: Column<out LogEvent, *>,
@@ -38,6 +44,17 @@ internal class NamePanel(events: List<LogEvent>) : FilterListPanel<LogEvent>("Lo
                 },
             )
         }
+    }
+
+    // customize the popup menu above our own entry in the tab strip
+    override fun customizePopupMenu(menu: JPopupMenu) {
+        menu.add(
+            JCheckBoxMenuItem("Show full logger names", ShowFullLoggerNames.currentValue).apply {
+                addItemListener { e ->
+                    ShowFullLoggerNames.currentValue = e.stateChange == ItemEvent.SELECTED
+                }
+            },
+        )
     }
 
     companion object {

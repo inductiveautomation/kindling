@@ -35,11 +35,16 @@ class FilterSidebar<T>(
             if (tabIndex == -1) return@attachPopupMenu null
 
             JPopupMenu().apply {
+                val filterPanel = filterPanels[tabIndex]
+
                 add(
                     Action("Reset") {
-                        filterPanels[tabIndex].reset()
+                        filterPanel.reset()
                     },
                 )
+                if (filterPanel is PopupMenuCustomizer) {
+                    filterPanel.customizePopupMenu(this)
+                }
             }
         }
 
