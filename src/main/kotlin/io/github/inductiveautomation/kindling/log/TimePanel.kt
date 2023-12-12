@@ -4,7 +4,7 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
-import io.github.inductiveautomation.kindling.log.InterestingTimesModel.TimeColumns
+import io.github.inductiveautomation.kindling.log.DensityTableModel.DensityColumns
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
@@ -12,14 +12,12 @@ import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.EmptyBorder
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
-import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.getAncestorOfClass
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXDatePicker
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import java.awt.Cursor
-import java.awt.Dimension
 import java.awt.EventQueue
 import java.awt.Insets
 import java.awt.event.MouseAdapter
@@ -66,53 +64,75 @@ internal class TimePanel(
     private val startSelector = DateTimeSelector(lowerBound, initialRange)
     private val endSelector = DateTimeSelector(upperBound, initialRange)
 
-    private val interestingTable = ReifiedJXTable(
-        InterestingTimesModel(
+    private val denseMinutesTable = ReifiedJXTable(
+        DensityTableModel(
             data.groupingBy { it.timestamp.truncatedTo(ChronoUnit.MINUTES) }
                 .eachCount()
                 .entries
                 .filter { it.value > 60 }
                 .map { entry ->
-                    InterestingTime(entry.key, entry.value)
+                    DenseTime(entry.key, entry.value)
                 },
         ),
-        TimeColumns,
+        DensityColumns,
     ).apply {
         isColumnControlVisible = false
         tableHeader.apply {
             reorderingAllowed = false
         }
-        setSortOrder(TimeColumns.Count, SortOrder.DESCENDING)
+        setSortOrder(DensityColumns.Count, SortOrder.DESCENDING)
 
         selectionMode = ListSelectionModel.SINGLE_SELECTION
 
-        attachPopupMenu { mouseEvent ->
-            val rowAtPoint = rowAtPoint(mouseEvent.point)
-            if (rowAtPoint == -1) {
-                null
-            } else {
-                setRowSelectionInterval(rowAtPoint, rowAtPoint)
-                val table = containingLogPanel?.table ?: return@attachPopupMenu null
-
-                val timeToSelect = model[convertRowIndexToModel(rowAtPoint), InterestingTimesModel.Minute]
-                JPopupMenu().apply {
-                    add(
-                        Action("Select") {
-                            val modelIndex = (table.model as LogsModel<*>).data.indexOfFirst { it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect }
-                            if (modelIndex == -1) return@Action
-
-                            println(timeToSelect)
-                            println(modelIndex)
-                            val viewIndex = table.convertRowIndexToView(modelIndex)
-                            println(viewIndex)
-
-                            table.setRowSelectionInterval(viewIndex, viewIndex)
-                            table.scrollRectToVisible(table.getCellRect(viewIndex, 0, true))
-                        },
-                    )
+        addMouseListener(
+            object : MouseAdapter() {
+                override fun mousePressed(e: MouseEvent) {
+                    if (e.clickCount >= 2) {
+                        val rowAtPoint = rowAtPoint(e.point)
+                        if (rowAtPoint != -1) {
+                            e.consume()
+                            selectTime(model[convertRowIndexToModel(rowAtPoint), DensityTableModel.Minute])
+                        }
+                        return
+                    }
+                    maybeShowPopup(e)
                 }
-            }
-        }
+
+                override fun mouseReleased(e: MouseEvent) {
+                    maybeShowPopup(e)
+                }
+
+                private fun maybeShowPopup(e: MouseEvent) {
+                    if (e.isPopupTrigger) {
+                        e.consume()
+                        val rowAtPoint = rowAtPoint(e.point)
+                        if (rowAtPoint != -1) {
+                            setRowSelectionInterval(rowAtPoint, rowAtPoint)
+
+                            val timeToSelect = model[convertRowIndexToModel(rowAtPoint), DensityTableModel.Minute]
+                            JPopupMenu().apply {
+                                add(
+                                    Action("Select") {
+                                        selectTime(timeToSelect)
+                                    },
+                                )
+                            }.show(this@apply, e.x, e.y)
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    private fun selectTime(timeToSelect: Instant) {
+        val table = containingLogPanel?.table ?: return
+
+        val modelIndex = (table.model as LogsModel<*>).data.indexOfFirst { it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect }
+        if (modelIndex == -1) return
+
+        val viewIndex = table.convertRowIndexToView(modelIndex)
+        table.setRowSelectionInterval(viewIndex, viewIndex)
+        table.scrollRectToVisible(table.getCellRect(viewIndex, 0, true))
     }
 
     private val resetRange = Action("Reset") {
@@ -136,7 +156,7 @@ internal class TimePanel(
 
     override val tabName: String = "Time"
 
-    override val component = JPanel(MigLayout("ins 0, fill, wrap 1")).apply {
+    override val component = JPanel(MigLayout("ins 2 0, fill, wrap 1")).apply {
         add(startSelector, "pushx, growx")
         add(
             JLabel("To").apply {
@@ -147,24 +167,24 @@ internal class TimePanel(
         add(endSelector, "pushx, growx")
 
         add(
-            JSeparator(JSeparator.HORIZONTAL).apply {
-                preferredSize = Dimension(Int.MAX_VALUE, 1)
-            },
-            "gap 0 0 10 10"
+            JSeparator(JSeparator.HORIZONTAL),
+            "growx, spanx, h 10!, gap 10 10 10 10",
         )
 
         add(JButton(captureRange), "split 2, gapright push")
         add(JButton(resetRange))
 
         add(
-            JSeparator(JSeparator.HORIZONTAL).apply {
-                preferredSize = Dimension(Int.MAX_VALUE, 10)
-            },
-            "gap 0 0 10 10"
+            JSeparator(JSeparator.HORIZONTAL),
+            "growx, spanx, h 10!, gap 10 10 10 10",
         )
 
-        add(JLabel("Dense Times"))
-        add(FlatScrollPane(interestingTable), "pushx, growx")
+        add(
+            JLabel("Dense Times").apply {
+                toolTipText = "Dense times are minutes with more than 60 logged events"
+            },
+        )
+        add(FlatScrollPane(denseMinutesTable), "pushx, growx")
     }
 
     private val containingLogPanel: LogPanel?
@@ -286,7 +306,6 @@ class DateTimeSelector(
                     action = Action("%+d".format(amount)) {
                         time = time.plusSeconds(amount * 60)
                     }
-//                    buttonType = FlatButton.ButtonType.square
                     margin = Insets(1, 1, 1, 1)
                 },
                 "w 12.5%, sgx",
@@ -403,35 +422,35 @@ private class ChronoSpinnerModel(
     override fun getMaximum(): Long = super.getMaximum() as Long
 }
 
-private data class InterestingTime(
+private data class DenseTime(
     val time: Instant,
     val count: Int,
 )
 
-private class InterestingTimesModel(
-    private val data: List<InterestingTime>,
+private class DensityTableModel(
+    private val data: List<DenseTime>,
 ) : AbstractTableModel() {
     override fun getRowCount(): Int = data.size
 
     @Suppress("RedundantCompanionReference")
-    override fun getColumnCount(): Int = TimeColumns.size
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = get(rowIndex, TimeColumns[columnIndex])
-    override fun getColumnName(column: Int): String = TimeColumns[column].header
-    override fun getColumnClass(columnIndex: Int): Class<*> = TimeColumns[columnIndex].clazz
+    override fun getColumnCount(): Int = DensityColumns.size
+    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = get(rowIndex, DensityColumns[columnIndex])
+    override fun getColumnName(column: Int): String = DensityColumns[column].header
+    override fun getColumnClass(columnIndex: Int): Class<*> = DensityColumns[columnIndex].clazz
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        return columnIndex == TimeColumns[MDCTableModel.Inclusive]
+        return columnIndex == DensityColumns[MDCTableModel.Inclusive]
     }
 
-    operator fun <T> get(row: Int, column: Column<InterestingTime, T>): T {
+    operator fun <T> get(row: Int, column: Column<DenseTime, T>): T {
         return data[row].let { info ->
             column.getValue(info)
         }
     }
 
-    companion object TimeColumns : ColumnList<InterestingTime>() {
+    companion object DensityColumns : ColumnList<DenseTime>() {
         private lateinit var _formatter: DateTimeFormatter
 
-        private val TimeFormatter: DateTimeFormatter
+        private val minuteFormatter: DateTimeFormatter
             get() {
                 if (!this::_formatter.isInitialized) {
                     _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withZone(LogViewer.SelectedTimeZone.currentValue)
@@ -445,14 +464,15 @@ private class InterestingTimesModel(
         val Minute by column(
             column = {
                 cellRenderer = DefaultTableRenderer {
-                    (it as? Instant)?.let(TimeFormatter::format)
+                    (it as? Instant)?.let(minuteFormatter::format)
                 }
             },
-            value = InterestingTime::time,
+            value = DenseTime::time,
         )
+
         val Count by column(
             name = "Event Count",
-            value = InterestingTime::count,
+            value = DenseTime::count,
         )
     }
 }
