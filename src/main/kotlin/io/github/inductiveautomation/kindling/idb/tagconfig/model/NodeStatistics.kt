@@ -58,25 +58,32 @@ class NodeStatistics(private val node: Node) {
 
     var dataSource: String? = node.config.valueSource
 
+    var isReadOnly: Boolean? = node.config.readOnly
+
     fun copyToNewNode(newNodeStatistics: NodeStatistics) {
         newNodeStatistics.historyEnabled = historyEnabled
         newNodeStatistics.dataType = node.statistics.dataType
         newNodeStatistics.dataSource = node.statistics.dataSource
         newNodeStatistics.scriptStates.addAll(scriptStates)
         newNodeStatistics.alarmStates.addAll(alarmStates)
+        newNodeStatistics.isReadOnly = isReadOnly
     }
 
     fun copyToOverrideNode(overrideNodeStatistics: NodeStatistics) {
         if (overrideNodeStatistics.historyEnabled == null) {
-            overrideNodeStatistics.historyEnabled = node.statistics.historyEnabled
+            overrideNodeStatistics.historyEnabled = historyEnabled
         }
 
         if (overrideNodeStatistics.dataType == null) {
-            overrideNodeStatistics.dataType = node.statistics.dataType
+            overrideNodeStatistics.dataType = dataType
         }
 
         if (overrideNodeStatistics.dataSource == null) {
-            overrideNodeStatistics.dataSource = node.statistics.dataSource
+            overrideNodeStatistics.dataSource = dataSource
+        }
+
+        if (overrideNodeStatistics.isReadOnly == null) {
+            overrideNodeStatistics.isReadOnly = isReadOnly
         }
 
         alarmStates.forEach { parentAlarmState ->

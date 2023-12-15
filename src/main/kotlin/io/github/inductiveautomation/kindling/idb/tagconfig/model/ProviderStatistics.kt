@@ -7,24 +7,23 @@ import kotlin.reflect.KProperty
 class ProviderStatistics {
     val orphanedTags = ListStatistic<Node>("orphanedTags")
 
-    val all = run {
-        listOf(
-            QuantitativeStatistic("totalAtomicTags"),
-            MappedStatistic("dataTypes"),
-            MappedStatistic("valueSources"),
-            QuantitativeStatistic("totalFolders"),
-            QuantitativeStatistic("totalUdtInstances"),
-            QuantitativeStatistic("totalUdtDefinitions"),
-            QuantitativeStatistic("totalTagsWithAlarms"),
-            QuantitativeStatistic("totalAlarms"),
-            QuantitativeStatistic("totalTagsWithHistory"),
-            QuantitativeStatistic("totalTagsWithEnabledScripts"),
-            QuantitativeStatistic("totalEnabledScripts"),
-            DependentStatistic("totalOrphanedTags", orphanedTags) { it.size },
-        )
-    }
+    val all = listOf(
+        QuantitativeStatistic("totalAtomicTags"),
+        MappedStatistic("dataTypes"),
+        MappedStatistic("valueSources"),
+        QuantitativeStatistic("totalFolders"),
+        QuantitativeStatistic("totalUdtInstances"),
+        QuantitativeStatistic("totalUdtDefinitions"),
+        QuantitativeStatistic("totalTagsWithAlarms"),
+        QuantitativeStatistic("totalAlarms"),
+        QuantitativeStatistic("totalTagsWithHistory"),
+        QuantitativeStatistic("totalTagsWithEnabledScripts"),
+        QuantitativeStatistic("totalEnabledScripts"),
+        DependentStatistic("totalOrphanedTags", orphanedTags) { it.size },
+        QuantitativeStatistic("totalReadOnlyTags")
+    )
 
-    private val statsMap = all.associateBy { it.name }.toMutableMap()
+    private val statsMap = all.associateBy { it.name }
 
     val totalAtomicTags: QuantitativeStatistic by statsMap
     val totalFolders: QuantitativeStatistic by statsMap
@@ -38,8 +37,14 @@ class ProviderStatistics {
     val dataTypes: MappedStatistic by statsMap
     val valueSources: MappedStatistic by statsMap
     val totalOrphanedTags: DependentStatistic<Int, MutableList<Node>> by statsMap
+    val totalReadOnlyTags: QuantitativeStatistic by statsMap
 
     fun processNodeForStatistics(node: Node) {
+        if (node.statistics.isUdtDefinition) {
+            totalUdtDefinitions.value++
+            return
+        }
+
         when {
             node.statistics.isAtomicTag -> {
                 totalAtomicTags.value++
@@ -55,6 +60,7 @@ class ProviderStatistics {
 
             node.statistics.isFolder -> totalFolders.value++
             node.statistics.isUdtInstance -> totalUdtInstances.value++
+            node.statistics.isReadOnly == true -> totalReadOnlyTags.value++
         }
 
         if (node.statistics.historyEnabled == true) totalTagsWithHistory.value++

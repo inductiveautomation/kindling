@@ -51,8 +51,10 @@ data class TagProviderRecord(
         }.toMap()
     }
 
-    val udtDefinitions by lazy {
-        rawNodeData.filter { it.statistics.isUdtDefinition }.associateBy { it.getFullUdtDefinitionPath(nodeGroups) }
+    val udtDefinitions: Map<String, Node> by lazy {
+        rawNodeData.filter { it.statistics.isUdtDefinition }.associateBy {
+            it.getFullUdtDefinitionPath(nodeGroups)
+        }
     }
 
     val typesNode = Node.typesNode(id)
@@ -65,7 +67,6 @@ data class TagProviderRecord(
                     // Resolve and process tags
                     with(nodeGroup) {
                         if (parentNode.statistics.isUdtDefinition || parentNode.statistics.isUdtInstance) {
-                            if (parentNode.statistics.isUdtDefinition) providerStatistics.totalUdtDefinitions.value++
                             if (!isResolved) {
                                 resolveInheritance(nodeGroups, udtDefinitions)
                             }
@@ -84,7 +85,9 @@ data class TagProviderRecord(
                     }
 
                     // Gather Statistics
-                    if (!nodeGroup.parentNode.statistics.isUdtDefinition) {
+                    if (nodeGroup.parentNode.statistics.isUdtDefinition) {
+                        providerStatistics.processNodeForStatistics(nodeGroup.parentNode)
+                    } else {
                         nodeGroup.forEach(providerStatistics::processNodeForStatistics)
                     }
                 }
@@ -146,7 +149,8 @@ data class TagProviderRecord(
         return if (folderId == "_types_") {
             lowercaseName
         } else {
-            "${nodeGroups[folderId!!]!!.parentNode.getFullUdtDefinitionPath(nodeGroups)}/$lowercaseName"
+            val parentName = nodeGroups[folderId!!]?.parentNode?.getFullUdtDefinitionPath(nodeGroups) ?: "<No Name Found?>"
+            "$parentName/$lowercaseName"
         }
     }
 
@@ -186,6 +190,7 @@ data class TagProviderRecord(
         val inheritedParentNode =
             parentNode.getParentType(udtDefinitions) ?: run {
                 isResolved = true
+                println("Missing UDT Definition: ${parentNode.config.typeId}")
                 return
             }
         val inheritedNodeGroup =
