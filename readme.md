@@ -83,6 +83,5 @@ Contributions of any kind (additional tools, polish to existing tools, test file
 - [Hydraulic Conveyor](https://www.hydraulic.software/)
 - [Terai Atsuhiro](https://java-swing-tips.blogspot.com/)
 
-## Disclaimer
-
-Kindling is **not** an official Inductive Automation product and is provided as-is with no warranty. 
+> [!WARNING]
+> Kindling is **not** an official Inductive Automation product and is provided as-is with no warranty. 

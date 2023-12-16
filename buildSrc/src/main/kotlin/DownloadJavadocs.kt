@@ -1,62 +1,67 @@
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.provider.MapProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
+import org.gradle.workers.WorkerExecutor
 import org.jsoup.Jsoup
+import javax.inject.Inject
 
-abstract class DownloadJavadocs : DefaultTask() {
+abstract class DownloadJavadocs @Inject constructor(
+    private val workerExecutor: WorkerExecutor,
+) : DefaultTask() {
     @get:Input
-    abstract val urlsByVersion: MapProperty<String, List<String>>
+    abstract val version: Property<String>
+
+    @get:Input
+    abstract val urls: ListProperty<String>
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
+
+    init {
+        @Suppress("LeakingThis")
+        outputDir.convention(project.layout.buildDirectory.dir("javadocs"))
+    }
 
     @TaskAction
     fun downloadJavadoc() {
         if (project.gradle.startParameter.isOffline) return
 
-        val destination = outputDir.asFile.get()
-        val versionsAndUrls = urlsByVersion.get()
-
-        val async = runBlocking(Dispatchers.IO) {
-            versionsAndUrls.mapValues { (_, urls) ->
-                urls.map { url ->
-                    async {
-                        try {
-                            Jsoup.connect(url).get()
-                                .select("""a[href][title*="class"], a[href][title*="interface"]""")
-                                .distinctBy { a -> a.attr("abs:href") }
-                                .map { a ->
-                                    val className = a.text()
-                                    val packageName = a.attr("title").substringAfterLast(' ')
-
-                                    "$packageName.$className=${a.absUrl("href")}"
-                                }
-                        } catch (e: Exception) {
-                            emptyList()
-                        }
-                    }
-                }
-                    .awaitAll()
-                    .flatten()
+        urls.get().forEach { javadocUrl ->
+            workerExecutor.noIsolation().submit(DownloadWorker::class.java) {
+                url.set(javadocUrl)
+                linksFile.set(outputDir.file(version.map { "$it/links.properties" }))
             }
         }
+    }
 
-        for ((version, property) in async) {
-            destination.resolve(version).apply { 
-                mkdirs()
-                resolve("links.properties").printWriter().use { writer ->
-                    for (line in property) {
-                        writer.println(line)
-                    }
+    interface DownloadWorkerParameters : WorkParameters {
+        val url: Property<String>
+        val linksFile: RegularFileProperty
+    }
+
+    abstract class DownloadWorker @Inject constructor(
+        private val parameters: DownloadWorkerParameters,
+    ) : WorkAction<DownloadWorkerParameters> {
+        override fun execute() {
+            val propertiesFile = parameters.linksFile.get().asFile
+            propertiesFile.parentFile.mkdir()
+
+            Jsoup.connect(parameters.url.get()).get()
+                .select("""a[href][title*="class"], a[href][title*="interface"]""")
+                .distinctBy { it.attr("abs:href") }
+                .forEach { a ->
+                    val className = a.text()
+                    val packageName = a.attr("title").substringAfterLast(' ')
+
+                    propertiesFile.appendText("$packageName.$className=${a.absUrl("href")}\n")
                 }
-            }
         }
     }
 }
