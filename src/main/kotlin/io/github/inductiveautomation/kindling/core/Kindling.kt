@@ -174,37 +174,6 @@ data object Kindling {
                 },
             )
 
-            // Can only set a string value if in dark mode
-            val ThemeExample = preference(
-                name = "Test dependent Theme",
-                default = "",
-                requiresRestart = true,
-                editor = {
-                    JXTextField("Test").apply {
-                        text = currentValue
-
-                        document.addDocumentListener(
-                            object : DocumentListener {
-                                fun onChange() {
-                                    currentValue = text
-                                }
-
-                                override fun insertUpdate(e: DocumentEvent?) = onChange()
-                                override fun removeUpdate(e: DocumentEvent?) = onChange()
-                                override fun changedUpdate(e: DocumentEvent?) = onChange()
-                            },
-                        )
-
-                        dependsOn(Theme) {
-                            isEnabled = it.isDark
-                            if (!it.isDark) {
-                                text = default
-                            }
-                        }
-                    }
-                },
-            )
-
             val ScaleFactor: Preference<Double> = preference(
                 name = "Scale Factor",
                 description = "Percentage to scale the UI.",
@@ -222,7 +191,7 @@ data object Kindling {
 
             override val displayName: String = "UI"
             override val key: String = "ui"
-            override val preferences: List<Preference<*>> = listOf(Theme, ThemeExample, ScaleFactor)
+            override val preferences: List<Preference<*>> = listOf(Theme, ScaleFactor)
         }
 
         data object Advanced : PreferenceCategory {
@@ -253,20 +222,9 @@ data object Kindling {
                 },
             )
 
-            // Checkbox can only be checked if Debug is set to true
-            val DependentExample = preference(
-                name = "Dependent Example",
-                default = false,
-                editor = {
-                    PreferenceCheckbox("Example Boolean").dependsOn(Debug) { newValue ->
-                        isEnabled = newValue
-                    }
-                },
-            )
-
             override val displayName: String = "Advanced"
             override val key: String = "advanced"
-            override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy, DependentExample)
+            override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)
         }
 
         private val preferencesPath: Path = Path(System.getProperty("user.home"), ".kindling").also {
