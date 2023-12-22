@@ -2,8 +2,6 @@ package io.github.inductiveautomation.kindling.utils
 
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
-import net.miginfocom.swing.MigLayout
-import javax.swing.JPanel
 import javax.swing.JPopupMenu
 
 abstract class FilterListPanel<T>(
@@ -14,12 +12,7 @@ abstract class FilterListPanel<T>(
 
     private val sortButtons = filterList.createSortButtons()
 
-    override val component = JPanel(MigLayout("ins 0, fill")).apply {
-        val sortGroupEnumeration = sortButtons.elements
-        add(sortGroupEnumeration.nextElement(), "split ${sortButtons.buttonCount}, flowx")
-        for (element in sortGroupEnumeration) {
-            add(element, "gapx 2")
-        }
+    override val component = ButtonPanel(sortButtons).apply {
         add(FlatScrollPane(filterList), "newline, push, grow")
     }
 

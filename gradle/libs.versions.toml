@@ -28,7 +28,7 @@ jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.3.0" }
 jsoup = { group = "org.jsoup", name = "jsoup", version = "1.17.1" }
 
 # appearance/swing
-miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.2" }
+miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.3" }
 flatlaf-core = { group = "com.formdev", name = "flatlaf", version.ref = "flatlaf" }
 flatlaf-extras = { group = "com.formdev", name = "flatlaf-extras", version.ref = "flatlaf" }
 flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref = "flatlaf" }

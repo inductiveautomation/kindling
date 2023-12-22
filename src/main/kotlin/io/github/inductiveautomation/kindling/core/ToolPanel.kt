@@ -70,7 +70,7 @@ abstract class ToolPanel(
             CSV("Comma Separated Values", "csv", TableModel::exportToCSV),
             EXCEL("Excel Workbook", "xlsx", TableModel::exportToXLSX);
 
-            val fileFilter = FileFilter(description, listOf(extension))
+            val fileFilter = FileFilter(description, extension)
         }
     }
 }

@@ -173,6 +173,6 @@ object IdbViewer : Tool {
     override val title = "Idb File"
     override val description = ".idb (SQLite3) files"
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")
-    override val filter = FileFilter(description, listOf("idb"))
+    override val filter = FileFilter(description, "idb")
     override fun open(path: Path): ToolPanel = IdbView(path)
 }

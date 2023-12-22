@@ -156,7 +156,8 @@ data object Kindling {
 
             override val displayName: String = "General"
             override val key: String = "general"
-            override val preferences: List<Preference<*>> = listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
+            override val preferences: List<Preference<*>> =
+                listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
         }
 
         data object UI : PreferenceCategory {
@@ -196,7 +197,6 @@ data object Kindling {
         data object Advanced : PreferenceCategory {
             val Debug: Preference<Boolean> = preference(
                 name = "Debug Mode",
-                description = null,
                 default = false,
                 editor = {
                     PreferenceCheckbox("Enable debug features")
@@ -261,12 +261,13 @@ data object Kindling {
             }
         }
 
-        private val preferenceScope = CoroutineScope(Dispatchers.IO)
-
         operator fun <T : Any> set(category: PreferenceCategory, preference: Preference<T>, value: T) {
-            internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] = preferencesJson.encodeToJsonElement(preference.serializer, value)
+            internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] =
+                preferencesJson.encodeToJsonElement(preference.serializer, value)
             syncToDisk()
         }
+
+        private val preferenceScope = CoroutineScope(Dispatchers.IO)
 
         // debounced store to disk operation, prevents unnecessarily clashing of file updates
         private val syncToDisk: () -> Unit = debounce(
@@ -277,19 +278,9 @@ data object Kindling {
                 @OptIn(ExperimentalSerializationApi::class)
                 preferencesJson.encodeToStream(
                     // (deeply) sort keys
-                    buildMap {
-                        for (category in internalState.keys.sorted()) {
-                            put(
-                                category,
-                                buildMap {
-                                    val categoryMap = internalState.getValue(category)
-                                    for (preference in categoryMap.keys.sorted()) {
-                                        put(preference, categoryMap.getValue(preference))
-                                    }
-                                },
-                            )
-                        }
-                    },
+                    internalState.mapValues { (_, value) ->
+                        value.toSortedMap().toMap()
+                    }.toSortedMap().toMap(),
                     outputStream,
                 )
             }

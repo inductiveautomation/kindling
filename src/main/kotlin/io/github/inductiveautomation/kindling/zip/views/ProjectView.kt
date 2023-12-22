@@ -13,6 +13,7 @@ import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.div
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
@@ -63,6 +64,6 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
             }
         }
 
-        fun isProjectDirectory(path: Path) = path.parent?.name == "projects"
+        fun isProjectDirectory(path: Path) = path.parent?.name == "projects" && path.isDirectory()
     }
 }

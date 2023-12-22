@@ -191,7 +191,7 @@ object ZipViewer : Tool {
     override val title = "Ignition Archive"
     override val description = "Archives (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
-    override val filter = FileFilter(description, listOf("gwbk", "zip", "modl", "jar"))
+    override val filter = FileFilter(description, "gwbk", "zip", "modl", "jar")
 
     override fun open(path: Path): ToolPanel = ZipView(path)
 

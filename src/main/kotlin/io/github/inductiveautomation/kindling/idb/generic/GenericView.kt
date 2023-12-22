@@ -5,6 +5,7 @@ import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.ButtonPanel
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
@@ -115,12 +116,7 @@ class SortableTree(val tables: List<Table>) {
 
     private val sortButtons = createSortButtons()
 
-    val component = JPanel(MigLayout("ins 0, fill")).apply {
-        val sortGroupEnumeration = sortButtons.elements
-        add(sortGroupEnumeration.nextElement(), "split ${sortButtons.buttonCount}, flowx")
-        for (element in sortGroupEnumeration) {
-            add(element, "gapx 2")
-        }
+    val component = ButtonPanel(sortButtons).apply {
         add(FlatScrollPane(tree), "newline, push, grow")
     }
 }

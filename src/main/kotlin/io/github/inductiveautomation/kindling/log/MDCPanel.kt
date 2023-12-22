@@ -122,7 +122,7 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
         }
     }
 
-    override val component = JPanel(MigLayout("ins 0, fill"))
+    override val component = JPanel(MigLayout("ins 2 0, fill"))
 
     init {
         component.apply {

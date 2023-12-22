@@ -32,11 +32,13 @@ class Preference<T : Any>(
     val name: String,
     val description: String? = null,
     val requiresRestart: Boolean = false,
-    private val default: T,
+    val default: T,
     val serializer: KSerializer<T>,
     createEditor: (Preference<T>.() -> JComponent)?,
 ) {
     val key: String = name.lowercase().filter(Char::isJavaIdentifierStart)
+
+    var dependency: Preference<*>? = null
 
     var currentValue
         get() = Kindling.Preferences[category, this] ?: default
@@ -54,6 +56,19 @@ class Preference<T : Any>(
     }
 
     val editor: JComponent? by lazy { createEditor?.invoke(this) }
+
+    fun <C : JComponent, U : Any> C.dependsOn(
+        preference: Preference<U>,
+        onChange: C.(U) -> Unit,
+    ): C = apply {
+        check(dependency == null) { "Cannot set a dependency on multiple preferences" }
+        dependency = preference
+
+        onChange(preference.currentValue)
+        preference.addChangeListener { newValue ->
+            onChange(newValue)
+        }
+    }
 
     companion object {
         @Suppress("FunctionName")
@@ -123,17 +138,24 @@ val preferencesEditor by lazy {
                                         add(
                                             StyledLabel {
                                                 add(preference.name, Font.BOLD)
-                                                if (preference.requiresRestart) {
-                                                    add(" Requires restart", "superscript")
+                                                val notes = listOfNotNull(
+                                                    "Requires restart".takeIf { preference.requiresRestart },
+                                                    preference.dependency?.let { "Depends on ${it.name}" },
+                                                )
+                                                if (notes.isNotEmpty()) {
+                                                    add(
+                                                        notes.joinToString(separator = " | ", prefix = "  "),
+                                                        "superscript",
+                                                    )
                                                 }
+
                                                 if (preference.description != null) {
                                                     add("\n")
                                                     add(preference.description)
                                                 }
                                             },
-                                            "grow, wrap, gapy 0",
                                         )
-                                        add(editor, "grow, wrap, gapy 0")
+                                        add(editor)
                                     }
                                 }
                             }
