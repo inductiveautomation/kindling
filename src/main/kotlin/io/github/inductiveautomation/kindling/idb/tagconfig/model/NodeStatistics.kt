@@ -20,14 +20,15 @@ class NodeStatistics(private val node: Node) {
 
     // Alarms:
     private val alarmStates: MutableList<AlarmState> = node.config.alarms?.map {
-        val name = it.jsonObject["name"]?.jsonPrimitive?.content ?: throw IllegalStateException("Alarm name is null")
+        val name = it.jsonObject["name"]?.jsonPrimitive?.content
         val enabled = try {
             it.jsonObject["enabled"]?.jsonPrimitive?.boolean ?: true
         } catch (e: IllegalArgumentException) {
             true
         }
-        AlarmState(name, enabled)
-    }?.toMutableList() ?: mutableListOf()
+
+        if (name == null) null else AlarmState(name, enabled)
+    }?.filterNotNull()?.toMutableList() ?: mutableListOf()
 
     val numAlarms: Int
         get() = alarmStates.filter { it.enabled ?: true }.size
