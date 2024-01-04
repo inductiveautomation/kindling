@@ -16,7 +16,6 @@ data class TagProviderRecord(
     val description: String?,
     val enabled: Boolean,
     val typeId: String,
-    val allowBackFill: Boolean,
     val dbConnection: Connection,
 ) {
     val providerStatistics = ProviderStatistics()
@@ -215,8 +214,8 @@ data class TagProviderRecord(
 
     companion object {
         private const val TAG_PROVIDER_TABLE_QUERY = "SELECT * FROM TAGPROVIDERSETTINGS ORDER BY NAME"
-        private const val TAG_CONFIG_TABLE_QUERY = "SELECT * FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
-
+//        private const val TAG_CONFIG_TABLE_QUERY = "SELECT * FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
+        private const val TAG_CONFIG_TABLE_QUERY = "SELECT id, providerid,folderid,cfg,rank,json_extract(cfg,\"\$.name\") as name FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
         val NodeGroup.parentNode: Node
             get() = first()
 
@@ -293,7 +292,6 @@ data class TagProviderRecord(
                         description = rs.getString(4),
                         enabled = rs.getBoolean(5),
                         typeId = rs.getString(6),
-                        allowBackFill = rs.getBoolean(7),
                         dbConnection = connection,
                     )
                 }.getOrNull()

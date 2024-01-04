@@ -83,7 +83,6 @@ class TagConfigView(connection: Connection) : ToolPanel() {
 
             // Dummy Tag Provider Record for preferred size
             prototypeDisplayValue = (tagProviderData + TagProviderRecord(
-                    allowBackFill = false,
                     dbConnection = connection,
                     description = "",
                     name = "Select a Tag Provider...",
