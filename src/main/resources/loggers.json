@@ -1,0 +1,3692 @@
+[
+  {
+    "name": "Alerting"
+  },
+  {
+    "name": "Alerting.Notification"
+  },
+  {
+    "name": "Alerting.Notification.NotificationManager"
+  },
+  {
+    "name": "Alerting.Storage"
+  },
+  {
+    "name": "Alerting.Storage.StorageManager"
+  },
+  {
+    "name": "AuditManager"
+  },
+  {
+    "name": "AutomaticThreadDumpManager"
+  },
+  {
+    "name": "ClientAuthTokenRecords"
+  },
+  {
+    "name": "ClientAuthTokenRecords.Store"
+  },
+  {
+    "name": "ClockDriftDetector"
+  },
+  {
+    "name": "CoBrandingManager"
+  },
+  {
+    "name": "Commissioning"
+  },
+  {
+    "name": "Commissioning.ActivationResource"
+  },
+  {
+    "name": "Commissioning.ConnectionsResource"
+  },
+  {
+    "name": "Commissioning.CredentialsResource"
+  },
+  {
+    "name": "Commissioning.IaLicenseAgreementResource"
+  },
+  {
+    "name": "Common"
+  },
+  {
+    "name": "Common.BasicExecutionEngine"
+  },
+  {
+    "name": "Common.BundleUtil"
+  },
+  {
+    "name": "Common.PersistentProperties"
+  },
+  {
+    "name": "Common.SecureRandomProvider"
+  },
+  {
+    "name": "Common.TempFileProps"
+  },
+  {
+    "name": "DatasetUtilities"
+  },
+  {
+    "name": "DesignerAuthTokenRecords"
+  },
+  {
+    "name": "DesignerAuthTokenRecords.Store"
+  },
+  {
+    "name": "DesignerConcurrency"
+  },
+  {
+    "name": "EAM"
+  },
+  {
+    "name": "EAM.ExternalSetupItem"
+  },
+  {
+    "name": "EAM.ScriptingFunctions"
+  },
+  {
+    "name": "EAM.Setup"
+  },
+  {
+    "name": "EAM.Tasks"
+  },
+  {
+    "name": "EAM.Tasks.BasicEamTaskSettingsRecord"
+  },
+  {
+    "name": "Expressions"
+  },
+  {
+    "name": "Expressions.minutesBetween"
+  },
+  {
+    "name": "Expressions.secondsBetween"
+  },
+  {
+    "name": "Gateway"
+  },
+  {
+    "name": "Gateway.OpcConnectionManager"
+  },
+  {
+    "name": "Gateway.PerformanceMonitor"
+  },
+  {
+    "name": "Gateway.ProgressManager"
+  },
+  {
+    "name": "Gateway.TaskManager"
+  },
+  {
+    "name": "GatewayNamedQueryManager"
+  },
+  {
+    "name": "GatewayNetwork"
+  },
+  {
+    "name": "GatewayNetwork.Local"
+  },
+  {
+    "name": "GatewayNetwork.Local.Alarms"
+  },
+  {
+    "name": "GatewayNetwork.Local.Alarms.AlarmNotificationService"
+  },
+  {
+    "name": "GatewayNetwork.Local.Alarms.PipelineManager"
+  },
+  {
+    "name": "GatewayNetwork.Local.Alarms.SubscriptionManager"
+  },
+  {
+    "name": "GatewayNetwork.Local.Encoders"
+  },
+  {
+    "name": "GatewayNetwork.Local.Encoders.Dataset"
+  },
+  {
+    "name": "GatewayNetwork.Local.Services"
+  },
+  {
+    "name": "GatewayNetwork.Local.Services.AlarmNotification"
+  },
+  {
+    "name": "GatewayNetwork.Local.Services.TagHistoryStorage"
+  },
+  {
+    "name": "GatewayNetwork.Local.Services.TagProviderService"
+  },
+  {
+    "name": "GatewayNetwork.Local.Services.TagProviderService.SubscriptionManager"
+  },
+  {
+    "name": "GatewayNetwork.Local.TagHistory"
+  },
+  {
+    "name": "GatewayNetwork.Local.TagHistory.Service"
+  },
+  {
+    "name": "GatewayNetwork.Local.Tags"
+  },
+  {
+    "name": "GatewayNetwork.Local.Tags.Service"
+  },
+  {
+    "name": "GatewayNetwork.Manager"
+  },
+  {
+    "name": "GatewayNetwork.Services"
+  },
+  {
+    "name": "GatewayNetwork.Services.DiagnosticService"
+  },
+  {
+    "name": "GcuInterface"
+  },
+  {
+    "name": "IgnitionGateway"
+  },
+  {
+    "name": "IgnitionServer"
+  },
+  {
+    "name": "IgnitionServer.IgnitionHostHeaderCustomizer"
+  },
+  {
+    "name": "IgnitionServer.MetroHostHeaderCustomizer"
+  },
+  {
+    "name": "IgnitionWebAppImpl"
+  },
+  {
+    "name": "ImageManager"
+  },
+  {
+    "name": "Localization"
+  },
+  {
+    "name": "Localization.Manager"
+  },
+  {
+    "name": "Localization.TranslationStorage"
+  },
+  {
+    "name": "MetricHistoryManager"
+  },
+  {
+    "name": "MetricsDashboardsManager"
+  },
+  {
+    "name": "MetricsDashboardsRoutes"
+  },
+  {
+    "name": "NamedQueries"
+  },
+  {
+    "name": "NamedQueries.executor"
+  },
+  {
+    "name": "NativeLibraryManagerImpl"
+  },
+  {
+    "name": "OpcUaModule"
+  },
+  {
+    "name": "OpcUaModule.Upgrades"
+  },
+  {
+    "name": "Perspective"
+  },
+  {
+    "name": "Perspective.AbstractAssetManager"
+  },
+  {
+    "name": "Perspective.ComponentRegistry"
+  },
+  {
+    "name": "Perspective.GatewayHook"
+  },
+  {
+    "name": "Perspective.LicenseState"
+  },
+  {
+    "name": "Perspective.PagesConfig"
+  },
+  {
+    "name": "Perspective.PerspectiveModule"
+  },
+  {
+    "name": "Perspective.ProjectConfig"
+  },
+  {
+    "name": "Perspective.Routes"
+  },
+  {
+    "name": "Perspective.SessionPropsConfig"
+  },
+  {
+    "name": "Perspective.StatusRoutes"
+  },
+  {
+    "name": "Perspective.ValueCache"
+  },
+  {
+    "name": "Platform"
+  },
+  {
+    "name": "Platform.InternalDatabase"
+  },
+  {
+    "name": "Platform.Services"
+  },
+  {
+    "name": "Platform.Services.TTS"
+  },
+  {
+    "name": "Platform.Services.TTS.Manager"
+  },
+  {
+    "name": "Project"
+  },
+  {
+    "name": "ProjectSchemaUpdater"
+  },
+  {
+    "name": "PropertiesFileDocProvider"
+  },
+  {
+    "name": "QuickStart"
+  },
+  {
+    "name": "QuickStart.Routes"
+  },
+  {
+    "name": "QuickStart.steps"
+  },
+  {
+    "name": "Redundancy"
+  },
+  {
+    "name": "Redundancy.Manager"
+  },
+  {
+    "name": "Redundancy.State"
+  },
+  {
+    "name": "Redundancy.State.DiskSyncManager"
+  },
+  {
+    "name": "Redundancy.StateMonitoring"
+  },
+  {
+    "name": "Redundancy.StateMonitoring.SyncManager"
+  },
+  {
+    "name": "Redundancy.StateMonitoring.SyncProviders"
+  },
+  {
+    "name": "Redundancy.StateMonitoring.SyncProviders.InternalDb"
+  },
+  {
+    "name": "Reporting"
+  },
+  {
+    "name": "RequestCycleExtra"
+  },
+  {
+    "name": "RuntimeProject"
+  },
+  {
+    "name": "SMTP"
+  },
+  {
+    "name": "SMTP.Manager"
+  },
+  {
+    "name": "SQLiteDriver"
+  },
+  {
+    "name": "Schedules"
+  },
+  {
+    "name": "Schedules.CompositeSchedule"
+  },
+  {
+    "name": "Scripting"
+  },
+  {
+    "name": "Scripting.Message"
+  },
+  {
+    "name": "Scripting.Message.DispatchManager"
+  },
+  {
+    "name": "Scripting.Messaging"
+  },
+  {
+    "name": "Scripting.Messaging.MessageHandlerManager"
+  },
+  {
+    "name": "Scripting.ScheduledScriptManager"
+  },
+  {
+    "name": "Scripting.ScriptManager"
+  },
+  {
+    "name": "Scripting.ScriptManager.Gateway"
+  },
+  {
+    "name": "Scripting.ScriptManager.Project[MobileApp]"
+  },
+  {
+    "name": "Scripting.ScriptManager.Project[Presentation]"
+  },
+  {
+    "name": "Scripting.ScriptManager.Project[barcode]"
+  },
+  {
+    "name": "Scripting.ScriptManager.Project[test]"
+  },
+  {
+    "name": "Scripting.TimerScriptManager"
+  },
+  {
+    "name": "Scripting[system_util_tag]"
+  },
+  {
+    "name": "Security"
+  },
+  {
+    "name": "Security.DistributedServices"
+  },
+  {
+    "name": "Security.DistributedServices.Handler"
+  },
+  {
+    "name": "Security.SecurityZones"
+  },
+  {
+    "name": "Security.SecurityZones.Zone"
+  },
+  {
+    "name": "Serialization"
+  },
+  {
+    "name": "Serialization.BinaryParser"
+  },
+  {
+    "name": "SessionManager"
+  },
+  {
+    "name": "StoreAndForward"
+  },
+  {
+    "name": "StoreAndForward.Sink"
+  },
+  {
+    "name": "StoreAndForward.Sink.CacheStorage"
+  },
+  {
+    "name": "StoreAndForward.Sink.CacheStorage.ForwardThread"
+  },
+  {
+    "name": "StoreAndForward.Sink.HsqlDataStore"
+  },
+  {
+    "name": "StoreAndForward.Sink.MemoryStore"
+  },
+  {
+    "name": "StoreAndForward.Sink.MultiStageStore"
+  },
+  {
+    "name": "StoreAndForward.Sink.PrimarySFEngine"
+  },
+  {
+    "name": "StoreAndForward.Sink.PrimarySFEngine.ForwardThread"
+  },
+  {
+    "name": "StoreAndForward.Sink.RecordDatasourceSink"
+  },
+  {
+    "name": "StoreAndForward.Sink.StandardDatasourceSFEngine"
+  },
+  {
+    "name": "StoreAndForward.Sink.TagHistoryDatasourceSink"
+  },
+  {
+    "name": "System"
+  },
+  {
+    "name": "SystemPropertiesManager"
+  },
+  {
+    "name": "TypeUtilities"
+  },
+  {
+    "name": "UserSource"
+  },
+  {
+    "name": "UserSource.Internal"
+  },
+  {
+    "name": "VisionGatewayHook"
+  },
+  {
+    "name": "WebResourceManagerImpl"
+  },
+  {
+    "name": "XMLDeserializer"
+  },
+  {
+    "name": "alarm"
+  },
+  {
+    "name": "alarm.AlarmNotificationGatewayHook"
+  },
+  {
+    "name": "alarm.AlarmNotificationManager"
+  },
+  {
+    "name": "alarm.Execution"
+  },
+  {
+    "name": "alarm.Execution.BoundProperties"
+  },
+  {
+    "name": "alarm.Execution.Deadbands"
+  },
+  {
+    "name": "alarm.Journal"
+  },
+  {
+    "name": "alarm.Journal.JournalStorageIntent"
+  },
+  {
+    "name": "alarm.Journal.Manager"
+  },
+  {
+    "name": "alarm.Journal.Manager.Upgrader"
+  },
+  {
+    "name": "alarm.Journal.Query"
+  },
+  {
+    "name": "alarm.Journal.Routes"
+  },
+  {
+    "name": "alarm.LegacyAdapter"
+  },
+  {
+    "name": "alarm.Manager"
+  },
+  {
+    "name": "alarm.Manager.StateManager"
+  },
+  {
+    "name": "alarm.Manager.StateManager.Redundancy"
+  },
+  {
+    "name": "alarm.Notification"
+  },
+  {
+    "name": "alarm.Notification.PipelineManager"
+  },
+  {
+    "name": "alarm.Notification.RosterManager"
+  },
+  {
+    "name": "alarm.Notification.Scripting"
+  },
+  {
+    "name": "alarm.Notification.Sms"
+  },
+  {
+    "name": "alarm.Notification.Sms.GatewayHook"
+  },
+  {
+    "name": "alarm.Notification.TTS"
+  },
+  {
+    "name": "alarm.Notification.TTS.CereEngine"
+  },
+  {
+    "name": "alarm.Notification.TTS.PrimaryEngine"
+  },
+  {
+    "name": "alarm.Notification.TTS.PrimaryEngine.Renderer"
+  },
+  {
+    "name": "alarm.Notification.Voice"
+  },
+  {
+    "name": "alarm.PipelineManager"
+  },
+  {
+    "name": "alarm.PipelineManager.RedundancyStateProvider"
+  },
+  {
+    "name": "alarm.PipelineStatusRoutes"
+  },
+  {
+    "name": "alarm.ShelfManager"
+  },
+  {
+    "name": "alarm.StateModel"
+  },
+  {
+    "name": "alarm.StateModel.Query"
+  },
+  {
+    "name": "audit"
+  },
+  {
+    "name": "audit.AuditService"
+  },
+  {
+    "name": "audit.AuditStorageIntent"
+  },
+  {
+    "name": "com"
+  },
+  {
+    "name": "com.digitalpetri"
+  },
+  {
+    "name": "com.digitalpetri.opcua"
+  },
+  {
+    "name": "com.digitalpetri.opcua.models"
+  },
+  {
+    "name": "com.digitalpetri.opcua.models.bacnet"
+  },
+  {
+    "name": "com.digitalpetri.opcua.models.bacnet.BacnetNamespace"
+  },
+  {
+    "name": "com.digitalpetri.opcua.nodeset"
+  },
+  {
+    "name": "com.digitalpetri.opcua.nodeset.util"
+  },
+  {
+    "name": "com.digitalpetri.opcua.nodeset.util.AttributeUtil"
+  },
+  {
+    "name": "com.inductiveautomation"
+  },
+  {
+    "name": "com.inductiveautomation.catapult"
+  },
+  {
+    "name": "com.inductiveautomation.catapult.IgnitionServer"
+  },
+  {
+    "name": "com.inductiveautomation.catapult.IgnitionServer$GatewayNetworkServerTrustManager"
+  },
+  {
+    "name": "com.inductiveautomation.catapult.handlers"
+  },
+  {
+    "name": "com.inductiveautomation.catapult.handlers.RemoteHostNameLookupHandler"
+  },
+  {
+    "name": "com.inductiveautomation.factorysql"
+  },
+  {
+    "name": "com.inductiveautomation.factorysql.FactorySQLGatewayHook"
+  },
+  {
+    "name": "com.inductiveautomation.factorysql.FactorySQLGatewayHook$SqlBridgeProjectLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.ignition"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.alarming"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.alarming.pipelines"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.alarming.pipelines.AlarmPipelineManagerImpl"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.alarming.pipelines.AlarmPipelineManagerImpl$PipelineLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.XMLUtil"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.config"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.config.EnvironmentVariable"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.expressions"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.expressions.JsonGet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.i18n"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.i18n.translation"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.i18n.translation.KeyHashRule"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.AdditionalPropertiesValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.ConstValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.DynamicSuggestionsValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.EnumValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.FormatValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.ItemsValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.JsonSchema"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.JsonSchemaBuilder"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.JsonSchemaFactory"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.MaximumValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.MinItemsValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.MinimumValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.PatternPropertiesValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.PatternValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.PropertiesValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.RefValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.RequiredValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.SuggestionsValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.TypeValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.UniqueItemsValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.jsonschema.VisibleWhenValidator"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.util"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.util.ExecutionQueue"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.common.util.SecurityUtils"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.bacnet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.bacnet.BacnetModuleHook"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.bacnet.LocalDeviceManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.iec61850"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.iec61850.Iec61850ModuleHook"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.iec61850.Iec61850ModuleHook$TraceEventBusImpl"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.iec61850.NativeLoader"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.iec61850.scripting"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.iec61850.scripting.Iec61850ScriptingFunctions"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.mitsubishi"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.mitsubishi.MitsubishiRouteHandler"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.omron"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.omron.nj"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.drivers.omron.nj.NjRouteHandler"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.IgnitionGateway"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.IgnitionGateway$6"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.ScheduledBackupManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.ThirdPartyScriptModulesChangeListener"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.auth"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.auth.route"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.auth.route.IdpRouteGroupServlet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.auth.web"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.auth.web.WebAuthRequestCollection"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.bootstrap"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.bootstrap.StatusPingServlet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.commissioning"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.commissioning.CommissioningContext"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.commissioning.CommissioningContext.CommissioningServlet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.dataroutes"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.dataroutes.DataServlet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.dataroutes.RouteGroupCollectionServlet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.dataroutes.RouteGroupCollectionServlet$1"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.dataroutes.RouteGroupServlet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.dataroutes.RouteGroupServlet$1"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.db"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.db.namedquery"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.db.namedquery.GatewayNamedQueryManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.db.namedquery.GatewayNamedQueryManager$NamedQueryLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.launch"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.launch.NativeLaunchManagerImpl"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.licensing"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.licensing.LeasedActivationStrategy"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.localdb"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.localdb.persistence"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.localdb.persistence.PersistenceInterface"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.localdb.sqlite"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.localdb.sqlite.SingleConnectionDatasource"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.logging"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.logging.GatewayLoggingManagerImpl"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.logging.LogPropertyRegistryImpl"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.logging.SQLiteAppenderReader"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.modules"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.modules.ModuleClassLoader"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.multicast"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.multicast.MulticastScheduler"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opc"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opc.ConnectionMap"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.KeyStoreManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.client"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.client.ClientManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.client.connection"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.client.connection.DataTypeTree"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.client.connection.OpcUaConnection"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.client.connection.OpcUaSubscriptionModel"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.client.connection.OpcUaSubscriptionSynchronizer"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.server"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.server.DeviceManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.server.DeviceManager$DeviceManagerAddressSpace"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.server.IgnitionOpcUaServer"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.server.IgnitionOpcUaServer$OpcUaRedundancyListener"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.server.api"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.server.api.OpcUa"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.util"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.opcua.util.TickManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project.IgnitionProjectManager"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project.IgnitionProjectManager$ProjectAuditLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project.IgnitionProjectManager$ProjectScriptLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project.ProjectFileTree"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project.ProjectFileWatcher"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project.records"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.project.records.ProjectRecordConverter"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.script"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.script.GatewayScriptManagerHolder"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.servlets"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.servlets.WellKnownServlet"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.sqltags"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.sqltags.history"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.sqltags.history.TagHistoryLicense"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.tags"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.tags.ep"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.tags.ep.StandardTagProviderType"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.web"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.web.ReturnTo"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.web.components"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.web.components.AbstractRecordEditPanel"
+  },
+  {
+    "name": "com.inductiveautomation.ignition.gateway.web.components.RecordActionTable"
+  },
+  {
+    "name": "com.inductiveautomation.metro"
+  },
+  {
+    "name": "com.inductiveautomation.metro.impl"
+  },
+  {
+    "name": "com.inductiveautomation.metro.impl.protocol"
+  },
+  {
+    "name": "com.inductiveautomation.metro.impl.protocol.websocket"
+  },
+  {
+    "name": "com.inductiveautomation.metro.impl.protocol.websocket.WebSocketFactory"
+  },
+  {
+    "name": "com.inductiveautomation.metro.impl.protocol.websocket.WebSocketFactory$GatewayNetworkClientTrustManager"
+  },
+  {
+    "name": "com.inductiveautomation.metro.impl.queues"
+  },
+  {
+    "name": "com.inductiveautomation.metro.impl.queues.QueueFactory"
+  },
+  {
+    "name": "com.inductiveautomation.metro.pki"
+  },
+  {
+    "name": "com.inductiveautomation.metro.pki.GatewayNetworkTrustListManager"
+  },
+  {
+    "name": "com.inductiveautomation.opccom"
+  },
+  {
+    "name": "com.inductiveautomation.opccom.ModuleHook"
+  },
+  {
+    "name": "com.inductiveautomation.opcua"
+  },
+  {
+    "name": "com.inductiveautomation.opcua.drivers"
+  },
+  {
+    "name": "com.inductiveautomation.opcua.drivers.omron"
+  },
+  {
+    "name": "com.inductiveautomation.opcua.drivers.omron.FinsRoutes"
+  },
+  {
+    "name": "com.inductiveautomation.perspective"
+  },
+  {
+    "name": "com.inductiveautomation.perspective.gateway"
+  },
+  {
+    "name": "com.inductiveautomation.perspective.gateway.cache"
+  },
+  {
+    "name": "com.inductiveautomation.perspective.gateway.cache.PerspectiveProjectCacheImpl"
+  },
+  {
+    "name": "com.inductiveautomation.perspective.gateway.cache.PerspectiveProjectCacheImpl$PerspectiveProjectLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.perspective.gateway.model"
+  },
+  {
+    "name": "com.inductiveautomation.perspective.gateway.model.ComponentModelDelegateRegistryImpl"
+  },
+  {
+    "name": "com.inductiveautomation.reporting"
+  },
+  {
+    "name": "com.inductiveautomation.reporting.gateway"
+  },
+  {
+    "name": "com.inductiveautomation.reporting.gateway.ReportingGatewayHook"
+  },
+  {
+    "name": "com.inductiveautomation.reporting.gateway.ReportingGatewayHook$ReportingProjectLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.reporting.gateway.ReportingGwPerspectiveInit"
+  },
+  {
+    "name": "com.inductiveautomation.sfc"
+  },
+  {
+    "name": "com.inductiveautomation.sfc.ChartManager"
+  },
+  {
+    "name": "com.inductiveautomation.sfc.ChartManager$ChartCompilerLifecycleFactory"
+  },
+  {
+    "name": "com.inductiveautomation.sfc.recorder"
+  },
+  {
+    "name": "com.inductiveautomation.sfc.recorder.SfcFlightRecorder"
+  },
+  {
+    "name": "com.inductiveautomation.xopc"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.common"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.common.configuration"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.common.configuration.settings"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.common.configuration.settings.legacy"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.common.configuration.settings.legacy.LegacyTcpConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.common.configuration.settings.legacy.LegacyUdpConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.dnp3"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.dnp3.Dnp3DataRoutes"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.modbus2"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.modbus2.configuration"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.modbus2.configuration.settings"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.modbus2.configuration.settings.legacy"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.modbus2.configuration.settings.legacy.LegacyModbusRtuConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.modbus2.configuration.settings.legacy.LegacyModbusRtuOverTcpConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.modbus2.configuration.settings.legacy.LegacyModbusTcpConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacyCompactLogixConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacyControlLogixConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacyDairyDemoSimulatorConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacyMicroLogixConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacyPLC5Converter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacySLCConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacySLCSimulatorConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.module.configuration.settings.legacy.LegacySimulatorConverter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.siemens"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.siemens.configuration"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.siemens.configuration.settings"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.siemens.configuration.settings.legacy"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.siemens.configuration.settings.legacy.LegacyS71200Converter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.siemens.configuration.settings.legacy.LegacyS7300Converter"
+  },
+  {
+    "name": "com.inductiveautomation.xopc.drivers.siemens.configuration.settings.legacy.LegacyS7400Converter"
+  },
+  {
+    "name": "com.jniwrapper"
+  },
+  {
+    "name": "com.jniwrapper.DataBufferFactory"
+  },
+  {
+    "name": "com.jniwrapper.DefaultLibraryLoader"
+  },
+  {
+    "name": "com.jniwrapper.FunctionCall"
+  },
+  {
+    "name": "com.jniwrapper.Library"
+  },
+  {
+    "name": "com.jniwrapper.NativeResourceCollector"
+  },
+  {
+    "name": "com.jniwrapper.Pointer"
+  },
+  {
+    "name": "com.jniwrapper.bn"
+  },
+  {
+    "name": "com.jniwrapper.win32"
+  },
+  {
+    "name": "com.jniwrapper.win32.HResult"
+  },
+  {
+    "name": "com.jniwrapper.win32.MessageLoopThread"
+  },
+  {
+    "name": "com.serotonin"
+  },
+  {
+    "name": "com.serotonin.bacnet4j"
+  },
+  {
+    "name": "com.serotonin.bacnet4j.type"
+  },
+  {
+    "name": "com.serotonin.bacnet4j.type.Encodable"
+  },
+  {
+    "name": "common"
+  },
+  {
+    "name": "common.ResourceTypeAdapterRegistry"
+  },
+  {
+    "name": "drivers"
+  },
+  {
+    "name": "drivers.dnp3"
+  },
+  {
+    "name": "drivers.dnp3.GatewayHook"
+  },
+  {
+    "name": "drivers.dnp3.ScriptModule"
+  },
+  {
+    "name": "expressions"
+  },
+  {
+    "name": "expressions.functions"
+  },
+  {
+    "name": "expressions.functions.IsAlarmActiveFilteredFunction"
+  },
+  {
+    "name": "expressions.functions.IsAlarmActiveFunction"
+  },
+  {
+    "name": "expressions.functions.TagFunction"
+  },
+  {
+    "name": "gateway"
+  },
+  {
+    "name": "gateway.AcmeRoutes"
+  },
+  {
+    "name": "gateway.AuthenticationRoutes"
+  },
+  {
+    "name": "gateway.BaseLicense"
+  },
+  {
+    "name": "gateway.ClientFallbackController"
+  },
+  {
+    "name": "gateway.CoBrandingRoutes"
+  },
+  {
+    "name": "gateway.ConfigOverviewRoutes"
+  },
+  {
+    "name": "gateway.ConfigurationManager"
+  },
+  {
+    "name": "gateway.DataRoutes"
+  },
+  {
+    "name": "gateway.DataRoutes.Route"
+  },
+  {
+    "name": "gateway.Database"
+  },
+  {
+    "name": "gateway.Database.ConnectionManager"
+  },
+  {
+    "name": "gateway.Database.ConnectionManager.FaultedRetryDaemon"
+  },
+  {
+    "name": "gateway.Database.ConnectionManager.TxTimeoutDaemon"
+  },
+  {
+    "name": "gateway.Database.MetaProvider"
+  },
+  {
+    "name": "gateway.Database.Selects"
+  },
+  {
+    "name": "gateway.Database.TableVerifier"
+  },
+  {
+    "name": "gateway.Database.Updates"
+  },
+  {
+    "name": "gateway.DateUtilities"
+  },
+  {
+    "name": "gateway.DiagnosticsRoutes"
+  },
+  {
+    "name": "gateway.EmailProfileManager"
+  },
+  {
+    "name": "gateway.FederationRoutes"
+  },
+  {
+    "name": "gateway.FunctionInvoke"
+  },
+  {
+    "name": "gateway.GeneralSecurityConfigRoutes"
+  },
+  {
+    "name": "gateway.GlobalProps"
+  },
+  {
+    "name": "gateway.HttpClientManager"
+  },
+  {
+    "name": "gateway.HttpClientUtils"
+  },
+  {
+    "name": "gateway.IdpAdapter"
+  },
+  {
+    "name": "gateway.IdpAdapterConfigRoutes"
+  },
+  {
+    "name": "gateway.IdpAdapterManager"
+  },
+  {
+    "name": "gateway.IdpRequestContext"
+  },
+  {
+    "name": "gateway.IgnitionProjectManager"
+  },
+  {
+    "name": "gateway.IgnitionWebAuthStrategy"
+  },
+  {
+    "name": "gateway.InternalDatabaseManager"
+  },
+  {
+    "name": "gateway.InternalDatabaseRememberedSubjects"
+  },
+  {
+    "name": "gateway.LicenseManager"
+  },
+  {
+    "name": "gateway.LoggingRoutes"
+  },
+  {
+    "name": "gateway.ModuleManager"
+  },
+  {
+    "name": "gateway.ModuleManager.ModuleParser"
+  },
+  {
+    "name": "gateway.ModuleManager.ResourceLocator"
+  },
+  {
+    "name": "gateway.OAuth2ClientConfigRoutes"
+  },
+  {
+    "name": "gateway.OAuth2ClientManager"
+  },
+  {
+    "name": "gateway.OAuth2ClientRoutes"
+  },
+  {
+    "name": "gateway.OAuth2SmtpEmailProfileConfigRoutes"
+  },
+  {
+    "name": "gateway.OAuth2SmtpEmailProfileSettingsRecord"
+  },
+  {
+    "name": "gateway.OIDCProvider"
+  },
+  {
+    "name": "gateway.OIDCProviderImpl"
+  },
+  {
+    "name": "gateway.OIDCProviderManager"
+  },
+  {
+    "name": "gateway.OIDCProviderRoutes"
+  },
+  {
+    "name": "gateway.OIDCWebAuthStrategy"
+  },
+  {
+    "name": "gateway.PendingPasswordResets"
+  },
+  {
+    "name": "gateway.PermissionsConfig"
+  },
+  {
+    "name": "gateway.PersistentRecordIdpAdapterConfigService"
+  },
+  {
+    "name": "gateway.PersistentRecordIdpAdapterMetricsService"
+  },
+  {
+    "name": "gateway.PersistentRecordSecurityLevelConfigService"
+  },
+  {
+    "name": "gateway.PkiValidationRoutes"
+  },
+  {
+    "name": "gateway.ProjectManager"
+  },
+  {
+    "name": "gateway.ProjectRecordTableCleanup"
+  },
+  {
+    "name": "gateway.ProjectRoutes"
+  },
+  {
+    "name": "gateway.Routes"
+  },
+  {
+    "name": "gateway.Routes.reportStatus"
+  },
+  {
+    "name": "gateway.SAMLRoutes"
+  },
+  {
+    "name": "gateway.SAMLWebAuthStrategyAdapter"
+  },
+  {
+    "name": "gateway.SecurityLevelManager"
+  },
+  {
+    "name": "gateway.SslConfigRoutes"
+  },
+  {
+    "name": "gateway.SslManager"
+  },
+  {
+    "name": "gateway.Status"
+  },
+  {
+    "name": "gateway.Status.ModulesRoutes"
+  },
+  {
+    "name": "gateway.Status.RedundancyRoutes"
+  },
+  {
+    "name": "gateway.StoreAndForwardConfigRoutes"
+  },
+  {
+    "name": "gateway.SystemPropertiesRecord"
+  },
+  {
+    "name": "gateway.TagLicenseTracker"
+  },
+  {
+    "name": "gateway.TagStatusRoutes"
+  },
+  {
+    "name": "gateway.UserAttributeMapper"
+  },
+  {
+    "name": "gateway.WebAuthSessionImpl"
+  },
+  {
+    "name": "gateway.WebAuthState"
+  },
+  {
+    "name": "gateway.WebAuthState.Builder"
+  },
+  {
+    "name": "gateway.WebServerManager"
+  },
+  {
+    "name": "gateway.gan"
+  },
+  {
+    "name": "gateway.gan.WSChannelManager"
+  },
+  {
+    "name": "gateway.routes"
+  },
+  {
+    "name": "gateway.routes.CoBranding"
+  },
+  {
+    "name": "gateway.routes.IgnitionExchange"
+  },
+  {
+    "name": "gateway.routes.config"
+  },
+  {
+    "name": "gateway.routes.config.Activation"
+  },
+  {
+    "name": "gateway.routes.status"
+  },
+  {
+    "name": "gateway.routes.status.GanRoutes"
+  },
+  {
+    "name": "gateway.scripting"
+  },
+  {
+    "name": "gateway.scripting.AbstractNetUtilities"
+  },
+  {
+    "name": "gateway.scripting.Message"
+  },
+  {
+    "name": "gateway.scripting.SystemUtilities"
+  },
+  {
+    "name": "historian"
+  },
+  {
+    "name": "historian.ModuleHook"
+  },
+  {
+    "name": "hsqldb"
+  },
+  {
+    "name": "hsqldb.db"
+  },
+  {
+    "name": "hsqldb.db.HSQLDB8A249E7C69"
+  },
+  {
+    "name": "hsqldb.db.HSQLDB8A249E7C69.ENGINE"
+  },
+  {
+    "name": "ignition"
+  },
+  {
+    "name": "ignition.DiagnosticBundle"
+  },
+  {
+    "name": "ignition.NonLockingUrlClassLoader"
+  },
+  {
+    "name": "ignition.ScheduleManager"
+  },
+  {
+    "name": "ignition.UserSourceManager"
+  },
+  {
+    "name": "ignition.UserSourceManager.Wrapper"
+  },
+  {
+    "name": "ignition.wicket"
+  },
+  {
+    "name": "ignition.wicket.Config"
+  },
+  {
+    "name": "ignition.wicket.Home"
+  },
+  {
+    "name": "ignition.wicket.Status"
+  },
+  {
+    "name": "io"
+  },
+  {
+    "name": "io.netty"
+  },
+  {
+    "name": "io.netty.bootstrap"
+  },
+  {
+    "name": "io.netty.bootstrap.Bootstrap"
+  },
+  {
+    "name": "io.netty.bootstrap.ServerBootstrap"
+  },
+  {
+    "name": "io.netty.buffer"
+  },
+  {
+    "name": "io.netty.buffer.AbstractByteBuf"
+  },
+  {
+    "name": "io.netty.buffer.ByteBufUtil"
+  },
+  {
+    "name": "io.netty.buffer.PoolThreadCache"
+  },
+  {
+    "name": "io.netty.buffer.PooledByteBufAllocator"
+  },
+  {
+    "name": "io.netty.channel"
+  },
+  {
+    "name": "io.netty.channel.AbstractChannel"
+  },
+  {
+    "name": "io.netty.channel.AbstractChannelHandlerContext"
+  },
+  {
+    "name": "io.netty.channel.ChannelHandlerMask"
+  },
+  {
+    "name": "io.netty.channel.ChannelInitializer"
+  },
+  {
+    "name": "io.netty.channel.ChannelOutboundBuffer"
+  },
+  {
+    "name": "io.netty.channel.DefaultChannelId"
+  },
+  {
+    "name": "io.netty.channel.DefaultChannelPipeline"
+  },
+  {
+    "name": "io.netty.channel.MultithreadEventLoopGroup"
+  },
+  {
+    "name": "io.netty.channel.nio"
+  },
+  {
+    "name": "io.netty.channel.nio.AbstractNioChannel"
+  },
+  {
+    "name": "io.netty.channel.nio.NioEventLoop"
+  },
+  {
+    "name": "io.netty.channel.socket"
+  },
+  {
+    "name": "io.netty.channel.socket.nio"
+  },
+  {
+    "name": "io.netty.channel.socket.nio.NioServerSocketChannel"
+  },
+  {
+    "name": "io.netty.channel.socket.nio.NioSocketChannel"
+  },
+  {
+    "name": "io.netty.channel.socket.nio.SelectorProviderUtil"
+  },
+  {
+    "name": "io.netty.resolver"
+  },
+  {
+    "name": "io.netty.resolver.AddressResolverGroup"
+  },
+  {
+    "name": "io.netty.util"
+  },
+  {
+    "name": "io.netty.util.HashedWheelTimer"
+  },
+  {
+    "name": "io.netty.util.NetUtil"
+  },
+  {
+    "name": "io.netty.util.NetUtilInitializations"
+  },
+  {
+    "name": "io.netty.util.Recycler"
+  },
+  {
+    "name": "io.netty.util.ReferenceCountUtil"
+  },
+  {
+    "name": "io.netty.util.ResourceLeakDetector"
+  },
+  {
+    "name": "io.netty.util.ResourceLeakDetectorFactory"
+  },
+  {
+    "name": "io.netty.util.concurrent"
+  },
+  {
+    "name": "io.netty.util.concurrent.AbstractEventExecutor"
+  },
+  {
+    "name": "io.netty.util.concurrent.DefaultPromise"
+  },
+  {
+    "name": "io.netty.util.concurrent.DefaultPromise.rejectedExecution"
+  },
+  {
+    "name": "io.netty.util.concurrent.GlobalEventExecutor"
+  },
+  {
+    "name": "io.netty.util.concurrent.SingleThreadEventExecutor"
+  },
+  {
+    "name": "io.netty.util.internal"
+  },
+  {
+    "name": "io.netty.util.internal.CleanerJava9"
+  },
+  {
+    "name": "io.netty.util.internal.InternalThreadLocalMap"
+  },
+  {
+    "name": "io.netty.util.internal.MacAddressUtil"
+  },
+  {
+    "name": "io.netty.util.internal.PlatformDependent"
+  },
+  {
+    "name": "io.netty.util.internal.PlatformDependent0"
+  },
+  {
+    "name": "io.netty.util.internal.SystemPropertyUtil"
+  },
+  {
+    "name": "io.netty.util.internal.logging"
+  },
+  {
+    "name": "io.netty.util.internal.logging.InternalLoggerFactory"
+  },
+  {
+    "name": "metro"
+  },
+  {
+    "name": "metro.CentralManager"
+  },
+  {
+    "name": "metro.CentralManager.MessageRouting"
+  },
+  {
+    "name": "metro.Codecs"
+  },
+  {
+    "name": "metro.Codecs.FileStreamCodec"
+  },
+  {
+    "name": "metro.Codecs.JavaSerializationCodec"
+  },
+  {
+    "name": "metro.Codecs.PartialFileStreamCodec"
+  },
+  {
+    "name": "metro.Codecs.TagHistorySampleSet"
+  },
+  {
+    "name": "metro.Manager"
+  },
+  {
+    "name": "metro.Manager.RPCManager"
+  },
+  {
+    "name": "metro.Manager.Routing"
+  },
+  {
+    "name": "metro.Services"
+  },
+  {
+    "name": "metro.Services.Security"
+  },
+  {
+    "name": "metro.Services.ServiceManager"
+  },
+  {
+    "name": "metro.Transports"
+  },
+  {
+    "name": "metro.Transports.Encoding"
+  },
+  {
+    "name": "metro.Transports.Websocket"
+  },
+  {
+    "name": "metro.Transports.Websocket.WebSocketFactory"
+  },
+  {
+    "name": "opcua"
+  },
+  {
+    "name": "opcua.gateway"
+  },
+  {
+    "name": "opcua.gateway.scripting"
+  },
+  {
+    "name": "opcua.gateway.scripting.OpcUaGatewayScriptingFunctions"
+  },
+  {
+    "name": "org"
+  },
+  {
+    "name": "org.apache"
+  },
+  {
+    "name": "org.apache.commons"
+  },
+  {
+    "name": "org.apache.commons.dbcp2"
+  },
+  {
+    "name": "org.apache.commons.dbcp2.BasicDataSource"
+  },
+  {
+    "name": "org.apache.commons.dbcp2.BasicDataSourceFactory"
+  },
+  {
+    "name": "org.apache.commons.dbcp2.ObjectNameWrapper"
+  },
+  {
+    "name": "org.apache.commons.dbcp2.PoolableConnectionFactory"
+  },
+  {
+    "name": "org.apache.commons.dbcp2.PoolingDataSource"
+  },
+  {
+    "name": "org.apache.http"
+  },
+  {
+    "name": "org.apache.http.client"
+  },
+  {
+    "name": "org.apache.http.client.protocol"
+  },
+  {
+    "name": "org.apache.http.client.protocol.RequestAddCookies"
+  },
+  {
+    "name": "org.apache.http.client.protocol.RequestAuthCache"
+  },
+  {
+    "name": "org.apache.http.client.protocol.RequestClientConnControl"
+  },
+  {
+    "name": "org.apache.http.client.protocol.ResponseProcessCookies"
+  },
+  {
+    "name": "org.apache.http.conn"
+  },
+  {
+    "name": "org.apache.http.conn.ssl"
+  },
+  {
+    "name": "org.apache.http.conn.ssl.AllowAllHostnameVerifier"
+  },
+  {
+    "name": "org.apache.http.conn.ssl.BrowserCompatHostnameVerifier"
+  },
+  {
+    "name": "org.apache.http.conn.ssl.DefaultHostnameVerifier"
+  },
+  {
+    "name": "org.apache.http.conn.ssl.SSLConnectionSocketFactory"
+  },
+  {
+    "name": "org.apache.http.conn.ssl.StrictHostnameVerifier"
+  },
+  {
+    "name": "org.apache.http.headers"
+  },
+  {
+    "name": "org.apache.http.impl"
+  },
+  {
+    "name": "org.apache.http.impl.auth"
+  },
+  {
+    "name": "org.apache.http.impl.auth.HttpAuthenticator"
+  },
+  {
+    "name": "org.apache.http.impl.client"
+  },
+  {
+    "name": "org.apache.http.impl.client.DefaultRedirectStrategy"
+  },
+  {
+    "name": "org.apache.http.impl.client.InternalHttpClient"
+  },
+  {
+    "name": "org.apache.http.impl.client.ProxyAuthenticationStrategy"
+  },
+  {
+    "name": "org.apache.http.impl.client.TargetAuthenticationStrategy"
+  },
+  {
+    "name": "org.apache.http.impl.conn"
+  },
+  {
+    "name": "org.apache.http.impl.conn.CPool"
+  },
+  {
+    "name": "org.apache.http.impl.conn.DefaultHttpClientConnectionOperator"
+  },
+  {
+    "name": "org.apache.http.impl.conn.DefaultManagedHttpClientConnection"
+  },
+  {
+    "name": "org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+  },
+  {
+    "name": "org.apache.http.impl.execchain"
+  },
+  {
+    "name": "org.apache.http.impl.execchain.MainClientExec"
+  },
+  {
+    "name": "org.apache.http.impl.execchain.ProtocolExec"
+  },
+  {
+    "name": "org.apache.http.impl.execchain.RedirectExec"
+  },
+  {
+    "name": "org.apache.http.impl.execchain.RetryExec"
+  },
+  {
+    "name": "org.apache.http.wire"
+  },
+  {
+    "name": "org.apache.wicket"
+  },
+  {
+    "name": "org.apache.wicket.Application"
+  },
+  {
+    "name": "org.apache.wicket.Component"
+  },
+  {
+    "name": "org.apache.wicket.DefaultExceptionMapper"
+  },
+  {
+    "name": "org.apache.wicket.Localizer"
+  },
+  {
+    "name": "org.apache.wicket.MarkupContainer"
+  },
+  {
+    "name": "org.apache.wicket.Page"
+  },
+  {
+    "name": "org.apache.wicket.RequestListenerInterface"
+  },
+  {
+    "name": "org.apache.wicket.Session"
+  },
+  {
+    "name": "org.apache.wicket.core"
+  },
+  {
+    "name": "org.apache.wicket.core.request"
+  },
+  {
+    "name": "org.apache.wicket.core.request.handler"
+  },
+  {
+    "name": "org.apache.wicket.core.request.handler.RenderPageRequestHandler"
+  },
+  {
+    "name": "org.apache.wicket.core.request.mapper"
+  },
+  {
+    "name": "org.apache.wicket.core.request.mapper.AbstractBookmarkableMapper"
+  },
+  {
+    "name": "org.apache.wicket.core.request.mapper.BasicResourceReferenceMapper"
+  },
+  {
+    "name": "org.apache.wicket.core.util"
+  },
+  {
+    "name": "org.apache.wicket.core.util.file"
+  },
+  {
+    "name": "org.apache.wicket.core.util.file.WebApplicationPath"
+  },
+  {
+    "name": "org.apache.wicket.core.util.lang"
+  },
+  {
+    "name": "org.apache.wicket.core.util.lang.WicketObjects"
+  },
+  {
+    "name": "org.apache.wicket.core.util.resource"
+  },
+  {
+    "name": "org.apache.wicket.core.util.resource.UrlResourceStream"
+  },
+  {
+    "name": "org.apache.wicket.core.util.resource.locator"
+  },
+  {
+    "name": "org.apache.wicket.core.util.resource.locator.ResourceStreamLocator"
+  },
+  {
+    "name": "org.apache.wicket.feedback"
+  },
+  {
+    "name": "org.apache.wicket.feedback.FeedbackMessages"
+  },
+  {
+    "name": "org.apache.wicket.markup"
+  },
+  {
+    "name": "org.apache.wicket.markup.AbstractMarkupParser"
+  },
+  {
+    "name": "org.apache.wicket.markup.ComponentTag"
+  },
+  {
+    "name": "org.apache.wicket.markup.DefaultMarkupResourceStreamProvider"
+  },
+  {
+    "name": "org.apache.wicket.markup.MarkupCache"
+  },
+  {
+    "name": "org.apache.wicket.markup.MarkupFactory"
+  },
+  {
+    "name": "org.apache.wicket.markup.MarkupResourceStream"
+  },
+  {
+    "name": "org.apache.wicket.markup.MergedMarkup"
+  },
+  {
+    "name": "org.apache.wicket.markup.head"
+  },
+  {
+    "name": "org.apache.wicket.markup.head.CssHeaderItem"
+  },
+  {
+    "name": "org.apache.wicket.markup.html"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.PackageResourceGuard"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.SecurePackageResourceGuard"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.WebPage"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.form"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.form.AutoLabelResolver"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.internal"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.internal.Enclosure"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.panel"
+  },
+  {
+    "name": "org.apache.wicket.markup.html.panel.DefaultMarkupSourcingStrategy"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser.AbstractMarkupFilter"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser.XmlTag"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser.filter"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser.filter.ConditionalCommentFilter"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser.filter.HtmlHandler"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser.filter.RelativePathPrefixHandler"
+  },
+  {
+    "name": "org.apache.wicket.markup.parser.filter.WicketContainerTagHandler"
+  },
+  {
+    "name": "org.apache.wicket.markup.repeater"
+  },
+  {
+    "name": "org.apache.wicket.markup.repeater.AbstractRepeater"
+  },
+  {
+    "name": "org.apache.wicket.markup.resolver"
+  },
+  {
+    "name": "org.apache.wicket.markup.resolver.AutoLinkResolver"
+  },
+  {
+    "name": "org.apache.wicket.markup.resolver.WicketContainerResolver"
+  },
+  {
+    "name": "org.apache.wicket.markup.resolver.WicketMessageResolver"
+  },
+  {
+    "name": "org.apache.wicket.model"
+  },
+  {
+    "name": "org.apache.wicket.model.LoadableDetachableModel"
+  },
+  {
+    "name": "org.apache.wicket.page"
+  },
+  {
+    "name": "org.apache.wicket.page.AbstractPageManager"
+  },
+  {
+    "name": "org.apache.wicket.page.PageAccessSynchronizer"
+  },
+  {
+    "name": "org.apache.wicket.page.RequestAdapter"
+  },
+  {
+    "name": "org.apache.wicket.pageStore"
+  },
+  {
+    "name": "org.apache.wicket.pageStore.AsynchronousDataStore"
+  },
+  {
+    "name": "org.apache.wicket.pageStore.AsynchronousDataStore$PageSavingRunnable"
+  },
+  {
+    "name": "org.apache.wicket.pageStore.DefaultPageStore"
+  },
+  {
+    "name": "org.apache.wicket.pageStore.DiskDataStore"
+  },
+  {
+    "name": "org.apache.wicket.protocol"
+  },
+  {
+    "name": "org.apache.wicket.protocol.http"
+  },
+  {
+    "name": "org.apache.wicket.protocol.http.WebApplication"
+  },
+  {
+    "name": "org.apache.wicket.protocol.http.WebSession"
+  },
+  {
+    "name": "org.apache.wicket.protocol.http.WicketFilter"
+  },
+  {
+    "name": "org.apache.wicket.protocol.http.servlet"
+  },
+  {
+    "name": "org.apache.wicket.protocol.http.servlet.ServletWebRequest"
+  },
+  {
+    "name": "org.apache.wicket.request"
+  },
+  {
+    "name": "org.apache.wicket.request.RequestHandlerStack"
+  },
+  {
+    "name": "org.apache.wicket.request.UrlRenderer"
+  },
+  {
+    "name": "org.apache.wicket.request.cycle"
+  },
+  {
+    "name": "org.apache.wicket.request.cycle.RequestCycle"
+  },
+  {
+    "name": "org.apache.wicket.request.cycle.RequestCycleListenerCollection"
+  },
+  {
+    "name": "org.apache.wicket.request.handler"
+  },
+  {
+    "name": "org.apache.wicket.request.handler.render"
+  },
+  {
+    "name": "org.apache.wicket.request.handler.render.WebPageRenderer"
+  },
+  {
+    "name": "org.apache.wicket.request.mapper"
+  },
+  {
+    "name": "org.apache.wicket.request.mapper.CompoundRequestMapper"
+  },
+  {
+    "name": "org.apache.wicket.request.resource"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.ClassScanner"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.CssPackageResource"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.JavaScriptPackageResource"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.PackageResource"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.PackageResourceReference"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.ResourceReferenceRegistry"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.caching"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.caching.FilenameWithVersionResourceCachingStrategy"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.caching.version"
+  },
+  {
+    "name": "org.apache.wicket.request.resource.caching.version.MessageDigestResourceVersion"
+  },
+  {
+    "name": "org.apache.wicket.resource"
+  },
+  {
+    "name": "org.apache.wicket.resource.loader"
+  },
+  {
+    "name": "org.apache.wicket.resource.loader.ComponentStringResourceLoader"
+  },
+  {
+    "name": "org.apache.wicket.resource.loader.InitializerStringResourceLoader"
+  },
+  {
+    "name": "org.apache.wicket.resource.loader.PackageStringResourceLoader"
+  },
+  {
+    "name": "org.apache.wicket.serialize"
+  },
+  {
+    "name": "org.apache.wicket.serialize.java"
+  },
+  {
+    "name": "org.apache.wicket.serialize.java.JavaSerializer"
+  },
+  {
+    "name": "org.apache.wicket.session"
+  },
+  {
+    "name": "org.apache.wicket.session.DefaultPageFactory"
+  },
+  {
+    "name": "org.apache.wicket.session.HttpSessionStore"
+  },
+  {
+    "name": "org.apache.wicket.util"
+  },
+  {
+    "name": "org.apache.wicket.util.encoding"
+  },
+  {
+    "name": "org.apache.wicket.util.encoding.UrlDecoder"
+  },
+  {
+    "name": "org.apache.wicket.util.file"
+  },
+  {
+    "name": "org.apache.wicket.util.file.Files"
+  },
+  {
+    "name": "org.apache.wicket.util.io"
+  },
+  {
+    "name": "org.apache.wicket.util.io.IOUtils"
+  },
+  {
+    "name": "org.apache.wicket.util.listener"
+  },
+  {
+    "name": "org.apache.wicket.util.listener.ListenerCollection"
+  },
+  {
+    "name": "org.apache.wicket.util.string"
+  },
+  {
+    "name": "org.apache.wicket.util.string.StringValue"
+  },
+  {
+    "name": "org.eclipse"
+  },
+  {
+    "name": "org.eclipse.jetty"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.AnnotationConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.AnnotationIntrospector"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.AnnotationParser"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.DeclareRolesAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.ResourceAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.ResourcesAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.RunAsAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.ServletSecurityAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.WebFilterAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.WebListenerAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.annotations.WebServletAnnotationHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.http"
+  },
+  {
+    "name": "org.eclipse.jetty.http.CookieCompliance"
+  },
+  {
+    "name": "org.eclipse.jetty.http.HttpCompliance"
+  },
+  {
+    "name": "org.eclipse.jetty.http.HttpCookie"
+  },
+  {
+    "name": "org.eclipse.jetty.http.HttpGenerator"
+  },
+  {
+    "name": "org.eclipse.jetty.http.HttpParser"
+  },
+  {
+    "name": "org.eclipse.jetty.http.MimeTypes"
+  },
+  {
+    "name": "org.eclipse.jetty.http.PreEncodedHttpField"
+  },
+  {
+    "name": "org.eclipse.jetty.http.QuotedQualityCSV"
+  },
+  {
+    "name": "org.eclipse.jetty.http.RFC6265CookieParser"
+  },
+  {
+    "name": "org.eclipse.jetty.http.UriCompliance"
+  },
+  {
+    "name": "org.eclipse.jetty.http.pathmap"
+  },
+  {
+    "name": "org.eclipse.jetty.http.pathmap.PathMappings"
+  },
+  {
+    "name": "org.eclipse.jetty.http.pathmap.ServletPathSpec"
+  },
+  {
+    "name": "org.eclipse.jetty.io"
+  },
+  {
+    "name": "org.eclipse.jetty.io.AbstractConnection"
+  },
+  {
+    "name": "org.eclipse.jetty.io.AbstractEndPoint"
+  },
+  {
+    "name": "org.eclipse.jetty.io.ArrayByteBufferPool"
+  },
+  {
+    "name": "org.eclipse.jetty.io.ArrayRetainableByteBufferPool"
+  },
+  {
+    "name": "org.eclipse.jetty.io.CyclicTimeout"
+  },
+  {
+    "name": "org.eclipse.jetty.io.FillInterest"
+  },
+  {
+    "name": "org.eclipse.jetty.io.IdleTimeout"
+  },
+  {
+    "name": "org.eclipse.jetty.io.ManagedSelector"
+  },
+  {
+    "name": "org.eclipse.jetty.io.SelectableChannelEndPoint"
+  },
+  {
+    "name": "org.eclipse.jetty.io.SelectorManager"
+  },
+  {
+    "name": "org.eclipse.jetty.io.SocketChannelEndPoint"
+  },
+  {
+    "name": "org.eclipse.jetty.io.WriteFlusher"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.ContextFactory"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.InitialContextFactory"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.NamingContext"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.java"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.java.javaRootURLContext"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.java.javaURLContextFactory"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.local"
+  },
+  {
+    "name": "org.eclipse.jetty.jndi.local.localContextRoot"
+  },
+  {
+    "name": "org.eclipse.jetty.plus"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.annotation"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.annotation.InjectionCollection"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.annotation.LifeCycleCallbackCollection"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.jndi"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.jndi.NamingEntry"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.jndi.NamingEntryUtil"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.jndi.Transaction"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.webapp"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.webapp.EnvConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.webapp.PlusConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.webapp.PlusDecorator"
+  },
+  {
+    "name": "org.eclipse.jetty.plus.webapp.PlusDescriptorProcessor"
+  },
+  {
+    "name": "org.eclipse.jetty.rewrite"
+  },
+  {
+    "name": "org.eclipse.jetty.rewrite.handler"
+  },
+  {
+    "name": "org.eclipse.jetty.rewrite.handler.RuleContainer"
+  },
+  {
+    "name": "org.eclipse.jetty.security"
+  },
+  {
+    "name": "org.eclipse.jetty.security.DefaultAuthenticatorFactory"
+  },
+  {
+    "name": "org.eclipse.jetty.security.SecurityHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.server"
+  },
+  {
+    "name": "org.eclipse.jetty.server.AbstractConnector"
+  },
+  {
+    "name": "org.eclipse.jetty.server.AsyncContentProducer"
+  },
+  {
+    "name": "org.eclipse.jetty.server.BlockingContentProducer"
+  },
+  {
+    "name": "org.eclipse.jetty.server.CachedContentFactory"
+  },
+  {
+    "name": "org.eclipse.jetty.server.Cookies"
+  },
+  {
+    "name": "org.eclipse.jetty.server.HttpChannel"
+  },
+  {
+    "name": "org.eclipse.jetty.server.HttpChannelOverHttp"
+  },
+  {
+    "name": "org.eclipse.jetty.server.HttpChannelState"
+  },
+  {
+    "name": "org.eclipse.jetty.server.HttpConnection"
+  },
+  {
+    "name": "org.eclipse.jetty.server.HttpInput"
+  },
+  {
+    "name": "org.eclipse.jetty.server.HttpOutput"
+  },
+  {
+    "name": "org.eclipse.jetty.server.Request"
+  },
+  {
+    "name": "org.eclipse.jetty.server.ResourceService"
+  },
+  {
+    "name": "org.eclipse.jetty.server.ResponseWriter"
+  },
+  {
+    "name": "org.eclipse.jetty.server.SecureRequestCustomizer"
+  },
+  {
+    "name": "org.eclipse.jetty.server.Server"
+  },
+  {
+    "name": "org.eclipse.jetty.server.handler"
+  },
+  {
+    "name": "org.eclipse.jetty.server.handler.AbstractHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.server.handler.AbstractHandlerContainer"
+  },
+  {
+    "name": "org.eclipse.jetty.server.handler.ContextHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.server.handler.ContextHandler.ROOT"
+  },
+  {
+    "name": "org.eclipse.jetty.server.handler.ErrorHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.server.handler.ResourceHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.AbstractSessionCache"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.AbstractSessionDataStore"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.DefaultSessionCache"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.DefaultSessionIdManager"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.HouseKeeper"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.Session"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.SessionData"
+  },
+  {
+    "name": "org.eclipse.jetty.server.session.SessionHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.BaseHolder"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.DefaultServlet"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.ErrorPageErrorHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.FilterHolder"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.Holder"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.ServletContainerInitializerHolder"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.ServletContextHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.ServletHandler"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.ServletHolder"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.listener"
+  },
+  {
+    "name": "org.eclipse.jetty.servlet.listener.ELContextCleaner"
+  },
+  {
+    "name": "org.eclipse.jetty.util"
+  },
+  {
+    "name": "org.eclipse.jetty.util.BufferUtil"
+  },
+  {
+    "name": "org.eclipse.jetty.util.DecoratedObjectFactory"
+  },
+  {
+    "name": "org.eclipse.jetty.util.DeprecationWarning"
+  },
+  {
+    "name": "org.eclipse.jetty.util.HostPort"
+  },
+  {
+    "name": "org.eclipse.jetty.util.IO"
+  },
+  {
+    "name": "org.eclipse.jetty.util.Jetty"
+  },
+  {
+    "name": "org.eclipse.jetty.util.Pool"
+  },
+  {
+    "name": "org.eclipse.jetty.util.SharedBlockingCallback"
+  },
+  {
+    "name": "org.eclipse.jetty.util.TypeUtil"
+  },
+  {
+    "name": "org.eclipse.jetty.util.URIUtil"
+  },
+  {
+    "name": "org.eclipse.jetty.util.UrlEncoded"
+  },
+  {
+    "name": "org.eclipse.jetty.util.Utf8Appendable"
+  },
+  {
+    "name": "org.eclipse.jetty.util.VirtualThreads"
+  },
+  {
+    "name": "org.eclipse.jetty.util.component"
+  },
+  {
+    "name": "org.eclipse.jetty.util.component.AbstractLifeCycle"
+  },
+  {
+    "name": "org.eclipse.jetty.util.component.ContainerLifeCycle"
+  },
+  {
+    "name": "org.eclipse.jetty.util.resource"
+  },
+  {
+    "name": "org.eclipse.jetty.util.resource.JarFileResource"
+  },
+  {
+    "name": "org.eclipse.jetty.util.resource.JarResource"
+  },
+  {
+    "name": "org.eclipse.jetty.util.resource.PathResource"
+  },
+  {
+    "name": "org.eclipse.jetty.util.resource.Resource"
+  },
+  {
+    "name": "org.eclipse.jetty.util.resource.URLResource"
+  },
+  {
+    "name": "org.eclipse.jetty.util.ssl"
+  },
+  {
+    "name": "org.eclipse.jetty.util.ssl.SslContextFactory"
+  },
+  {
+    "name": "org.eclipse.jetty.util.ssl.SslContextFactory.config"
+  },
+  {
+    "name": "org.eclipse.jetty.util.ssl.X509"
+  },
+  {
+    "name": "org.eclipse.jetty.util.thread"
+  },
+  {
+    "name": "org.eclipse.jetty.util.thread.QueuedThreadPool"
+  },
+  {
+    "name": "org.eclipse.jetty.util.thread.ReservedThreadExecutor"
+  },
+  {
+    "name": "org.eclipse.jetty.util.thread.ShutdownThread"
+  },
+  {
+    "name": "org.eclipse.jetty.util.thread.ThreadPoolBudget"
+  },
+  {
+    "name": "org.eclipse.jetty.util.thread.strategy"
+  },
+  {
+    "name": "org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.Configurations"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.JaasConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.JaspiConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.JettyWebXmlConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.JmxConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.JndiConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.JspConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.MetaData"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.MetaInfConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.ServletsConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.StandardDescriptorProcessor"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.WebAppClassLoader"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.WebAppContext"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.WebDescriptor"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.WebInfConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.webapp.WebXmlConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.FragmentExtension"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.FragmentExtension$1"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.FragmentingFlusher"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.FrameCaptureExtension"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.IdentityExtension"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.PerMessageDeflateExtension"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.PerMessageDeflateExtension$OutgoingFlusher"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.internal.ValidationExtension"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.server"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.server.WebSocketMappings"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.server.internal"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.core.server.internal.AbstractHandshaker"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.server"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.server.JettyWebSocketServerContainer"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.server.config"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.server.config.JettyWebSocketConfiguration"
+  },
+  {
+    "name": "org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer"
+  },
+  {
+    "name": "org.eclipse.jetty.xml"
+  },
+  {
+    "name": "org.eclipse.jetty.xml.XmlParser"
+  },
+  {
+    "name": "org.eclipse.milo"
+  },
+  {
+    "name": "org.eclipse.milo.opcua"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.binaryschema"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.binaryschema.gson"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.binaryschema.gson.JsonBsdParser"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.AddressSpace"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.OpcUaClient"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.SessionFsm"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.dtd"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.dtd.DataTypeDictionaryReader"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.dtd.DataTypeDictionarySessionInitializer"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.subscriptions"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.client.subscriptions.OpcUaSubscriptionManager"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.OpcUaServer"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.Session"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.SessionManager"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.api"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.api.AddressSpaceComposite"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.api.AddressSpaceComposite$EmptyAddressSpaceFragment"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.api.AddressSpaceManager"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.objects"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.objects.ServerDiagnosticsObject"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.objects.ServerDiagnosticsObject$1"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.objects.SessionDiagnosticsObject"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.objects.SessionDiagnosticsObject$1"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.objects.SessionsDiagnosticsSummaryObject"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.variables"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.variables.SessionDiagnosticsVariableArray"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.diagnostics.variables.SessionSecurityDiagnosticsVariableArray"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.namespaces"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.namespaces.OpcUaNamespace"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.namespaces.ServerNamespace"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.namespaces.ServerNamespace$DiagnosticsFragment"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.namespaces.ServerNamespace$VendorServerFragment"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.nodes"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.nodes.factories"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.nodes.factories.NodeFactory"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.subscriptions"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.subscriptions.PublishQueue"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.sdk.server.subscriptions.SubscriptionManager"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.ChannelFsm"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.UaStackClient"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.security"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.security.ClientCertificateValidator"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.security.ClientCertificateValidator$InsecureValidator"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.security.DefaultClientCertificateValidator"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.transport"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.transport.tcp"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.transport.tcp.OpcTcpTransport"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.transport.uasc"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.transport.uasc.UascClientAcknowledgeHandler"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.client.transport.uasc.UascClientMessageHandler"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.channel"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.channel.ChunkDecoder"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.channel.ChunkDecoder$AsymmetricDecoder"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.channel.ChunkDecoder$SymmetricDecoder"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.security"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.security.DefaultCertificateManager"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.security.DefaultTrustListManager"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.util"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.util.ExecutionQueue"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.util.ManifestUtil"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.util.NonceUtil"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.util.TaskQueue"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.util.validation"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.core.util.validation.CertificateValidationUtil"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.UaStackServer"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.UaStackServer$DefaultDiscoveryServiceSet"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.security"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.security.DefaultServerCertificateValidator"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.transport"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.transport.RateLimitingHandler"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.transport.ServerChannelManager"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.transport.uasc"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.transport.uasc.UascServerAsymmetricHandler"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.transport.uasc.UascServerHelloHandler"
+  },
+  {
+    "name": "org.eclipse.milo.opcua.stack.server.transport.uasc.UascServerSymmetricHandler"
+  },
+  {
+    "name": "org.jose4j"
+  },
+  {
+    "name": "org.jose4j.jwa"
+  },
+  {
+    "name": "org.jose4j.jwa.AlgorithmAvailability"
+  },
+  {
+    "name": "org.jose4j.jwa.AlgorithmFactory->CompressionAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwa.AlgorithmFactory->ContentEncryptionAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwa.AlgorithmFactory->JsonWebSignatureAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwa.AlgorithmFactory->KeyManagementAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwa.AlgorithmFactoryFactory"
+  },
+  {
+    "name": "org.jose4j.jwe"
+  },
+  {
+    "name": "org.jose4j.jwe.AesCbcHmacSha2ContentEncryptionAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesCbcHmacSha2ContentEncryptionAlgorithm$Aes128CbcHmacSha256"
+  },
+  {
+    "name": "org.jose4j.jwe.AesCbcHmacSha2ContentEncryptionAlgorithm$Aes192CbcHmacSha384"
+  },
+  {
+    "name": "org.jose4j.jwe.AesCbcHmacSha2ContentEncryptionAlgorithm$Aes256CbcHmacSha512"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmContentEncryptionAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmContentEncryptionAlgorithm$Aes128Gcm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmContentEncryptionAlgorithm$Aes192Gcm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmContentEncryptionAlgorithm$Aes256Gcm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmKeyEncryptionAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmKeyEncryptionAlgorithm$Aes128Gcm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmKeyEncryptionAlgorithm$Aes192Gcm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesGcmKeyEncryptionAlgorithm$Aes256Gcm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesKeyWrapManagementAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.AesKeyWrapManagementAlgorithm$Aes128"
+  },
+  {
+    "name": "org.jose4j.jwe.AesKeyWrapManagementAlgorithm$Aes192"
+  },
+  {
+    "name": "org.jose4j.jwe.AesKeyWrapManagementAlgorithm$Aes256"
+  },
+  {
+    "name": "org.jose4j.jwe.CipherStrengthSupport"
+  },
+  {
+    "name": "org.jose4j.jwe.DirectKeyManagementAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.EcdhKeyAgreementAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.EcdhKeyAgreementWithAesKeyWrapAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.EcdhKeyAgreementWithAesKeyWrapAlgorithm$EcdhKeyAgreementWithAes128KeyWrapAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.EcdhKeyAgreementWithAesKeyWrapAlgorithm$EcdhKeyAgreementWithAes192KeyWrapAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.EcdhKeyAgreementWithAesKeyWrapAlgorithm$EcdhKeyAgreementWithAes256KeyWrapAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.Pbes2HmacShaWithAesKeyWrapAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.Pbes2HmacShaWithAesKeyWrapAlgorithm$HmacSha256Aes128"
+  },
+  {
+    "name": "org.jose4j.jwe.Pbes2HmacShaWithAesKeyWrapAlgorithm$HmacSha384Aes192"
+  },
+  {
+    "name": "org.jose4j.jwe.Pbes2HmacShaWithAesKeyWrapAlgorithm$HmacSha512Aes256"
+  },
+  {
+    "name": "org.jose4j.jwe.RsaKeyManagementAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jwe.RsaKeyManagementAlgorithm$Rsa1_5"
+  },
+  {
+    "name": "org.jose4j.jwe.RsaKeyManagementAlgorithm$RsaOaep"
+  },
+  {
+    "name": "org.jose4j.jwe.RsaKeyManagementAlgorithm$RsaOaep256"
+  },
+  {
+    "name": "org.jose4j.jws"
+  },
+  {
+    "name": "org.jose4j.jws.EcdsaUsingShaAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jws.EcdsaUsingShaAlgorithm$EcdsaP256UsingSha256"
+  },
+  {
+    "name": "org.jose4j.jws.EcdsaUsingShaAlgorithm$EcdsaP384UsingSha384"
+  },
+  {
+    "name": "org.jose4j.jws.EcdsaUsingShaAlgorithm$EcdsaP521UsingSha512"
+  },
+  {
+    "name": "org.jose4j.jws.EcdsaUsingShaAlgorithm$EcdsaSECP256K1UsingSha256"
+  },
+  {
+    "name": "org.jose4j.jws.EdDsaAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jws.HmacUsingShaAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jws.HmacUsingShaAlgorithm$HmacSha256"
+  },
+  {
+    "name": "org.jose4j.jws.HmacUsingShaAlgorithm$HmacSha384"
+  },
+  {
+    "name": "org.jose4j.jws.HmacUsingShaAlgorithm$HmacSha512"
+  },
+  {
+    "name": "org.jose4j.jws.RsaUsingShaAlgorithm"
+  },
+  {
+    "name": "org.jose4j.jws.RsaUsingShaAlgorithm$RsaPssSha256"
+  },
+  {
+    "name": "org.jose4j.jws.RsaUsingShaAlgorithm$RsaPssSha384"
+  },
+  {
+    "name": "org.jose4j.jws.RsaUsingShaAlgorithm$RsaPssSha512"
+  },
+  {
+    "name": "org.jose4j.jws.RsaUsingShaAlgorithm$RsaSha256"
+  },
+  {
+    "name": "org.jose4j.jws.RsaUsingShaAlgorithm$RsaSha384"
+  },
+  {
+    "name": "org.jose4j.jws.RsaUsingShaAlgorithm$RsaSha512"
+  },
+  {
+    "name": "org.jose4j.jws.UnsecuredNoneAlgorithm"
+  },
+  {
+    "name": "perspective"
+  },
+  {
+    "name": "perspective.ClientHtmlLoader"
+  },
+  {
+    "name": "perspective.FileWatcher"
+  },
+  {
+    "name": "perspective.FontManager"
+  },
+  {
+    "name": "perspective.FontParser"
+  },
+  {
+    "name": "perspective.IconManager"
+  },
+  {
+    "name": "perspective.ProjectCache"
+  },
+  {
+    "name": "perspective.ThemeManager"
+  },
+  {
+    "name": "perspective.action"
+  },
+  {
+    "name": "perspective.action.registry"
+  },
+  {
+    "name": "perspective.actions"
+  },
+  {
+    "name": "perspective.actions.auth-challenge"
+  },
+  {
+    "name": "perspective.actions.script"
+  },
+  {
+    "name": "perspective.binding"
+  },
+  {
+    "name": "perspective.binding.factory"
+  },
+  {
+    "name": "platform"
+  },
+  {
+    "name": "platform.HistoryManager"
+  },
+  {
+    "name": "reporting"
+  },
+  {
+    "name": "reporting.Data"
+  },
+  {
+    "name": "reporting.Data.NamedQuerySource"
+  },
+  {
+    "name": "reporting.RMStringUtils"
+  },
+  {
+    "name": "reporting.Schedule"
+  },
+  {
+    "name": "reporting.Scripting"
+  },
+  {
+    "name": "routes"
+  },
+  {
+    "name": "routes.config"
+  },
+  {
+    "name": "routes.config.ActivationWS"
+  },
+  {
+    "name": "sfc"
+  },
+  {
+    "name": "simpleorm"
+  },
+  {
+    "name": "simpleorm.utils"
+  },
+  {
+    "name": "simpleorm.utils.SLogSlf4j"
+  },
+  {
+    "name": "sqlbridge"
+  },
+  {
+    "name": "sqlbridge.GatewayHook"
+  },
+  {
+    "name": "sqlbridge.ProjectRunner"
+  },
+  {
+    "name": "sqlbridge.Scripting"
+  },
+  {
+    "name": "sync"
+  },
+  {
+    "name": "sync.SyncManager"
+  },
+  {
+    "name": "sync.SyncManager.Routes"
+  },
+  {
+    "name": "tags"
+  },
+  {
+    "name": "tags.eventscripts"
+  },
+  {
+    "name": "tags.eventscripts.compiler"
+  },
+  {
+    "name": "tags.eventscripts.dispatcher"
+  },
+  {
+    "name": "tags.execution"
+  },
+  {
+    "name": "tags.execution.actors"
+  },
+  {
+    "name": "tags.execution.actors.db"
+  },
+  {
+    "name": "tags.execution.actors.derived"
+  },
+  {
+    "name": "tags.execution.actors.error"
+  },
+  {
+    "name": "tags.execution.actors.eventscripts"
+  },
+  {
+    "name": "tags.execution.actors.expr"
+  },
+  {
+    "name": "tags.execution.actors.history"
+  },
+  {
+    "name": "tags.execution.actors.managed"
+  },
+  {
+    "name": "tags.execution.actors.memory"
+  },
+  {
+    "name": "tags.execution.actors.opc"
+  },
+  {
+    "name": "tags.execution.actors.opc.leasing"
+  },
+  {
+    "name": "tags.execution.actors.opc.subscription"
+  },
+  {
+    "name": "tags.execution.actors.opc.writemanager"
+  },
+  {
+    "name": "tags.execution.actors.reference"
+  },
+  {
+    "name": "tags.execution.batch"
+  },
+  {
+    "name": "tags.execution.batch.changeNotification"
+  },
+  {
+    "name": "tags.execution.batchoperations"
+  },
+  {
+    "name": "tags.execution.core"
+  },
+  {
+    "name": "tags.execution.core.TagProviderRpc"
+  },
+  {
+    "name": "tags.execution.core.providerroot"
+  },
+  {
+    "name": "tags.execution.expressionParser"
+  },
+  {
+    "name": "tags.execution.groups"
+  },
+  {
+    "name": "tags.execution.groups.eval"
+  },
+  {
+    "name": "tags.execution.subscriptions"
+  },
+  {
+    "name": "tags.execution.subscriptions.alarms"
+  },
+  {
+    "name": "tags.execution.typeManager"
+  },
+  {
+    "name": "tags.execution.values"
+  },
+  {
+    "name": "tags.history"
+  },
+  {
+    "name": "tags.history.annotation"
+  },
+  {
+    "name": "tags.history.annotation.query"
+  },
+  {
+    "name": "tags.history.annotation.storage"
+  },
+  {
+    "name": "tags.history.annotation.storage.DB"
+  },
+  {
+    "name": "tags.history.browse"
+  },
+  {
+    "name": "tags.history.query"
+  },
+  {
+    "name": "tags.json"
+  },
+  {
+    "name": "tags.managed"
+  },
+  {
+    "name": "tags.managed.provider"
+  },
+  {
+    "name": "tags.managed.provider.values"
+  },
+  {
+    "name": "tags.management"
+  },
+  {
+    "name": "tags.management.license"
+  },
+  {
+    "name": "tags.management.provider"
+  },
+  {
+    "name": "tags.management.provider.browse"
+  },
+  {
+    "name": "tags.management.provider.creator"
+  },
+  {
+    "name": "tags.management.provider.query"
+  },
+  {
+    "name": "tags.manager"
+  },
+  {
+    "name": "tags.scripting"
+  },
+  {
+    "name": "tags.scripting.legacy"
+  },
+  {
+    "name": "tags.search"
+  },
+  {
+    "name": "tags.search.provider"
+  },
+  {
+    "name": "tags.storage"
+  },
+  {
+    "name": "tags.storage."
+  },
+  {
+    "name": "tags.storage..internaljson"
+  },
+  {
+    "name": "tags.storage..internaljson.TagGroupUpdater"
+  },
+  {
+    "name": "tags.storage.batchoperations"
+  },
+  {
+    "name": "tags.storage.internaljson"
+  },
+  {
+    "name": "tags.subscriptions"
+  },
+  {
+    "name": "tags.subscriptions.clientsessions"
+  },
+  {
+    "name": "tags.subscriptions.provider"
+  },
+  {
+    "name": "tags.subscriptions.provider.events"
+  },
+  {
+    "name": "tags.subscriptions.provider.nodes"
+  },
+  {
+    "name": "utilities"
+  },
+  {
+    "name": "utilities.json"
+  }
+]
