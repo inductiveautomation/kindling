@@ -13,48 +13,59 @@ import javax.swing.Icon
 import javax.swing.JPanel
 
 class MetricsView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
-    private val metrics: List<Metric> = connection.prepareStatement(
-        //language=sql
-        """
-        SELECT DISTINCT
-            METRIC_NAME
-        FROM SYSTEM_METRICS
-        """,
-    ).executeQuery().toList { rs ->
-        Metric(rs.getString(1))
-    }
+    @Suppress("SqlResolve")
+    private val metrics: List<Metric> =
+        connection.createStatement().executeQuery(
+            //language=sql
+            """
+            SELECT DISTINCT
+                metric_name
+            FROM
+                system_metrics
+            """.trimIndent(),
+        ).toList { rs ->
+            Metric(rs.getString(1))
+        }
 
     private val metricTree = MetricTree(metrics)
 
-    private val metricDataQuery = connection.prepareStatement(
-        //language=sql
-        """
-        SELECT DISTINCT
-            VALUE,
-            TIMESTAMP 
-        FROM SYSTEM_METRICS
-        WHERE METRIC_NAME = ?
-        ORDER BY TIMESTAMP
-        """,
-    )
+    @Suppress("SqlResolve")
+    private val metricDataQuery =
+        connection.prepareStatement(
+            //language=sql
+            """
+            SELECT DISTINCT
+                value,
+                timestamp
+            FROM
+                system_metrics
+            WHERE
+                metric_name = ?
+            ORDER BY
+                timestamp
+            """.trimIndent(),
+        )
 
-    private val metricCards: List<MetricCard> = metrics.map { metric ->
-        val metricData = metricDataQuery.apply {
-            setString(1, metric.name)
+    private val metricCards: List<MetricCard> =
+        metrics.map { metric ->
+            val metricData =
+                metricDataQuery.apply {
+                    setString(1, metric.name)
+                }
+                    .executeQuery()
+                    .toList { rs ->
+                        MetricData(rs.getDouble(1), rs.getDate(2))
+                    }
+
+            MetricCard(metric, metricData)
         }
-            .executeQuery()
-            .toList { rs ->
-                MetricData(rs.getDouble(1), rs.getDate(2))
+
+    private val cardPanel =
+        JPanel(MigLayout("wrap 3, fillx, hidemode 3")).apply {
+            for (card in metricCards) {
+                add(card, "pushx, growx")
             }
-
-        MetricCard(metric, metricData)
-    }
-
-    private val cardPanel = JPanel(MigLayout("wrap 3, fillx, hidemode 3")).apply {
-        for (card in metricCards) {
-            add(card, "pushx, growx")
         }
-    }
 
     init {
         add(FlatScrollPane(metricTree), "grow, w 200::20%")

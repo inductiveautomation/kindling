@@ -4,7 +4,6 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
-import io.github.inductiveautomation.kindling.log.DensityTableModel.DensityColumns
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
@@ -12,6 +11,7 @@ import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.EmptyBorder
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.getAncestorOfClass
 import net.miginfocom.swing.MigLayout
@@ -50,7 +50,6 @@ import javax.swing.SpinnerNumberModel
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
-import javax.swing.table.AbstractTableModel
 
 internal class TimePanel(
     data: List<LogEvent>,
@@ -64,65 +63,66 @@ internal class TimePanel(
     private val startSelector = DateTimeSelector(lowerBound, initialRange)
     private val endSelector = DateTimeSelector(upperBound, initialRange)
 
-    private val denseMinutesTable = ReifiedJXTable(
-        DensityTableModel(
-            data.groupingBy { it.timestamp.truncatedTo(ChronoUnit.MINUTES) }
-                .eachCount()
-                .entries
-                .filter { it.value > 60 }
-                .map { entry ->
-                    DenseTime(entry.key, entry.value)
-                },
-        ),
-        DensityColumns,
-    ).apply {
-        isColumnControlVisible = false
-        tableHeader.apply {
-            reorderingAllowed = false
-        }
-        setSortOrder(DensityColumns.Count, SortOrder.DESCENDING)
+    private val denseMinutesTable =
+        ReifiedJXTable(
+            ReifiedListTableModel(
+                data.groupingBy { it.timestamp.truncatedTo(ChronoUnit.MINUTES) }
+                    .eachCount()
+                    .entries
+                    .filter { it.value > 60 }
+                    .map { entry ->
+                        DenseTime(entry.key, entry.value)
+                    },
+                DensityColumns,
+            ),
+        ).apply {
+            isColumnControlVisible = false
+            tableHeader.apply {
+                reorderingAllowed = false
+            }
+            setSortOrder(DensityColumns.Count, SortOrder.DESCENDING)
 
-        selectionMode = ListSelectionModel.SINGLE_SELECTION
+            selectionMode = ListSelectionModel.SINGLE_SELECTION
 
-        addMouseListener(
-            object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent) {
-                    if (e.clickCount >= 2) {
-                        val rowAtPoint = rowAtPoint(e.point)
-                        if (rowAtPoint != -1) {
+            addMouseListener(
+                object : MouseAdapter() {
+                    override fun mousePressed(e: MouseEvent) {
+                        if (e.clickCount >= 2) {
+                            val rowAtPoint = rowAtPoint(e.point)
+                            if (rowAtPoint != -1) {
+                                e.consume()
+                                selectTime(model[convertRowIndexToModel(rowAtPoint), DensityColumns.Minute])
+                            }
+                            return
+                        }
+                        maybeShowPopup(e)
+                    }
+
+                    override fun mouseReleased(e: MouseEvent) {
+                        maybeShowPopup(e)
+                    }
+
+                    private fun maybeShowPopup(e: MouseEvent) {
+                        if (e.isPopupTrigger) {
                             e.consume()
-                            selectTime(model[convertRowIndexToModel(rowAtPoint), DensityTableModel.Minute])
-                        }
-                        return
-                    }
-                    maybeShowPopup(e)
-                }
+                            val rowAtPoint = rowAtPoint(e.point)
+                            if (rowAtPoint != -1) {
+                                setRowSelectionInterval(rowAtPoint, rowAtPoint)
 
-                override fun mouseReleased(e: MouseEvent) {
-                    maybeShowPopup(e)
-                }
-
-                private fun maybeShowPopup(e: MouseEvent) {
-                    if (e.isPopupTrigger) {
-                        e.consume()
-                        val rowAtPoint = rowAtPoint(e.point)
-                        if (rowAtPoint != -1) {
-                            setRowSelectionInterval(rowAtPoint, rowAtPoint)
-
-                            val timeToSelect = model[convertRowIndexToModel(rowAtPoint), DensityTableModel.Minute]
-                            JPopupMenu().apply {
-                                add(
-                                    Action("Select") {
-                                        selectTime(timeToSelect)
-                                    },
-                                )
-                            }.show(this@apply, e.x, e.y)
+                                val timeToSelect = model[convertRowIndexToModel(rowAtPoint), DensityColumns.Minute]
+                                JPopupMenu().apply {
+                                    add(
+                                        Action("Select") {
+                                            selectTime(timeToSelect)
+                                        },
+                                    )
+                                }.show(this@apply, e.x, e.y)
+                            }
                         }
                     }
-                }
-            },
-        )
-    }
+                },
+            )
+        }
 
     private fun selectTime(timeToSelect: Instant) {
         val table = containingLogPanel?.table ?: return
@@ -135,57 +135,60 @@ internal class TimePanel(
         table.scrollRectToVisible(table.getCellRect(viewIndex, 0, true))
     }
 
-    private val resetRange = Action("Reset") {
-        reset()
-    }
-
-    private val captureRange = Action(
-        name = "Capture Range",
-        description = "Sets the time filter to the current visible range and resets all other filters",
-    ) {
-        val logPanel = containingLogPanel ?: return@Action
-
-        val events = logPanel.table.model.data
-        logPanel.reset()
-
-        EventQueue.invokeLater {
-            startSelector.time = events.first().timestamp
-            endSelector.time = events.last().timestamp
+    private val resetRange =
+        Action("Reset") {
+            reset()
         }
-    }
+
+    private val captureRange =
+        Action(
+            name = "Capture Range",
+            description = "Sets the time filter to the current visible range and resets all other filters",
+        ) {
+            val logPanel = containingLogPanel ?: return@Action
+
+            val events = logPanel.table.model.data
+            logPanel.reset()
+
+            EventQueue.invokeLater {
+                startSelector.time = events.first().timestamp
+                endSelector.time = events.last().timestamp
+            }
+        }
 
     override val tabName: String = "Time"
 
-    override val component = JPanel(MigLayout("ins 2 0, fill, wrap 1")).apply {
-        add(startSelector, "pushx, growx")
-        add(
-            JLabel("To").apply {
-                horizontalAlignment = SwingConstants.CENTER
-            },
-            "align center, growx",
-        )
-        add(endSelector, "pushx, growx")
+    override val component =
+        JPanel(MigLayout("ins 2 0, fill, wrap 1")).apply {
+            add(startSelector, "pushx, growx")
+            add(
+                JLabel("To").apply {
+                    horizontalAlignment = SwingConstants.CENTER
+                },
+                "align center, growx",
+            )
+            add(endSelector, "pushx, growx")
 
-        add(
-            JSeparator(JSeparator.HORIZONTAL),
-            "growx, spanx, h 10!, gap 10 10 10 10",
-        )
+            add(
+                JSeparator(JSeparator.HORIZONTAL),
+                "growx, spanx, h 10!, gap 10 10 10 10",
+            )
 
-        add(JButton(captureRange), "split 2, gapright push")
-        add(JButton(resetRange))
+            add(JButton(captureRange), "split 2, gapright push")
+            add(JButton(resetRange))
 
-        add(
-            JSeparator(JSeparator.HORIZONTAL),
-            "growx, spanx, h 10!, gap 10 10 10 10",
-        )
+            add(
+                JSeparator(JSeparator.HORIZONTAL),
+                "growx, spanx, h 10!, gap 10 10 10 10",
+            )
 
-        add(
-            JLabel("Dense Times").apply {
-                toolTipText = "Dense times are minutes with more than 60 logged events"
-            },
-        )
-        add(FlatScrollPane(denseMinutesTable), "pushx, growx")
-    }
+            add(
+                JLabel("Dense Times").apply {
+                    toolTipText = "Dense times are minutes with more than 60 logged events"
+                },
+            )
+            add(FlatScrollPane(denseMinutesTable), "pushx, growx")
+        }
 
     private val containingLogPanel: LogPanel?
         get() = component.getAncestorOfClass<LogPanel>()
@@ -208,6 +211,7 @@ internal class TimePanel(
     }
 
     override fun filter(item: LogEvent): Boolean = item.timestamp in coveredRange
+
     override fun customizePopupMenu(
         menu: JPopupMenu,
         column: Column<out LogEvent, *>,
@@ -237,10 +241,11 @@ internal class TimePanel(
 private var JXDatePicker.localDate: LocalDate?
     get() = date?.toInstant()?.let { LocalDate.ofInstant(it, LogViewer.SelectedTimeZone.currentValue) }
     set(value) {
-        date = value?.atStartOfDay()
-            ?.atOffset(LogViewer.SelectedTimeZone.currentValue.rules.getOffset(value.atStartOfDay()))
-            ?.toInstant()
-            .let(Date::from)
+        date =
+            value?.atStartOfDay()
+                ?.atOffset(LogViewer.SelectedTimeZone.currentValue.rules.getOffset(value.atStartOfDay()))
+                ?.toInstant()
+                .let(Date::from)
     }
 
 class DateTimeSelector(
@@ -249,33 +254,35 @@ class DateTimeSelector(
 ) : JPanel(MigLayout("ins 0")) {
     private val initialZonedTime = initialValue.atZone(LogViewer.SelectedTimeZone.currentValue)
 
-    private var datePicker = JXDatePicker().apply {
-        localDate = initialZonedTime.toLocalDate()
-        editor.horizontalAlignment = SwingConstants.CENTER
-        monthView.apply {
-            // adjust calendar from java.time to java.util weekday numbering
-            firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.value % 7 + 1
+    private var datePicker =
+        JXDatePicker().apply {
+            localDate = initialZonedTime.toLocalDate()
+            editor.horizontalAlignment = SwingConstants.CENTER
+            monthView.apply {
+                // adjust calendar from java.time to java.util weekday numbering
+                firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.value % 7 + 1
 
-            lowerBound = Date.from(range.start)
-            upperBound = Date.from(range.endInclusive)
+                lowerBound = Date.from(range.start)
+                upperBound = Date.from(range.endInclusive)
+            }
+            linkPanel = JPanel() // can't be null or BasicDatePickerUI throws an NPE on theme change
+
+            addActionListener {
+                if (date == null) { // out of range selection sets null in JXDatePicker - we'll be nicer and reset
+                    localDate = initialZonedTime.toLocalDate()
+                } else {
+                    firePropertyChange("time", null, time)
+                }
+            }
         }
-        linkPanel = JPanel() // can't be null or BasicDatePickerUI throws an NPE on theme change
 
-        addActionListener {
-            if (date == null) { // out of range selection sets null in JXDatePicker - we'll be nicer and reset
-                localDate = initialZonedTime.toLocalDate()
-            } else {
+    private val timeSelector =
+        TimeSelector().apply {
+            localTime = initialZonedTime.toLocalTime()
+            addPropertyChangeListener("localTime") {
                 firePropertyChange("time", null, time)
             }
         }
-    }
-
-    private val timeSelector = TimeSelector().apply {
-        localTime = initialZonedTime.toLocalTime()
-        addPropertyChangeListener("localTime") {
-            firePropertyChange("time", null, time)
-        }
-    }
 
     var time: Instant
         get() {
@@ -303,9 +310,10 @@ class DateTimeSelector(
         for (amount in listOf(-30L, -15, -5, -1, 1L, 5, 15, 30)) {
             add(
                 FlatButton().apply {
-                    action = Action("%+d".format(amount)) {
-                        time = time.plusSeconds(amount * 60)
-                    }
+                    action =
+                        Action("%+d".format(amount)) {
+                            time = time.plusSeconds(amount * 60)
+                        }
                     margin = Insets(1, 1, 1, 1)
                 },
                 "w 12.5%, sgx",
@@ -345,17 +353,20 @@ class TimeSelector : JPanel(MigLayout("fill, ins 0")) {
     }
 
     var localTime: LocalTime
-        get() = LocalTime.of(
-            hourSelector.value.toInt(),
-            minuteSelector.value.toInt(),
-            secondSelector.value.toInt(),
-            (milliSelector.value * 1_000_000).toInt(), // milli-of-second to nano-of-second
-        )
+        get() =
+            LocalTime.of(
+                hourSelector.value.toInt(),
+                minuteSelector.value.toInt(),
+                secondSelector.value.toInt(),
+                // milli-of-second to nano-of-second
+                (milliSelector.value * 1_000_000).toInt(),
+            )
         set(value) {
             hourSelector.value = value.hour.toLong()
             minuteSelector.value = value.minute.toLong()
             secondSelector.value = value.second.toLong()
-            milliSelector.value = (value.nano / 1_000_000).toLong() // milli-of-second to nano-of-second
+            // milli-of-second to nano-of-second
+            milliSelector.value = (value.nano / 1_000_000).toLong()
         }
 }
 
@@ -365,31 +376,32 @@ private class TimePartSpinner(
 ) : JSpinner(model) {
     var isSelection = true
 
-    private val dragListener = object : MouseAdapter() {
-        private var previousY = 0
+    private val dragListener =
+        object : MouseAdapter() {
+            private var previousY = 0
 
-        override fun mouseDragged(e: MouseEvent) {
-            if (e.y < 0 || e.y > height) {
-                val deltaY = previousY - (e.y / pixelsPerValueChange)
-                var currentValue = value + deltaY
-                if (deltaY < 0 && previousY == 0) {
-                    currentValue += height
+            override fun mouseDragged(e: MouseEvent) {
+                if (e.y < 0 || e.y > height) {
+                    val deltaY = previousY - (e.y / pixelsPerValueChange)
+                    var currentValue = value + deltaY
+                    if (deltaY < 0 && previousY == 0) {
+                        currentValue += height
+                    }
+                    value = currentValue.coerceIn(0, model.maximum)
                 }
-                value = currentValue.coerceIn(0, model.maximum)
+                previousY = e.y / pixelsPerValueChange
             }
-            previousY = e.y / pixelsPerValueChange
-        }
 
-        override fun mouseReleased(e: MouseEvent) {
-            isSelection = true
-            previousY = 0
-            fireStateChanged()
-        }
+            override fun mouseReleased(e: MouseEvent) {
+                isSelection = true
+                previousY = 0
+                fireStateChanged()
+            }
 
-        override fun mousePressed(e: MouseEvent) {
-            isSelection = false
+            override fun mousePressed(e: MouseEvent) {
+                isSelection = false
+            }
         }
-    }
 
     override fun createEditor(model: SpinnerModel): JComponent {
         check(model is ChronoSpinnerModel)
@@ -427,52 +439,33 @@ private data class DenseTime(
     val count: Int,
 )
 
-private class DensityTableModel(
-    private val data: List<DenseTime>,
-) : AbstractTableModel() {
-    override fun getRowCount(): Int = data.size
+private object DensityColumns : ColumnList<DenseTime>() {
+    @Suppress("PropertyName")
+    private lateinit var _formatter: DateTimeFormatter
 
-    @Suppress("RedundantCompanionReference")
-    override fun getColumnCount(): Int = DensityColumns.size
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = get(rowIndex, DensityColumns[columnIndex])
-    override fun getColumnName(column: Int): String = DensityColumns[column].header
-    override fun getColumnClass(columnIndex: Int): Class<*> = DensityColumns[columnIndex].clazz
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        return columnIndex == DensityColumns[MDCTableModel.Inclusive]
-    }
-
-    operator fun <T> get(row: Int, column: Column<DenseTime, T>): T {
-        return data[row].let { info ->
-            column.getValue(info)
-        }
-    }
-
-    companion object DensityColumns : ColumnList<DenseTime>() {
-        private lateinit var _formatter: DateTimeFormatter
-
-        private val minuteFormatter: DateTimeFormatter
-            get() {
-                if (!this::_formatter.isInitialized) {
-                    _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withZone(LogViewer.SelectedTimeZone.currentValue)
-                }
-                if (_formatter.zone != LogViewer.SelectedTimeZone.currentValue) {
-                    _formatter = _formatter.withZone(LogViewer.SelectedTimeZone.currentValue)
-                }
-                return _formatter
+    private val minuteFormatter: DateTimeFormatter
+        get() {
+            if (!this::_formatter.isInitialized) {
+                _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withZone(LogViewer.SelectedTimeZone.currentValue)
             }
+            if (_formatter.zone != LogViewer.SelectedTimeZone.currentValue) {
+                _formatter = _formatter.withZone(LogViewer.SelectedTimeZone.currentValue)
+            }
+            return _formatter
+        }
 
-        val Minute by column(
-            column = {
-                cellRenderer = DefaultTableRenderer {
+    val Minute by column(
+        column = {
+            cellRenderer =
+                DefaultTableRenderer {
                     (it as? Instant)?.let(minuteFormatter::format)
                 }
-            },
-            value = DenseTime::time,
-        )
+        },
+        value = DenseTime::time,
+    )
 
-        val Count by column(
-            name = "Event Count",
-            value = DenseTime::count,
-        )
-    }
+    val Count by column(
+        name = "Event Count",
+        value = DenseTime::count,
+    )
 }
