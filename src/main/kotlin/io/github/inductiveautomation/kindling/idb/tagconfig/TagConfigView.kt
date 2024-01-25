@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToStream
 import net.miginfocom.swing.MigLayout
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
@@ -128,17 +129,59 @@ class TagConfigView(connection: Connection) : ToolPanel() {
                 },
             )
 
-            attachPopupMenu {
-                val pathAtPoint = getClosestPathForLocation(it.x, it.y)
-                selectionPath = pathAtPoint
-                JPopupMenu().apply {
-                    add(
-                        Action("Open Config") {
-                            if (pathAtPoint.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
-                                tabs.addTab(NodeConfigPanel(pathAtPoint))
+            attachPopupMenu {mouseEvent ->
+                val configAction = Action("Open Config") {
+                    val pathAtPoint = getClosestPathForLocation(mouseEvent.x, mouseEvent.y)
+
+                    if (pathAtPoint.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
+                        tabs.addTab(NodeConfigPanel(pathAtPoint))
+                    }
+                }
+
+                val exportAction = Action("Export Selection") {
+                    val selection = this@attachPopupMenu.selectionPaths
+
+                    if (selection == null) {
+                        JOptionPane.showMessageDialog(
+                            this@TagConfigView,
+                            "You must selected at least one item to export.",
+                            "Export Error",
+                            JOptionPane.WARNING_MESSAGE,
+                        )
+                        return@Action
+                    }
+
+                    val allSameParent = selection.all { path -> path.parentPath == selection.first().parentPath }
+
+                    if (allSameParent) {
+                        if (exportFileChooser.showSaveDialog(this@TagConfigView) == JFileChooser.APPROVE_OPTION) {
+                            val nodeList = selection.map {
+                                (it.lastPathComponent as LazyTreeNode).originalNode
                             }
-                        },
-                    )
+
+                            exportFileChooser.selectedFile.outputStream().use { output ->
+                                if (nodeList.size == 1) {
+                                    TagExportJson.encodeToStream(nodeList.single(), output)
+                                } else {
+                                    TagExportJson.encodeToStream(mapOf("tags" to nodeList), output)
+                                }
+                            }
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(
+                            this@TagConfigView,
+                            "All selected items must have the same parent folder.",
+                            "Export Error",
+                            JOptionPane.WARNING_MESSAGE,
+                        )
+                        return@Action
+                    }
+                }
+
+
+                JPopupMenu().apply {
+                    add(configAction)
+                    add(exportAction)
                 }
             }
 
