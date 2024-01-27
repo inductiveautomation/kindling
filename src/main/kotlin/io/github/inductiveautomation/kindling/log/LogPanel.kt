@@ -1,9 +1,11 @@
 package io.github.inductiveautomation.kindling.log
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
 import io.github.inductiveautomation.kindling.core.FilterPanel
+import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
@@ -34,6 +36,7 @@ import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.util.Vector
 import javax.swing.Icon
+import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JLabel
@@ -258,6 +261,56 @@ class LogPanel(
             }
         }
 
+        fun getNextMarkedIndex(): Int {
+            val currentSelectionIndex = table.selectionModel.selectedIndices?.lastOrNull() ?: 0
+            val markedEvents =
+                table.model.data
+                    .filter { it.marked }
+                    .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
+            val rowIndex =
+                when (markedEvents.size) {
+                    0 -> -1
+                    1 -> table.model.data.indexOf(markedEvents.first())
+                    else -> {
+                        val nextMarkedEvent =
+                            markedEvents.firstOrNull { event ->
+                                table.convertRowIndexToView(table.model.data.indexOf(event)) > currentSelectionIndex
+                            }
+                        if (nextMarkedEvent == null) {
+                            table.model.data.indexOf(markedEvents.first())
+                        } else {
+                            table.model.data.indexOf(nextMarkedEvent)
+                        }
+                    }
+                }
+            return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
+        }
+
+        fun getPrevMarkedIndex(): Int {
+            val currentSelectionIndex = table.selectionModel.selectedIndices?.firstOrNull() ?: 0
+            val markedEvents =
+                table.model.data
+                    .filter { it.marked }
+                    .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
+            val rowIndex =
+                when (markedEvents.size) {
+                    0 -> -1
+                    1 -> table.model.data.indexOf(markedEvents.first())
+                    else -> {
+                        val prevMarkedEvent =
+                            markedEvents.lastOrNull { event ->
+                                table.convertRowIndexToView(table.model.data.indexOf(event)) < currentSelectionIndex
+                            }
+                        if (prevMarkedEvent == null) {
+                            table.model.data.indexOf(markedEvents.last())
+                        } else {
+                            table.model.data.indexOf(prevMarkedEvent)
+                        }
+                    }
+                }
+            return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
+        }
+
         header.apply {
             search.addActionListener {
                 updateData()
@@ -267,6 +320,23 @@ class LogPanel(
             }
             showOnlyMarked.addActionListener {
                 updateData()
+            }
+
+            fun updateSelection(index: Int) {
+                table.selectionModel.setSelectionInterval(index, index)
+                val rect = table.bounds
+                rect.y = index * table.rowHeight
+                rect.height = tableScrollPane.height - table.tableHeader.height - 2
+                table.scrollRectToVisible(rect)
+                table.updateUI()
+            }
+            prevMarked.addActionListener {
+                val prevMarkedIndex = getPrevMarkedIndex()
+                if (prevMarkedIndex != -1) updateSelection(prevMarkedIndex)
+            }
+            nextMarked.addActionListener {
+                val nextMarkedIndex = getNextMarkedIndex()
+                if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
             }
         }
 
@@ -324,6 +394,14 @@ class LogPanel(
         }
         private val versionLabel = JLabel("Version")
 
+        val prevMarked =
+            JButton(FlatSVGIcon("icons/bx-arrow-up.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE)).apply {
+                toolTipText = "Jump to previous marked log event!"
+            }
+        val nextMarked =
+            JButton(FlatSVGIcon("icons/bx-arrow-down.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE)).apply {
+                toolTipText = "Jump to next marked log event!"
+            }
         val showOnlyMarked = JCheckBox("Show Only Marked", false)
 
         private fun updateVersionVisibility() {
@@ -334,6 +412,8 @@ class LogPanel(
 
         init {
             add(events, "pushx, growx")
+            add(prevMarked)
+            add(nextMarked)
             add(showOnlyMarked)
 
             add(versionLabel, "gapx 30")
