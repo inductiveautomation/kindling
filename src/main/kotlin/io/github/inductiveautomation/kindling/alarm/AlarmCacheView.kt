@@ -58,7 +58,10 @@ class AlarmCacheView(path: Path) : ToolPanel() {
 
             selectionModel.apply {
                 addListSelectionListener {
-                    val alarmEvents = selectedIndices.map(model::get)
+                    val alarmEvents = selectedIndices.map {
+                        val viewIndex = convertRowIndexToModel(it)
+                        model[viewIndex]
+                    }
                     detailsPane.events = alarmEvents.map { it.toDetail() }
                 }
             }
@@ -70,7 +73,7 @@ class AlarmCacheView(path: Path) : ToolPanel() {
     private fun EventData?.toDetailBody(name: String): List<Detail.BodyLine>? {
         return this?.run {
             buildList {
-                add(Detail.BodyLine(name))
+                add(Detail.BodyLine("***$name***"))
                 addAll(
                     values.map {
                         Detail.BodyLine("${it.property.name}: ${it.value}")
