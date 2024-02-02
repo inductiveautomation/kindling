@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.alarm.model
 
 import com.inductiveautomation.ignition.common.alarming.AlarmEvent
+import com.inductiveautomation.ignition.common.alarming.EventData
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import javax.swing.table.AbstractTableModel
@@ -60,7 +61,6 @@ class AlarmEventModel(private val alarmData: List<AlarmEvent>) : AbstractTableMo
             value = AlarmEvent::getLabel,
         )
 
-        /* This stuff is shown in the details pane. Maybe just get rid of it from the table model.
         val activeData by column<EventData?>(
             column = {
                 isVisible = false
@@ -81,6 +81,5 @@ class AlarmEventModel(private val alarmData: List<AlarmEvent>) : AbstractTableMo
             },
             value = AlarmEvent::getAckData,
         )
-         */
     }
 }

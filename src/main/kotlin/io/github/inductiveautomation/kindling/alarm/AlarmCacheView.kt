@@ -11,20 +11,28 @@ import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import java.awt.Color
 import java.nio.file.Path
+import javax.swing.JLabel
+import javax.swing.JPanel
 import javax.swing.JScrollPane
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
 
 class AlarmCacheView(path: Path) : ToolPanel() {
     override val icon = FlatSVGIcon("icons/bx-bell.svg")
 
-    private val alarmStates: Map<AlarmState, List<AlarmEvent>> = try {
+    private val events: List<AlarmEvent> = try {
         val info = AliasingObjectInputStream(path.inputStream()) {
             put(
                 "com.inductiveautomation.ignition.gateway.alarming.status.AlarmStateModel\$PersistedAlarmInfo",
@@ -32,13 +40,14 @@ class AlarmCacheView(path: Path) : ToolPanel() {
             )
         }.readObject() as PersistedAlarmInfo
 
-        info.data.mapValues { (_, array) -> array.toList() }
+        info.data.values.flatMap { it.toList() }
     } catch (e: Exception) {
         throw IllegalArgumentException("Error deserializing alarm cache. Only caches from Ignition 8.1.20+ are supported.")
     }
 
     private val table = run {
-        val initialModel = AlarmEventModel(alarmStates.values.flatten())
+        val initialModel = AlarmEventModel(events)
+
         ReifiedJXTable(initialModel).apply {
             columnFactory = AlarmEventModel.AlarmEventColumnList.toColumnFactory()
             createDefaultColumnsFromModel()
@@ -55,17 +64,19 @@ class AlarmCacheView(path: Path) : ToolPanel() {
                     ),
                 )
             }
-
-            selectionModel.apply {
-                addListSelectionListener {
-                    val alarmEvents = selectedIndices.map {
-                        val viewIndex = convertRowIndexToModel(it)
-                        model[viewIndex]
-                    }
-                    detailsPane.events = alarmEvents.map { it.toDetail() }
-                }
-            }
         }
+    }
+
+    private val countLabelText: String
+        get() = "Showing ${table.rowCount} of ${events.size} alarms"
+
+    private val alarmCountLabel = JLabel(countLabelText)
+
+    private val search = JXSearchField("Search")
+
+    private val header = JPanel(MigLayout("fill, ins 4")).apply {
+        add(alarmCountLabel, "west")
+        add(search, "east, wmin 300")
     }
 
     private val detailsPane = DetailsPane()
@@ -98,6 +109,8 @@ class AlarmCacheView(path: Path) : ToolPanel() {
         name = "Alarm Cache"
         toolTipText = path.toString()
 
+        add(header, "growx, spanx")
+
         add(
             VerticalSplitPane(
                 top = JScrollPane(table),
@@ -106,6 +119,33 @@ class AlarmCacheView(path: Path) : ToolPanel() {
             ),
             "push, grow, span",
         )
+
+        table.selectionModel.addListSelectionListener {
+            EDT_SCOPE.launch {
+                val details = withContext(Dispatchers.Default) {
+                    table.selectionModel.selectedIndices.map {
+                        table.model[table.convertRowIndexToModel(it)].toDetail()
+                    }
+                }
+                detailsPane.events = details
+            }
+        }
+
+        search.addActionListener { event ->
+            val searchField = event.source as JXSearchField
+            EDT_SCOPE.launch {
+                val filteredAlarms = withContext(Dispatchers.Default) {
+                    events.filter { alarmEvent ->
+                        val asString = AlarmEventModel.AlarmEventColumnList.joinToString { column ->
+                            column.getValue(alarmEvent).toString().lowercase()
+                        }
+                        searchField.text.lowercase() in asString
+                    }
+                }
+                table.model = AlarmEventModel(filteredAlarms)
+                alarmCountLabel.text = countLabelText
+            }
+        }
     }
 
     companion object {
