@@ -8,11 +8,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
-import java.math.BigDecimal
-import java.sql.Date
-import java.sql.JDBCType
-import java.sql.Time
-import java.sql.Timestamp
 import java.util.Properties
 import java.util.ServiceLoader
 import kotlin.math.log2
@@ -55,39 +50,6 @@ fun <T, U : Comparable<U>> List<T>.isSortedBy(keyFn: (T) -> U): Boolean {
         keyFn(a) <= keyFn(b)
     }.all { it }
 }
-
-val JDBCType.javaType: Class<*>
-    get() =
-        when (this) {
-            JDBCType.BIT -> Boolean::class
-            JDBCType.TINYINT -> Short::class
-            JDBCType.SMALLINT -> Short::class
-            JDBCType.INTEGER -> Int::class
-            JDBCType.BIGINT -> Long::class
-            JDBCType.FLOAT -> Float::class
-            JDBCType.REAL -> Double::class
-            JDBCType.DOUBLE -> Double::class
-            JDBCType.NUMERIC -> BigDecimal::class
-            JDBCType.DECIMAL -> BigDecimal::class
-            JDBCType.CHAR -> String::class
-            JDBCType.VARCHAR -> String::class
-            JDBCType.LONGVARCHAR -> String::class
-            JDBCType.DATE -> Date::class
-            JDBCType.TIME -> Time::class
-            JDBCType.TIMESTAMP -> Timestamp::class
-            JDBCType.BINARY -> ByteArray::class
-            JDBCType.VARBINARY -> ByteArray::class
-            JDBCType.LONGVARBINARY -> ByteArray::class
-            JDBCType.BOOLEAN -> Boolean::class
-            JDBCType.ROWID -> Long::class
-            JDBCType.NCHAR -> String::class
-            JDBCType.NVARCHAR -> String::class
-            JDBCType.LONGNVARCHAR -> String::class
-            JDBCType.BLOB -> ByteArray::class
-            JDBCType.CLOB -> ByteArray::class
-            JDBCType.NCLOB -> ByteArray::class
-            else -> Any::class
-        }.javaObjectType
 
 /**
  * Creates and returns a new [Properties], loading keys from [inputStream] according to the loading strategy specified
