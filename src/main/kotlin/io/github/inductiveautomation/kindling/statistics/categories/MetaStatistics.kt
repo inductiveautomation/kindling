@@ -36,8 +36,8 @@ data class MetaStatistics(
                 edition = edition.takeUnless { it.isNullOrEmpty() } ?: "Standard",
                 role = backup.redundancyInfo.getProperty("redundancy.noderole"),
                 version = version,
-                initMemory = backup.ignitionConf.getProperty("wrapper.java.initmemory").toInt(),
-                maxMemory = backup.ignitionConf.getProperty("wrapper.java.maxmemory").toInt(),
+                initMemory = backup.ignitionConf.getProperty("wrapper.java.initmemory").takeWhile { it.isDigit() }.toInt(),
+                maxMemory = backup.ignitionConf.getProperty("wrapper.java.maxmemory").takeWhile { it.isDigit() }.toInt(),
             )
         }
     }
