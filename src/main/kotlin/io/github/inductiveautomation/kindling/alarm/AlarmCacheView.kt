@@ -52,15 +52,15 @@ class AlarmCacheView(path: Path) : ToolPanel() {
             columnFactory = AlarmEventModel.AlarmEventColumnList.toColumnFactory()
             createDefaultColumnsFromModel()
 
-            alarmStateColors.entries.forEach { (state, color) ->
+            alarmStateColors.entries.forEach { (state, colorPalette) ->
                 addHighlighter(
                     ColorHighlighter(
                         { _, adapter ->
                             val viewRow = convertRowIndexToModel(adapter.row)
                             state == model[viewRow].state
                         },
-                        color,
-                        if (state == AlarmState.ClearAcked) Color.BLACK else Color.WHITE,
+                        colorPalette.background,
+                        colorPalette.foreground,
                     ),
                 )
             }
@@ -148,12 +148,17 @@ class AlarmCacheView(path: Path) : ToolPanel() {
         }
     }
 
+    private data class AlarmStateColorPalette(
+        val background: Color,
+        val foreground: Color,
+    )
+
     companion object {
         private val alarmStateColors = mapOf(
-            AlarmState.ActiveAcked to Color(171, 0, 0),
-            AlarmState.ActiveUnacked to Color(236, 34, 21),
-            AlarmState.ClearAcked to Color(220, 220, 254),
-            AlarmState.ClearUnacked to Color(73, 171, 171),
+            AlarmState.ActiveAcked to AlarmStateColorPalette(Color(171, 0, 0), Color.WHITE),
+            AlarmState.ActiveUnacked to AlarmStateColorPalette(Color(236, 34, 21), Color.WHITE),
+            AlarmState.ClearAcked to AlarmStateColorPalette(Color(220, 220, 254), Color.BLACK),
+            AlarmState.ClearUnacked to AlarmStateColorPalette(Color(73, 171, 171), Color.BLACK),
         )
     }
 }
