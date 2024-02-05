@@ -14,6 +14,7 @@ import javax.swing.JSplitPane
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
+@Suppress("FunctionName")
 inline fun FlatScrollPane(
     component: Component,
     block: FlatScrollPane.() -> Unit = {},
@@ -95,10 +96,11 @@ fun VerticalSplitPane(
  * Constructs a MigLayout JPanel containing each element of [group] in the first row.
  */
 @Suppress("FunctionName")
-fun ButtonPanel(group: ButtonGroup) = JPanel(MigLayout("ins 2 0, fill")).apply {
-    val sortGroupEnumeration = group.elements
-    add(sortGroupEnumeration.nextElement(), "split ${group.buttonCount}, flowx")
-    for (element in sortGroupEnumeration) {
-        add(element, "gapx 2")
+fun ButtonPanel(group: ButtonGroup) =
+    JPanel(MigLayout("ins 2 0, fill")).apply {
+        val sortGroupEnumeration = group.elements
+        add(sortGroupEnumeration.nextElement(), "split ${group.buttonCount}, flowx, align right")
+        for (element in sortGroupEnumeration) {
+            add(element, "gapx 2, align right")
+        }
     }
-}

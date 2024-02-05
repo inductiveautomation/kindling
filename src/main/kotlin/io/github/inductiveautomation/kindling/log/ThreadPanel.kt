@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.log
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.FilterListPanel
@@ -7,6 +8,8 @@ import io.github.inductiveautomation.kindling.utils.FilterModel
 import javax.swing.JPopupMenu
 
 internal class ThreadPanel(events: List<LogEvent>) : FilterListPanel<LogEvent>("Thread") {
+    override val icon = FlatSVGIcon("icons/bx-chip.svg")
+
     init {
         filterList.apply {
             setModel(FilterModel(events.groupingBy { (it as SystemLogEvent).thread }.eachCount()))
