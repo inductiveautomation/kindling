@@ -12,9 +12,10 @@ abstract class FilterListPanel<T>(
 
     private val sortButtons = filterList.createSortButtons()
 
-    override val component = ButtonPanel(sortButtons).apply {
-        add(FlatScrollPane(filterList), "newline, push, grow")
-    }
+    override val component =
+        ButtonPanel(sortButtons).apply {
+            add(FlatScrollPane(filterList), "newline, push, grow, align right")
+        }
 
     init {
         filterList.checkBoxListSelectionModel.addListSelectionListener { e ->
@@ -28,5 +29,9 @@ abstract class FilterListPanel<T>(
 
     override fun reset() = filterList.selectAll()
 
-    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out T, *>, event: T) = Unit
+    override fun customizePopupMenu(
+        menu: JPopupMenu,
+        column: Column<out T, *>,
+        event: T,
+    ) = Unit
 }
