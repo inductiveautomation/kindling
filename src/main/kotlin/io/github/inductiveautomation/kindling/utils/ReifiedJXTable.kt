@@ -26,11 +26,12 @@ class ReifiedJXTable<T : TableModel>(
 ) : JXTable(model) {
     private val setup = true
 
-    private val packLater: () -> Unit = debounce(
-        waitTime = 500.milliseconds,
-        coroutineScope = EDT_SCOPE,
-        destinationFunction = ::packAll,
-    )
+    private val packLater: () -> Unit =
+        debounce(
+            waitTime = 500.milliseconds,
+            coroutineScope = EDT_SCOPE,
+            destinationFunction = ::packAll,
+        )
 
     init {
         if (columns != null) {
@@ -74,9 +75,10 @@ class ReifiedJXTable<T : TableModel>(
 
         val sortOrder = if (sortedColumn >= 0) (rowSorter as SortController<*>).getSortOrder(sortedColumn) else null
 
-        val previousColumnSizes = IntArray(columnCount) { i ->
-            getColumnExt(i).preferredWidth
-        }
+        val previousColumnSizes =
+            IntArray(columnCount) { i ->
+                getColumnExt(i).preferredWidth
+            }
 
         super.setModel(model)
 
@@ -95,9 +97,14 @@ class ReifiedJXTable<T : TableModel>(
     }
 }
 
+/**
+ * Pseudo-constructor for a [ReifiedJXTable]. [columns] can be explicitly specified, or if [model] is an instance of
+ * [ReifiedTableModel], they will be assumed from the model.
+ */
+@Suppress("FunctionName")
 inline fun <reified T : TableModel> ReifiedJXTable(
     model: T,
     columns: ColumnList<*>? = null,
 ): ReifiedJXTable<T> {
-    return ReifiedJXTable(model, T::class.java, columns)
+    return ReifiedJXTable(model, T::class.java, columns ?: (model as? ReifiedTableModel<*>)?.columns)
 }
