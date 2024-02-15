@@ -1,7 +1,7 @@
 [versions]
 java = "21"
 kotlin = "1.9.22"
-coroutines = "1.7.3"
+coroutines = "1.8.0"
 flatlaf = "3.3"
 kotest = "5.8.0"
 ignition = "8.1.1"
@@ -10,7 +10,7 @@ ignition = "8.1.1"
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 conveyor = { id = "dev.hydraulic.conveyor", version = "1.8" }
-spotless = { id = "com.diffplug.spotless", version = "6.23.3" }
+spotless = { id = "com.diffplug.spotless", version = "6.25.0" }
 dokka = { id = "org.jetbrains.dokka", version = "1.9.10" }
 
 [libraries]
