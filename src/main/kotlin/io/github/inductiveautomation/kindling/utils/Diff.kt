@@ -74,7 +74,7 @@ class DiffData<T> private constructor(
     constructor(
         pre: List<T>,
         post: List<T>,
-        equalityPredicate: (T, T) -> Boolean = { a, b -> a == b },
+        equalityPredicate: (T, T) -> Boolean,
     ) : this(pre, post, equalityPredicate, lcs(pre, post, equalityPredicate))
 
     val leftDiffList = buildList {

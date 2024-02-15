@@ -21,14 +21,15 @@ import net.miginfocom.swing.MigLayout
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rtextarea.RTextScrollPane
 
-class DiffView(
-    pre: List<String>,
-    post: List<String>,
+class DiffView<T>(
+    pre: List<T>,
+    post: List<T>,
+    equalityPredicate: (T, T) -> Boolean = { item1, item2 -> item1 == item2 },
 ) : JPanel(MigLayout("fill, ins 10, hidemode 3")), WindowStateListener {
     // Main data object to get all relevant diff information, lists, etc.
     // Even though this is running on the EDT,
     // in my testing it's fast enough to not matter for any normal stacktrace length
-    private val diffData = DiffData(pre, post)
+    private val diffData = DiffData(pre, post, equalityPredicate)
 
     private val singleMultiToggle = JToggleButton("Toggle Unified View").apply {
         addItemListener { event ->
@@ -53,7 +54,7 @@ class DiffView(
     // Text Areas
     private val unifiedTextArea = RSyntaxTextArea().apply {
         theme = Theme.currentValue
-        text = diffData.unifiedDiffList.joinToString("\n") { it.value }
+        text = diffData.unifiedDiffList.joinToString("\n") { "${it.value}" }
 
         addLineHighlighter(addBackground) { _, lineNum ->
             diffData.unifiedDiffList[lineNum].type == DiffType.ADDITION
@@ -67,7 +68,7 @@ class DiffView(
     private val leftTextArea = RSyntaxTextArea().apply {
         isEditable = false
         text = diffData.leftDiffList.joinToString("\n") {
-            if (it is Diff.Addition) " " else it.value
+            if (it is Diff.Addition) " " else "${it.value}"
         }
 
         theme = Theme.currentValue
@@ -82,7 +83,7 @@ class DiffView(
     private val rightTextArea = RSyntaxTextArea().apply {
         isEditable = false
         text = diffData.rightDiffList.joinToString("\n") {
-            if (it is Diff.Deletion) " " else it.value
+            if (it is Diff.Deletion) " " else "${it.value}"
         }
 
         theme = Theme.currentValue
