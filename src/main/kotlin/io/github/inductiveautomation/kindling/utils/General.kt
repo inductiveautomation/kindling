@@ -120,3 +120,7 @@ infix fun InputStream.transferTo(output: OutputStream) {
         output.use(input::transferTo)
     }
 }
+
+fun <T> Iterator<T>.nextOrNull(): T? {
+    return if (hasNext()) next() else null
+}
