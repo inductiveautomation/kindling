@@ -1,22 +1,16 @@
 package io.github.inductiveautomation.kindling.utils
 
-import com.formdev.flatlaf.extras.components.FlatScrollPane
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import java.awt.Color
-import java.awt.Dimension
 import java.awt.Font
 import java.awt.event.ItemEvent
-import java.awt.event.WindowEvent
-import java.awt.event.WindowStateListener
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.JToggleButton
 import javax.swing.SwingUtilities
-import javax.swing.text.JTextComponent
-import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rtextarea.RTextScrollPane
@@ -25,7 +19,7 @@ class DiffView<T>(
     pre: List<T>,
     post: List<T>,
     equalityPredicate: (T, T) -> Boolean = { item1, item2 -> item1 == item2 },
-) : JPanel(MigLayout("fill, ins 10, hidemode 3")), WindowStateListener {
+) : JPanel(MigLayout("fill, ins 10, hidemode 3")) {
     // Main data object to get all relevant diff information, lists, etc.
     // Even though this is running on the EDT,
     // in my testing it's fast enough to not matter for any normal stacktrace length
@@ -51,10 +45,18 @@ class DiffView<T>(
         }
     }
 
+    private var columnCount: Int = 0
+
     // Text Areas
     private val unifiedTextArea = RSyntaxTextArea().apply {
         theme = Theme.currentValue
-        text = diffData.unifiedDiffList.joinToString("\n") { "${it.value}" }
+        isEditable = false
+
+        text = diffData.unifiedDiffList.joinToString("\n") {
+            "${it.value}".also { s ->
+                if (s.length > columnCount) columnCount = s.length
+            }
+        }
 
         addLineHighlighter(addBackground) { _, lineNum ->
             diffData.unifiedDiffList[lineNum].type == DiffType.ADDITION
@@ -65,68 +67,57 @@ class DiffView<T>(
         }
     }
 
-    private val leftTextArea = RSyntaxTextArea().apply {
+    private val leftTextArea = JTextArea(
+        diffData.leftDiffList.size,
+        columnCount,
+    ).apply {
         isEditable = false
+
         text = diffData.leftDiffList.joinToString("\n") {
-            if (it is Diff.Addition) " " else "${it.value}"
+            if (it is Diff.Addition) {
+                " "
+            } else {
+                val strVal = "${it.value}"
+                strVal + " ".repeat(columnCount - strVal.length)
+            }
         }
 
-        theme = Theme.currentValue
+        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
         addLineHighlighter(delBackground) { _, lineNum ->
             diffData.leftDiffList[lineNum].type == DiffType.DELETION
         }
-
-        preferredSize = unifiedTextArea.preferredSize
     }
 
-    private val rightTextArea = RSyntaxTextArea().apply {
+    private val rightTextArea = JTextArea(
+        diffData.rightDiffList.size,
+        columnCount,
+    ).apply {
         isEditable = false
+
         text = diffData.rightDiffList.joinToString("\n") {
-            if (it is Diff.Deletion) " " else "${it.value}"
+            if (it is Diff.Deletion) {
+                " "
+            } else {
+                val strVal = "${it.value}"
+                strVal + " ".repeat(columnCount - strVal.length)
+            }
         }
 
-        theme = Theme.currentValue
+        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
         addLineHighlighter(addBackground) { _, lineNum ->
             diffData.rightDiffList[lineNum].type == DiffType.ADDITION
         }
     }
 
-    // ScrollPanes
-
-    private val leftScrollPane = FlatScrollPane(leftTextArea) {
-        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-    }
-
-    private val rightScrollPane = FlatScrollPane(rightTextArea) {
-        horizontalScrollBar.model = leftScrollPane.horizontalScrollBar.model
-        verticalScrollBar.model = leftScrollPane.verticalScrollBar.model
-        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-    }
-
-    private val unifiedScrollPane = RTextScrollPane(unifiedTextArea, false).apply {
-        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-    }
-
-    init {
-        // Ensures both text areas are the same size so that they scroll the same way, and nothing is cut off
-        val prefSize = Dimension(
-            unifiedTextArea.preferredSize.width + unifiedScrollPane.verticalScrollBar.preferredSize.width,
-            leftTextArea.preferredSize.height,
-        )
-
-        leftTextArea.preferredSize = prefSize
-        rightTextArea.preferredSize = prefSize
-    }
-
     // Gutters
 
-    private val leftGutter = Gutter(leftScrollPane, Gutter.GutterType.SIDE_BY_SIDE) {
-        val width = Gutter.GutterType.SIDE_BY_SIDE.width
+    private val leftGutter = JTextArea(
+        diffData.leftDiffList.size,
+        SIDE_BY_SIDE_GUTTER_WIDTH,
+    ).apply {
+        val width = SIDE_BY_SIDE_GUTTER_WIDTH
         text = diffData.leftDiffList.joinToString("\n") { diff ->
             when (diff) {
                 is Diff.Addition -> diff.type.symbol
@@ -134,10 +125,14 @@ class DiffView<T>(
                 is Diff.NoChange -> String.format("%${width}d", diff.index + 1)
             }
         }
+        font = leftTextArea.font
     }
 
-    private val rightGutter = Gutter(rightScrollPane, Gutter.GutterType.SIDE_BY_SIDE) {
-        val width = Gutter.GutterType.SIDE_BY_SIDE.width
+    private val rightGutter = JTextArea(
+        diffData.rightDiffList.size,
+        SIDE_BY_SIDE_GUTTER_WIDTH,
+    ).apply {
+        val width = SIDE_BY_SIDE_GUTTER_WIDTH
         text = diffData.rightDiffList.joinToString("\n") { diff ->
             when (diff) {
                 is Diff.Deletion -> diff.type.symbol
@@ -145,11 +140,16 @@ class DiffView<T>(
                 is Diff.NoChange -> String.format("%${width}d", diff.index + 1)
             }
         }
+        font = rightTextArea.font
     }
 
-    private val unifiedGutter = Gutter(unifiedScrollPane, Gutter.GutterType.UNIFIED) {
+    private val unifiedGutter = JTextArea(
+        diffData.unifiedDiffList.size,
+        UNIFIED_GUTTER_WIDTH,
+    ).apply {
+        val width = UNIFIED_GUTTER_WIDTH
+
         text = diffData.unifiedDiffList.joinToString("\n") { diff ->
-            val width = Gutter.GutterType.UNIFIED.width
             when (diff) {
                 is Diff.Addition -> {
                     String.format(
@@ -172,104 +172,67 @@ class DiffView<T>(
                 }
             }
         }
+        font = unifiedTextArea.font
     }
 
-    // Labels
+    // ScrollPanes
 
-    private val deletionLabel = JLabel("(-) ${diffData.deletions.size} Deletions.").apply {
-        font = font.deriveFont(Font.BOLD)
+    private val leftScrollPane = FlatScrollPane(leftTextArea) {
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
+
+        setRowHeaderView(leftGutter)
     }
 
-    private val additionLabel = JLabel("(+) ${diffData.additions.size} Additions").apply {
-        font = font.deriveFont(Font.BOLD)
+    private val rightScrollPane = FlatScrollPane(rightTextArea) {
+        horizontalScrollBar.model = leftScrollPane.horizontalScrollBar.model
+        verticalScrollBar.model = leftScrollPane.verticalScrollBar.model
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
+
+        setRowHeaderView(rightGutter)
+    }
+
+    private val unifiedScrollPane = RTextScrollPane(unifiedTextArea, false).apply {
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
+
+        setRowHeaderView(unifiedGutter)
+    }
+
+    private val additionDeletionLabel = JLabel(
+        "Showing ${diffData.additions.size} Additions and ${diffData.deletions.size} Deletions"
+    ).apply {
+        font = font.deriveFont(Font.BOLD, 14F)
     }
 
     // Main Views
-
     private val sideBySide = JPanel(MigLayout("fill, ins 0")).apply {
-        add(deletionLabel, "spanx 2")
-        add(additionLabel, "spanx 2, wrap")
-        add(leftGutter, "aligny top")
-        add(leftScrollPane, "push, grow, sizegroup")
-        add(rightGutter, "aligny top")
-        add(rightScrollPane, "push, grow, sizegroup")
+        add(leftScrollPane, "push, grow, sg")
+        add(rightScrollPane, "push, grow, sg")
     }
 
     private val singleView = JPanel(MigLayout("fill, ins 3")).apply {
-        add(unifiedGutter, "aligny top")
         add(unifiedScrollPane, "push, grow, span")
     }
 
-    // Accounts for when the jFrame is maximized
-    override fun windowStateChanged(e: WindowEvent?) {
-        EDT_SCOPE.launch {
-            sideBySide.revalidate()
-            sideBySide.repaint()
-
-            singleView.revalidate()
-            singleView.repaint()
-        }
-    }
-
     init {
+        add(additionDeletionLabel)
         add(singleMultiToggle, "align right, wrap")
         add(singleView, "push, grow, span")
         add(sideBySide, "push, grow, span")
 
         sideBySide.isVisible = false
-
-        SwingUtilities.invokeLater {
-            SwingUtilities.getWindowAncestor(this).addWindowStateListener(this)
-            SwingUtilities.getUnwrappedParent(this)
-        }
     }
 
     companion object {
+        private const val SIDE_BY_SIDE_GUTTER_WIDTH = 5
+        private const val UNIFIED_GUTTER_WIDTH = 9
+
         private val addBackground: Color
             get() = if (Theme.currentValue.isDark) Color(9, 230, 100, 40) else Color(0xE6FFEC)
 
         private val delBackground: Color
             get() = if (Theme.currentValue.isDark) Color(255, 106, 70, 40) else Color(0xFFEBE9)
-    }
-}
-
-class Gutter(
-    private val mainScrollPane: JScrollPane,
-    private val type: GutterType,
-    textAreaFormat: JTextArea.() -> Unit,
-) : FlatScrollPane() {
-    private val mainTextArea = mainScrollPane.viewport.view as JTextComponent
-
-    private val gutterWidth = run {
-        val fm = mainTextArea.getFontMetrics(mainTextArea.font)
-        fm.stringWidth("X".repeat(type.width)) + 5 // Some padding
-    }
-
-    private val textDisplay = JTextArea().apply {
-        textAreaFormat()
-        font = mainTextArea.font
-    }
-
-    init {
-        viewport.view = textDisplay
-
-        horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_NEVER
-        verticalScrollBarPolicy = VERTICAL_SCROLLBAR_NEVER
-        verticalScrollBar.model = mainScrollPane.verticalScrollBar.model
-    }
-
-    // Ensure the width is always correct, and the height matches the dependent scrollpane
-    override fun getMinimumSize() = preferredSize
-
-    override fun getPreferredSize(): Dimension {
-        val height = mainScrollPane.height - mainScrollPane.horizontalScrollBar.height
-        return Dimension(gutterWidth, height)
-    }
-
-    override fun getMaximumSize() = preferredSize
-
-    enum class GutterType(val width: Int) {
-        SIDE_BY_SIDE(5),
-        UNIFIED(9),
     }
 }
