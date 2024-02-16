@@ -52,10 +52,12 @@ class DiffView<T>(
         theme = Theme.currentValue
         isEditable = false
 
-        text = diffData.unifiedDiffList.joinToString("\n") {
-            "${it.value}".also { s ->
+        text = diffData.unifiedDiffList.map {
+            it.value.toString().also { s ->
                 if (s.length > columnCount) columnCount = s.length
             }
+        }.joinToString("\n") {
+            it.padEnd(columnCount)
         }
 
         addLineHighlighter(addBackground) { _, lineNum ->
@@ -74,12 +76,7 @@ class DiffView<T>(
         isEditable = false
 
         text = diffData.leftDiffList.joinToString("\n") {
-            if (it is Diff.Addition) {
-                " "
-            } else {
-                val strVal = "${it.value}"
-                strVal + " ".repeat(columnCount - strVal.length)
-            }
+            if (it is Diff.Addition) " " else it.value.toString().padEnd(columnCount)
         }
 
         font = Font(Font.MONOSPACED, Font.PLAIN, 12)
@@ -96,12 +93,7 @@ class DiffView<T>(
         isEditable = false
 
         text = diffData.rightDiffList.joinToString("\n") {
-            if (it is Diff.Deletion) {
-                " "
-            } else {
-                val strVal = "${it.value}"
-                strVal + " ".repeat(columnCount - strVal.length)
-            }
+            if (it is Diff.Deletion) " " else it.value.toString().padEnd(columnCount)
         }
 
         font = Font(Font.MONOSPACED, Font.PLAIN, 12)
