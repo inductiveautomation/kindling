@@ -25,6 +25,9 @@ import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.style
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.toBodyLine
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXTaskPane
+import org.jdesktop.swingx.JXTaskPaneContainer
 import java.awt.Color
 import java.awt.Font
 import java.awt.event.ItemEvent
@@ -42,9 +45,6 @@ import javax.swing.event.HyperlinkEvent
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.properties.Delegates
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXTaskPane
-import org.jdesktop.swingx.JXTaskPaneContainer
 
 class ThreadComparisonPane(
     totalThreadDumps: Int,

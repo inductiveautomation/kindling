@@ -207,9 +207,9 @@ class CacheView(private val path: Path) : ToolPanel() {
             title = name,
             body = errors.ifEmpty { listOf("No errors associated with this schema.") },
             details =
-                mapOf(
-                    "ID" to id.toString(),
-                ),
+            mapOf(
+                "ID" to id.toString(),
+            ),
         )
     }
 
@@ -267,9 +267,9 @@ class CacheView(private val path: Path) : ToolPanel() {
                     Detail(
                         title = TRANSACTION_GROUP_DATA,
                         body =
-                            map { row ->
-                                (row as Array<*>).contentToString()
-                            },
+                        map { row ->
+                            (row as Array<*>).contentToString()
+                        },
                     )
                 } else {
                     Detail(
@@ -304,27 +304,27 @@ class CacheView(private val path: Path) : ToolPanel() {
         return Detail(
             title = this::class.java.simpleName,
             body =
-                this.map { historicalTagValue ->
-                    buildString {
-                        append(historicalTagValue.source.toStringFull())
-                        append(", ")
-                        append(historicalTagValue.typeClass.name)
-                        append(", ")
-                        append(historicalTagValue.value)
-                        append(", ")
-                        append(historicalTagValue.interpolationMode.name)
-                        append(", ")
-                        append(historicalTagValue.timestampSource.name)
-                    }
-                },
+            this.map { historicalTagValue ->
+                buildString {
+                    append(historicalTagValue.source.toStringFull())
+                    append(", ")
+                    append(historicalTagValue.typeClass.name)
+                    append(", ")
+                    append(historicalTagValue.value)
+                    append(", ")
+                    append(historicalTagValue.interpolationMode.name)
+                    append(", ")
+                    append(historicalTagValue.timestampSource.name)
+                }
+            },
             details =
-                mapOf(
-                    "gatewayName" to gatewayName,
-                    "provider" to providerName,
-                    "setName" to setName,
-                    "execRate" to execRate.toString(),
-                    "execTime" to executionTime.time.toString(),
-                ),
+            mapOf(
+                "gatewayName" to gatewayName,
+                "provider" to providerName,
+                "setName" to setName,
+                "execRate" to execRate.toString(),
+                "execTime" to executionTime.time.toString(),
+            ),
         )
     }
 
@@ -333,18 +333,18 @@ class CacheView(private val path: Path) : ToolPanel() {
             title = "BasicHistoricalRecord",
             message = "INSERT INTO $tablename",
             body =
-                columns.map { column ->
-                    buildString {
-                        append(column.name).append(": ")
-                        (0..dataCount).joinTo(buffer = this, prefix = "(", postfix = ")") { row ->
-                            column.getValue(row).toString()
-                        }
+            columns.map { column ->
+                buildString {
+                    append(column.name).append(": ")
+                    (0..dataCount).joinTo(buffer = this, prefix = "(", postfix = ")") { row ->
+                        column.getValue(row).toString()
                     }
-                },
+                }
+            },
             details =
-                mapOf(
-                    "quoteColumnNames" to quoteColumnNames().toString(),
-                ),
+            mapOf(
+                "quoteColumnNames" to quoteColumnNames().toString(),
+            ),
         )
     }
 

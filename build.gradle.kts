@@ -108,7 +108,9 @@ spotless {
         formatAnnotations()
     }
     kotlin {
-        ktlint()
+        ktlint().editorConfigOverride(
+            mapOf("multiline-expression-wrapping" to "disabled"),
+        )
     }
     kotlinGradle {
         ktlint()

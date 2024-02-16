@@ -2,6 +2,9 @@ package io.github.inductiveautomation.kindling.utils
 
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.Color
 import java.awt.Font
 import java.awt.event.ItemEvent
@@ -11,9 +14,6 @@ import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.JToggleButton
 import javax.swing.SwingUtilities
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rtextarea.RTextScrollPane
 
 class DiffView<T>(
     pre: List<T>,
@@ -201,7 +201,7 @@ class DiffView<T>(
     }
 
     private val additionDeletionLabel = JLabel(
-        "Showing ${diffData.additions.size} Additions and ${diffData.deletions.size} Deletions"
+        "Showing ${diffData.additions.size} Additions and ${diffData.deletions.size} Deletions",
     ).apply {
         font = font.deriveFont(Font.BOLD, 14F)
     }

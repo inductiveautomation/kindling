@@ -145,22 +145,22 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                     name = tableName,
                     _parent = { sortableTree.root },
                     columns =
-                        connection
-                            .executeQuery("""PRAGMA table_xinfo("$tableName");""")
-                            .toList { resultSet ->
-                                Column(
-                                    name = resultSet["name"],
-                                    type = resultSet["type"],
-                                    notNull = resultSet["notnull"],
-                                    defaultValue = resultSet["dflt_value"],
-                                    primaryKey = resultSet["pk"],
-                                    hidden = resultSet["hidden"],
-                                    _parent = { sortableTree.root.getChildAt(i) },
-                                )
-                            },
+                    connection
+                        .executeQuery("""PRAGMA table_xinfo("$tableName");""")
+                        .toList { resultSet ->
+                            Column(
+                                name = resultSet["name"],
+                                type = resultSet["type"],
+                                notNull = resultSet["notnull"],
+                                defaultValue = resultSet["dflt_value"],
+                                primaryKey = resultSet["pk"],
+                                hidden = resultSet["hidden"],
+                                _parent = { sortableTree.root.getChildAt(i) },
+                            )
+                        },
                     size =
-                        connection
-                            .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
+                    connection
+                        .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
                 )
             }
 
