@@ -70,31 +70,29 @@ class SortableTree(val tables: List<Table>) {
             tree.model = DefaultTreeModel(root)
         }
 
-    private fun sortTree() =
-        object : TreeNode {
-            override fun getChildAt(childIndex: Int): TreeNode = tables.sortedWith(comparator)[childIndex]
+    private fun sortTree() = object : TreeNode {
+        override fun getChildAt(childIndex: Int): TreeNode = tables.sortedWith(comparator)[childIndex]
 
-            override fun getChildCount(): Int = tables.sortedWith(comparator).size
+        override fun getChildCount(): Int = tables.sortedWith(comparator).size
 
-            override fun getParent(): TreeNode? = null
+        override fun getParent(): TreeNode? = null
 
-            override fun getIndex(node: TreeNode): Int = tables.sortedWith(comparator).indexOf(node)
+        override fun getIndex(node: TreeNode): Int = tables.sortedWith(comparator).indexOf(node)
 
-            override fun getAllowsChildren(): Boolean = true
+        override fun getAllowsChildren(): Boolean = true
 
-            override fun isLeaf(): Boolean = false
+        override fun isLeaf(): Boolean = false
 
-            override fun children(): Enumeration<out TreeNode> = Collections.enumeration(tables.sortedWith(comparator))
-        }
+        override fun children(): Enumeration<out TreeNode> = Collections.enumeration(tables.sortedWith(comparator))
+    }
 
     var root: TreeNode = sortTree()
 
     val tree = DBMetaDataTree(DefaultTreeModel(root))
 
-    private val sortActions: List<SortAction> =
-        TableComparator.entries.map { tableComparator ->
-            SortAction(tableComparator)
-        }
+    private val sortActions: List<SortAction> = TableComparator.entries.map { tableComparator ->
+        SortAction(tableComparator)
+    }
 
     inner class SortAction(comparator: TableComparator) : Action(
         description = comparator.tooltip,
@@ -108,118 +106,107 @@ class SortableTree(val tables: List<Table>) {
         var comparator: TableComparator by actionValue("tableComparator", comparator)
     }
 
-    private fun createSortButtons(): ButtonGroup =
-        ButtonGroup().apply {
-            for (sortAction in sortActions) {
-                add(
-                    JToggleButton(
-                        Action(
-                            description = sortAction.description,
-                            icon = sortAction.icon,
-                            selected = sortAction.selected,
-                        ) { e ->
-                            sortAction.actionPerformed(e)
-                        },
-                    ),
-                )
-            }
+    private fun createSortButtons(): ButtonGroup = ButtonGroup().apply {
+        for (sortAction in sortActions) {
+            add(
+                JToggleButton(
+                    Action(
+                        description = sortAction.description,
+                        icon = sortAction.icon,
+                        selected = sortAction.selected,
+                    ) { e ->
+                        sortAction.actionPerformed(e)
+                    },
+                ),
+            )
         }
+    }
 
     private val sortButtons = createSortButtons()
 
-    val component =
-        ButtonPanel(sortButtons).apply {
-            add(FlatScrollPane(tree), "newline, push, grow")
-        }
+    val component = ButtonPanel(sortButtons).apply {
+        add(FlatScrollPane(tree), "newline, push, grow")
+    }
 }
 
 class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
     @Suppress("SqlResolve")
-    private val tables: List<Table> =
-        connection
-            .executeQuery("""SELECT name FROM main.sqlite_schema WHERE type = "table" ORDER BY name""")
-            .toList { resultSet ->
-                resultSet.getString(1)
-            }.mapIndexed { i, tableName ->
-                Table(
-                    name = tableName,
-                    _parent = { sortableTree.root },
-                    columns =
-                    connection
-                        .executeQuery("""PRAGMA table_xinfo("$tableName");""")
-                        .toList { resultSet ->
-                            Column(
-                                name = resultSet["name"],
-                                type = resultSet["type"],
-                                notNull = resultSet["notnull"],
-                                defaultValue = resultSet["dflt_value"],
-                                primaryKey = resultSet["pk"],
-                                hidden = resultSet["hidden"],
-                                _parent = { sortableTree.root.getChildAt(i) },
-                            )
-                        },
-                    size =
-                    connection
-                        .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
-                )
-            }
+    private val tables: List<Table> = connection
+        .executeQuery("""SELECT name FROM main.sqlite_schema WHERE type = "table" ORDER BY name""")
+        .toList { resultSet ->
+            resultSet.getString(1)
+        }.mapIndexed { i, tableName ->
+            Table(
+                name = tableName,
+                _parent = { sortableTree.root },
+                columns = connection
+                    .executeQuery("""PRAGMA table_xinfo("$tableName");""")
+                    .toList { resultSet ->
+                        Column(
+                            name = resultSet["name"],
+                            type = resultSet["type"],
+                            notNull = resultSet["notnull"],
+                            defaultValue = resultSet["dflt_value"],
+                            primaryKey = resultSet["pk"],
+                            hidden = resultSet["hidden"],
+                            _parent = { sortableTree.root.getChildAt(i) },
+                        )
+                    },
+                size = connection
+                    .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
+            )
+        }
 
     private val sortableTree = SortableTree(tables)
 
     private val query = JTextArea(0, 0)
 
-    private val execute =
-        Action(name = "Execute") {
-            results.result =
-                if (!query.text.isNullOrEmpty()) {
-                    try {
-                        connection.executeQuery(query.text)
-                            .use { resultSet ->
-                                val columnCount = resultSet.metaData.columnCount
-                                val names = List(columnCount) { i -> resultSet.metaData.getColumnName(i + 1) }
-                                val types =
-                                    List(columnCount) { i ->
-                                        val timestamp =
-                                            TIMESTAMP_COLUMN_NAMES.any {
-                                                resultSet.metaData.getColumnName(i + 1).contains(it, true)
-                                            }
-
-                                        if (timestamp) {
-                                            Timestamp::class.java
-                                        } else {
-                                            val sqlType = resultSet.metaData.getColumnType(i + 1)
-                                            val jdbcType = JDBCType.valueOf(sqlType)
-                                            jdbcType.javaType
-                                        }
-                                    }
-
-                                val data =
-                                    resultSet.toList {
-                                        List(columnCount) { i ->
-                                            // SQLite stores booleans as ints, we'll use actual booleans to make things easier
-                                            if (types[i] == Boolean::class.javaObjectType) {
-                                                resultSet.getObject(i + 1) == 1
-                                            } else {
-                                                resultSet.getObject(i + 1)
-                                            }
-                                        }
-                                    }
-
-                                QueryResult.Success(names, types, data)
+    private val execute = Action(name = "Execute") {
+        results.result = if (!query.text.isNullOrEmpty()) {
+            try {
+                connection.executeQuery(query.text)
+                    .use { resultSet ->
+                        val columnCount = resultSet.metaData.columnCount
+                        val names = List(columnCount) { i -> resultSet.metaData.getColumnName(i + 1) }
+                        val types = List(columnCount) { i ->
+                            val timestamp = TIMESTAMP_COLUMN_NAMES.any {
+                                resultSet.metaData.getColumnName(i + 1).contains(it, true)
                             }
-                    } catch (e: Exception) {
-                        QueryResult.Error(e.message ?: "Error")
-                    }
-                } else {
-                    QueryResult.Error("Enter a query in the text field above")
-                }
-        }
 
-    private val queryPanel =
-        JPanel(MigLayout("ins 0, fill")).apply {
-            add(JButton(execute), "wrap")
-            add(query, "push, grow")
+                            if (timestamp) {
+                                Timestamp::class.java
+                            } else {
+                                val sqlType = resultSet.metaData.getColumnType(i + 1)
+                                val jdbcType = JDBCType.valueOf(sqlType)
+                                jdbcType.javaType
+                            }
+                        }
+
+                        val data = resultSet.toList {
+                            List(columnCount) { i ->
+                                // SQLite stores booleans as ints, we'll use actual booleans to make things easier
+                                if (types[i] == Boolean::class.javaObjectType) {
+                                    resultSet.getObject(i + 1) == 1
+                                } else {
+                                    resultSet.getObject(i + 1)
+                                }
+                            }
+                        }
+
+                        QueryResult.Success(names, types, data)
+                    }
+            } catch (e: Exception) {
+                QueryResult.Error(e.message ?: "Error")
+            }
+        } else {
+            QueryResult.Error("Enter a query in the text field above")
         }
+    }
+
+    private val queryPanel = JPanel(MigLayout("ins 0, fill")).apply {
+        add(JButton(execute), "wrap")
+        add(query, "push, grow")
+    }
 
     private val results = ResultsPanel()
 
