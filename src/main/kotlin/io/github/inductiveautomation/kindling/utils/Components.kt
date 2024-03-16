@@ -97,10 +97,11 @@ fun VerticalSplitPane(
  */
 @Suppress("FunctionName")
 fun ButtonPanel(group: ButtonGroup) =
-    JPanel(MigLayout("ins 2 0, fill")).apply {
+    JPanel(MigLayout("ins 3 0, fill")).apply {
+        border = EmptyBorder()
         val sortGroupEnumeration = group.elements
-        add(sortGroupEnumeration.nextElement(), "split ${group.buttonCount}, flowx, align right")
+        add(sortGroupEnumeration.nextElement(), "split ${group.buttonCount}, flowx, align right, gapbottom 3")
         for (element in sortGroupEnumeration) {
-            add(element, "gapx 2, align right")
+            add(element, "gapx 2, align right, gapbottom 3")
         }
     }

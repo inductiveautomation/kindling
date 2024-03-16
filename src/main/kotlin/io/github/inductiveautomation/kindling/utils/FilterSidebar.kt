@@ -15,20 +15,20 @@ class FilterSidebar<T>(
 ) : FlatTabbedPane() {
     val filterPanels = panels.filterNotNull()
 
-    private var tabToolTip = JToolTip()
+    override fun createToolTip(): JToolTip = JToolTip().apply {
+        font = UIManager.getFont("h3.regular.font")
+        minimumSize = Dimension(1, tabHeight)
+    }
 
-    override fun createToolTip(): JToolTip = tabToolTip
-
-    override fun getToolTipLocation(event: MouseEvent?): Point? {
-        val point = Point(event!!.x, event.y)
-        if (point.x <= tabHeight) {
-            return if (point.y <= tabHeight * tabCount) {
-                Point(tabHeight, (point.y / tabHeight) * tabHeight)
-            } else {
-                null
-            }
+    override fun getToolTipLocation(event: MouseEvent): Point? {
+        return if (event.x <= tabHeight && event.y <= tabHeight * tabCount) {
+            Point(
+                event.x.coerceAtLeast(tabHeight),
+                event.y.floorDiv(tabHeight) * tabHeight,
+            )
+        } else {
+            null
         }
-        return point
     }
 
     init {
@@ -40,28 +40,21 @@ class FilterSidebar<T>(
         scrollButtonsPolicy = ScrollButtonsPolicy.never
         tabWidthMode = TabWidthMode.compact
         tabType = TabType.underlined
+        isShowContentSeparators = false
 
         preferredSize = Dimension(250, 100)
         filterPanels.forEachIndexed { i, filterPanel ->
-            tabToolTip.apply {
-                font = UIManager.getFont("h3.regular.font")
-                preferredSize = Dimension((tabHeight * 2.5).toInt(), tabHeight)
-                location = Point(tabHeight, tabHeight * i)
-            }
             addTab(
                 null,
                 filterPanel.icon,
                 filterPanel.component,
-                """<html>
-                    <style>
-                    .vertical-center {
-                    margin: 3px;
+                buildString {
+                    tag("html") {
+                        tag("p", "style" to "margin: 3px;") {
+                            append(filterPanel.tabName)
+                        }
                     }
-                    </style>
-                    <div class="vertical-center">
-                    <p>${filterPanel.tabName}</p>
-                    </div>
-                    </html>""",
+                },
             )
             filterPanel.addFilterChangeListener {
                 filterPanel.updateTabState()

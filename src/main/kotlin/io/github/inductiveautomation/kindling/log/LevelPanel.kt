@@ -7,7 +7,7 @@ import io.github.inductiveautomation.kindling.utils.FilterListPanel
 import io.github.inductiveautomation.kindling.utils.FilterModel
 import javax.swing.JPopupMenu
 
-internal class LevelPanel(rawData: List<LogEvent>) : FilterListPanel<LogEvent>("Level") {
+internal class LevelPanel(rawData: List<LogEvent>) : FilterListPanel<LogEvent>("Levels") {
     override val icon = FlatSVGIcon("icons/bx-bar-chart-alt.svg")
 
     init {

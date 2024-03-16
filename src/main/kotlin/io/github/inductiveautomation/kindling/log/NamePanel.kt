@@ -13,7 +13,7 @@ import javax.swing.JPopupMenu
 
 internal class NamePanel(
     events: List<LogEvent>,
-) : FilterListPanel<LogEvent>("Logger", ::getSortKey), PopupMenuCustomizer {
+) : FilterListPanel<LogEvent>("Loggers", ::getSortKey), PopupMenuCustomizer {
     override val icon = FlatSVGIcon("icons/bx-detail.svg")
 
     init {

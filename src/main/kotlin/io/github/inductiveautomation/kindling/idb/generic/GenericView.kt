@@ -16,7 +16,6 @@ import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import net.miginfocom.swing.MigLayout
-import java.awt.Dimension
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.JDBCType
@@ -144,23 +143,21 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                 Table(
                     name = tableName,
                     _parent = { sortableTree.root },
-                    columns =
-                        connection
-                            .executeQuery("""PRAGMA table_xinfo("$tableName");""")
-                            .toList { resultSet ->
-                                Column(
-                                    name = resultSet["name"],
-                                    type = resultSet["type"],
-                                    notNull = resultSet["notnull"],
-                                    defaultValue = resultSet["dflt_value"],
-                                    primaryKey = resultSet["pk"],
-                                    hidden = resultSet["hidden"],
-                                    _parent = { sortableTree.root.getChildAt(i) },
-                                )
-                            },
-                    size =
-                        connection
-                            .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
+                    columns = connection
+                        .executeQuery("""PRAGMA table_xinfo("$tableName");""")
+                        .toList { resultSet ->
+                            Column(
+                                name = resultSet["name"],
+                                type = resultSet["type"],
+                                notNull = resultSet["notnull"],
+                                defaultValue = resultSet["dflt_value"],
+                                primaryKey = resultSet["pk"],
+                                hidden = resultSet["hidden"],
+                                _parent = { sortableTree.root.getChildAt(i) },
+                            )
+                        },
+                    size = connection
+                        .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
                 )
             }
 
@@ -260,9 +257,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
 
         add(
             HorizontalSplitPane(
-                FlatScrollPane(sortableTree.component).apply {
-                    preferredSize = Dimension(200, 10)
-                },
+                sortableTree.component,
                 VerticalSplitPane(
                     FlatScrollPane(queryPanel),
                     results,
