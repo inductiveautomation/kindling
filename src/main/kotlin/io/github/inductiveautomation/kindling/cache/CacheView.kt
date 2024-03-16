@@ -207,9 +207,9 @@ class CacheView(private val path: Path) : ToolPanel() {
             title = name,
             body = errors.ifEmpty { listOf("No errors associated with this schema.") },
             details =
-                mapOf(
-                    "ID" to id.toString(),
-                ),
+            mapOf(
+                "ID" to id.toString(),
+            ),
         )
     }
 
@@ -219,72 +219,67 @@ class CacheView(private val path: Path) : ToolPanel() {
     private val table = ReifiedJXTable(model)
     private val schemaList = SchemaFilterList(schemaRecords)
 
-    private val settingsMenu =
-        FlatPopupMenu().apply {
-            add(
-                Action("Show Schema Records") {
-                    val isVisible = mainSplitPane.bottomComponent.isVisible
-                    mainSplitPane.bottomComponent.isVisible = !isVisible
-                    if (!isVisible) {
-                        mainSplitPane.setDividerLocation(0.75)
-                    }
-                },
-            )
-        }
-
-    private val settings =
-        JideButton(FlatSVGIcon("icons/bx-cog.svg")).apply {
-            addMouseListener(
-                object : MouseAdapter() {
-                    override fun mousePressed(e: MouseEvent) {
-                        settingsMenu.show(this@apply, e.x, e.y)
-                    }
-                },
-            )
-        }
-
-    private val mainSplitPane =
-        HorizontalSplitPane(
-            VerticalSplitPane(
-                FlatScrollPane(table),
-                details,
-            ),
-            FlatScrollPane(schemaList),
-            resizeWeight = 0.75,
-        )
-
-    private fun Serializable.toDetail(): Detail =
-        when (this) {
-            is BasicHistoricalRecord -> toDetail()
-            is ScanclassHistorySet -> toDetail()
-            is AuditProfileData -> toDetail()
-            is AlarmJournalData -> toDetail()
-            is AlarmJournalSFGroup -> toDetail()
-            is ScriptedSFData -> toDetail()
-            is Array<*> -> {
-                // 2D array
-                if (firstOrNull()?.javaClass?.isArray == true) {
-                    Detail(
-                        title = TRANSACTION_GROUP_DATA,
-                        body =
-                            map { row ->
-                                (row as Array<*>).contentToString()
-                            },
-                    )
-                } else {
-                    Detail(
-                        title = "Java Array",
-                        body = map(Any?::toString),
-                    )
+    private val settingsMenu = FlatPopupMenu().apply {
+        add(
+            Action("Show Schema Records") {
+                val isVisible = mainSplitPane.bottomComponent.isVisible
+                mainSplitPane.bottomComponent.isVisible = !isVisible
+                if (!isVisible) {
+                    mainSplitPane.setDividerLocation(0.75)
                 }
-            }
+            },
+        )
+    }
 
-            else ->
+    private val settings = JideButton(FlatSVGIcon("icons/bx-cog.svg")).apply {
+        addMouseListener(
+            object : MouseAdapter() {
+                override fun mousePressed(e: MouseEvent) {
+                    settingsMenu.show(this@apply, e.x, e.y)
+                }
+            },
+        )
+    }
+
+    private val mainSplitPane = HorizontalSplitPane(
+        VerticalSplitPane(
+            FlatScrollPane(table),
+            details,
+        ),
+        FlatScrollPane(schemaList),
+        resizeWeight = 0.75,
+    )
+
+    private fun Serializable.toDetail(): Detail = when (this) {
+        is BasicHistoricalRecord -> toDetail()
+        is ScanclassHistorySet -> toDetail()
+        is AuditProfileData -> toDetail()
+        is AlarmJournalData -> toDetail()
+        is AlarmJournalSFGroup -> toDetail()
+        is ScriptedSFData -> toDetail()
+        is Array<*> -> {
+            // 2D array
+            if (firstOrNull()?.javaClass?.isArray == true) {
                 Detail(
-                    title = this::class.java.name,
-                    message = toString(),
+                    title = TRANSACTION_GROUP_DATA,
+                    body =
+                    map { row ->
+                        (row as Array<*>).contentToString()
+                    },
                 )
+            } else {
+                Detail(
+                    title = "Java Array",
+                    body = map(Any?::toString),
+                )
+            }
         }
+
+        else -> Detail(
+            title = this::class.java.name,
+            message = toString(),
+        )
+    }
 
     /**
      * @throws ClassNotFoundException
@@ -303,28 +298,26 @@ class CacheView(private val path: Path) : ToolPanel() {
     private fun ScanclassHistorySet.toDetail(): Detail {
         return Detail(
             title = this::class.java.simpleName,
-            body =
-                this.map { historicalTagValue ->
-                    buildString {
-                        append(historicalTagValue.source.toStringFull())
-                        append(", ")
-                        append(historicalTagValue.typeClass.name)
-                        append(", ")
-                        append(historicalTagValue.value)
-                        append(", ")
-                        append(historicalTagValue.interpolationMode.name)
-                        append(", ")
-                        append(historicalTagValue.timestampSource.name)
-                    }
-                },
-            details =
-                mapOf(
-                    "gatewayName" to gatewayName,
-                    "provider" to providerName,
-                    "setName" to setName,
-                    "execRate" to execRate.toString(),
-                    "execTime" to executionTime.time.toString(),
-                ),
+            body = map { historicalTagValue ->
+                buildString {
+                    append(historicalTagValue.source.toStringFull())
+                    append(", ")
+                    append(historicalTagValue.typeClass.name)
+                    append(", ")
+                    append(historicalTagValue.value)
+                    append(", ")
+                    append(historicalTagValue.interpolationMode.name)
+                    append(", ")
+                    append(historicalTagValue.timestampSource.name)
+                }
+            },
+            details = mapOf(
+                "gatewayName" to gatewayName,
+                "provider" to providerName,
+                "setName" to setName,
+                "execRate" to execRate.toString(),
+                "execTime" to executionTime.time.toString(),
+            ),
         )
     }
 
@@ -333,28 +326,27 @@ class CacheView(private val path: Path) : ToolPanel() {
             title = "BasicHistoricalRecord",
             message = "INSERT INTO $tablename",
             body =
-                columns.map { column ->
-                    buildString {
-                        append(column.name).append(": ")
-                        (0..dataCount).joinTo(buffer = this, prefix = "(", postfix = ")") { row ->
-                            column.getValue(row).toString()
-                        }
+            columns.map { column ->
+                buildString {
+                    append(column.name).append(": ")
+                    (0..dataCount).joinTo(buffer = this, prefix = "(", postfix = ")") { row ->
+                        column.getValue(row).toString()
                     }
-                },
+                }
+            },
             details =
-                mapOf(
-                    "quoteColumnNames" to quoteColumnNames().toString(),
-                ),
+            mapOf(
+                "quoteColumnNames" to quoteColumnNames().toString(),
+            ),
         )
     }
 
     private val columnNameRegex = """(?<tableName>.*)\{(?<columnsString>.*)}""".toRegex()
 
-    private val openArrayFrame =
-        Action(
-            name = TRANSACTION_GROUP_DATA,
-            icon = FlatSVGIcon("icons/bx-detail.svg"),
-        ) {
+    private val openArrayFrame = Action(
+        name = TRANSACTION_GROUP_DATA,
+        icon = FlatSVGIcon("icons/bx-detail.svg"),
+    ) {
         /*
          * A few assumptions are made:
          * 1. The currently selected table row matches the entry in the Details pane.
@@ -362,32 +354,32 @@ class CacheView(private val path: Path) : ToolPanel() {
          *
          * We need the ID to get the table data and the schemaName to get the table columns and table name
          */
-            val id = table.model[table.selectedRow, CacheColumns.Id]
-            val raw = queryForData(id).deserialize()
-            val originalData = raw as Array<*>
-            val cols = (originalData[0] as Array<*>).size
-            val rows = originalData.size
-            val data =
-                Array(cols) { j ->
-                    Array(rows) { i ->
-                        (originalData[i] as Array<*>)[j]
-                    }
+        val id = table.model[table.selectedRow, CacheColumns.Id]
+        val raw = queryForData(id).deserialize()
+        val originalData = raw as Array<*>
+        val cols = (originalData[0] as Array<*>).size
+        val rows = originalData.size
+        val data =
+            Array(cols) { j ->
+                Array(rows) { i ->
+                    (originalData[i] as Array<*>)[j]
                 }
-
-            // Get table name and column names with schemaName
-            val schemaName = table.model[table.selectedRow, CacheColumns.SchemaName]
-            val matcher = columnNameRegex.find(schemaName) ?: return@Action
-            val tableName by matcher.groups
-            val columnsString by matcher.groups
-            val columns = columnsString.value.split(",").toTypedArray()
-
-            // Use data and columns to create a simple table model
-            val model = DefaultTableModel(data, columns)
-
-            jFrame(tableName.value, 900, 500) {
-                contentPane = FlatScrollPane(ReifiedJXTable(model))
             }
+
+        // Get table name and column names with schemaName
+        val schemaName = table.model[table.selectedRow, CacheColumns.SchemaName]
+        val matcher = columnNameRegex.find(schemaName) ?: return@Action
+        val tableName by matcher.groups
+        val columnsString by matcher.groups
+        val columns = columnsString.value.split(",").toTypedArray()
+
+        // Use data and columns to create a simple table model
+        val model = DefaultTableModel(data, columns)
+
+        jFrame(tableName.value, 900, 500) {
+            contentPane = FlatScrollPane(ReifiedJXTable(model))
         }
+    }
 
     init {
         name = path.name
