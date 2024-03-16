@@ -1,5 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
+import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING
+import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING_LARGE
 import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
@@ -40,6 +42,7 @@ inline fun jFrame(
         rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
         rootPane.putClientProperty("apple.awt.fullWindowContent", true)
         rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+        rootPane.putClientProperty(MACOS_WINDOW_BUTTONS_SPACING, MACOS_WINDOW_BUTTONS_SPACING_LARGE)
     }
 
     iconImages = Kindling.frameIcons
