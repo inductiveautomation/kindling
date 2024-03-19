@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling
 
+import com.formdev.flatlaf.FlatClientProperties.FULL_WINDOW_CONTENT_BUTTONS_PLACEHOLDER
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.extras.FlatSVGIcon
@@ -59,7 +60,6 @@ import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.charset.Charset
-import javax.swing.Box
 import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JFileChooser
@@ -130,7 +130,10 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
     private val tabs = TabStrip().apply {
         if (SystemInfo.isMacFullWindowContentSupported) {
             // add padding component for macOS window controls
-            leadingComponent = Box.createHorizontalStrut(70)
+            val placeholder = JPanel().apply {
+                putClientProperty(FULL_WINDOW_CONTENT_BUTTONS_PLACEHOLDER, "mac")
+            }
+            leadingComponent = placeholder
         }
 
         trailingComponent = JPanel(BorderLayout()).apply {

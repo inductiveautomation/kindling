@@ -16,7 +16,6 @@ import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import net.miginfocom.swing.MigLayout
-import java.awt.Dimension
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.JDBCType
@@ -247,9 +246,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
 
         add(
             HorizontalSplitPane(
-                FlatScrollPane(sortableTree.component).apply {
-                    preferredSize = Dimension(200, 10)
-                },
+                sortableTree.component,
                 VerticalSplitPane(
                     FlatScrollPane(queryPanel),
                     results,

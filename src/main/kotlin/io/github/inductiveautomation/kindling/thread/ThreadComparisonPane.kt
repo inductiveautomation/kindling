@@ -297,7 +297,7 @@ class ThreadComparisonPane(
             titleLabel.text = buildString {
                 tag("html") {
                     tag("div") {
-                        tag("b", (thread?.state?.toString() ?: "NO THREAD"))
+                        tag("b", content = (thread?.state?.toString() ?: "NO THREAD"))
                         append(" - ")
                         append(percent.format(thread?.cpuUsage ?: 0.0))
                     }

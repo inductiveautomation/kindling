@@ -1,5 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
+import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING
+import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING_LARGE
 import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
@@ -14,6 +16,7 @@ import javax.swing.JSplitPane
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
+@Suppress("FunctionName")
 inline fun FlatScrollPane(
     component: Component,
     block: FlatScrollPane.() -> Unit = {},
@@ -39,6 +42,7 @@ inline fun jFrame(
         rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
         rootPane.putClientProperty("apple.awt.fullWindowContent", true)
         rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+        rootPane.putClientProperty(MACOS_WINDOW_BUTTONS_SPACING, MACOS_WINDOW_BUTTONS_SPACING_LARGE)
     }
 
     iconImages = Kindling.frameIcons
@@ -95,10 +99,12 @@ fun VerticalSplitPane(
  * Constructs a MigLayout JPanel containing each element of [group] in the first row.
  */
 @Suppress("FunctionName")
-fun ButtonPanel(group: ButtonGroup) = JPanel(MigLayout("ins 2 0, fill")).apply {
-    val sortGroupEnumeration = group.elements
-    add(sortGroupEnumeration.nextElement(), "split ${group.buttonCount}, flowx")
-    for (element in sortGroupEnumeration) {
-        add(element, "gapx 2")
+fun ButtonPanel(group: ButtonGroup) =
+    JPanel(MigLayout("ins 3 0, fill")).apply {
+        border = EmptyBorder()
+        val sortGroupEnumeration = group.elements
+        add(sortGroupEnumeration.nextElement(), "split ${group.buttonCount}, flowx, align right, gapbottom 3")
+        for (element in sortGroupEnumeration) {
+            add(element, "gapx 2, align right, gapbottom 3")
+        }
     }
-}

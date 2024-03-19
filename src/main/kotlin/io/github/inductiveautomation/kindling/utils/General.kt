@@ -26,18 +26,27 @@ inline fun <reified T> getLogger(): Logger {
 
 inline fun StringBuilder.tag(
     tag: String,
+    vararg attributes: Pair<String, String>,
     content: StringBuilder.() -> Unit,
 ) {
-    append("<").append(tag).append(">")
+    append("<")
+    attributes.joinTo(this, prefix = tag, separator = " ", postfix = ">") { (key, value) ->
+        " $key=\"$value\""
+    }
+
     content(this)
+
     append("</").append(tag).append(">")
 }
 
 fun StringBuilder.tag(
     tag: String,
+    vararg attributes: Pair<String, String>,
     content: String,
 ) {
-    tag(tag) { append(content) }
+    tag(tag, *attributes) {
+        append(content)
+    }
 }
 
 /**

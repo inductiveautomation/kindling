@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.log
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
@@ -54,6 +55,8 @@ import javax.swing.border.LineBorder
 internal class TimePanel(
     data: List<LogEvent>,
 ) : FilterPanel<LogEvent>() {
+    override val icon = FlatSVGIcon("icons/bx-time-five.svg")
+
     private val lowerBound: Instant = data.first().timestamp
     private val upperBound: Instant = data.last().timestamp
 

@@ -88,7 +88,7 @@ class ReifiedJXTable<T : TableModel>(
         if (setup) {
             for (index in model.columnIndices) {
                 val previousSize = previousColumnSizes.getOrNull(index)
-                if (previousSize != null) {
+                if (previousSize != null && index < columnCount) {
                     getColumnExt(index).preferredWidth = previousSize
                 }
             }
@@ -101,7 +101,6 @@ class ReifiedJXTable<T : TableModel>(
  * Pseudo-constructor for a [ReifiedJXTable]. [columns] can be explicitly specified, or if [model] is an instance of
  * [ReifiedTableModel], they will be assumed from the model.
  */
-@Suppress("FunctionName")
 inline fun <reified T : TableModel> ReifiedJXTable(
     model: T,
     columns: ColumnList<*>? = null,
