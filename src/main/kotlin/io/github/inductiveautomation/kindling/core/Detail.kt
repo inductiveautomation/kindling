@@ -11,6 +11,8 @@ data class Detail(
     data class BodyLine(val text: String, val link: String? = null)
 
     companion object {
+        val EMPTY_LINE = BodyLine("", null)
+
         operator fun invoke(
             title: String,
             message: String? = null,

@@ -46,12 +46,10 @@ ignition-common = { group = "com.inductiveautomation.ignition", name = "common",
 ignition-gateway = { group = "com.inductiveautomation.ignition", name = "gateway-api", version.ref = "ignition" }
 # Ignition core types use classes from these libs (e.g. StringUtils, ImmutableMap), so we're forced to include these
 apache-commons = { group = "org.apache.commons", name = "commons-lang3", version = "3.8.1" }
-#apache-log4j = { group = "org.apache.logging.log4j", name = "log4j-core", version = "2.22.1" }
-#apache-log4j-legacy = { group = "org.apache.logging.log4j", name = "log4j-1.2-api", version = "2.22.1" }
 slf4j = { group = "org.slf4j", name = "slf4j-log4j12", version = "2.0.11" }
-jython = { group = "org.python", name = "jython", version = "2.7.3" }
 google-guava = { module = "com.google.guava:guava", version = "26.0-jre" }
 ia-gson = { module = "com.inductiveautomation.ignition:ia-gson", version = "2.10.1" }
+ia-jython = { module = "org.python:jython-ia", version = "2.7.3.3" }
 
 # test framework
 kotest-junit = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
@@ -83,8 +81,6 @@ ia-transitive = [
     "apache-commons",
     "google-guava",
     "ia-gson",
-#    "apache-log4j",
-#    "apache-log4j-legacy",
+    "ia-jython",
     "slf4j",
-    "jython",
 ]

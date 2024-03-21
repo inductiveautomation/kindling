@@ -19,6 +19,8 @@ interface Tool {
     val icon: FlatSVGIcon
     val respectsEncoding: Boolean
         get() = false
+    val requiresHiddenFiles: Boolean
+        get() = false
 
     fun open(path: Path): ToolPanel
 

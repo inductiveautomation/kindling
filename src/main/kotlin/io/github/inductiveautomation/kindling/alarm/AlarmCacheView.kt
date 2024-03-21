@@ -4,17 +4,26 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.inductiveautomation.ignition.common.alarming.AlarmEvent
 import com.inductiveautomation.ignition.common.alarming.AlarmState
 import com.inductiveautomation.ignition.common.alarming.EventData
-import io.github.inductiveautomation.kindling.alarm.model.AlarmEventModel
+import io.github.inductiveautomation.kindling.alarm.model.AlarmEventColumnList
 import io.github.inductiveautomation.kindling.alarm.model.PersistedAlarmInfo
 import io.github.inductiveautomation.kindling.cache.AliasingObjectInputStream
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Tool
+import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
+import io.github.inductiveautomation.kindling.utils.selectedRowIndices
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.decorator.ColorHighlighter
 import java.awt.Color
 import java.nio.file.Path
 import javax.swing.JLabel
@@ -22,12 +31,6 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.decorator.ColorHighlighter
 
 class AlarmCacheView(path: Path) : ToolPanel() {
     override val icon = FlatSVGIcon("icons/bx-bell.svg")
@@ -42,28 +45,23 @@ class AlarmCacheView(path: Path) : ToolPanel() {
 
         info.data.values.flatMap { it.toList() }
     } catch (e: Exception) {
-        throw IllegalArgumentException("Error deserializing alarm cache. Only caches from Ignition 8.1.20+ are supported.")
+        throw ToolOpeningException("Error deserializing alarm cache. Only caches from Ignition 8.1.20+ are supported.", e)
     }
 
-    private val table = run {
-        val initialModel = AlarmEventModel(events)
-
-        ReifiedJXTable(initialModel).apply {
-            columnFactory = AlarmEventModel.AlarmEventColumnList.toColumnFactory()
-            createDefaultColumnsFromModel()
-
-            alarmStateColors.entries.forEach { (state, colorPalette) ->
-                addHighlighter(
-                    ColorHighlighter(
-                        { _, adapter ->
-                            val viewRow = convertRowIndexToModel(adapter.row)
-                            state == model[viewRow].state
-                        },
-                        colorPalette.background,
-                        colorPalette.foreground,
-                    ),
-                )
-            }
+    private val table = ReifiedJXTable(
+        ReifiedListTableModel(events, AlarmEventColumnList),
+    ).apply {
+        alarmStateColors.forEach { (state, colorPalette) ->
+            addHighlighter(
+                ColorHighlighter(
+                    { _, adapter ->
+                        val viewRow = convertRowIndexToModel(adapter.row)
+                        state == model[viewRow].state
+                    },
+                    colorPalette.background,
+                    colorPalette.foreground,
+                ),
+            )
         }
     }
 
@@ -81,28 +79,27 @@ class AlarmCacheView(path: Path) : ToolPanel() {
 
     private val detailsPane = DetailsPane()
 
-    private fun EventData?.toDetailBody(name: String): List<Detail.BodyLine>? {
-        return this?.run {
-            buildList {
-                add(Detail.BodyLine("***$name***"))
-                addAll(
-                    values.map {
-                        Detail.BodyLine("${it.property.name}: ${it.value}")
-                    },
-                )
-                add(Detail.BodyLine(""))
+    private fun EventData.asBodyLine(name: String): Sequence<Detail.BodyLine> {
+        return sequence {
+            yield(Detail.BodyLine("***$name***"))
+            values.forEach { pv ->
+                yield(Detail.BodyLine("${pv.property.name}: ${pv.value}"))
             }
+            yield(Detail.EMPTY_LINE)
         }
     }
 
     private fun AlarmEvent.toDetail(): Detail = Detail(
-        title = "Event Data for $name ($id)",
+        title = "Event Data for $name ($displayPathOrSource)",
         message = if (notes.isNullOrEmpty()) null else "Notes: $notes",
-        body = listOfNotNull(
-            activeData.toDetailBody("Active Data"),
-            ackData.toDetailBody("Ack Data"),
-            clearedData.toDetailBody("Clear Data"),
-        ).flatten(),
+        body = sequence {
+            yieldAll(activeData?.asBodyLine("Active Data").orEmpty())
+            yieldAll(ackData?.asBodyLine("Ack Data").orEmpty())
+            yieldAll(clearedData?.asBodyLine("Clear Data").orEmpty())
+        }.toList(),
+        details = mapOf(
+            "id" to id.toString(),
+        ),
     )
 
     init {
@@ -123,9 +120,7 @@ class AlarmCacheView(path: Path) : ToolPanel() {
         table.selectionModel.addListSelectionListener {
             EDT_SCOPE.launch {
                 val details = withContext(Dispatchers.Default) {
-                    table.selectionModel.selectedIndices.map {
-                        table.model[table.convertRowIndexToModel(it)].toDetail()
-                    }
+                    table.selectedRowIndices().map { table.model[it].toDetail() }
                 }
                 detailsPane.events = details
             }
@@ -136,13 +131,23 @@ class AlarmCacheView(path: Path) : ToolPanel() {
             EDT_SCOPE.launch {
                 val filteredAlarms = withContext(Dispatchers.Default) {
                     events.filter { alarmEvent ->
-                        val asString = AlarmEventModel.AlarmEventColumnList.joinToString { column ->
-                            column.getValue(alarmEvent).toString().lowercase()
+                        val foundInColumns = AlarmEventColumnList.any { column ->
+                            column.getValue(alarmEvent).toString().contains(searchField.text, ignoreCase = true)
                         }
-                        searchField.text.lowercase() in asString
+                        if (foundInColumns) {
+                            true
+                        } else {
+                            listOfNotNull(
+                                alarmEvent.ackData,
+                                alarmEvent.clearedData,
+                                alarmEvent.activeData,
+                            ).any { eventData ->
+                                eventData.toString().contains(searchField.text, ignoreCase = true)
+                            }
+                        }
                     }
                 }
-                table.model = AlarmEventModel(filteredAlarms)
+                table.model = ReifiedListTableModel(filteredAlarms, AlarmEventColumnList)
                 alarmCountLabel.text = countLabelText
             }
         }
@@ -155,10 +160,10 @@ class AlarmCacheView(path: Path) : ToolPanel() {
 
     companion object {
         private val alarmStateColors = mapOf(
-            AlarmState.ActiveAcked to AlarmStateColorPalette(Color(171, 0, 0), Color.WHITE),
-            AlarmState.ActiveUnacked to AlarmStateColorPalette(Color(236, 34, 21), Color.WHITE),
-            AlarmState.ClearAcked to AlarmStateColorPalette(Color(220, 220, 254), Color.BLACK),
-            AlarmState.ClearUnacked to AlarmStateColorPalette(Color(73, 171, 171), Color.BLACK),
+            AlarmState.ActiveAcked to AlarmStateColorPalette(Color(0xAB0000), Color(0xD0D0D0)),
+            AlarmState.ActiveUnacked to AlarmStateColorPalette(Color(0xEC2215), Color(0xD0D0D0)),
+            AlarmState.ClearAcked to AlarmStateColorPalette(Color(0xDCDCFE), Color(0x262626)),
+            AlarmState.ClearUnacked to AlarmStateColorPalette(Color(0x49ABAB), Color(0x262626)),
         )
     }
 }
@@ -167,6 +172,7 @@ object AlarmViewer : Tool {
     override val title: String = "Alarm Cache"
     override val description: String = ".alarms files from the Ignition data dir."
     override val icon = FlatSVGIcon("icons/bx-data.svg")
+    override val requiresHiddenFiles: Boolean = true
 
     override fun open(path: Path): ToolPanel = AlarmCacheView(path)
 
