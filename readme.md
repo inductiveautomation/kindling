@@ -40,6 +40,14 @@ falls back to a string explanation of the serialized data.
 
 Note: If you encounter any issues with missing classes, please file an issue.
 
+### Alarm Cache Viewer
+
+Opens the Java serialized `.alarms_$timestamp` files Ignition uses to persist alarm information between Gateway
+restarts.
+Only works for alarm caches from 8.1.20 and up gateways.
+
+Note: If you encounter any issues with missing classes, please file an issue.
+
 ### Gateway Network Diagram Viewer
 
 Validates a Gateway Network Diagram, as exported from the Gateway webpage (see instructions below). You can load from a
@@ -58,8 +66,7 @@ the diagram visualization in a local web browser.
    page: https://inductiveautomation.github.io/kindling/download.html
 2. Run the Kindling application.
 3. Open a supported file - either drag and drop directly onto the application window, click the `+` icon in the tab
-   strip,
-   or select a tool to open from the menubar.
+   strip, or select a tool to open from the menubar.
 
 Preferences are stored in `~/.kindling/preferences.json` and can be modified within the application from the menu bar.
 
