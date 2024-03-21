@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.core
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import io.github.inductiveautomation.kindling.alarm.AlarmViewer
 import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.gatewaynetwork.GatewayNetworkTool
 import io.github.inductiveautomation.kindling.idb.IdbViewer
@@ -18,6 +19,8 @@ interface Tool {
     val icon: FlatSVGIcon
     val respectsEncoding: Boolean
         get() = false
+    val requiresHiddenFiles: Boolean
+        get() = false
 
     fun open(path: Path): ToolPanel
 
@@ -32,6 +35,7 @@ interface Tool {
                 IdbViewer,
                 CacheViewer,
                 GatewayNetworkTool,
+                AlarmViewer,
             ) + loadService<Tool>().sortedBy { it.title }
         }
 

@@ -104,6 +104,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
         addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY) { e ->
             val relevantTool = Tool.byFilter[e.newValue as FileFilter]
             encodingSelector.isEnabled = relevantTool?.respectsEncoding != false // null = 'all files', so enabled
+            isFileHidingEnabled = relevantTool?.requiresHiddenFiles != true
         }
 
         addActionListener {
