@@ -1,28 +1,28 @@
 [versions]
 java = "21"
 kotlin = "1.9.22"
-coroutines = "1.7.3"
-flatlaf = "3.3"
-kotest = "5.8.0"
+coroutines = "1.8.0"
+flatlaf = "3.4"
+kotest = "5.8.1"
 ignition = "8.1.20"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-conveyor = { id = "dev.hydraulic.conveyor", version = "1.8" }
-spotless = { id = "com.diffplug.spotless", version = "6.23.3" }
-dokka = { id = "org.jetbrains.dokka", version = "1.9.10" }
+conveyor = { id = "dev.hydraulic.conveyor", version = "1.9" }
+spotless = { id = "com.diffplug.spotless", version = "6.25.0" }
+dokka = { id = "org.jetbrains.dokka", version = "1.9.20" }
 
 [libraries]
 # core functionality
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.2" }
-xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.45.1.0" }
-logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.4.14" }
+serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.3" }
+xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.45.2.0" }
+logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.5.3" }
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.2" }
 excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" }
-jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.3.0" }
+jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.4.0" }
 
 # build
 jsoup = { group = "org.jsoup", name = "jsoup", version = "1.17.2" }
@@ -38,7 +38,7 @@ flatlaf-fonts-roboto = { group = "com.formdev", name = "flatlaf-fonts-roboto", v
 flatlaf-fonts-roboto-mono = { group = "com.formdev", name = "flatlaf-fonts-roboto-mono", version = "3.000" }
 jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.14" }
 swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
-rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = "3.3.4" }
+rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = "3.4.0" }
 jfreechart = { group = "org.jfree", name = "jfreechart", version = "1.5.4" }
 
 # Ignition

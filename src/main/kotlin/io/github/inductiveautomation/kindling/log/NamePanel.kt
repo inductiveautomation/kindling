@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.log
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
@@ -12,7 +13,9 @@ import javax.swing.JPopupMenu
 
 internal class NamePanel(
     events: List<LogEvent>,
-) : FilterListPanel<LogEvent>("Logger", ::getSortKey), PopupMenuCustomizer {
+) : FilterListPanel<LogEvent>("Loggers", ::getSortKey), PopupMenuCustomizer {
+    override val icon = FlatSVGIcon("icons/bx-detail.svg")
+
     init {
         filterList.setModel(FilterModel(events.groupingBy(LogEvent::logger).eachCount(), ::getSortKey))
         filterList.selectAll()
