@@ -77,7 +77,15 @@ class ReifiedLabelProvider<T : Any>(
     }
 }
 
-inline fun <reified T> listCellRenderer(crossinline customize: JLabel.(list: JList<*>, value: T, index: Int, selected: Boolean, focused: Boolean) -> Unit): ListCellRenderer<Any> {
+inline fun <reified T> listCellRenderer(
+    crossinline customize: JLabel.(
+        list: JList<*>,
+        value: T,
+        index: Int,
+        selected: Boolean,
+        focused: Boolean,
+    ) -> Unit,
+): ListCellRenderer<Any> {
     return object : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>,
@@ -99,7 +107,17 @@ inline fun <reified T> listCellRenderer(crossinline customize: JLabel.(list: JLi
     }
 }
 
-fun treeCellRenderer(customize: JLabel.(tree: JTree, value: Any?, selected: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean) -> Component): TreeCellRenderer {
+fun treeCellRenderer(
+    customize: DefaultTreeCellRenderer.(
+        tree: JTree,
+        value: Any?,
+        selected: Boolean,
+        expanded: Boolean,
+        leaf: Boolean,
+        row: Int,
+        hasFocus: Boolean,
+    ) -> Component,
+): TreeCellRenderer {
     return object : DefaultTreeCellRenderer() {
         override fun getTreeCellRendererComponent(
             tree: JTree,
@@ -111,13 +129,19 @@ fun treeCellRenderer(customize: JLabel.(tree: JTree, value: Any?, selected: Bool
             hasFocus: Boolean,
         ): Component {
             val soup = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
-            return customize.invoke(soup as JLabel, tree, value, sel, expanded, leaf, row, hasFocus)
+            return customize.invoke(soup as DefaultTreeCellRenderer, tree, value, sel, expanded, leaf, row, hasFocus)
         }
     }
 }
 
 inline fun <reified T> JComboBox<T>.configureCellRenderer(
-    noinline block: BasicComboBoxRenderer.(list: JList<*>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) -> Unit,
+    noinline block: BasicComboBoxRenderer.(
+        list: JList<*>,
+        value: T?,
+        index: Int,
+        isSelected: Boolean,
+        cellHasFocus: Boolean,
+    ) -> Unit,
 ) {
     renderer = object : BasicComboBoxRenderer() {
         override fun getListCellRendererComponent(

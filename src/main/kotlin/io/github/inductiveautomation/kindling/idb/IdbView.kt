@@ -168,11 +168,12 @@ enum class IdbTool {
     abstract fun open(connection: Connection): ToolPanel
 }
 
-object IdbViewer : Tool {
-    override val title = "Idb File"
-    override val description = ".idb (SQLite3) files"
+data object IdbViewer : Tool {
+    override val serialKey: String = "idb-viewer"
+    override val title = "SQLite Database"
+    override val description = "SQLite Database (.idb)"
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")
-    override val filter = FileFilter(description, "idb")
+    override val filter = FileFilter(description, "idb", "db", "sqlite")
 
     override fun open(path: Path): ToolPanel = IdbView(path)
 }

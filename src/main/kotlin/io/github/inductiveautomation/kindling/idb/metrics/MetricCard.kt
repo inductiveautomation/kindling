@@ -8,7 +8,6 @@ import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.M
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.jFrame
 import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.border.DropShadowBorder
 import org.jfree.chart.ChartPanel
 import org.jfree.chart.annotations.XYLineAnnotation
 import org.jfree.data.statistics.Regression
@@ -24,17 +23,18 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants.CENTER
 import javax.swing.UIManager
+import javax.swing.border.LineBorder
 
 class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout("fill, ins 10")) {
     private val presentation = metric.presentation
 
     private val sparkLine = ChartPanel(
-        /* chart = */ sparkline(data, presentation.formatter),
-        /* properties = */ false,
-        /* save = */ false,
-        /* print = */ false,
-        /* zoom = */ true,
-        /* tooltips = */ true,
+        sparkline(data, presentation.formatter),
+        false,
+        false,
+        false,
+        true,
+        true,
     ).apply {
         popupMenu.addSeparator()
         popupMenu.add(
@@ -93,11 +93,7 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
         add(sparkLine, "span, w 300, h 170, pushx, growx")
         add(JLabel("${DATE_FORMAT.format(minTimestamp)} - ${DATE_FORMAT.format(maxTimestamp)}", CENTER), "pushx, growx, span")
 
-        border = DropShadowBorder().apply {
-            isShowRightShadow = true
-            isShowBottomShadow = true
-            shadowSize = 10
-        }
+        border = LineBorder(UIManager.getColor("Component.borderColor"), 3, true)
     }
 
     companion object {
@@ -113,7 +109,7 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
             override fun parse(source: String, parsePosition: ParsePosition): Number = mbFormatter.parse(source, parsePosition)
         }
 
-        @Suppress("ktlint:trailing-comma-on-declaration-site")
+        @Suppress("ktlint:standard:trailing-comma-on-declaration-site")
         enum class MetricPresentation(val formatter: NumberFormat, val isShowTrend: Boolean) {
             Heap(heapFormatter, true),
             Queue(NumberFormat.getIntegerInstance(), false),
@@ -124,7 +120,7 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
                 },
                 true,
             ),
-            Default(NumberFormat.getInstance(), false);
+            Default(NumberFormat.getInstance(), false)
         }
 
         private val Metric.presentation: MetricPresentation

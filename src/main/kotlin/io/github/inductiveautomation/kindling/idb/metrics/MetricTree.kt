@@ -1,8 +1,10 @@
 package io.github.inductiveautomation.kindling.idb.metrics
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.CheckBoxTree
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
@@ -58,9 +60,7 @@ class RootNode(metrics: List<Metric>) : AbstractTreeNode() {
         get() = name.first().isUpperCase()
 }
 
-class MetricModel(metrics: List<Metric>) : DefaultTreeModel(RootNode(metrics))
-
-class MetricTree(metrics: List<Metric>) : CheckBoxTree(MetricModel(metrics)) {
+class MetricTree(metrics: List<Metric>) : CheckBoxTree(DefaultTreeModel(RootNode(metrics))) {
     init {
         isRootVisible = false
         setShowsRootHandles(true)
@@ -69,11 +69,14 @@ class MetricTree(metrics: List<Metric>) : CheckBoxTree(MetricModel(metrics)) {
         selectAll()
 
         setCellRenderer(
-            treeCellRenderer { _, value, _, _, _, _, _ ->
+            treeCellRenderer { _, value, selected, _, _, _, _ ->
                 if (value is MetricNode) {
                     val path = value.userObject
                     text = path.last()
                     toolTipText = value.name
+                    icon = CHART_ICON.asActionIcon(selected)
+                } else {
+                    icon = null
                 }
                 this
             },
@@ -105,4 +108,8 @@ class MetricTree(metrics: List<Metric>) : CheckBoxTree(MetricModel(metrics)) {
     }
 
     private fun selectAll() = checkBoxTreeSelectionModel.addSelectionPath(TreePath(model.root))
+
+    companion object {
+        private val CHART_ICON = FlatSVGIcon("icons/bx-line-chart.svg")
+    }
 }

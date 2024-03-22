@@ -150,8 +150,9 @@ private typealias PathPredicate = (Path) -> Boolean
 private typealias PathViewProvider = (FileSystemProvider, Path) -> PathView?
 
 object ZipViewer : Tool {
-    override val title = "Ignition Archive"
-    override val description = "Archives (.gwbk, .zip, .modl)"
+    override val serialKey: String = "zip-viewer"
+    override val title = "ZIP Archive"
+    override val description = "ZIP Archive (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
     override val filter = FileFilter(description, "gwbk", "zip", "modl", "jar")
 

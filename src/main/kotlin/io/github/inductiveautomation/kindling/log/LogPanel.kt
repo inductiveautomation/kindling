@@ -5,7 +5,6 @@ import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
 import io.github.inductiveautomation.kindling.core.FilterPanel
-import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
@@ -22,6 +21,7 @@ import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.MajorVersion
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
@@ -425,35 +425,29 @@ class LogPanel(
             add(version, "growy")
         }
 
-        val clearMarked =
-            JButton(FlatSVGIcon("icons/bxs-eraser.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE)).apply {
-                toolTipText = "Clear all visible marks"
-            }
-        val prevMarked =
-            JButton(FlatSVGIcon("icons/bx-arrow-up.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE)).apply {
-                toolTipText = "Jump to previous marked log event"
-            }
-        val nextMarked =
-            JButton(FlatSVGIcon("icons/bx-arrow-down.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE)).apply {
-                toolTipText = "Jump to next marked log event"
-            }
-        val markedBehavior =
-            JComboBox(arrayOf("Show All Events", "Only Show Marked", "Always Show Marked"))
+        val clearMarked = JButton(FlatSVGIcon("icons/bxs-eraser.svg").asActionIcon()).apply {
+            toolTipText = "Clear all visible marks"
+        }
+        val prevMarked = JButton(FlatSVGIcon("icons/bx-arrow-up.svg").asActionIcon()).apply {
+            toolTipText = "Jump to previous marked log event"
+        }
+        val nextMarked = JButton(FlatSVGIcon("icons/bx-arrow-down.svg").asActionIcon()).apply {
+            toolTipText = "Jump to next marked log event"
+        }
+        val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Always Show Marked"))
 
-        val markedPanel =
-            JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
-                border = BorderFactory.createTitledBorder("Marking")
-                add(prevMarked)
-                add(nextMarked)
-                add(markedBehavior, "growy")
-                add(clearMarked)
-            }
+        val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
+            border = BorderFactory.createTitledBorder("Marking")
+            add(prevMarked)
+            add(nextMarked)
+            add(markedBehavior, "growy")
+            add(clearMarked)
+        }
 
-        val searchPanel =
-            JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
-                border = BorderFactory.createTitledBorder("Search")
-                add(search, "grow")
-            }
+        val searchPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
+            border = BorderFactory.createTitledBorder("Search")
+            add(search, "grow")
+        }
 
         private fun updateVersionVisibility() {
             val isVisible = UseHyperlinks.currentValue && HyperlinkStrategy.currentValue == LinkHandlingStrategy.OpenInBrowser
@@ -461,7 +455,6 @@ class LogPanel(
         }
 
         init {
-
             add(markedPanel, "cell 0 0, growy")
             add(versionPanel, "cell 0 0, growy")
             add(searchPanel, "cell 0 0, grow, push")

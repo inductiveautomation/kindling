@@ -168,15 +168,16 @@ class AlarmCacheView(path: Path) : ToolPanel() {
     }
 }
 
-object AlarmViewer : Tool {
-    override val title: String = "Alarm Cache"
-    override val description: String = ".alarms files from the Ignition data dir."
-    override val icon = FlatSVGIcon("icons/bx-data.svg")
+data object AlarmViewer : Tool {
+    override val serialKey: String = "alarm-cache"
+    override val title = "Alarm Cache"
+    override val description = "Persistent Alarms Cache (.alarms_[TIMESTAMP])"
+    override val icon = FlatSVGIcon("icons/bx-bell.svg")
     override val requiresHiddenFiles: Boolean = true
 
     override fun open(path: Path): ToolPanel = AlarmCacheView(path)
 
-    override val filter: FileFilter = FileFilter(".alarms files") {
+    override val filter: FileFilter = FileFilter(description) {
         fileNameRegex.matches(it.name)
     }
 

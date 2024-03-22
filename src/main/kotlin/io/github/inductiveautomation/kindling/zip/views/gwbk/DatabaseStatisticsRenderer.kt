@@ -9,20 +9,20 @@ import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.MYSQL
 import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.ORACLE
 import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.POSTGRES
 import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.SQLITE
-import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.statistics.categories.DatabaseStatistics
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.SortOrder
 
 class DatabaseStatisticsRenderer : StatisticRenderer<DatabaseStatistics> {
     override val title: String = "Databases"
-    override val icon: Icon? = FlatSVGIcon("icons/bx-data.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+    override val icon: Icon = FlatSVGIcon("icons/bx-data.svg").asActionIcon()
 
     override fun DatabaseStatistics.subtitle(): String {
         return "$enabled enabled, ${connections.size} total"

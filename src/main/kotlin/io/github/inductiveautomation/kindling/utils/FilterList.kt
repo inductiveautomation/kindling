@@ -4,7 +4,6 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.comparator.AlphanumComparator
 import com.jidesoft.swing.CheckBoxList
 import com.jidesoft.swing.ListSearchable
-import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.utils.FilterComparator.ByCountDescending
 import java.text.DecimalFormat
 import javax.swing.AbstractListModel
@@ -24,22 +23,22 @@ enum class FilterComparator(
 ) : Comparator<FilterModelEntry> by comparator {
     ByNameAscending(
         tooltip = "Sort A-Z",
-        icon = FlatSVGIcon("icons/bx-sort-a-z.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-a-z.svg"),
         comparator = compareBy(nullsFirst(AlphanumComparator(false))) { it.key },
     ),
     ByNameDescending(
         tooltip = "Sort Z-A",
-        icon = FlatSVGIcon("icons/bx-sort-z-a.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-z-a.svg"),
         comparator = ByNameAscending.reversed(),
     ),
     ByCountAscending(
         tooltip = "Sort by Count",
-        icon = FlatSVGIcon("icons/bx-sort-up.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-up.svg"),
         comparator = compareBy(FilterModelEntry::count),
     ),
     ByCountDescending(
         tooltip = "Sort by Count (descending)",
-        icon = FlatSVGIcon("icons/bx-sort-down.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-down.svg"),
         comparator = ByCountAscending.reversed(),
     ),
 }
@@ -172,7 +171,7 @@ class FilterList(
 
     inner class SortAction(comparator: FilterComparator) : Action(
         description = comparator.tooltip,
-        icon = comparator.icon,
+        icon = comparator.icon.asActionIcon(),
         selected = this@FilterList.comparator == comparator,
         action = {
             this@FilterList.comparator = comparator
