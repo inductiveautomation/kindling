@@ -103,10 +103,12 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
                     if (selectedPaths.size == 1 && selectedNode.isLeaf) {
                         add(
                             Action("Save As") {
-                                exportFileChooser.selectedFile = File(selectedNode.userObject.name)
-                                if (exportFileChooser.showSaveDialog(this@attachPopupMenu) == JFileChooser.APPROVE_OPTION) {
-                                    provider.newInputStream(selectedNode.userObject) transferTo
-                                        exportFileChooser.selectedFile.outputStream()
+                                exportFileChooser.apply {
+                                    resetChoosableFileFilters()
+                                    selectedFile = File(selectedNode.userObject.name)
+                                    if (showSaveDialog(this@attachPopupMenu) == JFileChooser.APPROVE_OPTION) {
+                                        provider.newInputStream(selectedNode.userObject) transferTo selectedFile.outputStream()
+                                    }
                                 }
                             },
                         )

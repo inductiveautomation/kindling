@@ -157,10 +157,10 @@ enum class IdbTool {
 
         override fun open(connection: Connection): ToolPanel = MetricsView(connection)
     },
-//    Images {
-//        override fun supports(tables: List<String>): Boolean = "IMAGES" in tables
-//        override fun open(connection: Connection): ToolPanel = ImagesPanel(connection)
-//    }
+    Images {
+        override fun supports(tables: List<String>): Boolean = "IMAGES" in tables
+        override fun open(connection: Connection): ToolPanel = ImagesPanel(connection)
+    },
     ;
 
     abstract fun supports(tables: List<String>): Boolean

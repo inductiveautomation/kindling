@@ -160,6 +160,11 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                     openFiles(selectedFiles, tool)
                 }
             }
+
+            transferHandler = FileTransferHandler(
+                predicate = { tool.filter.accept(it) },
+                callback = { openFiles(it, tool) },
+            )
         }
     }
 
@@ -413,8 +418,6 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                     }
 
                     mainPanel.macOsSetup()
-
-                    transferHandler = FileTransferHandler(mainPanel::openFiles)
                 }
             }
         }
