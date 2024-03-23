@@ -471,9 +471,10 @@ class MultiThreadView(
 }
 
 data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
-    override val title = "Thread Viewer"
-    override val description = "Thread dump (.json or .txt) files"
-    override val icon = FlatSVGIcon("icons/bx-file.svg")
+    override val serialKey: String = "threadview"
+    override val title = "Thread Dump"
+    override val description = "Thread dump (.json, .txt)"
+    override val icon = FlatSVGIcon("icons/bx-chip.svg")
     override val filter = FileFilter(description, "json", "txt")
 
     override val respectsEncoding: Boolean = true
@@ -505,6 +506,5 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     )
 
     override val displayName: String = "Thread View"
-    override val key: String = "threadview"
     override val preferences = listOf(ShowNullThreads, ShowEmptyValues)
 }

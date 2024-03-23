@@ -6,7 +6,10 @@ import java.io.File
 import java.io.IOException
 import javax.swing.TransferHandler
 
-class FileTransferHandler(private val callback: (List<File>) -> Unit) : TransferHandler() {
+class FileTransferHandler(
+    private val predicate: (File) -> Boolean,
+    private val callback: (List<File>) -> Unit,
+) : TransferHandler() {
     override fun canImport(support: TransferSupport): Boolean {
         return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
     }
@@ -19,7 +22,9 @@ class FileTransferHandler(private val callback: (List<File>) -> Unit) : Transfer
         val t = support.transferable
         try {
             val files = t.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
-            callback.invoke(files)
+            files.filter(predicate)
+                .takeIf { it.isNotEmpty() }
+                ?.let(callback)
         } catch (e: UnsupportedFlavorException) {
             return false
         } catch (e: IOException) {

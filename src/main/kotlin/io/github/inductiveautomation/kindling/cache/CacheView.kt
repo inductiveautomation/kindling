@@ -449,9 +449,10 @@ class CacheView(private val path: Path) : ToolPanel() {
     }
 }
 
-object CacheViewer : Tool {
-    override val title = "Cache Dump"
-    override val description = "S&F Cache data/script files"
+data object CacheViewer : Tool {
+    override val serialKey: String = "sf-cache"
+    override val title = "Store & Forward Cache"
+    override val description = "S&F Cache (.data, .script, .zip)"
     override val icon = FlatSVGIcon("icons/bx-data.svg")
     internal val extensions = arrayOf("data", "script", "zip")
     override val filter = FileFilter(description, *extensions)

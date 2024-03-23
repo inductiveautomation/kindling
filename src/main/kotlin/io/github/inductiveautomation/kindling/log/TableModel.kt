@@ -8,6 +8,7 @@ import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider
 import io.github.inductiveautomation.kindling.utils.StringProvider
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import org.jdesktop.swingx.renderer.StringValues
 import java.time.Instant
@@ -74,7 +75,7 @@ sealed class LogColumnList<T : LogEvent> : ColumnList<T>() {
             maxWidth = 25
             toolTipText = "Marked Logs"
             headerRenderer = DefaultTableRenderer(StringValues.EMPTY) {
-                FlatSVGIcon("icons/bx-search.svg").derive(0.8F)
+                FlatSVGIcon("icons/bx-star.svg").asActionIcon()
             }
         },
         getValue = LogEvent::marked,

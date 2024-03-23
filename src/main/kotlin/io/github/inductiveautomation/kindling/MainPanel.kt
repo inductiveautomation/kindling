@@ -40,6 +40,7 @@ import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
 import net.miginfocom.swing.MigLayout
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.Cursor
 import java.awt.Cursor.HAND_CURSOR
 import java.awt.Desktop
@@ -60,6 +61,7 @@ import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.charset.Charset
+import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JFileChooser
@@ -70,12 +72,13 @@ import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.KeyStroke
-import javax.swing.SwingConstants
+import javax.swing.SwingConstants.BOTTOM
 import javax.swing.SwingConstants.CENTER
+import javax.swing.SwingConstants.RIGHT
 import javax.swing.UIManager
 import javax.swing.filechooser.FileFilter
 
-class MainPanel : JPanel(MigLayout("ins 6, fill")) {
+class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
     private val fileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {
         isMultiSelectionEnabled = true
         fileView = CustomIconView()
@@ -92,8 +95,8 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
         traverseChildren().filterIsInstance<JPanel>().last().apply {
             add(encodingSelector, 0)
             add(
-                JLabel("Encoding: ", SwingConstants.RIGHT).apply {
-                    verticalAlignment = SwingConstants.BOTTOM
+                JLabel("Encoding: ", RIGHT).apply {
+                    verticalAlignment = BOTTOM
                 },
                 0,
             )
@@ -128,23 +131,82 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
         }
     }
 
-    private val tabs = TabStrip().apply {
-        if (SystemInfo.isMacFullWindowContentSupported) {
-            // add padding component for macOS window controls
-            val placeholder = JPanel().apply {
-                putClientProperty(FULL_WINDOW_CONTENT_BUTTONS_PLACEHOLDER, "mac")
+    private val landingPanel = JPanel(MigLayout("ins 0, fillx", "[center, grow]")).apply {
+        add(
+            JLabel("Open...").apply {
+                font = font.deriveFont(24F)
+            },
+        )
+        for (tools in Tool.tools.sortedBy { it.title }.chunked(3)) {
+            add(toolTile(tools[0]), "sg tile, h 200!, newline, split, gaptop 20")
+            for (tool in tools.drop(1)) {
+                add(toolTile(tool), "sg tile, gap 20 0 20 0")
             }
-            leadingComponent = placeholder
+        }
+    }
+
+    private fun toolTile(tool: Tool): JButton {
+        return JButton().apply {
+            text = tool.title
+            font = font.deriveFont(18F)
+            icon = tool.icon.derive(2F)
+            iconTextGap = 20
+            verticalTextPosition = BOTTOM
+            horizontalTextPosition = CENTER
+
+            addActionListener {
+                fileChooser.fileFilter = tool.filter
+                fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
+                    openFiles(selectedFiles, tool)
+                }
+            }
+
+            transferHandler = FileTransferHandler(
+                predicate = { tool.filter.accept(it) },
+                callback = { openFiles(it, tool) },
+            )
+        }
+    }
+
+    private val landingScrollpane = FlatScrollPane(landingPanel) {
+        border = null
+    }
+
+    private val tabs = object : TabStrip() {
+        init {
+            isVisible = false
+
+            if (SystemInfo.isMacFullWindowContentSupported) {
+                // add padding component for macOS window controls
+                val placeholder = JPanel().apply {
+                    putClientProperty(FULL_WINDOW_CONTENT_BUTTONS_PLACEHOLDER, "mac")
+                }
+                leadingComponent = placeholder
+            }
+
+            trailingComponent = JPanel(BorderLayout()).apply {
+                add(
+                    JButton(openAction).apply {
+                        hideActionText = true
+                        icon = FlatSVGIcon("icons/bx-plus.svg")
+                    },
+                    BorderLayout.WEST,
+                )
+            }
         }
 
-        trailingComponent = JPanel(BorderLayout()).apply {
-            add(
-                JButton(openAction).apply {
-                    hideActionText = true
-                    icon = FlatSVGIcon("icons/bx-plus.svg")
-                },
-                BorderLayout.WEST,
-            )
+        override fun removeTabAt(index: Int) {
+            super.removeTabAt(index)
+            if (tabCount == 0) {
+                isVisible = false
+                landingScrollpane.isVisible = true
+            }
+        }
+
+        override fun insertTab(title: String?, icon: Icon?, component: Component?, tip: String?, index: Int) {
+            super.insertTab(title, icon, component, tip, index)
+            isVisible = true
+            landingScrollpane.isVisible = false
         }
     }
 
@@ -318,7 +380,8 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
     }
 
     init {
-        add(tabs, "dock center")
+        add(landingScrollpane, "push, grow")
+        add(tabs, "push, grow")
 
         Debug.addChangeListener { newValue ->
             debugMenu.isVisible = newValue
@@ -355,8 +418,6 @@ class MainPanel : JPanel(MigLayout("ins 6, fill")) {
                     }
 
                     mainPanel.macOsSetup()
-
-                    transferHandler = FileTransferHandler(mainPanel::openFiles)
                 }
             }
         }

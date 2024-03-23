@@ -3,13 +3,13 @@ package io.github.inductiveautomation.kindling.log
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
-import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.log.MDCTableModel.MDCColumns
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.getAll
@@ -94,7 +94,7 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
 
     private val addFilter =
         Action(
-            icon = FlatSVGIcon("icons/bx-plus.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+            icon = FlatSVGIcon("icons/bx-plus.svg").asActionIcon(),
         ) {
             val selectedKey = keyCombo.selectedItem as String?
             val selectedValue = valueCombo.selectedItem as String?
@@ -107,7 +107,7 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
     private val removeFilter =
         Action(
             name = "Remove Filter",
-            icon = FlatSVGIcon("icons/bx-minus.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+            icon = FlatSVGIcon("icons/bx-minus.svg").asActionIcon(),
         ) {
             val rowToRemove = filterTable.selectedRow.takeIf { it != -1 } ?: tableModel.data.lastIndex
             if (rowToRemove in tableModel.data.indices) {
@@ -123,7 +123,7 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
     private val removeAllFilters =
         Action(
             name = "Remove All Filters",
-            icon = FlatSVGIcon("icons/bx-x.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+            icon = FlatSVGIcon("icons/bx-x.svg").asActionIcon(),
         ) {
             reset()
         }

@@ -61,7 +61,7 @@ class MetricsView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
         }
 
     private val cardPanel =
-        JPanel(MigLayout("wrap 3, fillx, hidemode 3")).apply {
+        JPanel(MigLayout("wrap 2, fillx, gap 20, hidemode 3, ins 6")).apply {
             for (card in metricCards) {
                 add(card, "pushx, growx")
             }

@@ -11,9 +11,9 @@ import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
 import io.github.inductiveautomation.kindling.utils.ThemeSerializer
 import io.github.inductiveautomation.kindling.utils.ToolSerializer
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
-import io.github.inductiveautomation.kindling.utils.derive
 import io.github.inductiveautomation.kindling.utils.render
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,6 @@ import java.util.Vector
 import javax.swing.JComboBox
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
-import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import kotlin.io.path.Path
@@ -53,8 +52,6 @@ data object Kindling {
 
     val homepage = URI("https://github.com/inductiveautomation/kindling")
     val forumThread = URI("https://forum.inductiveautomation.com/t/54689")
-
-    const val SECONDARY_ACTION_ICON_SCALE = 0.75F
 
     data object Preferences {
         data object General : PreferenceCategory {
@@ -95,13 +92,7 @@ data object Kindling {
                             text = value?.title
                             toolTipText = value?.description
 
-                            icon = value?.icon?.derive(0.8f)?.let {
-                                if (selected || focused) {
-                                    it.derive { UIManager.getColor("Tree.selectionForeground") }
-                                } else {
-                                    it
-                                }
-                            }
+                            icon = value?.icon?.asActionIcon(selected || focused)
                         }
 
                         addActionListener {
@@ -155,7 +146,7 @@ data object Kindling {
             )
 
             override val displayName: String = "General"
-            override val key: String = "general"
+            override val serialKey: String = "general"
             override val preferences: List<Preference<*>> =
                 listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
         }
@@ -190,7 +181,7 @@ data object Kindling {
             )
 
             override val displayName: String = "UI"
-            override val key: String = "ui"
+            override val serialKey: String = "ui"
             override val preferences: List<Preference<*>> = listOf(Theme, ScaleFactor)
         }
 
@@ -223,7 +214,7 @@ data object Kindling {
             )
 
             override val displayName: String = "Advanced"
-            override val key: String = "advanced"
+            override val serialKey: String = "advanced"
             override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)
         }
 
@@ -256,13 +247,13 @@ data object Kindling {
         }
 
         operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? {
-            return internalState.getOrPut(category.key) { mutableMapOf() }[preference.key]?.let { currentValue ->
+            return internalState.getOrPut(category.serialKey) { mutableMapOf() }[preference.serialKey]?.let { currentValue ->
                 preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
             }
         }
 
         operator fun <T : Any> set(category: PreferenceCategory, preference: Preference<T>, value: T) {
-            internalState.getOrPut(category.key) { mutableMapOf() }[preference.key] =
+            internalState.getOrPut(category.serialKey) { mutableMapOf() }[preference.serialKey] =
                 preferencesJson.encodeToJsonElement(preference.serializer, value)
             syncToDisk()
         }

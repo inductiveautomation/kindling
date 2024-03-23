@@ -24,7 +24,8 @@ interface FloatableComponent {
     val tabTooltip: String?
 }
 
-class TabStrip : DnDTabbedPane() {
+@Suppress("LeakingThis")
+open class TabStrip : DnDTabbedPane() {
     init {
         tabPlacement = TOP
         tabLayoutPolicy = SCROLL_TAB_LAYOUT

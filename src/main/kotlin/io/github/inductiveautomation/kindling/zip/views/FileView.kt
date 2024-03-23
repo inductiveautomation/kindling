@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.zip.views
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.CSS
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.JSON
@@ -101,7 +102,7 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
         theme = Theme.currentValue
     }
 
-    override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-file.svg").derive(16, 16)
+    override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-file.svg").asActionIcon()
 
     init {
         updateText()

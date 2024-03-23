@@ -27,7 +27,11 @@ dependencies {
         // Exclude transitive IA dependencies - we only need core Ignition classes for cache deserialization
         isTransitive = false
     }
-    api(libs.excelkt)
+    api(libs.poi)
+    api(libs.excelkt) {
+        // bringing in POI manually, since this wrapper appears unmaintained
+        isTransitive = false
+    }
     api(libs.jfreechart)
     api(libs.rsyntaxtextarea)
     runtimeOnly(libs.bundles.ia.transitive)

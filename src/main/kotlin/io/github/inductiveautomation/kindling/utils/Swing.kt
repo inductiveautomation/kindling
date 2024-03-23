@@ -6,7 +6,6 @@ import com.github.weisj.jsvg.attributes.ViewBox
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
-import java.awt.Color
 import java.awt.Component
 import java.awt.Container
 import java.awt.RenderingHints
@@ -20,6 +19,7 @@ import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JPopupMenu
 import javax.swing.SwingUtilities
+import javax.swing.UIManager
 import javax.swing.event.EventListenerList
 import javax.swing.text.Document
 
@@ -56,9 +56,11 @@ inline fun <T : Component> T.attachPopupMenu(
     )
 }
 
-fun FlatSVGIcon.derive(colorer: (Color) -> Color): FlatSVGIcon {
-    return FlatSVGIcon(name, scale).apply {
-        colorFilter = FlatSVGIcon.ColorFilter(colorer)
+fun FlatSVGIcon.asActionIcon(selected: Boolean = false): FlatSVGIcon {
+    return FlatSVGIcon(name, 0.75F).apply {
+        if (selected) {
+            colorFilter = FlatSVGIcon.ColorFilter { UIManager.getColor("Tree.selectionForeground") }
+        }
     }
 }
 
