@@ -1,6 +1,8 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.jidesoft.comparator.AlphanumComparator
+import com.jidesoft.swing.SearchableUtils
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.log.MDCTableModel.MDCColumns
@@ -16,6 +18,8 @@ import io.github.inductiveautomation.kindling.utils.getAll
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.renderer.CheckBoxProvider
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import java.util.Vector
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JButton
@@ -31,114 +35,163 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
 
     private val allMDCs = events.flatMap(SystemLogEvent::mdc)
 
-    private val countByKey =
-        allMDCs
-            .groupingBy(MDC::key)
-            .eachCount()
-            .entries
-            .sortedByDescending(Map.Entry<String, Int>::value)
-            .associate(Map.Entry<String, Int>::toPair)
+    private val countByKey = allMDCs
+        .groupingBy(MDC::key)
+        .eachCount()
+        .entries
+        .sortedByDescending(Map.Entry<String, Int>::value)
+        .associate(Map.Entry<String, Int>::toPair)
 
-    private val countByKeyAndValue =
-        allMDCs
-            .groupingBy(MDC::toPair)
-            .eachCount()
+    private val countByKeyAndValue = allMDCs
+        .groupingBy(MDC::toPair)
+        .eachCount()
 
-    private val mdcValuesPerKey =
-        allMDCs
-            .groupBy(MDC::key)
-            .mapValues { it.value.distinct() }
+    private val mdcValuesPerKey = allMDCs
+        .groupBy(MDC::key)
+        .mapValues { it.value.distinct() }
 
     private val tableModel = MDCTableModel()
 
-    private val valueCombo: JComboBox<String?> =
-        JComboBox<String?>().apply {
-            configureCellRenderer { _, value, _, _, _ ->
-                text =
-                    if (value == null) {
-                        " - value - "
-                    } else {
-                        val count = countByKeyAndValue[keyCombo.selectedItem as String to value] ?: 0
-                        "$value [$count]"
-                    }
-                toolTipText = text
-            }
-            selectedIndex = -1
-        }
-
-    private val keyCombo: JComboBox<String> =
-        JComboBox(countByKey.keys.toTypedArray()).apply {
-            configureCellRenderer { _, key, _, _, _ ->
-                text =
-                    if (key == null) {
-                        " - key - "
-                    } else {
-                        val count = countByKey[key]
-                        "$key [$count]"
-                    }
-                toolTipText = text
-            }
-
-            addActionListener {
-                if (selectedItem == null) return@addActionListener
-                valueCombo.model =
-                    mdcValuesPerKey.getValue(selectedItem as String).map { mdc ->
-                        mdc.value
-                    }.let {
-                        DefaultComboBoxModel(Vector(it))
-                    }
-            }
-
-            selectedIndex = -1
-        }
-
-    private val addFilter =
-        Action(
-            icon = FlatSVGIcon("icons/bx-plus.svg").asActionIcon(),
-        ) {
-            val selectedKey = keyCombo.selectedItem as String?
-            val selectedValue = valueCombo.selectedItem as String?
-
-            if (selectedKey != null && selectedValue != null) {
-                filterTable.model.add(selectedKey, selectedValue)
-            }
-        }
-
-    private val removeFilter =
-        Action(
-            name = "Remove Filter",
-            icon = FlatSVGIcon("icons/bx-minus.svg").asActionIcon(),
-        ) {
-            val rowToRemove = filterTable.selectedRow.takeIf { it != -1 } ?: tableModel.data.lastIndex
-            if (rowToRemove in tableModel.data.indices) {
-                tableModel.removeAt(filterTable.selectedRow)
-
-                val newSelection = rowToRemove.coerceAtMost(tableModel.data.lastIndex)
-                if (newSelection >= 0) {
-                    filterTable.setRowSelectionInterval(newSelection, newSelection)
+    private val valueCombo: JComboBox<String?> = JComboBox<String?>().apply {
+        configureCellRenderer { _, value, _, _, _ ->
+            text =
+                if (value == null) {
+                    " - value - "
+                } else {
+                    val count = countByKeyAndValue[keyCombo.selectedItem as String to value] ?: 0
+                    "$value [$count]"
                 }
+            toolTipText = text
+        }
+        SearchableUtils.installSearchable(this).apply {
+            isFromStart = false
+            isRepeats = true
+        }
+
+        addKeyListener(
+            object : KeyListener {
+                override fun keyTyped(e: KeyEvent) {}
+                override fun keyPressed(e: KeyEvent) {}
+                override fun keyReleased(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_ENTER) {
+                        addFilter()
+                    }
+                }
+            },
+        )
+
+        selectedIndex = -1
+    }
+
+    private val keyCombo: JComboBox<String> = JComboBox(
+        countByKey.keys.toTypedArray().also {
+            it.sortWith(AlphanumComparator())
+        },
+    ).apply {
+        configureCellRenderer { _, key, _, _, _ ->
+            text = if (key == null) {
+                " - key - "
+            } else {
+                val count = countByKey[key]
+                "$key [$count]"
+            }
+            toolTipText = text
+        }
+
+        addActionListener {
+            val selectedItem = selectedItem
+            if (selectedItem is String) {
+                val mdcValues = mdcValuesPerKey
+                    .getValue(selectedItem)
+                    .mapNotNull(MDC::value)
+                    .sortedWith(AlphanumComparator())
+                valueCombo.model = DefaultComboBoxModel(Vector(mdcValues))
             }
         }
 
-    private val removeAllFilters =
-        Action(
-            name = "Remove All Filters",
-            icon = FlatSVGIcon("icons/bx-x.svg").asActionIcon(),
-        ) {
-            reset()
+        SearchableUtils.installSearchable(this).apply {
+            isFromStart = false
+            isRepeats = true
         }
 
-    private val filterTable =
-        ReifiedJXTable(tableModel, MDCColumns).apply {
-            isColumnControlVisible = false
-            tableHeader.apply {
-                reorderingAllowed = false
-            }
+        selectedIndex = -1
+    }
 
-            tableModel.addTableModelListener {
-                listeners.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
+    private val addFilter = Action(
+        description = "Add MDC Key/Value Filter",
+        icon = FlatSVGIcon("icons/bx-plus.svg").asActionIcon(),
+    ) {
+        addFilter()
+    }
+
+    private fun addFilter() {
+        val selectedKey: String? = keyCombo.selectedItem as String?
+        val selectedValue: String? = valueCombo.selectedItem as String?
+
+        if (selectedKey != null && selectedValue != null) {
+            filterTable.model.add(selectedKey, selectedValue)
+        }
+    }
+
+    private val removeFilter = Action(
+        description = "Remove Selected Filter",
+        icon = FlatSVGIcon("icons/bx-minus.svg").asActionIcon(),
+    ) {
+        removeFilter()
+    }
+
+    /**
+     * Removes the selected filter (or the last filter if none are selected).
+     */
+    private fun removeFilter() {
+        val rowToRemove = filterTable.selectedRow.takeIf { it != -1 } ?: tableModel.data.lastIndex
+        if (rowToRemove in tableModel.data.indices) {
+            tableModel.removeAt(filterTable.selectedRow)
+
+            val newSelection = rowToRemove.coerceAtMost(tableModel.data.lastIndex)
+            if (newSelection >= 0) {
+                filterTable.setRowSelectionInterval(newSelection, newSelection)
             }
         }
+    }
+
+    private val removeAllFilters = Action(
+        name = "Clear",
+        description = "Remove All Filters",
+        icon = FlatSVGIcon("icons/bx-x.svg").asActionIcon(),
+    ) {
+        reset()
+    }
+
+    private val filterTable = ReifiedJXTable(tableModel, MDCColumns).apply {
+        isColumnControlVisible = false
+        tableHeader.apply {
+            reorderingAllowed = false
+        }
+
+        tableModel.addTableModelListener {
+            listeners.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
+        }
+
+        addKeyListener(
+            object : KeyListener {
+                override fun keyTyped(e: KeyEvent) {}
+                override fun keyPressed(e: KeyEvent) {}
+                override fun keyReleased(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_SPACE) {
+                        val selectedRow = selectedRow
+                        if (selectedRow != -1) {
+                            val row = tableModel.data[selectedRow]
+                            row.inclusive = !row.inclusive
+                            tableModel.fireTableRowsUpdated(selectedRow, selectedRow)
+                        }
+                    } else if (e.keyCode == KeyEvent.VK_BACK_SPACE || e.keyCode == KeyEvent.VK_DELETE) {
+                        removeFilter()
+                    }
+                }
+            },
+        )
+    }
 
     override val component = JPanel(MigLayout("ins 2 0, fill"))
 
@@ -146,20 +199,10 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
         component.apply {
             add(keyCombo, "growx, wrap, wmax 100%")
             add(valueCombo, "growx, wrap, wmax 100%")
-            add(
-                JButton(removeFilter).apply {
-                    hideActionText = true
-                },
-                "align right, split",
-            )
-            add(JButton(addFilter), "gapx 2")
-            add(
-                JButton(removeAllFilters).apply {
-                    hideActionText = true
-                },
-                "gapx 2",
-            )
+            add(JButton(addFilter), "align right, split")
+            add(JButton(removeFilter), "gapx 2")
             add(FlatScrollPane(filterTable), "newline, pushy, grow")
+            add(JButton(removeAllFilters), "align right, newline")
         }
 
         filterTable.attachPopupMenu { mouseEvent ->
