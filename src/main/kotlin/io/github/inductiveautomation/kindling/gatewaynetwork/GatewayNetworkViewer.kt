@@ -133,9 +133,10 @@ class GatewayNetworkViewer(tabName: String, tooltip: String, json: String) : Too
     }
 }
 
-object GatewayNetworkTool : ClipboardTool {
+data object GatewayNetworkTool : ClipboardTool {
+    override val serialKey: String = "gan-diagram"
     override val title = "Gateway Network Diagram"
-    override val description = "Gateway network diagram (.json or .txt) files"
+    override val description = "GAN Diagram (.json, .txt)"
     override val icon = FlatSVGIcon("icons/bx-sitemap.svg")
     override val filter = FileFilter(description, "json", "txt")
 

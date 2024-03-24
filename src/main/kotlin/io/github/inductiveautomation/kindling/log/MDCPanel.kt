@@ -1,21 +1,25 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.jidesoft.comparator.AlphanumComparator
+import com.jidesoft.swing.SearchableUtils
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
-import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.log.MDCTableModel.MDCColumns
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.getAll
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.renderer.CheckBoxProvider
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import java.util.Vector
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JButton
@@ -27,6 +31,8 @@ import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
 
 internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() {
+    override val icon = FlatSVGIcon("icons/bx-key.svg")
+
     private val allMDCs = events.flatMap(SystemLogEvent::mdc)
 
     private val countByKey = allMDCs
@@ -48,18 +54,40 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
 
     private val valueCombo: JComboBox<String?> = JComboBox<String?>().apply {
         configureCellRenderer { _, value, _, _, _ ->
-            text = if (value == null) {
-                " - value - "
-            } else {
-                val count = countByKeyAndValue[keyCombo.selectedItem as String to value] ?: 0
-                "$value [$count]"
-            }
+            text =
+                if (value == null) {
+                    " - value - "
+                } else {
+                    val count = countByKeyAndValue[keyCombo.selectedItem as String to value] ?: 0
+                    "$value [$count]"
+                }
             toolTipText = text
         }
+        SearchableUtils.installSearchable(this).apply {
+            isFromStart = false
+            isRepeats = true
+        }
+
+        addKeyListener(
+            object : KeyListener {
+                override fun keyTyped(e: KeyEvent) {}
+                override fun keyPressed(e: KeyEvent) {}
+                override fun keyReleased(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_ENTER) {
+                        addFilter()
+                    }
+                }
+            },
+        )
+
         selectedIndex = -1
     }
 
-    private val keyCombo: JComboBox<String> = JComboBox(countByKey.keys.toTypedArray()).apply {
+    private val keyCombo: JComboBox<String> = JComboBox(
+        countByKey.keys.toTypedArray().also {
+            it.sortWith(AlphanumComparator())
+        },
+    ).apply {
         configureCellRenderer { _, key, _, _, _ ->
             text = if (key == null) {
                 " - key - "
@@ -71,18 +99,34 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
         }
 
         addActionListener {
-            if (selectedItem == null) return@addActionListener
-            valueCombo.model = mdcValuesPerKey.getValue(selectedItem as String).map { it.value }.let { DefaultComboBoxModel(Vector(it)) }
+            val selectedItem = selectedItem
+            if (selectedItem is String) {
+                val mdcValues = mdcValuesPerKey
+                    .getValue(selectedItem)
+                    .mapNotNull(MDC::value)
+                    .sortedWith(AlphanumComparator())
+                valueCombo.model = DefaultComboBoxModel(Vector(mdcValues))
+            }
+        }
+
+        SearchableUtils.installSearchable(this).apply {
+            isFromStart = false
+            isRepeats = true
         }
 
         selectedIndex = -1
     }
 
     private val addFilter = Action(
-        icon = FlatSVGIcon("icons/bx-plus.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        description = "Add MDC Key/Value Filter",
+        icon = FlatSVGIcon("icons/bx-plus.svg").asActionIcon(),
     ) {
-        val selectedKey = keyCombo.selectedItem as String?
-        val selectedValue = valueCombo.selectedItem as String?
+        addFilter()
+    }
+
+    private fun addFilter() {
+        val selectedKey: String? = keyCombo.selectedItem as String?
+        val selectedValue: String? = valueCombo.selectedItem as String?
 
         if (selectedKey != null && selectedValue != null) {
             filterTable.model.add(selectedKey, selectedValue)
@@ -90,9 +134,16 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
     }
 
     private val removeFilter = Action(
-        name = "Remove Filter",
-        icon = FlatSVGIcon("icons/bx-minus.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        description = "Remove Selected Filter",
+        icon = FlatSVGIcon("icons/bx-minus.svg").asActionIcon(),
     ) {
+        removeFilter()
+    }
+
+    /**
+     * Removes the selected filter (or the last filter if none are selected).
+     */
+    private fun removeFilter() {
         val rowToRemove = filterTable.selectedRow.takeIf { it != -1 } ?: tableModel.data.lastIndex
         if (rowToRemove in tableModel.data.indices) {
             tableModel.removeAt(filterTable.selectedRow)
@@ -105,8 +156,9 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
     }
 
     private val removeAllFilters = Action(
-        name = "Remove All Filters",
-        icon = FlatSVGIcon("icons/bx-x.svg").derive(SECONDARY_ACTION_ICON_SCALE),
+        name = "Clear",
+        description = "Remove All Filters",
+        icon = FlatSVGIcon("icons/bx-x.svg").asActionIcon(),
     ) {
         reset()
     }
@@ -120,6 +172,25 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
         tableModel.addTableModelListener {
             listeners.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
         }
+
+        addKeyListener(
+            object : KeyListener {
+                override fun keyTyped(e: KeyEvent) {}
+                override fun keyPressed(e: KeyEvent) {}
+                override fun keyReleased(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_SPACE) {
+                        val selectedRow = selectedRow
+                        if (selectedRow != -1) {
+                            val row = tableModel.data[selectedRow]
+                            row.inclusive = !row.inclusive
+                            tableModel.fireTableRowsUpdated(selectedRow, selectedRow)
+                        }
+                    } else if (e.keyCode == KeyEvent.VK_BACK_SPACE || e.keyCode == KeyEvent.VK_DELETE) {
+                        removeFilter()
+                    }
+                }
+            },
+        )
     }
 
     override val component = JPanel(MigLayout("ins 2 0, fill"))
@@ -128,20 +199,10 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
         component.apply {
             add(keyCombo, "growx, wrap, wmax 100%")
             add(valueCombo, "growx, wrap, wmax 100%")
-            add(
-                JButton(removeFilter).apply {
-                    hideActionText = true
-                },
-                "align right, split",
-            )
-            add(JButton(addFilter), "gapx 2")
-            add(
-                JButton(removeAllFilters).apply {
-                    hideActionText = true
-                },
-                "gapx 2",
-            )
+            add(JButton(addFilter), "align right, split")
+            add(JButton(removeFilter), "gapx 2")
             add(FlatScrollPane(filterTable), "newline, pushy, grow")
+            add(JButton(removeAllFilters), "align right, newline")
         }
 
         filterTable.attachPopupMenu { mouseEvent ->
@@ -162,7 +223,11 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
 
     override fun filter(item: LogEvent): Boolean = tableModel.filter(item)
 
-    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out LogEvent, *>, event: LogEvent) {
+    override fun customizePopupMenu(
+        menu: JPopupMenu,
+        column: Column<out LogEvent, *>,
+        event: LogEvent,
+    ) {
         if (column == SystemLogColumns.Message && (event as SystemLogEvent).mdc.isNotEmpty()) {
             for ((key, values) in event.mdc.groupBy { it.key }) {
                 menu.add(
@@ -197,9 +262,10 @@ data class MDCTableRow(
 ) : LogFilter {
     override fun filter(item: LogEvent): Boolean {
         check(item is SystemLogEvent)
-        val any = item.mdc.any { (key, value) ->
-            this.key == key && this.value?.equals(value) == true
-        }
+        val any =
+            item.mdc.any { (key, value) ->
+                this.key == key && this.value?.equals(value) == true
+            }
         return if (inclusive) any else !any
     }
 }
@@ -212,14 +278,28 @@ class MDCTableModel : AbstractTableModel(), LogFilter {
 
     @Suppress("RedundantCompanionReference")
     override fun getColumnCount(): Int = MDCColumns.size
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = get(rowIndex, MDCColumns[columnIndex])
+
+    override fun getValueAt(
+        rowIndex: Int,
+        columnIndex: Int,
+    ): Any? = get(rowIndex, MDCColumns[columnIndex])
+
     override fun getColumnName(column: Int): String = get(column).header
+
     override fun getColumnClass(columnIndex: Int): Class<*> = get(columnIndex).clazz
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
+
+    override fun isCellEditable(
+        rowIndex: Int,
+        columnIndex: Int,
+    ): Boolean {
         return columnIndex == MDCColumns[Inclusive]
     }
 
-    override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
+    override fun setValueAt(
+        aValue: Any?,
+        rowIndex: Int,
+        columnIndex: Int,
+    ) {
         if (aValue !is Boolean) return
 
         if (MDCColumns[columnIndex] == Inclusive) {
@@ -229,7 +309,10 @@ class MDCTableModel : AbstractTableModel(), LogFilter {
         fireTableCellUpdated(rowIndex, columnIndex)
     }
 
-    operator fun <T> get(row: Int, column: Column<MDCTableRow, T>): T {
+    operator fun <T> get(
+        row: Int,
+        column: Column<MDCTableRow, T>,
+    ): T {
         return _data[row].let { info ->
             column.getValue(info)
         }
@@ -238,9 +321,11 @@ class MDCTableModel : AbstractTableModel(), LogFilter {
     override fun filter(item: LogEvent): Boolean {
         return when (item) {
             is WrapperLogEvent -> true
-            is SystemLogEvent -> _data.isEmpty() || _data.any { row ->
-                row.filter(item)
-            }
+            is SystemLogEvent ->
+                _data.isEmpty() ||
+                    _data.any { row ->
+                        row.filter(item)
+                    }
         }
     }
 
@@ -249,10 +334,15 @@ class MDCTableModel : AbstractTableModel(), LogFilter {
         fireTableRowsDeleted(index, index)
     }
 
-    fun add(key: String, value: String?, inclusive: Boolean = true) {
-        val exists = data.any { (existingKey, existingValue) ->
-            key == existingKey && value == existingValue
-        }
+    fun add(
+        key: String,
+        value: String?,
+        inclusive: Boolean = true,
+    ) {
+        val exists =
+            data.any { (existingKey, existingValue) ->
+                key == existingKey && value == existingValue
+            }
         if (!exists) {
             _data += MDCTableRow(key, value, inclusive)
             fireTableRowsInserted(_data.lastIndex, _data.lastIndex)
@@ -273,11 +363,12 @@ class MDCTableModel : AbstractTableModel(), LogFilter {
         )
         val Inclusive by column(
             column = {
-                cellRenderer = DefaultTableRenderer(
-                    CheckBoxProvider {
-                        if (it as Boolean) "Inclusive" else "Exclusive"
-                    },
-                )
+                cellRenderer =
+                    DefaultTableRenderer(
+                        CheckBoxProvider {
+                            if (it as Boolean) "Inclusive" else "Exclusive"
+                        },
+                    )
             },
             value = MDCTableRow::inclusive,
         )

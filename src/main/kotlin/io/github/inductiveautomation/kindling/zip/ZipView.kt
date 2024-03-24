@@ -103,10 +103,12 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
                     if (selectedPaths.size == 1 && selectedNode.isLeaf) {
                         add(
                             Action("Save As") {
-                                exportFileChooser.selectedFile = File(selectedNode.userObject.name)
-                                if (exportFileChooser.showSaveDialog(this@attachPopupMenu) == JFileChooser.APPROVE_OPTION) {
-                                    provider.newInputStream(selectedNode.userObject) transferTo
-                                        exportFileChooser.selectedFile.outputStream()
+                                exportFileChooser.apply {
+                                    resetChoosableFileFilters()
+                                    selectedFile = File(selectedNode.userObject.name)
+                                    if (showSaveDialog(this@attachPopupMenu) == JFileChooser.APPROVE_OPTION) {
+                                        provider.newInputStream(selectedNode.userObject) transferTo selectedFile.outputStream()
+                                    }
                                 }
                             },
                         )
@@ -150,8 +152,9 @@ private typealias PathPredicate = (Path) -> Boolean
 private typealias PathViewProvider = (FileSystemProvider, Path) -> PathView?
 
 object ZipViewer : Tool {
-    override val title = "Ignition Archive"
-    override val description = "Archives (.gwbk, .zip, .modl)"
+    override val serialKey: String = "zip-viewer"
+    override val title = "ZIP Archive"
+    override val description = "ZIP Archive (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
     override val filter = FileFilter(description, "gwbk", "zip", "modl", "jar")
 

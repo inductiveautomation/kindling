@@ -20,9 +20,8 @@ import javax.swing.JPanel
 import javax.swing.UIManager
 import javax.swing.border.MatteBorder
 
-interface PreferenceCategory {
+interface PreferenceCategory : KindlingSerializable {
     val displayName: String
-    val key: String
 
     val preferences: List<Preference<*>>
 }
@@ -30,14 +29,13 @@ interface PreferenceCategory {
 class Preference<T : Any>(
     val category: PreferenceCategory,
     val name: String,
+    override val serialKey: String,
     val description: String? = null,
     val requiresRestart: Boolean = false,
     val default: T,
     val serializer: KSerializer<T>,
     createEditor: (Preference<T>.() -> JComponent)?,
-) {
-    val key: String = name.lowercase().filter(Char::isJavaIdentifierStart)
-
+) : KindlingSerializable {
     var dependency: Preference<*>? = null
 
     var currentValue
@@ -94,12 +92,14 @@ class Preference<T : Any>(
         inline fun <reified T : Any> PreferenceCategory.preference(
             name: String,
             description: String? = null,
+            serialKey: String = name.lowercase().filter(Char::isJavaIdentifierStart),
             requiresRestart: Boolean = false,
             default: T,
             serializer: KSerializer<T> = serializer(),
             noinline editor: (Preference<T>.() -> JComponent)?,
         ): Preference<T> = Preference(
             name = name,
+            serialKey = serialKey,
             category = this,
             description = description,
             requiresRestart = requiresRestart,

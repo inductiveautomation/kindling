@@ -23,6 +23,8 @@ class ReifiedListTableModel<T>(
         }
     }
 
+    operator fun get(row: Int): T = data[row]
+
     override fun getValueAt(
         rowIndex: Int,
         columnIndex: Int,

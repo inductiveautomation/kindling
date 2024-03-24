@@ -2,13 +2,13 @@ package io.github.inductiveautomation.kindling.idb.generic
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.comparator.AlphanumComparator
-import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ButtonPanel
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
@@ -16,7 +16,6 @@ import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import net.miginfocom.swing.MigLayout
-import java.awt.Dimension
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.JDBCType
@@ -42,22 +41,22 @@ enum class TableComparator(
 ) : Comparator<Table> by comparator {
     ByNameAscending(
         tooltip = "Sort A-Z",
-        icon = FlatSVGIcon("icons/bx-sort-a-z.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-a-z.svg"),
         comparator = compareBy(nullsFirst(AlphanumComparator(false))) { it.name },
     ),
     ByNameDescending(
         tooltip = "Sort Z-A",
-        icon = FlatSVGIcon("icons/bx-sort-z-a.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-z-a.svg"),
         comparator = ByNameAscending.reversed(),
     ),
     BySizeAscending(
         tooltip = "Sort by Size",
-        icon = FlatSVGIcon("icons/bx-sort-up.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-up.svg"),
         comparator = compareBy(Table::size),
     ),
     BySizeDescending(
         tooltip = "Sort by Size (descending)",
-        icon = FlatSVGIcon("icons/bx-sort-down.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-down.svg"),
         comparator = BySizeAscending.reversed(),
     ),
 }
@@ -66,28 +65,23 @@ class SortableTree(val tables: List<Table>) {
     var comparator = TableComparator.BySizeDescending
         set(value) {
             field = value
-            root = sortTree()
+            root = sortedTreeNode()
             tree.model = DefaultTreeModel(root)
         }
 
-    private fun sortTree() =
-        object : TreeNode {
-            override fun getChildAt(childIndex: Int): TreeNode = tables.sortedWith(comparator)[childIndex]
+    private fun sortedTreeNode() = object : TreeNode {
+        private val sortedTables = tables.sortedWith(comparator)
 
-            override fun getChildCount(): Int = tables.sortedWith(comparator).size
+        override fun getChildAt(childIndex: Int): TreeNode = sortedTables[childIndex]
+        override fun getChildCount(): Int = sortedTables.size
+        override fun getIndex(node: TreeNode): Int = sortedTables.indexOf(node)
+        override fun children(): Enumeration<out TreeNode> = Collections.enumeration(sortedTables)
+        override fun getParent(): TreeNode? = null
+        override fun getAllowsChildren(): Boolean = true
+        override fun isLeaf(): Boolean = false
+    }
 
-            override fun getParent(): TreeNode? = null
-
-            override fun getIndex(node: TreeNode): Int = tables.sortedWith(comparator).indexOf(node)
-
-            override fun getAllowsChildren(): Boolean = true
-
-            override fun isLeaf(): Boolean = false
-
-            override fun children(): Enumeration<out TreeNode> = Collections.enumeration(tables.sortedWith(comparator))
-        }
-
-    var root: TreeNode = sortTree()
+    var root: TreeNode = sortedTreeNode()
 
     val tree = DBMetaDataTree(DefaultTreeModel(root))
 
@@ -98,7 +92,7 @@ class SortableTree(val tables: List<Table>) {
 
     inner class SortAction(comparator: TableComparator) : Action(
         description = comparator.tooltip,
-        icon = comparator.icon,
+        icon = comparator.icon.asActionIcon(),
         selected = this@SortableTree.comparator == comparator,
         action = {
             this@SortableTree.comparator = comparator
@@ -144,23 +138,21 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                 Table(
                     name = tableName,
                     _parent = { sortableTree.root },
-                    columns =
-                        connection
-                            .executeQuery("""PRAGMA table_xinfo("$tableName");""")
-                            .toList { resultSet ->
-                                Column(
-                                    name = resultSet["name"],
-                                    type = resultSet["type"],
-                                    notNull = resultSet["notnull"],
-                                    defaultValue = resultSet["dflt_value"],
-                                    primaryKey = resultSet["pk"],
-                                    hidden = resultSet["hidden"],
-                                    _parent = { sortableTree.root.getChildAt(i) },
-                                )
-                            },
-                    size =
-                        connection
-                            .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
+                    columns = connection
+                        .executeQuery("""PRAGMA table_xinfo("$tableName");""")
+                        .toList { resultSet ->
+                            Column(
+                                name = resultSet["name"],
+                                type = resultSet["type"],
+                                notNull = resultSet["notnull"],
+                                defaultValue = resultSet["dflt_value"],
+                                primaryKey = resultSet["pk"],
+                                hidden = resultSet["hidden"],
+                                _parent = { sortableTree.root.getChildAt(i) },
+                            )
+                        },
+                    size = connection
+                        .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
                 )
             }
 
@@ -260,9 +252,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
 
         add(
             HorizontalSplitPane(
-                FlatScrollPane(sortableTree.component).apply {
-                    preferredSize = Dimension(200, 10)
-                },
+                sortableTree.component,
                 VerticalSplitPane(
                     FlatScrollPane(queryPanel),
                     results,

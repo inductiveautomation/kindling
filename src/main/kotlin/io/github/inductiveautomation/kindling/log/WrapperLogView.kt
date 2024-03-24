@@ -131,8 +131,9 @@ class WrapperLogView(
 }
 
 data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
+    override val serialKey: String = "logview"
     override val title = "Wrapper Log"
-    override val description = "wrapper.log(.n) files"
+    override val description = "Wrapper Log (wrapper.log[.N])"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
     override val respectsEncoding: Boolean = true
 
@@ -177,6 +178,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
+    @Suppress("ktlint:standard:property-naming")
     private lateinit var _formatter: DateTimeFormatter
     val TimeStampFormatter: DateTimeFormatter
         get() {
@@ -190,6 +192,6 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         }
 
     override val displayName: String = "Log View"
-    override val key: String = "logview"
+
     override val preferences: List<Preference<*>> = listOf(SelectedTimeZone)
 }

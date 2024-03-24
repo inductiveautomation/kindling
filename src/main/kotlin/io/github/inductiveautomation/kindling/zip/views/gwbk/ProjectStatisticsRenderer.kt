@@ -3,7 +3,6 @@ package io.github.inductiveautomation.kindling.zip.views.gwbk
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
-import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Companion.PERSPECTIVE_MODULE_ID
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Companion.VISION_MODULE_ID
@@ -16,6 +15,7 @@ import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JTabbedPane
@@ -23,7 +23,7 @@ import javax.swing.SortOrder
 
 class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
     override val title: String = "Projects"
-    override val icon: Icon = FlatSVGIcon("icons/bx-folder-open.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+    override val icon: Icon = FlatSVGIcon("icons/bx-folder-open.svg").asActionIcon()
 
     override fun ProjectStatistics.subtitle(): String {
         return sequence {
@@ -90,7 +90,7 @@ class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
         }
         val Count by column { it.value }
 
-        private val VISUALIZATION_ICON = FlatSVGIcon("icons/bx-show.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+        private val VISUALIZATION_ICON = FlatSVGIcon("icons/bx-show.svg").asActionIcon()
 
         private const val PLATFORM_ID = "ignition"
 
