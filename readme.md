@@ -61,6 +61,15 @@ the diagram visualization in a local web browser.
 2. Return to the gateway network status page and view the live graph.
 3. Return to the logs and copy the JSON to the clipboard or save it to a local file.
 
+### XML Viewer
+
+Opens Ignition XML files in a simple text view.
+
+Has special handling for:
+
+- Logback configuration files, with a special interactive editor
+- Store and Forward quarantine files, with an _attempt_ made to deserialize any Java-serialized data within
+
 ## Usage
 
 1. Download the installer for your OS from the Downloads
@@ -70,15 +79,6 @@ the diagram visualization in a local web browser.
    strip, or select a tool to open from the menubar.
 
 Preferences are stored in `~/.kindling/preferences.json` and can be modified within the application from the menu bar.
-
-### XML Viewer
-
-Opens Ignition XML files in a simple text view. 
-
-Has special handling for:
-
-- Logback configuration files, with a special interactive editor
-- Store and Forward quarantine files, with an _attempt_ made to deserialize any Java-serialized data within
 
 ## Development
 
