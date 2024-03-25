@@ -1,5 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
+import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.extras.components.FlatTextArea
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Container
@@ -127,6 +129,25 @@ open class TabStrip : DnDTabbedPane() {
             icon,
             LazyTab(tabName, icon, tabTooltip, component),
             tabTooltip,
+        )
+    }
+
+    fun <E : Throwable> addErrorTab(
+        error: E,
+        description: (E) -> String = { it.message ?: "Error" },
+    ) {
+        addTab(
+            "ERROR",
+            FlatSVGIcon("icons/bx-error.svg"),
+            FlatScrollPane(
+                FlatTextArea().apply {
+                    isEditable = false
+                    text = buildString {
+                        append(description(error))
+                        append((error.cause ?: error).stackTraceToString())
+                    }
+                },
+            ),
         )
     }
 

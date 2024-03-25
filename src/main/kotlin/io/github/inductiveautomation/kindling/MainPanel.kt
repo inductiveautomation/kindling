@@ -5,7 +5,6 @@ import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
-import com.formdev.flatlaf.extras.components.FlatTextArea
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
 import com.formdev.flatlaf.fonts.roboto_mono.FlatRobotoMonoFont
 import com.formdev.flatlaf.util.SystemInfo
@@ -27,6 +26,7 @@ import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.preferencesEditor
 import io.github.inductiveautomation.kindling.internal.FileTransferHandler
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.EmptyBorder
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.StyledLabel
 import io.github.inductiveautomation.kindling.utils.TabStrip
@@ -84,7 +84,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
         fileView = CustomIconView()
 
         val encodingSelector = JComboBox(ChoosableEncodings).apply {
-            toolTipText = "Charset Encoding for Wrapper Logs"
+            toolTipText = "Charset used for plaintext files"
             selectedItem = DefaultEncoding.currentValue
             addActionListener {
                 DefaultEncoding.currentValue = selectedItem as Charset
@@ -169,7 +169,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
     }
 
     private val landingScrollpane = FlatScrollPane(landingPanel) {
-        border = null
+        border = EmptyBorder()
     }
 
     private val tabs = object : TabStrip() {
@@ -336,23 +336,13 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
             tabs.addTab(component = toolPanel, select = true)
         }.getOrElse { ex ->
             LOGGER.error("Failed to open $description as a $title", ex)
-            tabs.addTab(
-                "ERROR",
-                FlatSVGIcon("icons/bx-error.svg"),
-                FlatScrollPane(
-                    FlatTextArea().apply {
-                        isEditable = false
-                        text = buildString {
-                            if (ex is ToolOpeningException) {
-                                appendLine(ex.message)
-                            } else {
-                                appendLine("Error opening $description: ${ex.message}")
-                            }
-                            append((ex.cause ?: ex).stackTraceToString())
-                        }
-                    },
-                ),
-            )
+            tabs.addErrorTab(ex) { error ->
+                if (error is ToolOpeningException) {
+                    error.message.orEmpty()
+                } else {
+                    "Error opening $description: ${error.message}"
+                }
+            }
             tabs.selectedIndex = tabs.indices.last
         }
     }

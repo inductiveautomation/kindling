@@ -34,6 +34,7 @@ dependencies {
     }
     api(libs.jfreechart)
     api(libs.rsyntaxtextarea)
+    api(libs.bundles.jackson)
     runtimeOnly(libs.bundles.ia.transitive)
 
     testImplementation(libs.bundles.kotest)

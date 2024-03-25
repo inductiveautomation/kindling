@@ -7,6 +7,7 @@ import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.utils.CharsetSerializer
+import io.github.inductiveautomation.kindling.utils.DocumentAdapter
 import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
 import io.github.inductiveautomation.kindling.utils.ThemeSerializer
@@ -31,8 +32,6 @@ import java.util.Vector
 import javax.swing.JComboBox
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.inputStream
@@ -65,14 +64,8 @@ data object Kindling {
                         text = currentValue.serializedForm
 
                         document.addDocumentListener(
-                            object : DocumentListener {
-                                fun onChange() {
-                                    currentValue = PathSerializer.fromString(text)
-                                }
-
-                                override fun insertUpdate(e: DocumentEvent?) = onChange()
-                                override fun removeUpdate(e: DocumentEvent?) = onChange()
-                                override fun changedUpdate(e: DocumentEvent?) = onChange()
+                            DocumentAdapter {
+                                currentValue = PathSerializer.fromString(text)
                             },
                         )
                     }

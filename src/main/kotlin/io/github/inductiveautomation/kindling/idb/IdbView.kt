@@ -169,7 +169,7 @@ enum class IdbTool {
 }
 
 data object IdbViewer : Tool {
-    override val serialKey: String = "idb-viewer"
+    override val serialKey = "idb-viewer"
     override val title = "SQLite Database"
     override val description = "SQLite Database (.idb)"
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")

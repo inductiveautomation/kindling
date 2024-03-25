@@ -134,19 +134,18 @@ class GatewayNetworkViewer(tabName: String, tooltip: String, json: String) : Too
 }
 
 data object GatewayNetworkTool : ClipboardTool {
-    override val serialKey: String = "gan-diagram"
+    override val serialKey = "gan-diagram"
     override val title = "Gateway Network Diagram"
     override val description = "GAN Diagram (.json, .txt)"
     override val icon = FlatSVGIcon("icons/bx-sitemap.svg")
     override val filter = FileFilter(description, "json", "txt")
+    override val respectsEncoding = true
 
-    override fun open(data: String): ToolPanel {
-        return GatewayNetworkViewer(
-            tabName = "Paste at ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
-            tooltip = "",
-            json = data,
-        )
-    }
+    override fun open(data: String) = GatewayNetworkViewer(
+        tabName = "Paste at ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
+        tooltip = "",
+        json = data,
+    )
 
     override fun open(path: Path): ToolPanel {
         val diagram: String = path.useLines(DefaultEncoding.currentValue) { lines ->

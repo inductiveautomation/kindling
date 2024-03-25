@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName") // ktlint is dumb and doesn't understand this
+
 package io.github.inductiveautomation.kindling.utils
 
 import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING
@@ -9,6 +11,8 @@ import com.jidesoft.swing.StyledLabelBuilder
 import io.github.inductiveautomation.kindling.core.Kindling
 import net.miginfocom.swing.MigLayout
 import java.awt.Component
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import javax.swing.ButtonGroup
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -16,13 +20,14 @@ import javax.swing.JSplitPane
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
-@Suppress("FunctionName")
 inline fun FlatScrollPane(
     component: Component,
     block: FlatScrollPane.() -> Unit = {},
-) = FlatScrollPane().apply {
-    setViewportView(component)
-    block(this)
+): FlatScrollPane {
+    return FlatScrollPane().apply {
+        setViewportView(component)
+        block(this)
+    }
 }
 
 /**
@@ -69,7 +74,6 @@ inline fun StyledLabel.style(block: StyledLabelBuilder.() -> Unit) {
 
 fun EmptyBorder(): EmptyBorder = EmptyBorder(0, 0, 0, 0)
 
-@Suppress("FunctionName")
 fun HorizontalSplitPane(
     left: Component,
     right: Component,
@@ -78,11 +82,17 @@ fun HorizontalSplitPane(
 ) = JSplitPane(SwingConstants.VERTICAL, left, right).apply {
     isOneTouchExpandable = true
     this.resizeWeight = resizeWeight
+    addComponentListener(
+        object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                setDividerLocation(resizeWeight)
+            }
+        },
+    )
 
     block()
 }
 
-@Suppress("FunctionName")
 fun VerticalSplitPane(
     top: Component,
     bottom: Component,
@@ -98,7 +108,6 @@ fun VerticalSplitPane(
 /**
  * Constructs a MigLayout JPanel containing each element of [group] in the first row.
  */
-@Suppress("FunctionName")
 fun ButtonPanel(group: ButtonGroup) =
     JPanel(MigLayout("ins 3 0, fill")).apply {
         border = EmptyBorder()

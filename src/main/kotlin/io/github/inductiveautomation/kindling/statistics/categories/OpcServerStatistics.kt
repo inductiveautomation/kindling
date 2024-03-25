@@ -25,7 +25,7 @@ data class OpcServerStatistics(
     val comServers = servers.count { it.type == COM_SERVER_TYPE }
 
     @Suppress("SqlResolve")
-    companion object : StatisticCalculator<OpcServerStatistics> {
+    companion object Calculator : StatisticCalculator<OpcServerStatistics> {
         const val UA_SERVER_TYPE = "com.inductiveautomation.OpcUaServerType"
         const val COM_SERVER_TYPE = "OPC_COM_ServerType"
 

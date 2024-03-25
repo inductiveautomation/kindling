@@ -16,7 +16,7 @@ data class MetaStatistics(
     val maxMemory: Int,
 ) : Statistic {
     @Suppress("SqlResolve")
-    companion object : StatisticCalculator<MetaStatistics> {
+    companion object Calculator : StatisticCalculator<MetaStatistics> {
         private val SYS_PROPS =
             """
             SELECT *

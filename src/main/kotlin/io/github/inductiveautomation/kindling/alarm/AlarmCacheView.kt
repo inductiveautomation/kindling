@@ -169,15 +169,15 @@ class AlarmCacheView(path: Path) : ToolPanel() {
 }
 
 data object AlarmViewer : Tool {
-    override val serialKey: String = "alarm-cache"
+    override val serialKey = "alarm-cache"
     override val title = "Alarm Cache"
     override val description = "Persistent Alarms Cache (.alarms_[TIMESTAMP])"
     override val icon = FlatSVGIcon("icons/bx-bell.svg")
-    override val requiresHiddenFiles: Boolean = true
+    override val requiresHiddenFiles = true
 
     override fun open(path: Path): ToolPanel = AlarmCacheView(path)
 
-    override val filter: FileFilter = FileFilter(description) {
+    override val filter = FileFilter(description) {
         fileNameRegex.matches(it.name)
     }
 

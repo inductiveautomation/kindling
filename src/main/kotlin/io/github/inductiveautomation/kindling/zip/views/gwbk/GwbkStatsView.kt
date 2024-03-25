@@ -28,7 +28,6 @@ import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
 import kotlin.io.path.extension
-import kotlin.time.measureTimedValue
 
 class GwbkStatsView(
     override val provider: FileSystemProvider,
@@ -43,26 +42,20 @@ class GwbkStatsView(
     private val gatewayBackup = GatewayBackup(path)
 
     init {
-        add(statCard(MetaStatistics::calculate, MetaStatisticsRenderer()), "growx, wrap")
-
-        add(statCard(ProjectStatistics::calculate, ProjectStatisticsRenderer()), "growx, sg")
-        add(statCard(DatabaseStatistics::calculate, DatabaseStatisticsRenderer()), "growx, sg")
-        add(statCard(DeviceStatistics::calculate, DeviceStatisticsRenderer()), "growx, sg")
-        add(statCard(OpcServerStatistics::calculate, OpcConnectionsStatisticsRenderer()), "growx, sg")
-        add(statCard(GatewayNetworkStatistics::calculate, GatewayNetworkStatisticsRenderer()), "growx, sg")
+        add(MetaStatistics.Calculator renderedWith MetaStatisticsRenderer(), "growx, wrap")
+        add(ProjectStatistics.Calculator renderedWith ProjectStatisticsRenderer(), "growx, sg")
+        add(DatabaseStatistics.Calculator renderedWith DatabaseStatisticsRenderer(), "growx, sg")
+        add(DeviceStatistics.Calculator renderedWith DeviceStatisticsRenderer(), "growx, sg")
+        add(OpcServerStatistics.Calculator renderedWith OpcConnectionsStatisticsRenderer(), "growx, sg")
+        add(GatewayNetworkStatistics.Calculator renderedWith GatewayNetworkStatisticsRenderer(), "growx, sg")
     }
 
-    private fun <T : Statistic> statCard(
-        calculator: StatisticCalculator<T>,
-        renderer: StatisticRenderer<T>,
-    ): JPanel {
-        val headerLabel =
-            JLabel(renderer.title, renderer.icon, SwingConstants.LEFT).apply {
-                font = font.deriveFont(Font.BOLD, 14F)
-            }
+    private infix fun <T : Statistic> StatisticCalculator<T>.renderedWith(renderer: StatisticRenderer<T>): JPanel {
+        val headerLabel = JLabel(renderer.title, renderer.icon, SwingConstants.LEFT).apply {
+            font = font.deriveFont(Font.BOLD, 14F)
+        }
         val subtitleLabel = JLabel()
         val throbber = JLabel(FlatSVGIcon("icons/bx-loader-circle.svg"))
-
         return JPanel(MigLayout("ins 4")).apply {
             border = LineBorder(UIManager.getColor("Component.borderColor"), 3, true)
 
@@ -71,11 +64,7 @@ class GwbkStatsView(
             add(throbber, "push, grow, span")
 
             BACKGROUND.launch {
-                val (statistic, duration) =
-                    measureTimedValue {
-                        calculator.calculate(gatewayBackup)
-                    }
-                println("Calculated ${renderer.title} in $duration")
+                val statistic = calculate(gatewayBackup)
                 EDT_SCOPE.launch {
                     if (statistic == null) {
                         this@GwbkStatsView.remove(this@apply)

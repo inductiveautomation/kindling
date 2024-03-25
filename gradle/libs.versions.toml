@@ -5,6 +5,7 @@ coroutines = "1.8.0"
 flatlaf = "3.4"
 kotest = "5.8.1"
 ignition = "8.1.20"
+jackson = "2.15.0"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -24,6 +25,8 @@ hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.2" }
 poi = { group = "org.apache.poi", name = "poi-ooxml", version = "5.2.5" }
 excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" }
 jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.4.0" }
+jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
 # build
 jsoup = { group = "org.jsoup", name = "jsoup", version = "1.17.2" }
@@ -70,6 +73,10 @@ flatlaf = [
     "flatlaf-themes",
     "flatlaf-fonts-roboto",
     "flatlaf-fonts-roboto-mono",
+]
+jackson = [
+    "jackson-kotlin",
+    "jackson-xml",
 ]
 kotest = [
     "kotest-junit",
