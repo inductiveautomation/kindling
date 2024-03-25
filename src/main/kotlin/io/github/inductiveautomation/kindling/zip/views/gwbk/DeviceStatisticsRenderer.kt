@@ -9,29 +9,24 @@ import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Compani
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.asActionIcon
 import javax.swing.Icon
-import javax.swing.JComponent
 import javax.swing.SortOrder
 
 class DeviceStatisticsRenderer : StatisticRenderer<DeviceStatistics> {
     override val title: String = "Devices"
     override val icon: Icon = FlatSVGIcon("icons/bx-chip.svg").asActionIcon()
 
-    override fun DeviceStatistics.subtitle(): String {
-        return "$enabled enabled, $total total"
-    }
+    override fun DeviceStatistics.subtitle() = "$enabled enabled, $total total"
 
-    override fun DeviceStatistics.render(): JComponent {
-        return FlatScrollPane(
-            ReifiedJXTable(ReifiedListTableModel(devices, DeviceColumns)).apply {
-                setDefaultRenderer<DeviceStatistics.Device>(
-                    getText = { it?.name },
-                    getTooltip = { it?.description },
-                )
+    override fun DeviceStatistics.render() = FlatScrollPane(
+        ReifiedJXTable(ReifiedListTableModel(devices, DeviceColumns)).apply {
+            setDefaultRenderer<DeviceStatistics.Device>(
+                getText = { it?.name },
+                getTooltip = { it?.description },
+            )
 
-                setSortOrder(Name, SortOrder.ASCENDING)
-            },
-        )
-    }
+            setSortOrder(Name, SortOrder.ASCENDING)
+        },
+    )
 
     @Suppress("unused")
     companion object DeviceColumns : ColumnList<DeviceStatistics.Device>() {

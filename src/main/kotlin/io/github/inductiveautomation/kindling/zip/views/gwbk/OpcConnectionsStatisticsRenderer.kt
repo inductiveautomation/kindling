@@ -9,28 +9,23 @@ import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Compani
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.asActionIcon
 import javax.swing.Icon
-import javax.swing.JComponent
 import javax.swing.SortOrder
 
 class OpcConnectionsStatisticsRenderer : StatisticRenderer<OpcServerStatistics> {
     override val title: String = "OPC Server Connections"
     override val icon: Icon = FlatSVGIcon("icons/bx-purchase-tag.svg").asActionIcon()
 
-    override fun OpcServerStatistics.subtitle(): String {
-        return "$uaServers UA, $comServers COM"
-    }
+    override fun OpcServerStatistics.subtitle() = "$uaServers UA, $comServers COM"
 
-    override fun OpcServerStatistics.render(): JComponent {
-        return FlatScrollPane(
-            ReifiedJXTable(ReifiedListTableModel(servers, GanColumns)).apply {
-                setDefaultRenderer<OpcServerStatistics.OpcServer>(
-                    getText = { it?.name },
-                    getTooltip = { it?.description ?: it?.name },
-                )
-                setSortOrder(Name, SortOrder.ASCENDING)
-            },
-        )
-    }
+    override fun OpcServerStatistics.render() = FlatScrollPane(
+        ReifiedJXTable(ReifiedListTableModel(servers, GanColumns)).apply {
+            setDefaultRenderer<OpcServerStatistics.OpcServer>(
+                getText = { it?.name },
+                getTooltip = { it?.description ?: it?.name },
+            )
+            setSortOrder(Name, SortOrder.ASCENDING)
+        },
+    )
 
     @Suppress("unused")
     companion object GanColumns : ColumnList<OpcServerStatistics.OpcServer>() {

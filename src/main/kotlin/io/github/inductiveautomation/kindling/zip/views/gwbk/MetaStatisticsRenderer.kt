@@ -36,14 +36,13 @@ class MetaStatisticsRenderer : StatisticRenderer<MetaStatistics> {
     )
 
     companion object {
-        private val displayedStatistics: List<MetaStatistic> =
-            listOf(
-                MetaStatistic("Version") { it.version },
-                MetaStatistic("Role") { it.role },
-                MetaStatistic("Edition") { it.edition },
-                MetaStatistic("UUID") { it.uuid.orEmpty() },
-                MetaStatistic("Init Memory", suffix = "mB") { it.initMemory.toString() },
-                MetaStatistic("Max Memory", suffix = "mB") { it.maxMemory.toString() },
-            )
+        private val displayedStatistics: List<MetaStatistic> = listOf(
+            MetaStatistic("Version") { it.version },
+            MetaStatistic("Role") { it.role },
+            MetaStatistic("Edition") { it.edition },
+            MetaStatistic("UUID") { it.uuid.orEmpty() },
+            MetaStatistic("Init Memory", suffix = "mB") { it.initMemory.toString() },
+            MetaStatistic("Max Memory", suffix = "mB") { it.maxMemory.toString() },
+        )
     }
 }

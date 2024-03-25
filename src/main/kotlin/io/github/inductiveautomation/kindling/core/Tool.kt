@@ -9,9 +9,8 @@ import io.github.inductiveautomation.kindling.log.LogViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.loadService
-import io.github.inductiveautomation.kindling.xml.XMLTool
+import io.github.inductiveautomation.kindling.xml.XmlTool
 import io.github.inductiveautomation.kindling.zip.ZipViewer
-import org.json.XML
 import java.io.File
 import java.nio.file.Path
 
@@ -54,7 +53,7 @@ interface Tool : KindlingSerializable {
                 add(CacheViewer)
                 add(GatewayNetworkTool)
                 add(AlarmViewer)
-                add(XMLTool)
+                add(XmlTool)
                 addAll(loadService<Tool>())
             }.sortedBy { it.title }
         }

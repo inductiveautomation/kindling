@@ -9,12 +9,15 @@ import com.jidesoft.swing.StyledLabelBuilder
 import io.github.inductiveautomation.kindling.core.Kindling
 import net.miginfocom.swing.MigLayout
 import java.awt.Component
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import javax.swing.ButtonGroup
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
+
 
 @Suppress("FunctionName")
 inline fun FlatScrollPane(
@@ -78,6 +81,13 @@ fun HorizontalSplitPane(
 ) = JSplitPane(SwingConstants.VERTICAL, left, right).apply {
     isOneTouchExpandable = true
     this.resizeWeight = resizeWeight
+    addComponentListener(
+        object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                setDividerLocation(resizeWeight)
+            }
+        },
+    )
 
     block()
 }

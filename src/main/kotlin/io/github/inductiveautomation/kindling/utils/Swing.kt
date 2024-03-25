@@ -22,6 +22,8 @@ import javax.swing.JPopupMenu
 import javax.swing.JTextField
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.event.EventListenerList
 import javax.swing.text.Document
 
@@ -120,3 +122,9 @@ var JTextField.rightBuddy: JComponent?
     set(buddy) {
         BuddySupport.addRight(buddy, this)
     }
+
+fun DocumentAdapter(block: (e: DocumentEvent) -> Unit): DocumentListener = object : DocumentListener {
+    override fun changedUpdate(e: DocumentEvent) = block(e)
+    override fun insertUpdate(e: DocumentEvent) = block(e)
+    override fun removeUpdate(e: DocumentEvent) = block(e)
+}

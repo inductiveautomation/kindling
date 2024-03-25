@@ -22,7 +22,7 @@ data class GatewayNetworkStatistics(
     )
 
     @Suppress("SqlResolve")
-    companion object : StatisticCalculator<GatewayNetworkStatistics> {
+    companion object Calculator : StatisticCalculator<GatewayNetworkStatistics> {
         private val OUTGOING_CONNECTIONS =
             """
             SELECT

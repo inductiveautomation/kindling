@@ -21,7 +21,7 @@ data class DeviceStatistics(
     val enabled = devices.count { it.enabled }
 
     @Suppress("SqlResolve")
-    companion object : StatisticCalculator<DeviceStatistics> {
+    companion object Calculator : StatisticCalculator<DeviceStatistics> {
         private val DEVICES =
             """
             SELECT
