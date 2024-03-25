@@ -71,6 +71,15 @@ the diagram visualization in a local web browser.
 
 Preferences are stored in `~/.kindling/preferences.json` and can be modified within the application from the menu bar.
 
+### XML Viewer
+
+Opens Ignition XML files in a simple text view. 
+
+Has special handling for:
+
+- Logback configuration files, with a special interactive editor
+- Store and Forward quarantine files, with an _attempt_ made to deserialize any Java-serialized data within
+
 ## Development
 
 Kindling uses Java Swing as a GUI framework, but is written almost exclusively in Kotlin, an alternate JVM language.
