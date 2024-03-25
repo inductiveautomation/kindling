@@ -123,6 +123,7 @@ var JTextField.rightBuddy: JComponent?
         BuddySupport.addRight(buddy, this)
     }
 
+@Suppress("FunctionName")
 fun DocumentAdapter(block: (e: DocumentEvent) -> Unit): DocumentListener = object : DocumentListener {
     override fun changedUpdate(e: DocumentEvent) = block(e)
     override fun insertUpdate(e: DocumentEvent) = block(e)
