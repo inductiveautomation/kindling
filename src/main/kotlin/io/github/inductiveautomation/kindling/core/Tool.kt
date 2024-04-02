@@ -55,7 +55,11 @@ interface Tool : KindlingSerializable {
                 add(AlarmViewer)
                 add(XmlTool)
                 addAll(loadService<Tool>())
-            }.sortedBy { it.title }
+            }
+        }
+
+        val sortedByTitle: List<Tool> by lazy {
+            tools.sortedBy { it.title }
         }
 
         val byFilter: Map<FileFilter, Tool> by lazy {

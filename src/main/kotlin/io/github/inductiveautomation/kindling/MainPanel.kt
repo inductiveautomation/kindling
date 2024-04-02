@@ -102,7 +102,9 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
             )
         }
 
-        Tool.byFilter.keys.forEach(this::addChoosableFileFilter)
+        Tool.sortedByTitle.forEach { tool ->
+            addChoosableFileFilter(tool.filter)
+        }
         fileFilter = DefaultTool.currentValue.filter
         addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY) { e ->
             val relevantTool = Tool.byFilter[e.newValue as FileFilter]
@@ -137,7 +139,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 font = font.deriveFont(24F)
             },
         )
-        for (tools in Tool.tools.sortedBy { it.title }.chunked(3)) {
+        for (tools in Tool.sortedByTitle.chunked(3)) {
             add(toolTile(tools[0]), "sg tile, h 200!, newline, split, gaptop 20")
             for (tool in tools.drop(1)) {
                 add(toolTile(tool), "sg tile, gap 20 0 20 0")
@@ -222,7 +224,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
 
     private val fileMenu = JMenu("File").apply {
         add(openAction)
-        for (tool in Tool.tools) {
+        for (tool in Tool.sortedByTitle) {
             add(
                 Action(
                     name = "Open ${tool.title}",
