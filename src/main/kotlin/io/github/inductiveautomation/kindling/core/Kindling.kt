@@ -78,7 +78,7 @@ data object Kindling {
                 default = Tool.tools.first(),
                 serializer = ToolSerializer,
                 editor = {
-                    JComboBox(Vector(Tool.tools)).apply {
+                    JComboBox(Vector(Tool.sortedByTitle)).apply {
                         selectedItem = currentValue
 
                         configureCellRenderer { _, value, _, selected, focused ->
