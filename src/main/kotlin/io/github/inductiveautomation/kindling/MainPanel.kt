@@ -136,7 +136,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
     private val landingPanel = JPanel(MigLayout("ins 0, fillx", "[center, grow]")).apply {
         add(
             JLabel("Open...").apply {
-                font = font.deriveFont(24F)
+                putClientProperty("FlatLaf.styleClass", "h1")
             },
         )
         for (tools in Tool.sortedByTitle.chunked(3)) {
@@ -148,10 +148,8 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
     }
 
     private fun toolTile(tool: Tool): JButton {
-        return JButton().apply {
-            text = tool.title
-            font = font.deriveFont(18F)
-            icon = tool.icon.derive(2F)
+        return JButton(tool.title, tool.icon.derive(2F)).apply {
+            putClientProperty("FlatLaf.styleClass", "h2.regular")
             iconTextGap = 20
             verticalTextPosition = BOTTOM
             horizontalTextPosition = CENTER

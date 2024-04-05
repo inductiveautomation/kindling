@@ -134,6 +134,7 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
     }
 
     private val removeFilter = Action(
+        name = "Remove",
         description = "Remove Selected Filter",
         icon = FlatSVGIcon("icons/bx-minus.svg").asActionIcon(),
     ) {
@@ -156,7 +157,7 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
     }
 
     private val removeAllFilters = Action(
-        name = "Clear",
+        name = "Clear All",
         description = "Remove All Filters",
         icon = FlatSVGIcon("icons/bx-x.svg").asActionIcon(),
     ) {
@@ -200,7 +201,12 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
             add(keyCombo, "growx, wrap, wmax 100%")
             add(valueCombo, "growx, wrap, wmax 100%")
             add(JButton(addFilter), "align right, split")
-            add(JButton(removeFilter), "gapx 2")
+            add(
+                JButton(removeFilter).apply {
+                    hideActionText = true
+                },
+                "gapx 2",
+            )
             add(FlatScrollPane(filterTable), "newline, pushy, grow")
             add(JButton(removeAllFilters), "align right, newline")
         }

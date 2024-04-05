@@ -13,7 +13,6 @@ import org.jfree.chart.annotations.XYLineAnnotation
 import org.jfree.data.statistics.Regression
 import org.jfree.data.xy.XYDataset
 import java.awt.BasicStroke
-import java.awt.Font
 import java.text.DecimalFormat
 import java.text.FieldPosition
 import java.text.NumberFormat
@@ -60,7 +59,7 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
     init {
         add(
             JLabel(metric.name, CENTER).apply {
-                font = font.deriveFont(Font.BOLD, 14.0F)
+                putClientProperty("FlatLaf.styleClass", "h3")
             },
             "span, pushx, growx",
         )

@@ -2,7 +2,6 @@ package io.github.inductiveautomation.kindling.xml.logback
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import net.miginfocom.swing.MigLayout
-import java.awt.Font
 import java.awt.event.ItemEvent
 import javax.swing.JButton
 import javax.swing.JCheckBox
@@ -71,7 +70,7 @@ internal class SelectedLoggerCard(
 
         add(
             JLabel(logger.name).apply {
-                font = font.deriveFont(Font.BOLD, 14F)
+                putClientProperty("FlatLaf.styleClass", "h3")
             },
         )
         add(closeButton, "right, wrap")

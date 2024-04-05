@@ -198,7 +198,7 @@ class LogPanel(
             VerticalSplitPane(
                 HorizontalSplitPane(
                     sidebar,
-                    JPanel(MigLayout("fill")).apply {
+                    JPanel(MigLayout("ins 0, fill")).apply {
                         add(header, "wrap, growx")
                         add(tableScrollPane, "grow, push")
                     },

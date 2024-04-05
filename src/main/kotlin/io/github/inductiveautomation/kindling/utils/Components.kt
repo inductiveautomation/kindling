@@ -5,6 +5,8 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING
 import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING_LARGE
 import com.formdev.flatlaf.extras.components.FlatScrollPane
+import com.formdev.flatlaf.extras.components.FlatSplitPane
+import com.formdev.flatlaf.extras.components.FlatSplitPane.ExpandableSide
 import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
@@ -17,7 +19,6 @@ import javax.swing.ButtonGroup
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JSplitPane
-import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
 inline fun FlatScrollPane(
@@ -78,31 +79,44 @@ fun HorizontalSplitPane(
     left: Component,
     right: Component,
     resizeWeight: Double = 0.5,
+    expandableSide: ExpandableSide = ExpandableSide.right,
     block: JSplitPane.() -> Unit = {},
-) = JSplitPane(SwingConstants.VERTICAL, left, right).apply {
-    isOneTouchExpandable = true
-    this.resizeWeight = resizeWeight
-    addComponentListener(
-        object : ComponentAdapter() {
-            override fun componentShown(e: ComponentEvent?) {
-                setDividerLocation(resizeWeight)
-            }
-        },
-    )
-
-    block()
-}
+) = createSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right, resizeWeight, expandableSide, block)
 
 fun VerticalSplitPane(
     top: Component,
     bottom: Component,
     resizeWeight: Double = 0.5,
+    // the top ("left") is the one that's allowed to expand
+    expandableSide: ExpandableSide = ExpandableSide.left,
     block: JSplitPane.() -> Unit = {},
-) = JSplitPane(SwingConstants.HORIZONTAL, top, bottom).apply {
-    isOneTouchExpandable = true
-    this.resizeWeight = resizeWeight
+) = createSplitPane(JSplitPane.VERTICAL_SPLIT, top, bottom, resizeWeight, expandableSide, block)
 
-    block()
+private fun createSplitPane(
+    orientation: Int,
+    left: Component,
+    right: Component,
+    resizeWeight: Double,
+    expandableSide: ExpandableSide,
+    block: JSplitPane.() -> Unit,
+): FlatSplitPane {
+    return FlatSplitPane().apply {
+        this.orientation = orientation
+        this.leftComponent = left
+        this.rightComponent = right
+        this.isOneTouchExpandable = true
+        this.expandableSide = expandableSide
+        this.resizeWeight = resizeWeight
+        addComponentListener(
+            object : ComponentAdapter() {
+                override fun componentShown(e: ComponentEvent?) {
+                    setDividerLocation(resizeWeight)
+                }
+            },
+        )
+
+        block()
+    }
 }
 
 /**
