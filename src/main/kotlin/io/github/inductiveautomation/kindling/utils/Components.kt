@@ -87,7 +87,8 @@ fun VerticalSplitPane(
     top: Component,
     bottom: Component,
     resizeWeight: Double = 0.5,
-    expandableSide: ExpandableSide = ExpandableSide.left, // the top ("left") is the one that's allowed to expand
+    // the top ("left") is the one that's allowed to expand
+    expandableSide: ExpandableSide = ExpandableSide.left,
     block: JSplitPane.() -> Unit = {},
 ) = createSplitPane(JSplitPane.VERTICAL_SPLIT, top, bottom, resizeWeight, expandableSide, block)
 
