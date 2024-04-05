@@ -51,6 +51,7 @@ import javax.swing.SpinnerNumberModel
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
+import kotlin.math.absoluteValue
 
 internal class TimePanel(
     data: List<LogEvent>,
@@ -130,7 +131,8 @@ internal class TimePanel(
     private fun selectTime(timeToSelect: Instant) {
         val table = containingLogPanel?.table ?: return
 
-        val modelIndex = (table.model as LogsModel<*>).data.indexOfFirst { it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect }
+        val modelIndex = (table.model as LogsModel<*>).data
+            .indexOfFirst { it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect }
         if (modelIndex == -1) return
 
         val viewIndex = table.convertRowIndexToView(modelIndex)
@@ -313,10 +315,20 @@ class DateTimeSelector(
         for (amount in listOf(-30L, -15, -5, -1, 1L, 5, 15, 30)) {
             add(
                 FlatButton().apply {
-                    action =
-                        Action("%+d".format(amount)) {
-                            time = time.plusSeconds(amount * 60)
-                        }
+                    action = Action(
+                        name = "%+d".format(amount),
+                        description = buildString {
+                            append(if (amount > 0) "Add" else "Subtract")
+                            append(" ")
+                            append(amount.absoluteValue)
+                            append(" minute")
+                            if (amount.absoluteValue > 1) {
+                                append("s")
+                            }
+                        },
+                    ) {
+                        time = time.plusSeconds(amount * 60)
+                    }
                     margin = Insets(1, 1, 1, 1)
                 },
                 "w 12.5%, sgx",
@@ -449,7 +461,8 @@ private object DensityColumns : ColumnList<DenseTime>() {
     private val minuteFormatter: DateTimeFormatter
         get() {
             if (!this::_formatter.isInitialized) {
-                _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withZone(LogViewer.SelectedTimeZone.currentValue)
+                _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm")
+                    .withZone(LogViewer.SelectedTimeZone.currentValue)
             }
             if (_formatter.zone != LogViewer.SelectedTimeZone.currentValue) {
                 _formatter = _formatter.withZone(LogViewer.SelectedTimeZone.currentValue)

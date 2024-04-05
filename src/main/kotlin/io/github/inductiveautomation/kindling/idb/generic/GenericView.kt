@@ -1,7 +1,11 @@
 package io.github.inductiveautomation.kindling.idb.generic
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.extras.components.FlatSplitPane
+import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.comparator.AlphanumComparator
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
+import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ButtonPanel
@@ -16,6 +20,9 @@ import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.JDBCType
@@ -28,7 +35,6 @@ import javax.swing.JButton
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JTextArea
 import javax.swing.JToggleButton
 import javax.swing.KeyStroke
 import javax.swing.tree.DefaultTreeModel
@@ -85,10 +91,9 @@ class SortableTree(val tables: List<Table>) {
 
     val tree = DBMetaDataTree(DefaultTreeModel(root))
 
-    private val sortActions: List<SortAction> =
-        TableComparator.entries.map { tableComparator ->
-            SortAction(tableComparator)
-        }
+    private val sortActions: List<SortAction> = TableComparator.entries.map { tableComparator ->
+        SortAction(tableComparator)
+    }
 
     inner class SortAction(comparator: TableComparator) : Action(
         description = comparator.tooltip,
@@ -102,149 +107,156 @@ class SortableTree(val tables: List<Table>) {
         var comparator: TableComparator by actionValue("tableComparator", comparator)
     }
 
-    private fun createSortButtons(): ButtonGroup =
-        ButtonGroup().apply {
-            for (sortAction in sortActions) {
-                add(
-                    JToggleButton(
-                        Action(
-                            description = sortAction.description,
-                            icon = sortAction.icon,
-                            selected = sortAction.selected,
-                        ) { e ->
-                            sortAction.actionPerformed(e)
-                        },
-                    ),
-                )
-            }
+    private fun createSortButtons(): ButtonGroup = ButtonGroup().apply {
+        for (sortAction in sortActions) {
+            add(
+                JToggleButton(
+                    Action(
+                        description = sortAction.description,
+                        icon = sortAction.icon,
+                        selected = sortAction.selected,
+                    ) { e ->
+                        sortAction.actionPerformed(e)
+                    },
+                ),
+            )
         }
+    }
 
     private val sortButtons = createSortButtons()
 
-    val component =
-        ButtonPanel(sortButtons).apply {
-            add(FlatScrollPane(tree), "newline, push, grow")
-        }
+    val component = ButtonPanel(sortButtons).apply {
+        add(FlatScrollPane(tree), "newline, push, grow")
+    }
 }
 
 class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
     @Suppress("SqlResolve")
-    private val tables: List<Table> =
-        connection
-            .executeQuery("""SELECT name FROM main.sqlite_schema WHERE type = "table" ORDER BY name""")
-            .toList { resultSet ->
-                resultSet.getString(1)
-            }.mapIndexed { i, tableName ->
-                Table(
-                    name = tableName,
-                    _parent = { sortableTree.root },
-                    columns = connection
-                        .executeQuery("""PRAGMA table_xinfo("$tableName");""")
-                        .toList { resultSet ->
-                            Column(
-                                name = resultSet["name"],
-                                type = resultSet["type"],
-                                notNull = resultSet["notnull"],
-                                defaultValue = resultSet["dflt_value"],
-                                primaryKey = resultSet["pk"],
-                                hidden = resultSet["hidden"],
-                                _parent = { sortableTree.root.getChildAt(i) },
-                            )
-                        },
-                    size = connection
-                        .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
-                )
-            }
+    private val tables: List<Table> = connection
+        .executeQuery("""SELECT name FROM main.sqlite_schema WHERE type = "table" ORDER BY name""")
+        .toList { resultSet ->
+            resultSet.getString(1)
+        }.mapIndexed { i, tableName ->
+            Table(
+                name = tableName,
+                _parent = { sortableTree.root },
+                columns = connection
+                    .executeQuery("""PRAGMA table_xinfo("$tableName");""")
+                    .toList { resultSet ->
+                        Column(
+                            name = resultSet["name"],
+                            type = resultSet["type"],
+                            notNull = resultSet["notnull"],
+                            defaultValue = resultSet["dflt_value"],
+                            primaryKey = resultSet["pk"],
+                            hidden = resultSet["hidden"],
+                            _parent = { sortableTree.root.getChildAt(i) },
+                        )
+                    },
+                size = connection
+                    .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
+            )
+        }
 
     private val sortableTree = SortableTree(tables)
 
-    private val query = JTextArea(0, 0)
+    private val query = RSyntaxTextArea().apply {
+        syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_SQL
 
-    private val execute =
-        Action(name = "Execute") {
-            results.result =
-                if (!query.text.isNullOrEmpty()) {
-                    try {
-                        connection.executeQuery(query.text)
-                            .use { resultSet ->
-                                val columnCount = resultSet.metaData.columnCount
-                                val names = List(columnCount) { i -> resultSet.metaData.getColumnName(i + 1) }
-                                val types =
-                                    List(columnCount) { i ->
-                                        val timestamp =
-                                            TIMESTAMP_COLUMN_NAMES.any {
-                                                resultSet.metaData.getColumnName(i + 1).contains(it, true)
-                                            }
+        theme = Theme.currentValue
 
-                                        if (timestamp) {
-                                            Timestamp::class.java
-                                        } else {
-                                            val sqlType = resultSet.metaData.getColumnType(i + 1)
-                                            val jdbcType = JDBCType.valueOf(sqlType)
-                                            jdbcType.javaType
-                                        }
-                                    }
+        Theme.addChangeListener { newTheme ->
+            theme = newTheme
+        }
+    }
 
-                                val data =
-                                    resultSet.toList {
-                                        List(columnCount) { i ->
-                                            // SQLite stores booleans as ints, we'll use actual booleans to make things easier
-                                            if (types[i] == Boolean::class.javaObjectType) {
-                                                resultSet.getObject(i + 1) == 1
-                                            } else {
-                                                resultSet.getObject(i + 1)
-                                            }
-                                        }
-                                    }
+    private val execute = Action(
+        name = "Execute",
+        description = "Execute (${if (SystemInfo.isMacOS) "⌘" else "Ctrl"} + Enter)",
+        icon = FlatSVGIcon("icons/bx-subdirectory-left.svg").asActionIcon(),
+        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx),
+    ) {
+        results.result = if (!query.text.isNullOrEmpty()) {
+            try {
+                connection.executeQuery(query.text)
+                    .use { resultSet ->
+                        val columnCount = resultSet.metaData.columnCount
+                        val names = List(columnCount) { i ->
+                            resultSet.metaData.getColumnName(i + 1)
+                        }
+                        val types = List(columnCount) { i ->
+                            val timestamp =
+                                TIMESTAMP_COLUMN_NAMES.any {
+                                    resultSet.metaData.getColumnName(i + 1).contains(it, true)
+                                }
 
-                                QueryResult.Success(names, types, data)
+                            if (timestamp) {
+                                Timestamp::class.java
+                            } else {
+                                val sqlType = resultSet.metaData.getColumnType(i + 1)
+                                val jdbcType = JDBCType.valueOf(sqlType)
+                                jdbcType.javaType
                             }
-                    } catch (e: Exception) {
-                        QueryResult.Error(e.message ?: "Error")
-                    }
-                } else {
-                    QueryResult.Error("Enter a query in the text field above")
-                }
-        }
+                        }
 
-    private val queryPanel =
-        JPanel(MigLayout("ins 0, fill")).apply {
-            add(JButton(execute), "wrap")
-            add(query, "push, grow")
+                        val data = resultSet.toList {
+                            List(columnCount) { i ->
+                                // SQLite stores booleans as ints, we'll use actual booleans to make things easier
+                                if (types[i] == Boolean::class.javaObjectType) {
+                                    resultSet.getObject(i + 1) == 1
+                                } else {
+                                    resultSet.getObject(i + 1)
+                                }
+                            }
+                        }
+
+                        QueryResult.Success(names, types, data)
+                    }
+            } catch (e: Exception) {
+                QueryResult.Error(e.message ?: "Error")
+            }
+        } else {
+            QueryResult.Error("Enter a query in the text field above")
         }
+    }
+
+    private val queryPanel = JPanel(MigLayout("ins 0, fill")).apply {
+        add(RTextScrollPane(query), "push, grow, wrap")
+        add(JButton(execute), "ax right, wrap")
+    }
 
     private val results = ResultsPanel()
 
     init {
         val ctrlEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx)
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
+        query.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
         actionMap.put("execute", execute)
+        query.actionMap.put("execute", execute)
 
         sortableTree.tree.attachPopupMenu { event ->
             val path = getClosestPathForLocation(event.x, event.y)
             when (val node = path?.lastPathComponent) {
-                is Table ->
-                    JPopupMenu().apply {
-                        add(
-                            JMenuItem(
-                                Action("SELECT * FROM ${node.name}") {
-                                    query.text = "SELECT * FROM ${node.name};"
-                                },
-                            ),
-                        )
-                    }
+                is Table -> JPopupMenu().apply {
+                    add(
+                        JMenuItem(
+                            Action("SELECT * FROM ${node.name}") {
+                                query.text = "SELECT * FROM ${node.name};"
+                            },
+                        ),
+                    )
+                }
 
-                is Column ->
-                    JPopupMenu().apply {
-                        val table = path.parentPath.lastPathComponent as Table
-                        add(
-                            JMenuItem(
-                                Action("SELECT ${node.name} FROM ${table.name}") {
-                                    query.text = "SELECT ${node.name} FROM ${table.name}"
-                                },
-                            ),
-                        )
-                    }
+                is Column -> JPopupMenu().apply {
+                    val table = path.parentPath.lastPathComponent as Table
+                    add(
+                        JMenuItem(
+                            Action("SELECT ${node.name} FROM ${table.name}") {
+                                query.text = "SELECT ${node.name} FROM ${table.name}"
+                            },
+                        ),
+                    )
+                }
 
                 else -> null
             }
@@ -254,9 +266,10 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
             HorizontalSplitPane(
                 sortableTree.component,
                 VerticalSplitPane(
-                    FlatScrollPane(queryPanel),
+                    queryPanel,
                     results,
                     resizeWeight = 0.2,
+                    expandableSide = FlatSplitPane.ExpandableSide.both,
                 ),
                 resizeWeight = 0.1,
             ),

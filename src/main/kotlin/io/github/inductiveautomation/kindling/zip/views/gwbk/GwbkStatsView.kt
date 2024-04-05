@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
-import java.awt.Font
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
@@ -52,7 +51,7 @@ class GwbkStatsView(
 
     private infix fun <T : Statistic> StatisticCalculator<T>.renderedWith(renderer: StatisticRenderer<T>): JPanel {
         val headerLabel = JLabel(renderer.title, renderer.icon, SwingConstants.LEFT).apply {
-            font = font.deriveFont(Font.BOLD, 14F)
+            putClientProperty("FlatLaf.styleClass", "h3")
         }
         val subtitleLabel = JLabel()
         val throbber = JLabel(FlatSVGIcon("icons/bx-loader-circle.svg"))

@@ -16,8 +16,8 @@ internal class XmlViewer(file: List<String>) : JPanel(MigLayout("ins 6, fill, hi
                     syntaxEditingStyle = "text/xml"
                     theme = Theme.currentValue
 
-                    Theme.addChangeListener {
-                        theme = Theme.currentValue
+                    Theme.addChangeListener { newValue ->
+                        theme = newValue
                     }
                 },
             ),
