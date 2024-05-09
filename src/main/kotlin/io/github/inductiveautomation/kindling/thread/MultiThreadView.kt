@@ -91,6 +91,24 @@ class MultiThreadView(
             }
         }
 
+    private val totalCPULabel = object : JLabel() {
+
+        var threadDump = threadDumps[0]
+
+        var totalCPU = threadDump.threads.sumOf { it.cpuUsage ?: 0.0 }
+            set(value) {
+                field = value
+                update()
+            }
+
+        init {
+            isVisible = threadDumps.size == 1
+            update()
+        }
+
+        private fun update() = setText("Total CPU: %.2f%%".format(totalCPU))
+    }
+
     private val threadCountLabel = object : JLabel() {
         var totalThreads = threadDumps.sumOf { it.threads.size }
             set(value) {
@@ -228,7 +246,7 @@ class MultiThreadView(
 
     private var comparison = ThreadComparisonPane(threadDumps.size, threadDumps[0].version)
 
-    private val threadDumpCheckboxList = ThreadDumpCheckboxList(paths).apply {
+    private val threadDumpCheckboxList = ThreadDumpCheckboxList(threadDumps).apply {
         isVisible = !mainTable.model.isSingleContext
     }
 
@@ -309,6 +327,7 @@ class MultiThreadView(
                 }
 
                 threadCountLabel.visibleThreads = mainTable.model.threadData.flatten().filterNotNull().size
+                totalCPULabel.totalCPU = mainTable.model.threadData.flatten().filterNotNull().sumOf { it.cpuUsage ?: 0.0 }
             }
         }
     }
@@ -381,6 +400,7 @@ class MultiThreadView(
         }
 
         add(JLabel("Version: ${threadDumps.first().version}"))
+        add(totalCPULabel, "gapright 8")
         add(threadCountLabel)
         add(threadDumpCheckboxList, "gapleft 20px, pushx, growx, shpx 200")
         add(exportButton, "gapright 8")
