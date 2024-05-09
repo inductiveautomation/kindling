@@ -7,7 +7,7 @@ import java.io.IOException
 import javax.swing.TransferHandler
 
 class FileTransferHandler(
-    private val predicate: (File) -> Boolean,
+    private val predicate: (File) -> Boolean = { true },
     private val callback: (List<File>) -> Unit,
 ) : TransferHandler() {
     override fun canImport(support: TransferSupport): Boolean {
