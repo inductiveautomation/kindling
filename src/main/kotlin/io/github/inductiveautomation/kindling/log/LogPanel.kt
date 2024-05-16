@@ -89,7 +89,7 @@ class LogPanel(
     private val sidebar = FilterSidebar(
         if (rawData.first() is SystemLogEvent && ShowFullLoggerNames.currentValue) {
             @Suppress("UNCHECKED_CAST")
-            NameTreePanel(rawData as List<SystemLogEvent>),
+            NameTreePanel(rawData as List<SystemLogEvent>)
         } else NamePanel(rawData),
         LevelPanel(rawData),
         if (rawData.first() is SystemLogEvent) {

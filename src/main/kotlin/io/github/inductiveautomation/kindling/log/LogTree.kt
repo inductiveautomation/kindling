@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.CheckBoxTree
 import io.github.inductiveautomation.kindling.idb.metrics.Metric
 import io.github.inductiveautomation.kindling.idb.metrics.MetricNode
+import io.github.inductiveautomation.kindling.idb.metrics.MetricTree
 import io.github.inductiveautomation.kindling.idb.metrics.RootNode
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
@@ -15,7 +16,7 @@ import javax.swing.tree.TreePath
 
 data class LogEventNode(
     override val userObject: List<String>,
-    val frequency: Int = 0,
+    var frequency: Int = 0,
 ) : TypedTreeNode<List<String>>() {
     //constructor(vararg parts: String) : this(parts.toList())
 
@@ -31,7 +32,7 @@ class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
         val seen = mutableMapOf<List<String>, LogEventNode>()
         for ((logger, freq) in logEventsByLogger.entries) {
             var lastSeen: AbstractTreeNode = this
-            val currentLeadingPath = mutableListOf<String>()
+            val currentLeadingPath = mutableListOf<String>("")
             for (part in logger.split('.')) {
                 currentLeadingPath.add(part)
                 val next = seen.getOrPut(currentLeadingPath.toList()) {
@@ -41,7 +42,15 @@ class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
                 }
                 lastSeen = next
             }
-        }}}
+        }
+        val leafNodes = depthFirstChildren().filter { it.isLeaf }
+        for (leaf in leafNodes) {
+            val logEventLeaf = leaf as LogEventNode
+            val frequency = logEventsByLogger[logEventLeaf.name]
+            logEventLeaf.frequency = frequency!!
+        }
+    }
+}
 
 
 class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(RootNode(logEvents))) {
@@ -49,19 +58,27 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
         isRootVisible = false
         setShowsRootHandles(true)
 
-        expandAll()
         selectAll()
 
         setCellRenderer(
             treeCellRenderer { _, value, selected, _, _, _, _ ->
+                if (value is LogEventNode) {
+                    val path = value.userObject
+                    text = "${path.lastOrNull()} [${value.frequency}]"
+                    toolTipText = value.name
+
+                } else {
+                    icon = null
+                }
                 this
             },
         )
     }
 
     val selectedLeafNodes: List<LogEventNode>
-        get() = checkBoxTreeSelectionModel.selectionPaths
+        get() = checkBoxTreeSelectionModel.selectionPaths //drivers/modbus/etc
             .flatMap {
+                println(it)
                 (it.lastPathComponent as AbstractTreeNode).depthFirstChildren()
             }.filterIsInstance<LogEventNode>()
 
