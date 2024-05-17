@@ -10,17 +10,29 @@ import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
 import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
+import org.apache.commons.math3.stat.Frequency
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 
-data class LogEventNode(
+class LogEventNode(
     override val userObject: List<String>,
-    var frequency: Int = 0,
+    frequency: Int = 0
 ) : TypedTreeNode<List<String>>() {
     //constructor(vararg parts: String) : this(parts.toList())
 
     val name by lazy { userObject.joinToString(".") }
+
+    val frequency: Int by lazy {
+        if (this.isLeaf) {
+            frequency
+        } else {
+            //sum up all children of this node
+            this.children.sumOf {
+                (it as LogEventNode).frequency
+            }
+        }
+    }
 }
 
 class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
@@ -33,21 +45,22 @@ class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
         for ((logger, freq) in logEventsByLogger.entries) {
             var lastSeen: AbstractTreeNode = this
             val currentLeadingPath = mutableListOf<String>("")
-            for (part in logger.split('.')) {
+            val loggerParts = logger.split('.')
+            for ((index, part) in loggerParts.withIndex()) {
                 currentLeadingPath.add(part)
                 val next = seen.getOrPut(currentLeadingPath.toList()) {
-                    val newChild = LogEventNode(currentLeadingPath.drop(1))
+                    val path = currentLeadingPath.drop(1)
+                    val newChild = if (index == loggerParts.size-1) {
+                        val name = path.joinToString(".")
+                        LogEventNode(path, logEventsByLogger[name]!!)
+                    } else {
+                        LogEventNode(path)
+                    }
                     lastSeen.children.add(newChild)
                     newChild
                 }
                 lastSeen = next
             }
-        }
-        val leafNodes = depthFirstChildren().filter { it.isLeaf }
-        for (leaf in leafNodes) {
-            val logEventLeaf = leaf as LogEventNode
-            val frequency = logEventsByLogger[logEventLeaf.name]
-            logEventLeaf.frequency = frequency!!
         }
     }
 }
@@ -55,8 +68,7 @@ class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
 
 class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(RootNode(logEvents))) {
     init {
-        isRootVisible = false
-        setShowsRootHandles(true)
+        setShowsRootHandles(false)
 
         selectAll()
 
@@ -69,6 +81,7 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
 
                 } else {
                     icon = null
+                    text = "Select All"
                 }
                 this
             },
@@ -78,8 +91,9 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
     val selectedLeafNodes: List<LogEventNode>
         get() = checkBoxTreeSelectionModel.selectionPaths //drivers/modbus/etc
             .flatMap {
-                println(it)
-                (it.lastPathComponent as AbstractTreeNode).depthFirstChildren()
+                (it.lastPathComponent as AbstractTreeNode).depthFirstChildren().ifEmpty {
+                    sequenceOf(it.lastPathComponent)
+                }
             }.filterIsInstance<LogEventNode>()
 
     private fun expandAll() {

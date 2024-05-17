@@ -8,6 +8,7 @@ import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowLogTree
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
 import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
@@ -87,7 +88,7 @@ class LogPanel(
     private val tableScrollPane = FlatScrollPane(table)
 
     private val sidebar = FilterSidebar(
-        if (rawData.first() is SystemLogEvent && ShowFullLoggerNames.currentValue) {
+        if (rawData.first() is SystemLogEvent && ShowLogTree.currentValue) {
             @Suppress("UNCHECKED_CAST")
             NameTreePanel(rawData as List<SystemLogEvent>)
         } else NamePanel(rawData),

@@ -16,7 +16,8 @@ class NameTreePanel(logEvents: List<SystemLogEvent>) : FilterPanel<LogEvent>() {
     private var currentSelectedLeafNodes = tree.selectedLeafNodes.map { it.name }
 
     override fun filter(item: LogEvent) : Boolean {
-        return item.logger in currentSelectedLeafNodes
+        val results = item.logger in currentSelectedLeafNodes
+        return results
     }
 
     override val tabName: String = "Loggers"
@@ -34,7 +35,7 @@ class NameTreePanel(logEvents: List<SystemLogEvent>) : FilterPanel<LogEvent>() {
         }
     }
 
-    override val icon: FlatSVGIcon = FlatSVGIcon("icons/null.svg")
+    override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-network-chart.svg")
 
     override fun reset() = tree.selectAll()
 
