@@ -26,6 +26,7 @@ class TagBrowseTree : JTree(NO_SELECTION) {
             }
 
             EDT_SCOPE.launch {
+                model = DefaultTreeModel(NO_SELECTION)
                 withContext(Dispatchers.Default) { value.loadProvider.join() }
                 model = DefaultTreeModel(value.providerNode)
             }
