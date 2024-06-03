@@ -18,7 +18,7 @@ import javax.swing.tree.TreePath
 class NodeConfigPanel(
     private val node: Node,
     override val icon: Icon? = null,
-    override val tabName: String = node.name ?: node.config.name!!,
+    override val tabName: String = node.actualName,
     override val tabTooltip: String = tabName,
 ) : JPanel(MigLayout("fill, ins 0")),
     FloatableComponent,
@@ -59,11 +59,11 @@ class NodeConfigPanel(
 
     companion object {
         operator fun invoke(treePath: TreePath): NodeConfigPanel {
-            val treeNode = treePath.lastPathComponent as SortedLazyTagTreeNode
+            val treeNode = treePath.lastPathComponent as Node
             return NodeConfigPanel(
-                treeNode.originalNode,
+                treeNode,
                 null,
-                treeNode.name,
+                treeNode.actualName,
                 treePath.toTagPath(),
             )
         }

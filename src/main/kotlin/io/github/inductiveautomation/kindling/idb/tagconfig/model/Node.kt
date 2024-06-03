@@ -1,7 +1,9 @@
 package io.github.inductiveautomation.kindling.idb.tagconfig.model
 
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.NodeGroup.Companion.toNodeGroup
-import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
+import java.util.Collections
+import java.util.Enumeration
+import javax.swing.tree.TreeNode
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -21,23 +23,45 @@ data class Node(
     val name: String?,
     var resolved: Boolean = false, // Improves parsing efficiency a bit.
     val inferredNode: Boolean = false, //  "Inferred" means that there is no IDB entry for this node, but it will exist at runtime
-) : AbstractTreeNode() {
+    val isMeta: Boolean = false, // Used for sorting. A "meta" node is either the _types_ folder or the orphaned tags folder
+) : TreeNode {
     val statistics = NodeStatistics(this)
+    private var parent: Node? = null
+
+    // One of the names, either the IDB column or the config, should be non-null.
+    val actualName: String
+        get() = name ?: config.name ?: "null"
+
+    fun addChildTag(node: Node) {
+        config.tags.add(node)
+        node.parent = this
+        config.tags.sortWith(nodeChildComparator)
+    }
+
+    override fun getChildAt(childIndex: Int) = config.tags[childIndex]
+    override fun getChildCount() = config.tags.size
+    override fun getParent(): TreeNode? = parent
+    override fun getIndex(node: TreeNode?) = config.tags.indexOf(node)
+    override fun getAllowsChildren() = true
+    override fun isLeaf() = config.tags.size == 0
+    override fun children(): Enumeration<out TreeNode> = Collections.enumeration(config.tags)
 
     companion object {
-        fun typesNode(providerId: Int): Node =
-            Node(
-                id = "_types_",
-                providerId = providerId,
-                folderId = null,
-                config = TagConfig(
-                    name = "_types_",
-                    tagType = "Folder",
-                    tags = NodeGroup(),
-                ),
-                rank = 1,
+        val nodeChildComparator = compareBy<Node> { !it.isMeta }.thenBy { it.config.tagType }.thenBy { it.actualName.lowercase() }
+
+        fun createTypesNode(providerId: Int): Node = Node(
+            id = "_types_",
+            providerId = providerId,
+            folderId = null,
+            config = TagConfig(
                 name = "_types_",
-            )
+                tagType = "Folder",
+                tags = NodeGroup(),
+            ),
+            rank = 1,
+            name = "_types_",
+            isMeta = true,
+        )
     }
 }
 

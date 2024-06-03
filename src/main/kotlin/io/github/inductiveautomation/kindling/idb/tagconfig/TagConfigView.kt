@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.idb.tagconfig
 
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.tagconfig.TagBrowseTree.Companion.toTagPath
+import io.github.inductiveautomation.kindling.idb.tagconfig.model.Node
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
@@ -67,10 +68,6 @@ class TagConfigView(connection: Connection) : ToolPanel() {
             val selectedTagProvider = itemEvent.item as TagProviderRecord
 
             EDT_SCOPE.launch {
-                withContext(Dispatchers.Default) {
-                    selectedTagProvider.initProviderNode()
-                }
-
                 tabs.setTitleAt(0, selectedTagProvider.name)
                 providerTab.provider = selectedTagProvider
                 tagProviderTree.provider = selectedTagProvider
@@ -141,7 +138,7 @@ class TagConfigView(connection: Connection) : ToolPanel() {
                 if (allSameParent) {
                     if (exportFileChooser.showSaveDialog(this@TagConfigView) == JFileChooser.APPROVE_OPTION) {
                         val nodeList = selection.map {
-                            (it.lastPathComponent as SortedLazyTagTreeNode).originalNode
+                            it.lastPathComponent as Node
                         }
 
                         exportFileChooser.selectedFile.outputStream().use { output ->

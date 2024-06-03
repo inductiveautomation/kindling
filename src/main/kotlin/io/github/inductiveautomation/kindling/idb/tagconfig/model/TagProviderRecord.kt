@@ -8,6 +8,10 @@ import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
 import java.sql.Connection
 import kotlin.io.path.outputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Suppress("MemberVisibilityCanBePrivate")
 data class TagProviderRecord(
@@ -20,6 +24,40 @@ data class TagProviderRecord(
     val dbConnection: Connection,
 ) {
     val providerStatistics = ProviderStatistics()
+    val loadProvider = CoroutineScope(Dispatchers.Default).launch(start = CoroutineStart.LAZY) {
+        providerNode = createProviderNode(typesNode).apply {
+            for ((_, nodeGroup) in nodeGroups) {
+                // Resolve and process tags
+                with(nodeGroup) {
+                    if (parentNode.statistics.isUdtDefinition || parentNode.statistics.isUdtInstance) {
+                        if (!isResolved) {
+                            resolveInheritance(nodeGroups, udtDefinitions)
+                        }
+                    }
+                    resolveHierarchy()
+                    when (val folderId = parentNode.folderId) {
+                        "_types_" -> typesNode.addChildTag(parentNode)
+                        null -> addChildTag(parentNode)
+                        else -> {
+                            val folderGroup = nodeGroups[folderId]
+                            folderGroup?.parentNode?.addChildTag(parentNode) ?: providerStatistics.orphanedTags.value.add(
+                                parentNode,
+                            )
+                        }
+                    }
+                }
+
+                // Gather Statistics
+                if (nodeGroup.parentNode.statistics.isUdtDefinition) {
+                    providerStatistics.processNodeForStatistics(nodeGroup.parentNode)
+                } else {
+                    nodeGroup.forEach(providerStatistics::processNodeForStatistics)
+                }
+            }
+
+            if (orphanedParentNode.config.tags.isNotEmpty()) addChildTag(orphanedParentNode)
+        }
+    }
 
     val rawNodeData by lazy {
         dbConnection.prepareStatement(TAG_CONFIG_TABLE_QUERY).apply { setInt(1, id) }.executeQuery()
@@ -56,41 +94,10 @@ data class TagProviderRecord(
         }
     }
 
-    val typesNode = Node.typesNode(id)
+    val typesNode = Node.createTypesNode(id)
 
-    val providerNode = lazy {
-        createProviderNode(typesNode).apply {
-            for ((_, nodeGroup) in nodeGroups) {
-
-                // Resolve and process tags
-                with(nodeGroup) {
-                    if (parentNode.statistics.isUdtDefinition || parentNode.statistics.isUdtInstance) {
-                        if (!isResolved) {
-                            resolveInheritance(nodeGroups, udtDefinitions)
-                        }
-                    }
-                    resolveHierarchy()
-                    when (val folderId = parentNode.folderId) {
-                        "_types_" -> typesNode.config.tags.add(parentNode)
-                        null -> config.tags.add(parentNode)
-                        else -> {
-                            val folderGroup = nodeGroups[folderId]
-                            folderGroup?.parentNode?.config?.tags?.add(parentNode) ?: providerStatistics.orphanedTags.value.add(
-                                parentNode,
-                            )
-                        }
-                    }
-                }
-
-                // Gather Statistics
-                if (nodeGroup.parentNode.statistics.isUdtDefinition) {
-                    providerStatistics.processNodeForStatistics(nodeGroup.parentNode)
-                } else {
-                    nodeGroup.forEach(providerStatistics::processNodeForStatistics)
-                }
-            }
-        }
-    }
+    lateinit var providerNode: Node
+        private set
 
     val orphanedParentNode by lazy {
         Node(
@@ -113,25 +120,22 @@ data class TagProviderRecord(
                                 inferredNode = true,
                             )
                         }
-                        falseParent.config.tags.add(orphanedNode)
+                        falseParent.addChildTag(orphanedNode)
                     }
                     orphanedTags.values.toNodeGroup()
                 },
             ),
             rank = 1,
             name = "Orphaned Nodes by Missing Parent",
+            isMeta = true,
         )
     }
 
     @OptIn(ExperimentalSerializationApi::class)
     fun exportToJson(selectedFilePath: Path) {
         selectedFilePath.outputStream().use {
-            TagConfigView.TagExportJson.encodeToStream(providerNode.value, it)
+            TagConfigView.TagExportJson.encodeToStream(providerNode, it)
         }
-    }
-
-    fun initProviderNode() {
-        providerNode.value
     }
 
     // Traversal Helper Functions:
@@ -206,7 +210,7 @@ data class TagProviderRecord(
 
         for (i in 1..<size) {
             val childNode = get(i)
-            find { node -> node.id == childNode.folderId }?.config?.tags?.add(childNode)
+            find { node -> node.id == childNode.folderId }?.addChildTag(childNode)
                 ?: providerStatistics.orphanedTags.value.add(childNode)
         }
     }

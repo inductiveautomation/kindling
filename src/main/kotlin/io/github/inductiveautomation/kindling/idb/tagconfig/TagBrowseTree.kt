@@ -4,70 +4,30 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.TreeSearchable
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.Node
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
-import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
+import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
-
-@Suppress("unused")
-class SortedLazyTagTreeNode(
-    val name: String,
-    val tagType: String?,
-    originalNode: Node,
-) : AbstractTreeNode() {
-    val inferred = originalNode.inferredNode
-    private val isProvider = originalNode.config.tagType == "Provider"
-    val originalNode by lazy { originalNode }
-
-
-    override val children: MutableList<TreeNode> = object : ArrayList<TreeNode>() {
-        override fun add(element: TreeNode): Boolean {
-            element as AbstractTreeNode
-            element.parent = this@SortedLazyTagTreeNode
-            return super.add(element)
-        }
-    }
-
-    companion object {
-        fun createRootNode(provider: TagProviderRecord): SortedLazyTagTreeNode {
-            val rootNode = fromNode(provider.providerNode.value)
-
-            if (provider.providerStatistics.totalOrphanedTags.value > 0) {
-                val orphanedParentNode = fromNode(provider.orphanedParentNode)
-                rootNode.children.add(1, orphanedParentNode)
-            }
-
-            return rootNode
-        }
-
-        private fun fromNode(node: Node): SortedLazyTagTreeNode {
-            return SortedLazyTagTreeNode(
-                name = if (node.config.name.isNullOrEmpty()) {
-                    node.name.toString()
-                } else {
-                    node.config.name
-                },
-                tagType = node.config.tagType,
-                originalNode = node,
-            ).apply {
-                children.addAll(node.config.tags.map(::fromNode).sortedBy { it.name })
-            }
-        }
-    }
-}
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TagBrowseTree : JTree(NO_SELECTION) {
     var provider: TagProviderRecord? = null
         set(value) {
             field = value
-            model = if (value == null) {
-                DefaultTreeModel(NO_SELECTION)
-            } else {
-                DefaultTreeModel(SortedLazyTagTreeNode.createRootNode(value))
+
+            if (value == null) {
+                model = DefaultTreeModel(NO_SELECTION)
+                return
+            }
+
+            EDT_SCOPE.launch {
+                withContext(Dispatchers.Default) { value.loadProvider.join() }
+                model = DefaultTreeModel(value.providerNode)
             }
         }
 
@@ -77,21 +37,21 @@ class TagBrowseTree : JTree(NO_SELECTION) {
 
         setCellRenderer(
             treeCellRenderer { _, value, _, expanded, _, _, _ ->
-                val actualValue = value as? SortedLazyTagTreeNode
+                val actualValue = value as? Node
 
-                text = if (actualValue?.inferred == true) {
+                text = if (actualValue?.inferredNode == true) {
                     buildString {
                         tag("html") {
                             tag("i") {
-                                append("${actualValue.name}*")
+                                append("${actualValue.actualName}*")
                             }
                         }
                     }
                 } else {
-                    actualValue?.name.toString()
+                    actualValue?.actualName
                 }
 
-                icon = when (actualValue?.tagType) {
+                icon = when (actualValue?.config?.tagType) {
                     "AtomicTag" -> TAG_ICON
                     "UdtInstance", "UdtType" -> UDT_ICON
                     else -> {
@@ -113,7 +73,7 @@ class TagBrowseTree : JTree(NO_SELECTION) {
             override fun convertElementToString(element: Any?): String {
                 val path = (element as? TreePath)?.path ?: return ""
                 return path.asList().subList(1, path.size).joinToString("/") {
-                    (it as SortedLazyTagTreeNode).name
+                    (it as Node).actualName
                 }
             }
         }
@@ -130,9 +90,9 @@ class TagBrowseTree : JTree(NO_SELECTION) {
         val FOLDER_OPEN_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder-open.svg").derive(ICON_SIZE, ICON_SIZE)
 
         fun TreePath.toTagPath(): String {
-            val provider = "[${(path.first() as SortedLazyTagTreeNode).name}]"
+            val provider = "[${(path.first() as Node).name}]"
             val tagPath = path.asList().subList(1, path.size).joinToString("/") {
-                (it as SortedLazyTagTreeNode).name
+                (it as Node).actualName
             }
             return "$provider$tagPath"
         }
