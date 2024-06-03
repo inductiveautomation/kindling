@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.idb.tagconfig.model
 
 import io.github.inductiveautomation.kindling.idb.tagconfig.TagConfigView
+import io.github.inductiveautomation.kindling.idb.tagconfig.model.NodeGroup.Companion.toNodeGroup
 import io.github.inductiveautomation.kindling.utils.toList
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
@@ -33,7 +34,6 @@ data class TagProviderRecord(
                         name = rs.getString(6),
                     )
                 } catch (e: NullPointerException) {
-                    // println("Found null record. Id: ${rs.getString(1)}")
                     // Null records will be ignored.
                     null
                 }
@@ -44,7 +44,7 @@ data class TagProviderRecord(
         rawNodeData.groupBy { node ->
             node.id.substring(0, 36)
         }.mapValues { (_, nodes) ->
-            nodes.sortedBy { it.id }.toMutableList()
+            nodes.sortedBy { it.id }.toNodeGroup()
         }.toList().sortedBy { (_, nodes) ->
             nodes.first().rank
         }.toMap()
@@ -58,40 +58,39 @@ data class TagProviderRecord(
 
     val typesNode = Node.typesNode(id)
 
-    val providerNode =
-        lazy {
-            providerNode(typesNode).apply {
-                for ((_, nodeGroup) in nodeGroups) {
+    val providerNode = lazy {
+        createProviderNode(typesNode).apply {
+            for ((_, nodeGroup) in nodeGroups) {
 
-                    // Resolve and process tags
-                    with(nodeGroup) {
-                        if (parentNode.statistics.isUdtDefinition || parentNode.statistics.isUdtInstance) {
-                            if (!isResolved) {
-                                resolveInheritance(nodeGroups, udtDefinitions)
-                            }
-                        }
-                        resolveHierarchy()
-                        when (val folderId = parentNode.folderId) {
-                            "_types_" -> typesNode.config.tags.add(parentNode)
-                            null -> config.tags.add(parentNode)
-                            else -> {
-                                val folderGroup = nodeGroups[folderId]
-                                folderGroup?.parentNode?.config?.tags?.add(parentNode) ?: providerStatistics.orphanedTags.value.add(
-                                    parentNode,
-                                )
-                            }
+                // Resolve and process tags
+                with(nodeGroup) {
+                    if (parentNode.statistics.isUdtDefinition || parentNode.statistics.isUdtInstance) {
+                        if (!isResolved) {
+                            resolveInheritance(nodeGroups, udtDefinitions)
                         }
                     }
-
-                    // Gather Statistics
-                    if (nodeGroup.parentNode.statistics.isUdtDefinition) {
-                        providerStatistics.processNodeForStatistics(nodeGroup.parentNode)
-                    } else {
-                        nodeGroup.forEach(providerStatistics::processNodeForStatistics)
+                    resolveHierarchy()
+                    when (val folderId = parentNode.folderId) {
+                        "_types_" -> typesNode.config.tags.add(parentNode)
+                        null -> config.tags.add(parentNode)
+                        else -> {
+                            val folderGroup = nodeGroups[folderId]
+                            folderGroup?.parentNode?.config?.tags?.add(parentNode) ?: providerStatistics.orphanedTags.value.add(
+                                parentNode,
+                            )
+                        }
                     }
+                }
+
+                // Gather Statistics
+                if (nodeGroup.parentNode.statistics.isUdtDefinition) {
+                    providerStatistics.processNodeForStatistics(nodeGroup.parentNode)
+                } else {
+                    nodeGroup.forEach(providerStatistics::processNodeForStatistics)
                 }
             }
         }
+    }
 
     val orphanedParentNode by lazy {
         Node(
@@ -116,7 +115,7 @@ data class TagProviderRecord(
                         }
                         falseParent.config.tags.add(orphanedNode)
                     }
-                    orphanedTags.values.toMutableList()
+                    orphanedTags.values.toNodeGroup()
                 },
             ),
             rank = 1,
@@ -214,33 +213,20 @@ data class TagProviderRecord(
 
     companion object {
         private const val TAG_PROVIDER_TABLE_QUERY = "SELECT * FROM TAGPROVIDERSETTINGS ORDER BY NAME"
-//        private const val TAG_CONFIG_TABLE_QUERY = "SELECT * FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
         private const val TAG_CONFIG_TABLE_QUERY = "SELECT id, providerid,folderid,cfg,rank,json_extract(cfg,\"\$.name\") as name FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
-        val NodeGroup.parentNode: Node
-            get() = first()
 
-        val NodeGroup.childNodes: MutableList<Node>
-            get() = subList(1, size)
-
-        var NodeGroup.isResolved: Boolean
-            get() = first().resolved
-            set(value) {
-                first().resolved = value
-            }
-
-        fun TagProviderRecord.providerNode(typesNode: Node? = null): Node =
-            Node(
-                id = this.uuid,
-                providerId = this.id,
-                folderId = null,
-                config = TagConfig(
-                    name = "",
-                    tagType = "Provider",
-                    tags = typesNode?.let { mutableListOf(it) } ?: mutableListOf(),
-                ),
-                rank = 0,
-                name = this.name,
-            )
+        fun TagProviderRecord.createProviderNode(typesNode: Node? = null): Node = Node(
+            id = this.uuid,
+            providerId = this.id,
+            folderId = null,
+            config = TagConfig(
+                name = "",
+                tagType = "Provider",
+                tags = typesNode?.let { NodeGroup(it) } ?: NodeGroup(),
+            ),
+            rank = 0,
+            name = this.name,
+        )
 
         private fun NodeGroup.copyChildrenFrom(
             otherGroup: NodeGroup,

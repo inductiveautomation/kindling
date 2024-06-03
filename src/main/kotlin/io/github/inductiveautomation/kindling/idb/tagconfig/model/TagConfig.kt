@@ -11,12 +11,23 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.jsonObject
 
+/*
+ All possible elements of any type of node in the tag hierarchy.
+ This is 'technically' future-proof in the sense that if more tag config entries are added to ignition,
+ they will be bundled with the customProperties property instead of causing an error.
+
+ Values marked as JsonElement or any of its subclasses are marked as such for two reasons. Either:
+ 1. We don't care about their data types and the serializers will represent them correctly for display/export purposes
+ 2. The value can be multiple types, depending on the export. For example, a tag's value can be either a Json Primitive or an Object,
+    if the tag's value is bound.
+ */
 @Serializable
 data class TagConfig(
     // Basic Properties:
     val name: String? = null,
     val tagGroup: JsonElement? = null, // String
     val enabled: JsonElement? = null, // String
+
     // Value Properties:
     val tagType: String? = null, // Unlisted
     val typeId: String? = null, // Unlisted
@@ -36,6 +47,7 @@ data class TagConfig(
     val query: JsonElement? = null, // Query, String
     val queryType: JsonElement? = null, // Query, String
     val datasource: JsonElement? = null, // Query, String
+
     // Numeric Properties:
     val deadband: JsonElement? = null, // Double
     val deadbandMode: JsonElement? = null, // String
@@ -55,15 +67,19 @@ data class TagConfig(
     val tooltip: JsonElement? = null, // String
     val documentation: JsonElement? = null, // String
     val typeColor: JsonPrimitive? = null, // UDT Definitions
+
     // Security Properties
     val readPermissions: JsonObject? = null,
     val readOnly: Boolean? = null,
     val writePermissions: JsonObject? = null,
+
     // Scripting Properties
     val eventScripts: MutableList<ScriptConfig>? = null,
+
     // Alarm Properties
     val alarms: JsonArray? = null,
     val alarmEvalEnabled: JsonElement? = null, // Boolean
+
     // Historical Properties
     val historyEnabled: JsonElement? = null, // Boolean
     val historyProvider: JsonElement? = null, // String
@@ -78,9 +94,11 @@ data class TagConfig(
     val historyTimeDeadbandUnits: JsonElement? = null, // String
     val historyMaxAge: JsonElement? = null, // Int
     val historyMaxAgeUnits: JsonElement? = null, // String
-    val tags: NodeGroup = mutableListOf(),
+    val tags: NodeGroup = NodeGroup(),
+
     // UDT
     val parameters: JsonObject? = null,
+
     // Custom Properties:
     val customProperties: JsonObject? = null,
 )
@@ -93,61 +111,80 @@ data class ScriptConfig(
     var enabled: Boolean? = null,
 )
 
+data class AlarmState(
+    val name: String,
+    var enabled: Boolean?,
+)
+
+/*
+ Deserialize the json into a TagConfig object,
+ grouping all custom properties into a separate "customProperties" property.
+ */
 object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.serializer()) {
     @OptIn(ExperimentalSerializationApi::class)
     override fun transformDeserialize(element: JsonElement): JsonElement {
-        val elementNames =
-            List(TagConfig.serializer().descriptor.elementsCount) {
-                TagConfig.serializer().descriptor.getElementName(it)
-            }.filter { it != "customProperties" }
+        val elementNames = List(TagConfig.serializer().descriptor.elementsCount) {
+            TagConfig.serializer().descriptor.getElementName(it)
+        }.filter { it != "customProperties" }
+
         val elementMap = element.jsonObject.toMutableMap()
-        val customPropertiesMap =
-            elementMap.filter { it.key !in elementNames }.onEach { (key, value) ->
-                elementMap.remove(key, value)
-            }
-        elementMap["customProperties"] =
-            if (customPropertiesMap.isEmpty()) JsonNull else JsonObject(customPropertiesMap)
+
+        val customPropertiesMap = elementMap.filter { it.key !in elementNames }.onEach { (key, value) ->
+            elementMap.remove(key, value)
+        }
+
+        elementMap["customProperties"] = if (customPropertiesMap.isEmpty()) JsonNull else JsonObject(customPropertiesMap)
+
         return JsonObject(elementMap)
     }
 
+    /*
+        "Spread" all the values inside the "customProperties" property back into their own json key/value pair for serialization.
+     */
     override fun transformSerialize(element: JsonElement): JsonElement {
         val tagConfig = element.jsonObject.toMutableMap()
 
-        val customProperties =
-            tagConfig.remove("customProperties")?.let {
-                if (it is JsonNull) {
-                    return JsonObject(tagConfig)
-                } else {
-                    it.jsonObject
-                }
+        val customProperties = tagConfig.remove("customProperties")?.let {
+            if (it is JsonNull) {
+                return JsonObject(tagConfig)
+            } else {
+                it.jsonObject
             }
+        }
+
         customProperties?.entries?.forEach { (key, value) ->
             tagConfig[key] = value
         }
+
         return JsonObject(tagConfig)
     }
 }
 
+/*
+ Serialize a node without recursively serializing the tags within it.
+ This is used to display a single nodes config when browsing from the Tree in the UI.
+ */
 object MinimalTagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.serializer()) {
     override fun transformDeserialize(element: JsonElement): JsonElement {
-        throw UnsupportedOperationException("This serializer does not support deserialization!")
+        throw UnsupportedOperationException("This serializer is for serialization only. Use TagConfigSerializer instead.")
     }
 
     override fun transformSerialize(element: JsonElement): JsonElement {
         val tagConfig = element.jsonObject.toMutableMap()
         tagConfig.remove("tags")
 
-        val customProperties =
-            tagConfig.remove("customProperties")?.let {
-                if (it is JsonNull) {
-                    return JsonObject(tagConfig)
-                } else {
-                    it.jsonObject
-                }
+        val customProperties = tagConfig.remove("customProperties")?.let {
+            if (it is JsonNull) {
+                return JsonObject(tagConfig)
+            } else {
+                it.jsonObject
             }
+        }
+
         customProperties?.entries?.forEach { (key, value) ->
             tagConfig[key] = value
         }
+
         return JsonObject(tagConfig)
     }
 }

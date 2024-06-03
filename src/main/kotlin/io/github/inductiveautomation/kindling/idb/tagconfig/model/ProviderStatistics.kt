@@ -1,144 +1,174 @@
 package io.github.inductiveautomation.kindling.idb.tagconfig.model
 
+import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.DependentStatistic.Companion.dependentStatistic
+import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.MappedStatistic.Companion.mappedStatistic
+import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.QuantitativeStatistic.Companion.quantitativeStatistic
+import io.github.inductiveautomation.kindling.statistics.Statistic
 import java.util.Locale
-import kotlin.reflect.KProperty
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
 
-@Suppress("MemberVisibilityCanBePrivate")
-class ProviderStatistics {
-    val orphanedTags = ListStatistic<Node>("orphanedTags")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+class ProviderStatistics private constructor(
+    private val statsMap: MutableMap<String, ProviderStatistic<*>>,
+) : Map<String, ProviderStatistics.ProviderStatistic<*>> by statsMap {
+    constructor() : this(mutableMapOf())
 
-    val all = listOf(
-        QuantitativeStatistic("totalAtomicTags"),
-        MappedStatistic("dataTypes"),
-        MappedStatistic("valueSources"),
-        QuantitativeStatistic("totalFolders"),
-        QuantitativeStatistic("totalUdtInstances"),
-        QuantitativeStatistic("totalUdtDefinitions"),
-        QuantitativeStatistic("totalTagsWithAlarms"),
-        QuantitativeStatistic("totalAlarms"),
-        QuantitativeStatistic("totalTagsWithHistory"),
-        QuantitativeStatistic("totalTagsWithEnabledScripts"),
-        QuantitativeStatistic("totalEnabledScripts"),
-        DependentStatistic("totalOrphanedTags", orphanedTags) { it.size },
-        QuantitativeStatistic("totalReadOnlyTags")
-    )
+    val orphanedTags = ListStatistic("orphanedTags", fun(_: ListStatistic<Node>, _: Node) = Unit)
 
-    private val statsMap = all.associateBy { it.name }
+    val totalAtomicTags by quantitativeStatistic {
+        if (it.statistics.isAtomicTag) value++
+    }
 
-    val totalAtomicTags: QuantitativeStatistic by statsMap
-    val totalFolders: QuantitativeStatistic by statsMap
-    val totalUdtInstances: QuantitativeStatistic by statsMap
-    val totalTagsWithAlarms: QuantitativeStatistic by statsMap
-    val totalUdtDefinitions: QuantitativeStatistic by statsMap
-    val totalAlarms: QuantitativeStatistic by statsMap
-    val totalTagsWithHistory: QuantitativeStatistic by statsMap
-    val totalTagsWithEnabledScripts: QuantitativeStatistic by statsMap
-    val totalEnabledScripts: QuantitativeStatistic by statsMap
-    val dataTypes: MappedStatistic by statsMap
-    val valueSources: MappedStatistic by statsMap
-    val totalOrphanedTags: DependentStatistic<Int, MutableList<Node>> by statsMap
-    val totalReadOnlyTags: QuantitativeStatistic by statsMap
+    val totalFolders by quantitativeStatistic {
+        if (it.statistics.isFolder) value++
+    }
+
+    val totalUdtInstances by quantitativeStatistic {
+        if (it.statistics.isUdtInstance) value++
+    }
+
+    val totalTagsWithAlarms by quantitativeStatistic {
+        if (it.statistics.hasAlarms) value++
+    }
+
+    val totalUdtDefinitions by quantitativeStatistic {
+        if (it.statistics.isUdtDefinition) value++
+    }
+
+    val totalAlarms by quantitativeStatistic {
+        value += it.statistics.numAlarms
+    }
+
+    val totalTagsWithHistory by quantitativeStatistic {
+        if (it.statistics.historyEnabled == true) value++
+    }
+
+    val totalTagsWithEnabledScripts by quantitativeStatistic {
+        if (it.statistics.hasScripts) value++
+    }
+
+    val totalEnabledScripts by quantitativeStatistic {
+        value += it.statistics.numScripts
+    }
+
+    val dataTypes by mappedStatistic {
+        if (it.statistics.isAtomicTag) {
+            value.compute(it.statistics.dataType ?: DEFAULT_DATA_TYPE) { _, v ->
+                if (v == null) 1 else v + 1
+            }
+        }
+    }
+
+    val valueSources by mappedStatistic {
+        if (it.statistics.isAtomicTag) {
+            value.compute(it.statistics.dataSource ?: DEFAULT_VALUE_SOURCE) { _, v ->
+                if (v == null) 1 else v + 1
+            }
+        }
+    }
+
+    val totalOrphanedTags by dependentStatistic(orphanedTags) { it.size }
 
     fun processNodeForStatistics(node: Node) {
-        if (node.statistics.isUdtDefinition) {
-            totalUdtDefinitions.value++
-            return
-        }
-
-        when {
-            node.statistics.isAtomicTag -> {
-                totalAtomicTags.value++
-
-                dataTypes.value.compute(node.statistics.dataType ?: DEFAULT_DATA_TYPE) { _, value ->
-                    if (value == null) 1 else value + 1
-                }
-
-                valueSources.value.compute(node.statistics.dataSource ?: DEFAULT_VALUE_SOURCE) { _, value ->
-                    if (value == null) 1 else value + 1
-                }
-            }
-
-            node.statistics.isFolder -> totalFolders.value++
-            node.statistics.isUdtInstance -> totalUdtInstances.value++
-            node.statistics.isReadOnly == true -> totalReadOnlyTags.value++
-        }
-
-        if (node.statistics.historyEnabled == true) totalTagsWithHistory.value++
-
-        if (node.statistics.hasAlarms) {
-            totalTagsWithAlarms.value++
-            totalAlarms.value += node.statistics.numAlarms
-        }
-
-        if (node.statistics.hasScripts) {
-            totalTagsWithEnabledScripts.value++
-            totalEnabledScripts.value += node.statistics.numScripts
-        }
+        for (stat in values) stat.processNode(node)
     }
 
-    override fun toString(): String = buildString {
-        appendLine("Atomic Tags: $totalAtomicTags")
-        appendLine("- By Data Source")
-        appendLine(valueSources.value.entries.joinToString("\n|- ", prefix = "|- ") { (key, value) -> "$key: $value" })
-        appendLine("- By Data Type")
-        appendLine(dataTypes.value.entries.joinToString("\n|- ", prefix = "|- ") { (key, value) -> "$key: $value" })
-        appendLine("Folders: $totalFolders")
-        appendLine("Udt Instances: $totalUdtInstances")
-        appendLine("Udt Definition: $totalUdtDefinitions")
-        appendLine("Tags with History Enabled: $totalTagsWithHistory")
-        appendLine("Scripts:")
-        appendLine("- $totalEnabledScripts scripts found on $totalTagsWithEnabledScripts tags")
-        appendLine("Alarms:")
-        appendLine("- $totalAlarms alarms found on $totalTagsWithAlarms tags")
-        appendLine("Orphaned Tags: $totalOrphanedTags")
-    }
+    override fun toString(): String = values.joinToString("\n")
 
     companion object {
         private const val DEFAULT_DATA_TYPE = "Int4"
         private const val DEFAULT_VALUE_SOURCE = "memory"
-
-        fun String.splitCamelCase(): String = replace(
-            String.format(
-                "%s|%s|%s",
-                "(?<=[A-Z])(?=[A-Z][a-z])",
-                "(?<=[^A-Z])(?=[A-Z])",
-                "(?<=[A-Za-z])(?=[^A-Za-z])",
-            ).toRegex(),
-            " ",
-        )
     }
 
-    sealed class ProviderStatistic<T>(val name: String) {
+    sealed class ProviderStatistic<T>(val name: String) : Statistic {
         abstract val value: T
         val humanReadableName = name.splitCamelCase()
             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): T = value
+        override fun toString(): String = "$humanReadableName: $value"
 
-        override fun toString(): String = value.toString()
+        abstract fun processNode(node: Node)
+
+        companion object {
+            private fun String.splitCamelCase(): String = replace(
+                String.format(
+                    "%s|%s|%s",
+                    "(?<=[A-Z])(?=[A-Z][a-z])",
+                    "(?<=[^A-Z])(?=[A-Z])",
+                    "(?<=[A-Za-z])(?=[^A-Za-z])",
+                ).toRegex(),
+                " ",
+            )
+        }
     }
 
-    class QuantitativeStatistic internal constructor(
+    class QuantitativeStatistic(
         name: String,
-        override var value: Int = 0,
-    ) : ProviderStatistic<Int>(name)
+        private val processNode: QuantitativeStatistic.(node: Node) -> Unit,
+    ) : ProviderStatistic<Int>(name) {
+        override var value: Int = 0
+        override fun processNode(node: Node) = processNode(this, node)
 
-    class MappedStatistic internal constructor(
-        name: String,
-        override val value: MutableMap<String, Int> = mutableMapOf(),
-    ) : ProviderStatistic<MutableMap<String, Int>>(name)
+        companion object {
+            fun quantitativeStatistic(
+                processNode: QuantitativeStatistic.(node: Node) -> Unit
+            ) = PropertyDelegateProvider { thisRef: ProviderStatistics, property ->
+                val quantitative = QuantitativeStatistic(property.name, processNode)
+                thisRef.statsMap[property.name] = quantitative
+                ReadOnlyProperty { _: ProviderStatistics, _ -> quantitative }
+            }
+        }
+    }
 
-    class ListStatistic<T> internal constructor(
+    class MappedStatistic(
         name: String,
-        override val value: MutableList<T> = mutableListOf(),
-    ) : ProviderStatistic<MutableList<T>>(name)
+        private val processNode: MappedStatistic.(node: Node) -> Unit,
+    ) : ProviderStatistic<MutableMap<String, Int>>(name) {
+        override val value: MutableMap<String, Int> = mutableMapOf()
+        override fun processNode(node: Node) = processNode(this, node)
 
-    class DependentStatistic<T, P> internal constructor(
+        override fun toString(): String {
+            return name + value.entries.joinToString("\n|- ", prefix = "|- ") { (key, value) -> "$key: $value" }
+        }
+
+        companion object {
+            fun mappedStatistic(
+                processNode: MappedStatistic.(node: Node) -> Unit,
+            ) = PropertyDelegateProvider { thisRef: ProviderStatistics, property ->
+                val mapped = MappedStatistic(property.name, processNode)
+                thisRef.statsMap[property.name] = mapped
+                ReadOnlyProperty { _: ProviderStatistics, _ -> mapped }
+            }
+        }
+    }
+
+    class ListStatistic<T>(
         name: String,
-        private val dependentStatistic: ProviderStatistic<P>,
+        private val processNode: ListStatistic<T>.(node: Node) -> Unit,
+    ) : ProviderStatistic<MutableList<T>>(name) {
+        override val value: MutableList<T> = mutableListOf()
+        override fun processNode(node: Node) = processNode(this, node)
+    }
+
+    class DependentStatistic<T, P>(
+        name: String,
+        private val dependsOn: ProviderStatistic<P>,
         private val transform: (P) -> T,
     ) : ProviderStatistic<T>(name) {
+        override fun processNode(node: Node) = Unit
         override val value: T
-            get() = transform(dependentStatistic.value)
+            get() = transform(dependsOn.value)
+
+        companion object {
+            fun <T, P> dependentStatistic(
+                dependsOn: ProviderStatistic<P>,
+                transform: (P) -> T,
+            ) = PropertyDelegateProvider { thisRef: ProviderStatistics, property ->
+                val dependent = DependentStatistic(property.name, dependsOn, transform)
+                thisRef.statsMap[property.name] = dependent
+                ReadOnlyProperty { _: ProviderStatistics, _ -> dependent }
+            }
+        }
     }
 }

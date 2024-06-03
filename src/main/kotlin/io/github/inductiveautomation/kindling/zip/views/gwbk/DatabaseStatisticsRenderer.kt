@@ -9,6 +9,7 @@ import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.MYSQL
 import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.ORACLE
 import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.POSTGRES
 import com.inductiveautomation.ignition.common.datasource.DatabaseVendor.SQLITE
+import io.github.inductiveautomation.kindling.statistics.StatisticRenderer
 import io.github.inductiveautomation.kindling.statistics.categories.DatabaseStatistics
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane

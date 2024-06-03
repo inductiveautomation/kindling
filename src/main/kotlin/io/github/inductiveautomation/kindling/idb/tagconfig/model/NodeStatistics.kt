@@ -19,7 +19,7 @@ class NodeStatistics(private val node: Node) {
         get() = node.config.tagType == "Folder"
 
     // Alarms:
-    private val alarmStates: MutableList<AlarmState> = node.config.alarms?.map {
+    private val alarmStates: MutableList<AlarmState> = node.config.alarms?.mapNotNull {
         val name = it.jsonObject["name"]?.jsonPrimitive?.content
         val enabled = try {
             it.jsonObject["enabled"]?.jsonPrimitive?.boolean ?: true
@@ -28,7 +28,7 @@ class NodeStatistics(private val node: Node) {
         }
 
         if (name == null) null else AlarmState(name, enabled)
-    }?.filterNotNull()?.toMutableList() ?: mutableListOf()
+    }?.toMutableList() ?: mutableListOf()
 
     val numAlarms: Int
         get() = alarmStates.filter { it.enabled ?: true }.size
@@ -107,9 +107,4 @@ class NodeStatistics(private val node: Node) {
             }
         }
     }
-
-    data class AlarmState(
-        val name: String,
-        var enabled: Boolean?,
-    )
 }

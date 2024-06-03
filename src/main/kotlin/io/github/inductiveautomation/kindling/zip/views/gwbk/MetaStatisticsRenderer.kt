@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.zip.views.gwbk
 
 import com.jidesoft.swing.StyledLabelBuilder
+import io.github.inductiveautomation.kindling.statistics.StatisticRenderer
 import io.github.inductiveautomation.kindling.statistics.categories.MetaStatistics
 import java.awt.BorderLayout
 import java.awt.Font

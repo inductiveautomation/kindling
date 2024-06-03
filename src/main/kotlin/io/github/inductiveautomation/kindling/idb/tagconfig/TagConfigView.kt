@@ -1,25 +1,13 @@
 package io.github.inductiveautomation.kindling.idb.tagconfig
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.idb.tagconfig.LazyTreeNode.Companion.createLazyTreeStructure
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.Node
+import io.github.inductiveautomation.kindling.idb.tagconfig.TagBrowseTree.Companion.toTagPath
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
-import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
-import io.github.inductiveautomation.kindling.utils.tag
-import io.github.inductiveautomation.kindling.utils.treeCellRenderer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToStream
-import net.miginfocom.swing.MigLayout
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -32,12 +20,15 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
 import javax.swing.JSplitPane
-import javax.swing.JTree
-import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
-import javax.swing.tree.TreePath
 import kotlin.io.path.Path
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToStream
+import net.miginfocom.swing.MigLayout
 
 @OptIn(ExperimentalSerializationApi::class)
 class TagConfigView(connection: Connection) : ToolPanel() {
@@ -66,151 +57,118 @@ class TagConfigView(connection: Connection) : ToolPanel() {
         }
     }
 
-    private val providerDropdown =
-        JComboBox(tagProviderData.toTypedArray()).apply {
-            val defaultPrompt = "Select a Tag Provider..."
-            selectedIndex = -1
+    private val providerDropdown = JComboBox(tagProviderData.toTypedArray()).apply {
+        val defaultPrompt = "Select a Tag Provider..."
+        selectedIndex = -1
 
-            addItemListener { itemEvent ->
-                if (itemEvent.stateChange != ItemEvent.SELECTED) return@addItemListener
+        addItemListener { itemEvent ->
+            if (itemEvent.stateChange != ItemEvent.SELECTED) return@addItemListener
 
-                val selectedTagProvider = itemEvent.item as TagProviderRecord
+            val selectedTagProvider = itemEvent.item as TagProviderRecord
 
-                EDT_SCOPE.launch {
-                    val lazyTreeNode = withContext(Dispatchers.Default) {
-                        selectedTagProvider.initProviderNode()
-                        createLazyTreeStructure(selectedTagProvider)
-                    }
-
-                    tabs.setTitleAt(0, selectedTagProvider.name)
-                    providerTab.provider = selectedTagProvider
-                    tagProviderTree.model = DefaultTreeModel(lazyTreeNode)
+            EDT_SCOPE.launch {
+                withContext(Dispatchers.Default) {
+                    selectedTagProvider.initProviderNode()
                 }
-            }
 
-            // Dummy Tag Provider Record for preferred size
-            prototypeDisplayValue = (
-                tagProviderData + TagProviderRecord(
-                    dbConnection = connection,
-                    description = "",
-                    name = "Select a Tag Provider...",
-                    enabled = false,
-                    id = 0,
-                    typeId = "",
-                    uuid = "",
-                )
-                ).maxBy {
-                it.name.length
-            }
-
-            configureCellRenderer { _, value, _, _, _ ->
-                text = value?.name ?: defaultPrompt
+                tabs.setTitleAt(0, selectedTagProvider.name)
+                providerTab.provider = selectedTagProvider
+                tagProviderTree.provider = selectedTagProvider
             }
         }
 
-    private val tagProviderTree =
-        JTree(DefaultMutableTreeNode("Select a Tag Provider to Browse")).apply {
-            isRootVisible = false
-            showsRootHandles = true
-
-            addMouseListener(
-                object : MouseAdapter() {
-                    override fun mousePressed(e: MouseEvent?) {
-                        if (e?.clickCount == 2) {
-                            selectionPath?.let {
-                                if ((it.lastPathComponent as TreeNode).childCount == 0) {
-                                    if (it.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
-                                        tabs.addTab(NodeConfigPanel(it))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
+        // Dummy Tag Provider Record for preferred size
+        prototypeDisplayValue = (
+            tagProviderData + TagProviderRecord(
+                dbConnection = connection,
+                description = "",
+                name = "Select a Tag Provider...",
+                enabled = false,
+                id = 0,
+                typeId = "",
+                uuid = "",
             )
+            ).maxBy {
+            it.name.length
+        }
 
-            attachPopupMenu {mouseEvent ->
-                val configAction = Action("Open Config") {
-                    val pathAtPoint = getClosestPathForLocation(mouseEvent.x, mouseEvent.y)
+        configureCellRenderer { _, value, _, _, _ ->
+            text = value?.name ?: defaultPrompt
+        }
+    }
 
-                    if (pathAtPoint.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
-                        tabs.addTab(NodeConfigPanel(pathAtPoint))
-                    }
-                }
-
-                val exportAction = Action("Export Selection") {
-                    val selection = this@attachPopupMenu.selectionPaths
-
-                    if (selection == null) {
-                        JOptionPane.showMessageDialog(
-                            this@TagConfigView,
-                            "You must selected at least one item to export.",
-                            "Export Error",
-                            JOptionPane.WARNING_MESSAGE,
-                        )
-                        return@Action
-                    }
-
-                    val allSameParent = selection.all { path -> path.parentPath == selection.first().parentPath }
-
-                    if (allSameParent) {
-                        if (exportFileChooser.showSaveDialog(this@TagConfigView) == JFileChooser.APPROVE_OPTION) {
-                            val nodeList = selection.map {
-                                (it.lastPathComponent as LazyTreeNode).originalNode
-                            }
-
-                            exportFileChooser.selectedFile.outputStream().use { output ->
-                                if (nodeList.size == 1) {
-                                    TagExportJson.encodeToStream(nodeList.single(), output)
-                                } else {
-                                    TagExportJson.encodeToStream(mapOf("tags" to nodeList), output)
+    private val tagProviderTree = TagBrowseTree().apply {
+        addMouseListener(
+            object : MouseAdapter() {
+                override fun mousePressed(e: MouseEvent?) {
+                    if (e?.clickCount == 2) {
+                        selectionPath?.let {
+                            if ((it.lastPathComponent as TreeNode).childCount == 0) {
+                                if (it.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
+                                    tabs.addTab(NodeConfigPanel(it))
                                 }
                             }
                         }
-                    } else {
-                        JOptionPane.showMessageDialog(
-                            this@TagConfigView,
-                            "All selected items must have the same parent folder.",
-                            "Export Error",
-                            JOptionPane.WARNING_MESSAGE,
-                        )
-                        return@Action
                     }
                 }
+            },
+        )
 
+        attachPopupMenu {mouseEvent ->
+            val configAction = Action("Open Config") {
+                val pathAtPoint = getClosestPathForLocation(mouseEvent.x, mouseEvent.y)
 
-                JPopupMenu().apply {
-                    add(configAction)
-                    add(exportAction)
+                if (pathAtPoint.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
+                    tabs.addTab(NodeConfigPanel(pathAtPoint))
                 }
             }
 
-            cellRenderer = treeCellRenderer { _, value, _, expanded, _, _, _ ->
-                val actualValue = value as? LazyTreeNode
+            val exportAction = Action("Export Selection") {
+                val selection = this@attachPopupMenu.selectionPaths
 
-                text = if (actualValue?.inferred == true) {
-                    buildString {
-                        tag("html") {
-                            tag("i") {
-                                append("${actualValue.name}*")
+                if (selection == null) {
+                    JOptionPane.showMessageDialog(
+                        this@TagConfigView,
+                        "You must selected at least one item to export.",
+                        "Export Error",
+                        JOptionPane.WARNING_MESSAGE,
+                    )
+                    return@Action
+                }
+
+                val allSameParent = selection.all { path -> path.parentPath == selection.first().parentPath }
+
+                if (allSameParent) {
+                    if (exportFileChooser.showSaveDialog(this@TagConfigView) == JFileChooser.APPROVE_OPTION) {
+                        val nodeList = selection.map {
+                            (it.lastPathComponent as SortedLazyTagTreeNode).originalNode
+                        }
+
+                        exportFileChooser.selectedFile.outputStream().use { output ->
+                            if (nodeList.size == 1) {
+                                TagExportJson.encodeToStream(nodeList.single(), output)
+                            } else {
+                                TagExportJson.encodeToStream(mapOf("tags" to nodeList), output)
                             }
                         }
                     }
                 } else {
-                    actualValue?.name.toString()
+                    JOptionPane.showMessageDialog(
+                        this@TagConfigView,
+                        "All selected items must have the same parent folder.",
+                        "Export Error",
+                        JOptionPane.WARNING_MESSAGE,
+                    )
+                    return@Action
                 }
+            }
 
-                icon = when (actualValue?.tagType) {
-                    "AtomicTag" -> TAG_ICON
-                    "UdtInstance", "UdtType" -> UDT_ICON
-                    else -> {
-                        if (expanded) FOLDER_OPEN_ICON else FOLDER_CLOSED_ICON
-                    }
-                }
-
-                this
+            JPopupMenu().apply {
+                add(configAction)
+                add(exportAction)
             }
         }
+    }
 
     private val providerTab = ProviderStatisticsPanel()
 
@@ -241,57 +199,6 @@ class TagConfigView(connection: Connection) : ToolPanel() {
             prettyPrint = true
             prettyPrintIndent = "  "
         }
-
-        private const val ICON_SIZE = 18
-
-        private val UDT_ICON = FlatSVGIcon("icons/bx-vector.svg").derive(ICON_SIZE, ICON_SIZE)
-        private val TAG_ICON = FlatSVGIcon("icons/bx-purchase-tag.svg").derive(ICON_SIZE, ICON_SIZE)
-        private val FOLDER_CLOSED_ICON = FlatSVGIcon("icons/bx-folder.svg").derive(ICON_SIZE, ICON_SIZE)
-        private val FOLDER_OPEN_ICON = FlatSVGIcon("icons/bx-folder-open.svg").derive(ICON_SIZE, ICON_SIZE)
-
-        fun TreePath.toTagPath(): String {
-            val provider = "[${(path.first() as LazyTreeNode).name}]"
-            val tagPath = path.asList().subList(1, path.size).joinToString("/") {
-                (it as LazyTreeNode).name
-            }
-            return "$provider$tagPath"
-        }
     }
 }
 
-@Suppress("unused")
-class LazyTreeNode(
-    val name: String,
-    val tagType: String?,
-    originalNode: Node,
-) : AbstractTreeNode() {
-    val originalNode by lazy { originalNode }
-    val inferred = originalNode.inferredNode
-
-    companion object {
-        fun createLazyTreeStructure(provider: TagProviderRecord): LazyTreeNode {
-            val rootNode = fromNode(provider.providerNode.value)
-
-            if (provider.providerStatistics.totalOrphanedTags.value > 0) {
-                val orphanedParentNode = fromNode(provider.orphanedParentNode)
-                rootNode.children.add(orphanedParentNode)
-            }
-
-            return rootNode
-        }
-
-        private fun fromNode(node: Node): LazyTreeNode {
-            return LazyTreeNode(
-                name = if (node.config.name.isNullOrEmpty()) {
-                    node.name.toString()
-                } else {
-                    node.config.name
-                },
-                tagType = node.config.tagType,
-                originalNode = node,
-            ).apply {
-                children.addAll(node.config.tags.map(::fromNode))
-            }
-        }
-    }
-}

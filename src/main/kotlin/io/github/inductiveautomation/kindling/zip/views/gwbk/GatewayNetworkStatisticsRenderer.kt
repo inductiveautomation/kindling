@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.zip.views.gwbk
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
+import io.github.inductiveautomation.kindling.statistics.StatisticRenderer
 import io.github.inductiveautomation.kindling.statistics.categories.GatewayNetworkStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.GatewayNetworkStatistics.IncomingConnection
 import io.github.inductiveautomation.kindling.statistics.categories.GatewayNetworkStatistics.OutgoingConnection

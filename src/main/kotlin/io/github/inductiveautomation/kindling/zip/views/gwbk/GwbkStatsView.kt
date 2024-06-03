@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.statistics.GatewayBackup
 import io.github.inductiveautomation.kindling.statistics.Statistic
 import io.github.inductiveautomation.kindling.statistics.StatisticCalculator
+import io.github.inductiveautomation.kindling.statistics.StatisticRenderer
 import io.github.inductiveautomation.kindling.statistics.categories.DatabaseStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.DeviceStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.GatewayNetworkStatistics
@@ -12,14 +13,9 @@ import io.github.inductiveautomation.kindling.statistics.categories.OpcServerSta
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.zip.views.SinglePathView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import net.miginfocom.swing.MigLayout
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
-import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
@@ -27,6 +23,10 @@ import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
 import kotlin.io.path.extension
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
 
 class GwbkStatsView(
     override val provider: FileSystemProvider,
@@ -88,15 +88,4 @@ class GwbkStatsView(
 
         fun isGatewayBackup(path: Path): Boolean = path.extension.lowercase() == "gwbk"
     }
-}
-
-interface StatisticRenderer<T : Statistic> {
-    val title: String
-    val icon: Icon?
-
-    fun T.subtitle(): String? {
-        return null
-    }
-
-    fun T.render(): JComponent
 }

@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.zip.views.gwbk
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import io.github.inductiveautomation.kindling.statistics.StatisticRenderer
 import io.github.inductiveautomation.kindling.statistics.categories.DeviceStatistics
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane

@@ -21,12 +21,12 @@ class ProviderStatisticsPanel : JScrollPane(), PopupMenuCustomizer {
             field = newProvider
             mainPanel.removeAll()
 
-            newProvider?.providerStatistics?.all?.forEach {
-                mainPanel.add(StatisticCard(it), "grow, sizegroup")
+            newProvider?.providerStatistics?.values?.forEach {
+                mainPanel.add(StatisticCard(it), "growx, top")
             }
         }
 
-    private val mainPanel = JPanel(MigLayout("fill, ins 0, gap 10px, wrap 3"))
+    private val mainPanel = JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 3"))
 
     init {
         horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_NEVER
@@ -37,9 +37,9 @@ class ProviderStatisticsPanel : JScrollPane(), PopupMenuCustomizer {
 
     class StatisticCard<T>(
         private val statistic: ProviderStatistics.ProviderStatistic<T>,
-    ) : JPanel(MigLayout("fill, ins 0")) {
+    ) : JPanel(MigLayout("fillx, ins 0")) {
         private val header = JLabel(statistic.humanReadableName, JLabel.CENTER).apply {
-            font = font.deriveFont(Font.BOLD, 20F)
+            font = font.deriveFont(Font.BOLD, 16F)
         }
 
         private val data: JComponent = when (statistic) {
@@ -47,7 +47,7 @@ class ProviderStatisticsPanel : JScrollPane(), PopupMenuCustomizer {
             is ProviderStatistics.DependentStatistic<*, *>,
             -> JLabel(statistic.value.toString(), JLabel.CENTER).apply {
                 verticalAlignment = JLabel.NORTH
-                font = font.deriveFont(25F)
+                font = font.deriveFont(14F)
             }
 
             is ProviderStatistics.ListStatistic<*> -> JList(statistic.value.toTypedArray()).apply {
