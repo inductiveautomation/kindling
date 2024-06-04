@@ -3,7 +3,6 @@ package io.github.inductiveautomation.kindling.idb.tagconfig.model
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.DependentStatistic.Companion.dependentStatistic
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.MappedStatistic.Companion.mappedStatistic
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.QuantitativeStatistic.Companion.quantitativeStatistic
-import io.github.inductiveautomation.kindling.statistics.Statistic
 import java.util.Locale
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -81,7 +80,7 @@ class ProviderStatistics private constructor(
         private const val DEFAULT_VALUE_SOURCE = "memory"
     }
 
-    sealed class ProviderStatistic<T>(val name: String) : Statistic {
+    sealed class ProviderStatistic<T>(val name: String) {
         abstract val value: T
         val humanReadableName = name.splitCamelCase()
             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }

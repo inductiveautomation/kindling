@@ -4,7 +4,6 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.statistics.GatewayBackup
 import io.github.inductiveautomation.kindling.statistics.Statistic
 import io.github.inductiveautomation.kindling.statistics.StatisticCalculator
-import io.github.inductiveautomation.kindling.statistics.StatisticRenderer
 import io.github.inductiveautomation.kindling.statistics.categories.DatabaseStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.DeviceStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.GatewayNetworkStatistics
@@ -16,6 +15,7 @@ import io.github.inductiveautomation.kindling.zip.views.SinglePathView
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
+import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
@@ -88,4 +88,15 @@ class GwbkStatsView(
 
         fun isGatewayBackup(path: Path): Boolean = path.extension.lowercase() == "gwbk"
     }
+}
+
+interface StatisticRenderer<T : Statistic> {
+    val title: String
+    val icon: Icon?
+
+    fun T.subtitle(): String? {
+        return null
+    }
+
+    fun T.render(): JComponent
 }

@@ -3,7 +3,6 @@ package io.github.inductiveautomation.kindling.zip.views.gwbk
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
-import io.github.inductiveautomation.kindling.statistics.StatisticRenderer
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.PERSPECTIVE_MODULE_ID
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.VISION_MODULE_ID
