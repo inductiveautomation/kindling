@@ -40,6 +40,7 @@ class NodeStatistics(private val node: Node) {
 
     val numAlarms: Int
         get() = alarmStates.filter { it.enabled ?: true }.size
+
     val hasAlarms: Boolean
         get() = numAlarms > 0
 
@@ -53,7 +54,7 @@ class NodeStatistics(private val node: Node) {
 
     // Other Tag Properties:
     var historyEnabled: Boolean? = try {
-        node.config.historyEnabled?.jsonPrimitive?.boolean
+        node.config.historyEnabled?.jsonPrimitive?.boolean // JsonNull cannot be cast to boolean
     } catch (e: Exception) {
         true
     }
@@ -68,6 +69,17 @@ class NodeStatistics(private val node: Node) {
     var dataSource: String? = node.config.valueSource
 
     var isReadOnly: Boolean? = node.config.readOnly
+
+    /*
+     Copy functions are used to copy stats between nodes without modifying their underlying tag configurations.
+     This is important to maintain the integrity of a Node's actual config so that it can be serialized into an accurate tag export.
+
+     NodeStatistics holds stats for the provider to process, but also decouples a node's "runtime" state from its state "on disk".
+
+     We could possibly look into doing something here similar to what we did with ProviderStatistics, which would
+     reduce boilerplate and allow each statistic to specify its copy behavior, but it's quite a complex process and generics
+     might get hairy.
+     */
 
     fun copyToNewNode(newNodeStatistics: NodeStatistics) {
         newNodeStatistics.historyEnabled = historyEnabled

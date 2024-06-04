@@ -11,8 +11,16 @@ import kotlin.io.path.outputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
+
+/*
+    Primary constructor parameters represent an entry in the IDB for a tag provider.
+
+    The class body is all the parsing logic to parse the tag config table and build the node hierarchy for this provider.
+ */
 @Suppress("MemberVisibilityCanBePrivate")
 data class TagProviderRecord(
     val id: Int,
@@ -24,8 +32,11 @@ data class TagProviderRecord(
     val dbConnection: Connection,
 ) {
     val providerStatistics = ProviderStatistics()
-    val loadProvider = CoroutineScope(Dispatchers.Default).launch(start = CoroutineStart.LAZY) {
+
+    // Lazy Job which can be started manually with join(), or automatically when getProviderNode() is called.
+    val loadProvider: Job = CoroutineScope(Dispatchers.Default).launch(start = CoroutineStart.LAZY) {
         providerNode = createProviderNode(typesNode).apply {
+            // Main Tag Config resolution loop.
             for ((_, nodeGroup) in nodeGroups) {
                 // Resolve and process tags
                 with(nodeGroup) {
@@ -59,6 +70,7 @@ data class TagProviderRecord(
         }
     }
 
+    // Effectively just the TagConfig table in memory.
     val rawNodeData by lazy {
         dbConnection.prepareStatement(TAG_CONFIG_TABLE_QUERY).apply { setInt(1, id) }.executeQuery()
             .toList { rs ->
@@ -78,6 +90,16 @@ data class TagProviderRecord(
             }.filterNotNull()
     }
 
+    /*
+     Group and sort nodes by their "NodeGroup"
+
+     A node's ID tells us how many UDT's deep it is.
+     A node with a standard 36-length ID is a "top-level" node. ie it is not within a UDT.
+
+     Nodes are grouped by the first UUID in their total UUID. So a nodegroup will consist of the parent UDT + any children.
+
+     Some NodeGroups, like top-level folders, only contain themselves.
+     */
     val nodeGroups: Map<String, NodeGroup> by lazy {
         rawNodeData.groupBy { node ->
             node.id.substring(0, 36)
@@ -94,10 +116,18 @@ data class TagProviderRecord(
         }
     }
 
-    val typesNode = Node.createTypesNode(id)
+    val typesNode = createTypesNode(id)
 
-    lateinit var providerNode: Node
-        private set
+    /*
+        // This gets initialized when the loadProvider job is finished.
+        // loadProvider is started when getProviderNode() is called, or when loadProvider.join() is called
+     */
+    private lateinit var providerNode: Node
+
+    suspend fun getProviderNode() = CoroutineScope(Dispatchers.Default).async {
+        loadProvider.join()
+        providerNode
+    }
 
     val orphanedParentNode by lazy {
         Node(
@@ -131,6 +161,7 @@ data class TagProviderRecord(
         )
     }
 
+    // Export the whole tag provider to JSON, effectively just exporting the root node's config.
     @OptIn(ExperimentalSerializationApi::class)
     fun exportToJson(selectedFilePath: Path) {
         selectedFilePath.outputStream().use {
@@ -139,7 +170,7 @@ data class TagProviderRecord(
     }
 
     // Traversal Helper Functions:
-    private fun Node.getParentType(udtDefinitions: Map<String, Node>): Node? {
+    private fun Node.getParentType(): Node? {
         require((statistics.isUdtDefinition || statistics.isUdtInstance) && config.typeId != null) {
             "Not a top level UDT Instance or type! $this"
         }
@@ -147,7 +178,7 @@ data class TagProviderRecord(
     }
 
     private fun Node.getFullUdtDefinitionPath(nodeGroups: Map<String, NodeGroup>): String {
-        val lowercaseName = config.name!!.lowercase()
+        val lowercaseName = actualName.lowercase()
         return if (folderId == "_types_") {
             lowercaseName
         } else {
@@ -165,19 +196,19 @@ data class TagProviderRecord(
         val childInstances = childNodes.filter { it.statistics.isUdtInstance }
 
         for (childInstance in childInstances) {
-            val childDefinition = childInstance.getParentType(udtDefinitions) ?: continue
-            val childDefinitionGroup =
-                nodeGroups[childDefinition.id] ?: throw IllegalStateException(
-                    "This should never happen. Please report this issue to the maintainers of Kindling.",
-                )
+            val childDefinition = childInstance.getParentType() ?: continue
+            val childDefinitionGroup = nodeGroups[childDefinition.id] ?: throw IllegalStateException(
+                "This should never happen. Please report this issue to the maintainers of Kindling.",
+            )
 
-            // nodeGroups being ordered by rank will make this check not happen very often
+            // nodeGroups being ordered by rank will make this check not succeed very often
             if (!childDefinitionGroup.isResolved) childDefinitionGroup.resolveInheritance(nodeGroups, udtDefinitions)
 
             copyChildrenFrom(childDefinitionGroup, instanceId = childInstance.id)
         }
     }
 
+    // Copy node configs based on UDT inheritance. This also creates new nodes which have no overrides, thus no IDB entry.
     private fun NodeGroup.resolveInheritance(
         nodeGroups: Map<String, NodeGroup>,
         udtDefinitions: Map<String, Node>,
@@ -190,7 +221,7 @@ data class TagProviderRecord(
         }
 
         val inheritedParentNode =
-            parentNode.getParentType(udtDefinitions) ?: run {
+            parentNode.getParentType() ?: run {
                 isResolved = true
                 println("Missing UDT Definition: ${parentNode.config.typeId}")
                 return
@@ -205,6 +236,7 @@ data class TagProviderRecord(
         isResolved = true
     }
 
+    // Build the node hierarchy by adding child tags throughout the group
     private fun NodeGroup.resolveHierarchy() {
         if (size == 1) return
 
@@ -230,6 +262,20 @@ data class TagProviderRecord(
             ),
             rank = 0,
             name = this.name,
+        )
+
+        fun createTypesNode(providerId: Int): Node = Node(
+            id = "_types_",
+            providerId = providerId,
+            folderId = null,
+            config = TagConfig(
+                name = "_types_",
+                tagType = "Folder",
+                tags = NodeGroup(),
+            ),
+            rank = 1,
+            name = "_types_",
+            isMeta = true,
         )
 
         private fun NodeGroup.copyChildrenFrom(

@@ -21,9 +21,12 @@ data class Node(
     val config: TagConfig,
     val rank: Int,
     val name: String?,
-    var resolved: Boolean = false, // Improves parsing efficiency a bit.
-    val inferredNode: Boolean = false, //  "Inferred" means that there is no IDB entry for this node, but it will exist at runtime
-    val isMeta: Boolean = false, // Used for sorting. A "meta" node is either the _types_ folder or the orphaned tags folder
+    // Improves parsing efficiency a bit.
+    var resolved: Boolean = false,
+    //  "Inferred" means that there is no IDB entry for this node, but it will exist at runtime
+    val inferredNode: Boolean = false,
+    // Used for sorting. A "meta" node is either the _types_ folder or the orphaned tags folder
+    val isMeta: Boolean = false,
 ) : TreeNode {
     val statistics = NodeStatistics(this)
     private var parent: Node? = null
@@ -47,27 +50,15 @@ data class Node(
     override fun children(): Enumeration<out TreeNode> = Collections.enumeration(config.tags)
 
     companion object {
-        val nodeChildComparator = compareBy<Node> { !it.isMeta }.thenBy { it.config.tagType }.thenBy { it.actualName.lowercase() }
-
-        fun createTypesNode(providerId: Int): Node = Node(
-            id = "_types_",
-            providerId = providerId,
-            folderId = null,
-            config = TagConfig(
-                name = "_types_",
-                tagType = "Folder",
-                tags = NodeGroup(),
-            ),
-            rank = 1,
-            name = "_types_",
-            isMeta = true,
-        )
+        private val nodeChildComparator = compareBy<Node> { !it.isMeta }.thenBy { it.config.tagType }.thenBy { it.actualName.lowercase() }
     }
 }
 
 /*
 The JSON serialization of a Node is simply its config. The Node class represents an entry in the IDB.
 Here, we delegate the serialization of a node to just use the TagConfig serializer.
+
+Serializing a node will recursively serialize all child tags, creating the complete json export.
  */
 object NodeDelegateSerializer : KSerializer<Node> {
     @OptIn(ExperimentalSerializationApi::class)

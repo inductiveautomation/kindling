@@ -27,8 +27,8 @@ class TagBrowseTree : JTree(NO_SELECTION) {
 
             EDT_SCOPE.launch {
                 model = DefaultTreeModel(NO_SELECTION)
-                withContext(Dispatchers.Default) { value.loadProvider.join() }
-                model = DefaultTreeModel(value.providerNode)
+                val providerNode = withContext(Dispatchers.Default) { value.getProviderNode().await() }
+                model = DefaultTreeModel(providerNode)
             }
         }
 
@@ -85,10 +85,10 @@ class TagBrowseTree : JTree(NO_SELECTION) {
 
         private const val ICON_SIZE = 18
 
-        val UDT_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-vector.svg").derive(ICON_SIZE, ICON_SIZE)
-        val TAG_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-purchase-tag.svg").derive(ICON_SIZE, ICON_SIZE)
-        val FOLDER_CLOSED_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder.svg").derive(ICON_SIZE, ICON_SIZE)
-        val FOLDER_OPEN_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder-open.svg").derive(ICON_SIZE, ICON_SIZE)
+        private val UDT_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-vector.svg").derive(ICON_SIZE, ICON_SIZE)
+        private val TAG_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-purchase-tag.svg").derive(ICON_SIZE, ICON_SIZE)
+        private val FOLDER_CLOSED_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder.svg").derive(ICON_SIZE, ICON_SIZE)
+        private val FOLDER_OPEN_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder-open.svg").derive(ICON_SIZE, ICON_SIZE)
 
         fun TreePath.toTagPath(): String {
             val provider = "[${(path.first() as Node).name}]"

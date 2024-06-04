@@ -1,21 +1,25 @@
+@file:Suppress("unused")
+
 package io.github.inductiveautomation.kindling.idb.tagconfig
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
+import io.github.inductiveautomation.kindling.utils.Column
+import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
+import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import java.awt.Font
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.table.DefaultTableModel
+import javax.swing.table.AbstractTableModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXTable
 
 class ProviderStatisticsPanel : JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2, hidemode 3")), PopupMenuCustomizer {
     var provider: TagProviderRecord? = null
@@ -29,38 +33,33 @@ class ProviderStatisticsPanel : JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2
                 loading = true
 
                 val (individualStats, mappedStats) = withContext(Dispatchers.Default) {
-                    newProvider.loadProvider.join()
+                    newProvider.loadProvider.join() // Wait for provider to load
 
+                    @Suppress("UNCHECKED_CAST")
                     val individualStats = newProvider.providerStatistics.values.filter {
                         it is ProviderStatistics.QuantitativeStatistic || it is ProviderStatistics.DependentStatistic<*, *>
-                    }.map {
-                        arrayOf(it.humanReadableName, it.value.toString())
-                    }.toTypedArray()
+                    } as List<ProviderStatistics.ProviderStatistic<Int>>
 
                     val mappedStats = newProvider.providerStatistics.values.filterIsInstance<ProviderStatistics.MappedStatistic>()
 
                     Pair(individualStats, mappedStats)
                 }
 
-                generalStatsTable.model = DefaultTableModel(individualStats, arrayOf("Stat", "Value"))
+                generalStatsTable.model = IndividualStatsModel(individualStats)
                 mappedStatsTables.forEachIndexed { i, table ->
-                    val mappedStat = mappedStats[i]
-                    val entries = mappedStat.value.entries.map {
-                        arrayOf(it.key, it.value.toString())
-                    }.toTypedArray()
-
-                    table.model = DefaultTableModel(entries, arrayOf(mappedStat.humanReadableName, "Value"))
+                    table.model = MappedStatModel(mappedStats[i])
                 }
 
                 loading = false
             }
         }
 
-    private val generalStatsTable = JXTable()
+    private val generalStatsTable = ReifiedJXTable(IndividualStatsModel(), IndividualStatsModel.IndividualStatColumns)
     private val generalStatsScrollPane = FlatScrollPane(generalStatsTable)
 
     private val mappedStatsTables = List(ProviderStatistics().values.filterIsInstance<ProviderStatistics.MappedStatistic>().size) {
-        JXTable()
+        val model = MappedStatModel()
+        ReifiedJXTable(model, model.columns)
     }
     private val mappedStatsScrollPanes = mappedStatsTables.map {
         FlatScrollPane(it)
@@ -105,4 +104,58 @@ class ProviderStatisticsPanel : JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2
     }
 
     override fun customizePopupMenu(menu: JPopupMenu) = menu.removeAll()
+}
+
+
+class IndividualStatsModel(
+    private val data: List<ProviderStatistics.ProviderStatistic<Int>> = emptyList(),
+) : AbstractTableModel() {
+    override fun getColumnName(column: Int): String = IndividualStatColumns[column].header
+    override fun getRowCount(): Int = data.size
+    override fun getColumnCount(): Int = size
+    override fun getValueAt(row: Int, column: Int): Any? = get(row, IndividualStatColumns[column])
+    override fun getColumnClass(column: Int): Class<*> = IndividualStatColumns[column].clazz
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
+
+    operator fun <R> get(row: Int, column: Column<ProviderStatistics.ProviderStatistic<Int>, R>): R? {
+        return data.getOrNull(row)?.let { stat ->
+            column.getValue(stat)
+        }
+    }
+
+    companion object IndividualStatColumns : ColumnList<ProviderStatistics.ProviderStatistic<Int>>() {
+        val stat by column("Stat") {
+            it.name
+        }
+
+        val value by column("Value") {
+            it.value
+        }
+    }
+}
+
+class MappedStatModel(
+    private val data: ProviderStatistics.MappedStatistic? = null,
+) : AbstractTableModel() {
+    val columns = object : ColumnList<Map.Entry<String, Int>>() {
+        val statName by column(data?.humanReadableName) {
+            it.key
+        }
+
+        val statValue by column("Value") {
+            it.value
+        }
+    }
+    override fun getColumnName(column: Int): String = columns[column].header
+    override fun getRowCount(): Int = data?.value?.size ?: 0
+    override fun getColumnCount(): Int = columns.size
+    override fun getValueAt(row: Int, column: Int): Any? = get(row, columns[column])
+    override fun getColumnClass(column: Int): Class<*> = columns[column].clazz
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
+
+    operator fun <R> get(row: Int, column: Column<Map.Entry<String, Int>, R>): R? {
+        return data?.value?.entries?.toList()?.getOrNull(row)?.let {
+            column.getValue(it)
+        }
+    }
 }
