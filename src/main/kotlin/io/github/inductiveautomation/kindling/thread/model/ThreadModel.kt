@@ -67,21 +67,6 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
         },
     )
 
-    val totalCPU = Column<ThreadLifespan, Double?>(
-        header = "Total CPU",
-        columnCustomization = {
-            minWidth = 60
-            cellRenderer = DefaultTableRenderer { value ->
-                (value as? Double)?.let { percent.format(it) }.orEmpty()
-            }
-        },
-        getValue = { threads ->
-            threads.sumOf { thread -> thread?.cpuUsage ?: 0.0 }
-        },
-    )
-
-
-
     val depth = Column<ThreadLifespan, Int>(
         header = "Depth",
         columnCustomization = {

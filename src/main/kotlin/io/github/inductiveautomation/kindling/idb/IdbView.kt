@@ -80,7 +80,7 @@ enum class IdbTool {
         override fun supports(tables: List<String>): Boolean = "logging_event" in tables
 
         override fun open(connection: Connection): ToolPanel {
-            val stackTraces: Map<Int, List<String>> =
+            val stackTraces: Map<Long, List<String>> =
                 connection.executeQuery(
                     """
                     SELECT
@@ -93,13 +93,13 @@ enum class IdbTool {
                         i
                     """.trimIndent(),
                 )
-                    .toMap<Int, MutableList<String>> { resultSet ->
-                        val key: Int = resultSet["event_id"]
+                    .toMap<Long, MutableList<String>> { resultSet ->
+                        val key: Long = resultSet["event_id"]
                         val valueList = getOrPut(key, ::mutableListOf)
                         valueList.add(resultSet["trace_line"])
                     }
 
-            val mdcKeys: Map<Int, List<MDC>> =
+            val mdcKeys: Map<Long, List<MDC>> =
                 connection.executeQuery(
                     """
                     SELECT 
@@ -111,8 +111,8 @@ enum class IdbTool {
                     ORDER BY 
                         event_id
                     """.trimIndent(),
-                ).toMap<Int, MutableList<MDC>> { resultSet ->
-                    val key: Int = resultSet["event_id"]
+                ).toMap<Long, MutableList<MDC>> { resultSet ->
+                    val key: Long = resultSet["event_id"]
                     val valueList = getOrPut(key, ::mutableListOf)
                     valueList +=
                         MDC(
@@ -137,7 +137,7 @@ enum class IdbTool {
                         timestmp
                     """.trimIndent(),
                 ).toList { resultSet ->
-                    val eventId: Int = resultSet["event_id"]
+                    val eventId: Long = resultSet["event_id"]
                     SystemLogEvent(
                         timestamp = Instant.ofEpochMilli(resultSet["timestmp"]),
                         message = resultSet["formatted_message"],

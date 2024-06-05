@@ -80,6 +80,10 @@ inline fun <reified T : EventListener> EventListenerList.add(listener: T) {
     add(T::class.java, listener)
 }
 
+inline fun <reified T : EventListener> EventListenerList.remove(listener: T) {
+    remove(T::class.java, listener)
+}
+
 inline fun <reified T : EventListener> EventListenerList.getAll(): Array<T> {
     return getListeners(T::class.java)
 }

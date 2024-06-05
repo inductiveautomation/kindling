@@ -134,13 +134,7 @@ data object Kindling {
                 name = "Logger Name Format",
                 default = false,
                 editor = {
-                    PreferenceCheckbox("Show logger names as a tree view for system log files").dependsOn(
-                        ShowFullLoggerNames
-                    ) {
-                            // function that toggles this value depending on value of SHowFullLoggerNames
-                        isEnabled = it
-                        if (!it) isSelected = false
-                    }
+                    PreferenceCheckbox("Show logger names as a tree view for system log files")
                 },
             )
 

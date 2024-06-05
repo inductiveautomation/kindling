@@ -13,7 +13,40 @@ import javax.swing.UIManager
 class FilterSidebar<T>(
     vararg panels: FilterPanel<T>?,
 ) : FlatTabbedPane() {
-    val filterPanels = panels.filterNotNull()
+    val filterPanels = object : ArrayList<FilterPanel<T>>() {
+        override fun add(index: Int, element: FilterPanel<T>) {
+            super.add(index, element)
+            insertTab(
+                null,
+                element.icon,
+                element.component,
+                buildString {
+                    tag("html") {
+                        tag("p", "style" to "margin: 3px;") {
+                            append(element.tabName)
+                        }
+                    }
+                },
+                index
+            )
+            element.addFilterChangeListener {
+                element.updateTabState()
+                selectedIndex = index
+            }
+        }
+
+        override fun remove(element: FilterPanel<T>): Boolean {
+            removeTabAt(indexOf(element))
+            element.clearFilterChangeListeners()
+            return super.remove(element)
+        }
+
+        init {
+            panels.filterNotNull().forEachIndexed { index, filterPanel ->
+                add(index, filterPanel)
+            }
+        }
+    }
 
     override fun createToolTip(): JToolTip = JToolTip().apply {
         font = UIManager.getFont("h3.regular.font")
@@ -43,24 +76,6 @@ class FilterSidebar<T>(
         isShowContentSeparators = false
 
         preferredSize = Dimension(250, 100)
-        filterPanels.forEachIndexed { i, filterPanel ->
-            addTab(
-                null,
-                filterPanel.icon,
-                filterPanel.component,
-                buildString {
-                    tag("html") {
-                        tag("p", "style" to "margin: 3px;") {
-                            append(filterPanel.tabName)
-                        }
-                    }
-                },
-            )
-            filterPanel.addFilterChangeListener {
-                filterPanel.updateTabState()
-                selectedIndex = i
-            }
-        }
 
         attachPopupMenu { event ->
             val tabIndex = indexAtLocation(event.x, event.y)
