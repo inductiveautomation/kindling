@@ -3,8 +3,6 @@ package io.github.inductiveautomation.kindling.core
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.add
-import io.github.inductiveautomation.kindling.utils.getAll
-import io.github.inductiveautomation.kindling.utils.remove
 import java.util.EventListener
 import javax.swing.JComponent
 import javax.swing.JPopupMenu
@@ -34,16 +32,6 @@ abstract class FilterPanel<T> : Filter<T> {
 
     fun addFilterChangeListener(listener: FilterChangeListener) {
         listeners.add(listener)
-    }
-
-    fun removeFilterChangeListener(listener: FilterChangeListener) {
-        listeners.remove(listener)
-    }
-
-    fun clearFilterChangeListeners() {
-        for (listener in listeners.getAll<FilterChangeListener>()) {
-            listeners.remove(listener)
-        }
     }
 
     abstract fun reset()

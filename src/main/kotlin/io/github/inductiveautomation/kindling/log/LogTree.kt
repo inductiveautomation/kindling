@@ -1,23 +1,14 @@
 package io.github.inductiveautomation.kindling.log
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.CheckBoxTree
 import com.jidesoft.swing.TreeSearchable
-import io.github.inductiveautomation.kindling.idb.generic.Column
-import io.github.inductiveautomation.kindling.idb.generic.Table
-import io.github.inductiveautomation.kindling.idb.metrics.Metric
-import io.github.inductiveautomation.kindling.idb.metrics.MetricNode
-import io.github.inductiveautomation.kindling.idb.metrics.MetricTree
-import io.github.inductiveautomation.kindling.idb.metrics.RootNode
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import javax.swing.JMenuItem
 import javax.swing.JPopupMenu
-import org.apache.commons.math3.stat.Frequency
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
@@ -34,7 +25,7 @@ class LogEventNode(
             element.parent = this@LogEventNode
             val success = super.add(element)
 
-            sortWith(compareBy { (it as LogEventNode).userObject.last })
+            sortWith(compareBy { (it as LogEventNode).userObject.last().lowercase() })
             return success
         }
     }
@@ -43,7 +34,7 @@ class LogEventNode(
         if (this.isLeaf) {
             frequency
         } else {
-            children.sumOf {
+            frequency + children.sumOf {
                 (it as LogEventNode).frequency
             }
         }
@@ -56,18 +47,23 @@ class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
         val logEventsByLogger = logEvents.groupingBy(SystemLogEvent::logger).eachCount()
 
         val seen = mutableMapOf<List<String>, LogEventNode>()
-        for ((logger, freq) in logEventsByLogger.entries) {
+        for (logger in logEventsByLogger.keys) {
             var lastSeen: AbstractTreeNode = this
 
-            val currentLeadingPath = mutableListOf<String>("")
+            val currentLeadingPath = mutableListOf("")
             val loggerParts = logger.split('.')
 
-            for ((index, part) in loggerParts.withIndex()) {
+            for (part in loggerParts) {
                 currentLeadingPath.add(part)
                 val next = seen.getOrPut(currentLeadingPath.toList()) {
                     val path = currentLeadingPath.drop(1)
-                    val newChild = if (index == loggerParts.size - 1) {
-                        LogEventNode(path, freq)
+
+                    // Need to check every path and "sub-path" to see if it is also a full logger.
+                    // Thanks to the map, this is not that expensive of a check.
+                    val loggerFreq = logEventsByLogger[path.joinToString(".")]
+
+                    val newChild = if (loggerFreq != null) {
+                        LogEventNode(path, loggerFreq)
                     } else {
                         LogEventNode(path)
                     }
@@ -78,7 +74,7 @@ class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
             }
         }
 
-        children.sortWith(compareBy { (it as LogEventNode).userObject.last.lowercase() })
+        children.sortWith(compareBy { (it as LogEventNode).userObject.last().lowercase() })
     }
 }
 
@@ -137,13 +133,12 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
         }
     }
 
-    val selectedLeafNodes: List<LogEventNode>
-        get() = checkBoxTreeSelectionModel.selectionPaths //drivers/modbus/etc
-            .flatMap {
-                (it.lastPathComponent as AbstractTreeNode).depthFirstChildren().ifEmpty {
-                    sequenceOf(it.lastPathComponent)
-                }
-            }.filterIsInstance<LogEventNode>()
+    val selectedNodes: List<LogEventNode>
+        get() = checkBoxTreeSelectionModel.selectionPaths.flatMap {
+            (it.lastPathComponent as AbstractTreeNode).depthFirstChildren().ifEmpty {
+                sequenceOf(it.lastPathComponent)
+            }
+        }.filterIsInstance<LogEventNode>()
 
     private fun expandAll() {
         var i = 0

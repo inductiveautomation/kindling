@@ -86,7 +86,7 @@ class MetricTree(metrics: List<Metric>) : CheckBoxTree(DefaultTreeModel(RootNode
     val selectedLeafNodes: List<MetricNode>
         get() = checkBoxTreeSelectionModel.selectionPaths
             .flatMap {
-                (it.lastPathComponent as AbstractTreeNode).depthFirstChildren()
+                (it.lastPathComponent as TreeNode).depthFirstChildren()
             }.filterIsInstance<MetricNode>()
 
     private fun TreeNode.depthFirstChildren(): Sequence<AbstractTreeNode> = sequence {
