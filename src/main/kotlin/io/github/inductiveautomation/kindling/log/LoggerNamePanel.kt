@@ -13,6 +13,7 @@ import io.github.inductiveautomation.kindling.utils.FilterList
 import io.github.inductiveautomation.kindling.utils.FilterModel
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
+import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.getAll
 import javax.swing.JComponent
 import javax.swing.JMenuItem
@@ -49,6 +50,9 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) : FilterPanel<LogEven
         )
         selectAll()
 
+        // Right clicking will check and uncheck an item. We don't want that for this list.
+        isClickInCheckBoxOnly = true
+
         ShowFullLoggerNames.addChangeListener {
             model = model.copy(comparator)
         }
@@ -56,6 +60,19 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) : FilterPanel<LogEven
         checkBoxListSelectionModel.addListSelectionListener { e ->
             if (!e.valueIsAdjusting && !isContextChanging) {
                 listeners.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
+            }
+        }
+
+        attachPopupMenu {
+            JPopupMenu().apply {
+                val prompt = if (ShowFullLoggerNames.currentValue) "Show Compact Names" else "Show Full Names"
+                add(
+                    JMenuItem(
+                        Action(prompt) {
+                            ShowFullLoggerNames.currentValue = !ShowFullLoggerNames.currentValue
+                        }
+                    )
+                )
             }
         }
     }
