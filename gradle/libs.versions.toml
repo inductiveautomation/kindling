@@ -24,7 +24,7 @@ logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.5.6
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.3" }
 poi = { group = "org.apache.poi", name = "poi-ooxml", version = "5.2.5" }
 excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" }
-jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.4.0" }
+jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.5.0" }
 jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
 jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
