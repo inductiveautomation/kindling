@@ -90,7 +90,6 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
                     val path = value.userObject
                     text = "${path.lastOrNull()} [${value.frequency}]"
                     toolTipText = value.name
-
                 } else {
                     text = "Select All"
                 }
@@ -106,14 +105,14 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
                         Action("Expand All") {
                             expandAll()
                         }
-                    )
+                    ),
                 )
                 add(
                     JMenuItem(
                         Action("Collapse All") {
                             collapseAll()
                         }
-                    )
+                    ),
                 )
             }
         }
