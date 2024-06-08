@@ -15,6 +15,7 @@ import net.miginfocom.swing.MigLayout
 import java.awt.Component
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import javax.swing.AbstractButton
 import javax.swing.ButtonGroup
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -120,14 +121,14 @@ private fun createSplitPane(
 }
 
 /**
- * Constructs a MigLayout JPanel containing each element of [group] in the first row.
+ * Constructs a MigLayout JPanel containing each element of [buttonList] in the first row.
  */
-fun ButtonPanel(group: ButtonGroup) =
-    JPanel(MigLayout("ins 3 0, fill")).apply {
-        border = EmptyBorder()
-        val sortGroupEnumeration = group.elements
-        add(sortGroupEnumeration.nextElement(), "split ${group.buttonCount}, flowx, align right, gapbottom 3")
-        for (element in sortGroupEnumeration) {
-            add(element, "gapx 2, align right, gapbottom 3")
-        }
+fun ButtonPanel(buttonList: List<AbstractButton>) = JPanel(MigLayout("ins 3 0, fill")).apply {
+    border = EmptyBorder()
+    add(buttonList.first(), "split ${buttonList.size}, flowx, align right, gapbottom 3")
+    for (element in buttonList.drop(1)) {
+        add(element, "gapx 2, align right, gapbottom 3")
     }
+}
+
+fun ButtonPanel(group: ButtonGroup) = ButtonPanel(group.elements.toList())

@@ -14,7 +14,7 @@ class FilterSidebar<T>(
     vararg panels: FilterPanel<T>?,
 ) : FlatTabbedPane() {
 
-    val filterPanels = panels.filterNotNull().toList()
+    val filterPanels = panels.filterNotNull()
 
     override fun createToolTip(): JToolTip = JToolTip().apply {
         font = UIManager.getFont("h3.regular.font")

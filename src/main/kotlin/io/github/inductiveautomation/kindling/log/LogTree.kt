@@ -1,11 +1,15 @@
 package io.github.inductiveautomation.kindling.log
 
+import com.jidesoft.comparator.AlphanumComparator
 import com.jidesoft.swing.CheckBoxTree
 import com.jidesoft.swing.TreeSearchable
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
+import io.github.inductiveautomation.kindling.utils.collapseAll
+import io.github.inductiveautomation.kindling.utils.expandAll
+import io.github.inductiveautomation.kindling.utils.selectAll
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import javax.swing.JMenuItem
 import javax.swing.JPopupMenu
@@ -13,20 +17,22 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 
+private val nodeComparator: Comparator<TreeNode> =
+    compareBy(AlphanumComparator(false)) { (it as LogEventNode).userObject.last() }
+
 class LogEventNode(
     override val userObject: List<String>,
-    frequency: Int = 0
+    frequency: Int = 0,
 ) : TypedTreeNode<List<String>>() {
     val name by lazy { userObject.joinToString(".") }
 
     override val children: MutableList<TreeNode> = object : ArrayList<TreeNode>() {
         override fun add(element: TreeNode): Boolean {
-            element as AbstractTreeNode
+            require(element is LogEventNode)
             element.parent = this@LogEventNode
-            val success = super.add(element)
-
-            sortWith(compareBy { (it as LogEventNode).userObject.last().lowercase() })
-            return success
+            return super.add(element).also {
+                sortWith(nodeComparator)
+            }
         }
     }
 
@@ -34,15 +40,12 @@ class LogEventNode(
         if (this.isLeaf) {
             frequency
         } else {
-            frequency + children.sumOf {
-                (it as LogEventNode).frequency
-            }
+            frequency + depthFirstChildren().filterIsInstance<LogEventNode>().sumOf { it.frequency }
         }
     }
 }
 
 class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
-
     init {
         val logEventsByLogger = logEvents.groupingBy(SystemLogEvent::logger).eachCount()
 
@@ -74,14 +77,14 @@ class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {
             }
         }
 
-        children.sortWith(compareBy { (it as LogEventNode).userObject.last().lowercase() })
+        children.sortWith(nodeComparator)
     }
 }
-
 
 class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(RootNode(logEvents))) {
     init {
         setShowsRootHandles(false)
+        isClickInCheckBoxOnly = false
         selectAll()
 
         setCellRenderer(
@@ -91,7 +94,7 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
                     text = "${path.lastOrNull()} [${value.frequency}]"
                     toolTipText = value.name
                 } else {
-                    text = "Select All"
+                    text = "(All)"
                 }
                 icon = null
                 this
@@ -104,14 +107,14 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
                     JMenuItem(
                         Action("Expand All") {
                             expandAll()
-                        }
+                        },
                     ),
                 )
                 add(
                     JMenuItem(
                         Action("Collapse All") {
                             collapseAll()
-                        }
+                        },
                     ),
                 )
             }
@@ -138,22 +141,4 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
                 sequenceOf(it.lastPathComponent)
             }
         }.filterIsInstance<LogEventNode>()
-
-    private fun expandAll() {
-        var i = 0
-        while (i < rowCount) {
-            expandRow(i)
-            i += 1
-        }
-    }
-
-    private fun collapseAll() {
-        var i = rowCount - 1 // Skip the root node
-        while (i > 0) {
-            collapseRow(i)
-            i -= 1
-        }
-    }
-
-    fun selectAll() = checkBoxTreeSelectionModel.addSelectionPath(TreePath(model.root))
 }

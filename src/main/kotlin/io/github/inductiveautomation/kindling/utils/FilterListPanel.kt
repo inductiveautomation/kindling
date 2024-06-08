@@ -12,10 +12,9 @@ abstract class FilterListPanel<T>(
 
     private val sortButtons = filterList.createSortButtons()
 
-    override val component =
-        ButtonPanel(sortButtons).apply {
-            add(FlatScrollPane(filterList), "newline, push, grow, align right")
-        }
+    override val component = ButtonPanel(sortButtons).apply {
+        add(FlatScrollPane(filterList), "newline, push, grow, align right")
+    }
 
     init {
         filterList.checkBoxListSelectionModel.addListSelectionListener { e ->
