@@ -74,8 +74,6 @@ inline fun <reified T> sqliteCoercion(raw: Any?): T {
     return when {
         raw is Int && T::class == Long::class -> raw.toLong()
         raw is Int && T::class == Boolean::class -> raw == 1
-//        raw is Long && T::class == Int::class -> raw.toInt()
-//        raw is Long && T::class == Boolean::class -> raw == 1L
         else -> raw
     } as T
 }
