@@ -1,28 +1,34 @@
+@file:Suppress("FunctionName") // ktlint is dumb and doesn't understand this
+
 package io.github.inductiveautomation.kindling.utils
 
 import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING
 import com.formdev.flatlaf.FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING_LARGE
 import com.formdev.flatlaf.extras.components.FlatScrollPane
+import com.formdev.flatlaf.extras.components.FlatSplitPane
+import com.formdev.flatlaf.extras.components.FlatSplitPane.ExpandableSide
 import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
 import io.github.inductiveautomation.kindling.core.Kindling
 import net.miginfocom.swing.MigLayout
 import java.awt.Component
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import javax.swing.ButtonGroup
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JSplitPane
-import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
-@Suppress("FunctionName")
 inline fun FlatScrollPane(
     component: Component,
     block: FlatScrollPane.() -> Unit = {},
-) = FlatScrollPane().apply {
-    setViewportView(component)
-    block(this)
+): FlatScrollPane {
+    return FlatScrollPane().apply {
+        setViewportView(component)
+        block(this)
+    }
 }
 
 /**
@@ -69,36 +75,53 @@ inline fun StyledLabel.style(block: StyledLabelBuilder.() -> Unit) {
 
 fun EmptyBorder(): EmptyBorder = EmptyBorder(0, 0, 0, 0)
 
-@Suppress("FunctionName")
 fun HorizontalSplitPane(
     left: Component,
     right: Component,
     resizeWeight: Double = 0.5,
+    expandableSide: ExpandableSide = ExpandableSide.right,
     block: JSplitPane.() -> Unit = {},
-) = JSplitPane(SwingConstants.VERTICAL, left, right).apply {
-    isOneTouchExpandable = true
-    this.resizeWeight = resizeWeight
+) = createSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right, resizeWeight, expandableSide, block)
 
-    block()
-}
-
-@Suppress("FunctionName")
 fun VerticalSplitPane(
     top: Component,
     bottom: Component,
     resizeWeight: Double = 0.5,
+    // the top ("left") is the one that's allowed to expand
+    expandableSide: ExpandableSide = ExpandableSide.left,
     block: JSplitPane.() -> Unit = {},
-) = JSplitPane(SwingConstants.HORIZONTAL, top, bottom).apply {
-    isOneTouchExpandable = true
-    this.resizeWeight = resizeWeight
+) = createSplitPane(JSplitPane.VERTICAL_SPLIT, top, bottom, resizeWeight, expandableSide, block)
 
-    block()
+private fun createSplitPane(
+    orientation: Int,
+    left: Component,
+    right: Component,
+    resizeWeight: Double,
+    expandableSide: ExpandableSide,
+    block: JSplitPane.() -> Unit,
+): FlatSplitPane {
+    return FlatSplitPane().apply {
+        this.orientation = orientation
+        this.leftComponent = left
+        this.rightComponent = right
+        this.isOneTouchExpandable = true
+        this.expandableSide = expandableSide
+        this.resizeWeight = resizeWeight
+        addComponentListener(
+            object : ComponentAdapter() {
+                override fun componentShown(e: ComponentEvent?) {
+                    setDividerLocation(resizeWeight)
+                }
+            },
+        )
+
+        block()
+    }
 }
 
 /**
  * Constructs a MigLayout JPanel containing each element of [group] in the first row.
  */
-@Suppress("FunctionName")
 fun ButtonPanel(group: ButtonGroup) =
     JPanel(MigLayout("ins 3 0, fill")).apply {
         border = EmptyBorder()

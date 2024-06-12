@@ -1,7 +1,7 @@
 package io.github.inductiveautomation.kindling.internal
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import org.jdesktop.swingx.JXTable
 import org.jdesktop.swingx.decorator.HighlighterFactory
 import java.awt.event.MouseAdapter
@@ -10,7 +10,7 @@ import javax.swing.JLabel
 import javax.swing.Popup
 import javax.swing.PopupFactory
 
-class DetailsIcon(details: Map<String, String>) : JLabel(detailsIcon) {
+class DetailsIcon(details: Map<String, String>) : JLabel(DETAILS_ICON) {
     private val table = JXTable(DetailsModel(details.entries.toList())).apply {
         addHighlighter(HighlighterFactory.createSimpleStriping())
         packAll()
@@ -27,7 +27,7 @@ class DetailsIcon(details: Map<String, String>) : JLabel(detailsIcon) {
                     popup = PopupFactory.getSharedInstance().getPopup(
                         this@DetailsIcon,
                         table,
-                        locationOnScreen.x + detailsIcon.iconWidth,
+                        locationOnScreen.x + DETAILS_ICON.iconWidth,
                         locationOnScreen.y,
                     ).also {
                         it.show()
@@ -42,6 +42,6 @@ class DetailsIcon(details: Map<String, String>) : JLabel(detailsIcon) {
     }
 
     companion object {
-        private val detailsIcon = FlatSVGIcon("icons/bx-search.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+        private val DETAILS_ICON = FlatSVGIcon("icons/bx-search.svg").asActionIcon()
     }
 }

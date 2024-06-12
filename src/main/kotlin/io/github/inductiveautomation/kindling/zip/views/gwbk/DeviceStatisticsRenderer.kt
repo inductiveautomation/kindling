@@ -1,37 +1,32 @@
 package io.github.inductiveautomation.kindling.zip.views.gwbk
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.core.Kindling.SECONDARY_ACTION_ICON_SCALE
 import io.github.inductiveautomation.kindling.statistics.categories.DeviceStatistics
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import javax.swing.Icon
-import javax.swing.JComponent
 import javax.swing.SortOrder
 
 class DeviceStatisticsRenderer : StatisticRenderer<DeviceStatistics> {
     override val title: String = "Devices"
-    override val icon: Icon = FlatSVGIcon("icons/bx-chip.svg").derive(SECONDARY_ACTION_ICON_SCALE)
+    override val icon: Icon = FlatSVGIcon("icons/bx-chip.svg").asActionIcon()
 
-    override fun DeviceStatistics.subtitle(): String {
-        return "$enabled enabled, $total total"
-    }
+    override fun DeviceStatistics.subtitle() = "$enabled enabled, $total total"
 
-    override fun DeviceStatistics.render(): JComponent {
-        return FlatScrollPane(
-            ReifiedJXTable(ReifiedListTableModel(devices, DeviceColumns)).apply {
-                setDefaultRenderer<DeviceStatistics.Device>(
-                    getText = { it?.name },
-                    getTooltip = { it?.description },
-                )
+    override fun DeviceStatistics.render() = FlatScrollPane(
+        ReifiedJXTable(ReifiedListTableModel(devices, DeviceColumns)).apply {
+            setDefaultRenderer<DeviceStatistics.Device>(
+                getText = { it?.name },
+                getTooltip = { it?.description },
+            )
 
-                setSortOrder(Name, SortOrder.ASCENDING)
-            },
-        )
-    }
+            setSortOrder(Name, SortOrder.ASCENDING)
+        },
+    )
 
     @Suppress("unused")
     companion object DeviceColumns : ColumnList<DeviceStatistics.Device>() {

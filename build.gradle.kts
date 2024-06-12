@@ -27,9 +27,14 @@ dependencies {
         // Exclude transitive IA dependencies - we only need core Ignition classes for cache deserialization
         isTransitive = false
     }
-    api(libs.excelkt)
+    api(libs.poi)
+    api(libs.excelkt) {
+        // bringing in POI manually, since this wrapper appears unmaintained
+        isTransitive = false
+    }
     api(libs.jfreechart)
     api(libs.rsyntaxtextarea)
+    api(libs.bundles.jackson)
     runtimeOnly(libs.bundles.ia.transitive)
 
     testImplementation(libs.bundles.kotest)
@@ -85,7 +90,7 @@ kotlin {
                     version = "8.1"
                     urls =
                         listOf(
-                            "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.34/allclasses-index.html",
+                            "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.38/allclasses-index.html",
                             "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
                             "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
                         )

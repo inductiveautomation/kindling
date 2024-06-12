@@ -2,6 +2,7 @@
 package io.github.inductiveautomation.kindling.utils
 
 import com.jidesoft.comparator.AlphanumComparator
+import io.github.inductiveautomation.kindling.core.Tool
 import java.nio.file.FileSystem
 import java.nio.file.Path
 import javax.swing.JTree
@@ -11,6 +12,7 @@ import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.PathWalkOption.INCLUDE_DIRECTORIES
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.walk
 
@@ -49,11 +51,16 @@ class ZipFileTree(fileSystem: FileSystem) : JTree(ZipFileModel(fileSystem)) {
         setShowsRootHandles(true)
 
         setCellRenderer(
-            treeCellRenderer { _, value, _, _, _, _, _ ->
+            treeCellRenderer { _, value, selected, _, _, _, _ ->
                 if (value is PathNode) {
                     val path = value.userObject
                     toolTipText = path.toString()
                     text = path.last().toString()
+                    icon = if (path.isRegularFile()) {
+                        Tool.find(path)?.icon?.asActionIcon(selected) ?: icon
+                    } else {
+                        icon
+                    }
                 }
                 this
             },

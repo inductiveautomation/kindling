@@ -5,7 +5,6 @@ import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.MultiTool
-import io.github.inductiveautomation.kindling.core.Preference
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
@@ -131,10 +130,11 @@ class WrapperLogView(
 }
 
 data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
+    override val serialKey = "logview"
     override val title = "Wrapper Log"
-    override val description = "wrapper.log(.n) files"
+    override val description = "Wrapper Log(s) (wrapper.log, wrapper.log.1, wrapper.log...)"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
-    override val respectsEncoding: Boolean = true
+    override val respectsEncoding = true
 
     override val filter = FileFilter(description) { file ->
         file.name.endsWith("log") || file.name.substringAfterLast('.').toIntOrNull() != null
@@ -154,13 +154,11 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         )
     }
 
-    override fun open(data: String): ToolPanel {
-        return WrapperLogView(
-            events = WrapperLogView.parseLogs(data.lineSequence()),
-            tabName = "Paste at ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
-            fromFile = false,
-        )
-    }
+    override fun open(data: String): ToolPanel = WrapperLogView(
+        events = WrapperLogView.parseLogs(data.lineSequence()),
+        tabName = "Paste at ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
+        fromFile = false,
+    )
 
     val SelectedTimeZone = preference(
         name = "Timezone",
@@ -177,6 +175,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
+    @Suppress("ktlint:standard:property-naming")
     private lateinit var _formatter: DateTimeFormatter
     val TimeStampFormatter: DateTimeFormatter
         get() {
@@ -189,7 +188,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
             return _formatter
         }
 
-    override val displayName: String = "Log View"
-    override val key: String = "logview"
-    override val preferences: List<Preference<*>> = listOf(SelectedTimeZone)
+    override val displayName = "Log View"
+
+    override val preferences = listOf(SelectedTimeZone)
 }

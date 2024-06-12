@@ -1,10 +1,11 @@
 [versions]
 java = "21"
 kotlin = "1.9.22"
-coroutines = "1.8.0"
-flatlaf = "3.4"
-kotest = "5.8.1"
-ignition = "8.1.1"
+coroutines = "1.8.1"
+flatlaf = "3.4.1"
+kotest = "5.9.1"
+ignition = "8.1.20"
+jackson = "2.17.1"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -18,11 +19,14 @@ dokka = { id = "org.jetbrains.dokka", version = "1.9.20" }
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.3" }
-xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.45.2.0" }
-logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.5.3" }
-hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.2" }
+xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.46.0.0" }
+logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.5.6" }
+hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.3" }
+poi = { group = "org.apache.poi", name = "poi-ooxml", version = "5.2.5" }
 excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" }
 jsvg = { group = "com.github.weisj", name = "jsvg", version = "1.4.0" }
+jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
 # build
 jsoup = { group = "org.jsoup", name = "jsoup", version = "1.17.2" }
@@ -36,7 +40,7 @@ flatlaf-swingx = { group = "com.formdev", name = "flatlaf-swingx", version.ref =
 flatlaf-themes = { group = "com.formdev", name = "flatlaf-intellij-themes", version.ref = "flatlaf" }
 flatlaf-fonts-roboto = { group = "com.formdev", name = "flatlaf-fonts-roboto", version = "2.137" }
 flatlaf-fonts-roboto-mono = { group = "com.formdev", name = "flatlaf-fonts-roboto-mono", version = "3.000" }
-jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.14" }
+jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.15" }
 swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
 rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = "3.4.0" }
 jfreechart = { group = "org.jfree", name = "jfreechart", version = "1.5.4" }
@@ -46,8 +50,11 @@ ignition-common = { group = "com.inductiveautomation.ignition", name = "common",
 ignition-gateway = { group = "com.inductiveautomation.ignition", name = "gateway-api", version.ref = "ignition" }
 # Ignition core types use classes from these libs (e.g. StringUtils, ImmutableMap), so we're forced to include these
 apache-commons = { group = "org.apache.commons", name = "commons-lang3", version = "3.8.1" }
+# This leads to a warning at runtime about multiple logging providers on the classpath, but is unavoidable
+slf4j = { group = "org.slf4j", name = "slf4j-log4j12", version = "2.0.13" }
 google-guava = { module = "com.google.guava:guava", version = "26.0-jre" }
 ia-gson = { module = "com.inductiveautomation.ignition:ia-gson", version = "2.10.1" }
+ia-jython = { module = "org.python:jython-ia", version = "2.7.3.3" }
 
 # test framework
 kotest-junit = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
@@ -67,6 +74,10 @@ flatlaf = [
     "flatlaf-fonts-roboto",
     "flatlaf-fonts-roboto-mono",
 ]
+jackson = [
+    "jackson-kotlin",
+    "jackson-xml",
+]
 kotest = [
     "kotest-junit",
     "kotest-assertions-core",
@@ -79,4 +90,6 @@ ia-transitive = [
     "apache-commons",
     "google-guava",
     "ia-gson",
+    "ia-jython",
+    "slf4j",
 ]

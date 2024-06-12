@@ -34,7 +34,7 @@ import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
 import javax.swing.JFileChooser
-import javax.swing.tree.TreeSelectionModel
+import javax.swing.tree.TreeSelectionModel.CONTIGUOUS_TREE_SELECTION
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
@@ -43,20 +43,18 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
     private val zipFile: FileSystem = FileSystems.newFileSystem(path)
     private val provider: FileSystemProvider = zipFile.provider()
 
-    private val fileTree =
-        ZipFileTree(zipFile).apply {
-            selectionModel.selectionMode = TreeSelectionModel.CONTIGUOUS_TREE_SELECTION
-        }
+    private val fileTree = ZipFileTree(zipFile).apply {
+        selectionModel.selectionMode = CONTIGUOUS_TREE_SELECTION
+    }
 
     private val tabStrip = TabStrip()
 
     private val FlatTabbedPane.tabs: Sequence<PathView>
-        get() =
-            sequence {
-                repeat(tabCount) { i ->
-                    yield(getComponentAt(i) as PathView)
-                }
+        get() = sequence {
+            repeat(tabCount) { i ->
+                yield(getComponentAt(i) as PathView)
             }
+        }
 
     init {
         name = path.name
@@ -103,10 +101,12 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
                     if (selectedPaths.size == 1 && selectedNode.isLeaf) {
                         add(
                             Action("Save As") {
-                                exportFileChooser.selectedFile = File(selectedNode.userObject.name)
-                                if (exportFileChooser.showSaveDialog(this@attachPopupMenu) == JFileChooser.APPROVE_OPTION) {
-                                    provider.newInputStream(selectedNode.userObject) transferTo
-                                        exportFileChooser.selectedFile.outputStream()
+                                exportFileChooser.apply {
+                                    resetChoosableFileFilters()
+                                    selectedFile = File(selectedNode.userObject.name)
+                                    if (showSaveDialog(this@attachPopupMenu) == JFileChooser.APPROVE_OPTION) {
+                                        provider.newInputStream(selectedNode.userObject) transferTo selectedFile.outputStream()
+                                    }
                                 }
                             },
                         )
@@ -150,21 +150,21 @@ private typealias PathPredicate = (Path) -> Boolean
 private typealias PathViewProvider = (FileSystemProvider, Path) -> PathView?
 
 object ZipViewer : Tool {
-    override val title = "Ignition Archive"
-    override val description = "Archives (.gwbk, .zip, .modl)"
+    override val serialKey = "zip-viewer"
+    override val title = "ZIP Archive"
+    override val description = "ZIP Archive (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
     override val filter = FileFilter(description, "gwbk", "zip", "modl", "jar")
 
     override fun open(path: Path): ToolPanel = ZipView(path)
 
-    private val handlers: Map<PathPredicate, PathViewProvider> =
-        buildMap {
-            put(GwbkStatsView::isGatewayBackup, ::GwbkStatsView)
-            put(ToolView::maybeToolPath, ToolView::safelyCreate)
-            put(ImageView::isImageFile, ::ImageView)
-            put(ProjectView::isProjectDirectory, ::ProjectView)
-            put(Path::isRegularFile, ::FileView)
-        }
+    private val handlers: Map<PathPredicate, PathViewProvider> = buildMap {
+        put(GwbkStatsView::isGatewayBackup, ::GwbkStatsView)
+        put(ToolView::maybeToolPath, ToolView::safelyCreate)
+        put(ImageView::isImageFile, ::ImageView)
+        put(ProjectView::isProjectDirectory, ::ProjectView)
+        put(Path::isRegularFile, ::FileView)
+    }
 
     fun createView(
         filesystem: FileSystemProvider,

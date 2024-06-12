@@ -1,14 +1,18 @@
 package io.github.inductiveautomation.kindling.idb.generic
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.extras.components.FlatSplitPane
+import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.comparator.AlphanumComparator
-import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
+import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ButtonPanel
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
@@ -16,6 +20,9 @@ import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.JDBCType
@@ -28,7 +35,6 @@ import javax.swing.JButton
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JTextArea
 import javax.swing.JToggleButton
 import javax.swing.KeyStroke
 import javax.swing.tree.DefaultTreeModel
@@ -41,22 +47,22 @@ enum class TableComparator(
 ) : Comparator<Table> by comparator {
     ByNameAscending(
         tooltip = "Sort A-Z",
-        icon = FlatSVGIcon("icons/bx-sort-a-z.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-a-z.svg"),
         comparator = compareBy(nullsFirst(AlphanumComparator(false))) { it.name },
     ),
     ByNameDescending(
         tooltip = "Sort Z-A",
-        icon = FlatSVGIcon("icons/bx-sort-z-a.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-z-a.svg"),
         comparator = ByNameAscending.reversed(),
     ),
     BySizeAscending(
         tooltip = "Sort by Size",
-        icon = FlatSVGIcon("icons/bx-sort-up.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-up.svg"),
         comparator = compareBy(Table::size),
     ),
     BySizeDescending(
         tooltip = "Sort by Size (descending)",
-        icon = FlatSVGIcon("icons/bx-sort-down.svg").derive(Kindling.SECONDARY_ACTION_ICON_SCALE),
+        icon = FlatSVGIcon("icons/bx-sort-down.svg"),
         comparator = BySizeAscending.reversed(),
     ),
 }
@@ -65,27 +71,23 @@ class SortableTree(val tables: List<Table>) {
     var comparator = TableComparator.BySizeDescending
         set(value) {
             field = value
-            root = sortTree()
+            root = sortedTreeNode()
             tree.model = DefaultTreeModel(root)
         }
 
-    private fun sortTree() = object : TreeNode {
-        override fun getChildAt(childIndex: Int): TreeNode = tables.sortedWith(comparator)[childIndex]
+    private fun sortedTreeNode() = object : TreeNode {
+        private val sortedTables = tables.sortedWith(comparator)
 
-        override fun getChildCount(): Int = tables.sortedWith(comparator).size
-
+        override fun getChildAt(childIndex: Int): TreeNode = sortedTables[childIndex]
+        override fun getChildCount(): Int = sortedTables.size
+        override fun getIndex(node: TreeNode): Int = sortedTables.indexOf(node)
+        override fun children(): Enumeration<out TreeNode> = Collections.enumeration(sortedTables)
         override fun getParent(): TreeNode? = null
-
-        override fun getIndex(node: TreeNode): Int = tables.sortedWith(comparator).indexOf(node)
-
         override fun getAllowsChildren(): Boolean = true
-
         override fun isLeaf(): Boolean = false
-
-        override fun children(): Enumeration<out TreeNode> = Collections.enumeration(tables.sortedWith(comparator))
     }
 
-    var root: TreeNode = sortTree()
+    var root: TreeNode = sortedTreeNode()
 
     val tree = DBMetaDataTree(DefaultTreeModel(root))
 
@@ -95,7 +97,7 @@ class SortableTree(val tables: List<Table>) {
 
     inner class SortAction(comparator: TableComparator) : Action(
         description = comparator.tooltip,
-        icon = comparator.icon,
+        icon = comparator.icon.asActionIcon(),
         selected = this@SortableTree.comparator == comparator,
         action = {
             this@SortableTree.comparator = comparator
@@ -158,19 +160,35 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
 
     private val sortableTree = SortableTree(tables)
 
-    private val query = JTextArea(0, 0)
+    private val query = RSyntaxTextArea().apply {
+        syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_SQL
 
-    private val execute = Action(name = "Execute") {
+        theme = Theme.currentValue
+
+        Theme.addChangeListener { newTheme ->
+            theme = newTheme
+        }
+    }
+
+    private val execute = Action(
+        name = "Execute",
+        description = "Execute (${if (SystemInfo.isMacOS) "⌘" else "Ctrl"} + Enter)",
+        icon = FlatSVGIcon("icons/bx-subdirectory-left.svg").asActionIcon(),
+        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx),
+    ) {
         results.result = if (!query.text.isNullOrEmpty()) {
             try {
                 connection.executeQuery(query.text)
                     .use { resultSet ->
                         val columnCount = resultSet.metaData.columnCount
-                        val names = List(columnCount) { i -> resultSet.metaData.getColumnName(i + 1) }
+                        val names = List(columnCount) { i ->
+                            resultSet.metaData.getColumnName(i + 1)
+                        }
                         val types = List(columnCount) { i ->
-                            val timestamp = TIMESTAMP_COLUMN_NAMES.any {
-                                resultSet.metaData.getColumnName(i + 1).contains(it, true)
-                            }
+                            val timestamp =
+                                TIMESTAMP_COLUMN_NAMES.any {
+                                    resultSet.metaData.getColumnName(i + 1).contains(it, true)
+                                }
 
                             if (timestamp) {
                                 Timestamp::class.java
@@ -203,8 +221,8 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
     }
 
     private val queryPanel = JPanel(MigLayout("ins 0, fill")).apply {
-        add(JButton(execute), "wrap")
-        add(query, "push, grow")
+        add(RTextScrollPane(query), "push, grow, wrap")
+        add(JButton(execute), "ax right, wrap")
     }
 
     private val results = ResultsPanel()
@@ -212,33 +230,33 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
     init {
         val ctrlEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx)
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
+        query.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
         actionMap.put("execute", execute)
+        query.actionMap.put("execute", execute)
 
         sortableTree.tree.attachPopupMenu { event ->
             val path = getClosestPathForLocation(event.x, event.y)
             when (val node = path?.lastPathComponent) {
-                is Table ->
-                    JPopupMenu().apply {
-                        add(
-                            JMenuItem(
-                                Action("SELECT * FROM ${node.name}") {
-                                    query.text = "SELECT * FROM ${node.name};"
-                                },
-                            ),
-                        )
-                    }
+                is Table -> JPopupMenu().apply {
+                    add(
+                        JMenuItem(
+                            Action("SELECT * FROM ${node.name}") {
+                                query.text = "SELECT * FROM ${node.name};"
+                            },
+                        ),
+                    )
+                }
 
-                is Column ->
-                    JPopupMenu().apply {
-                        val table = path.parentPath.lastPathComponent as Table
-                        add(
-                            JMenuItem(
-                                Action("SELECT ${node.name} FROM ${table.name}") {
-                                    query.text = "SELECT ${node.name} FROM ${table.name}"
-                                },
-                            ),
-                        )
-                    }
+                is Column -> JPopupMenu().apply {
+                    val table = path.parentPath.lastPathComponent as Table
+                    add(
+                        JMenuItem(
+                            Action("SELECT ${node.name} FROM ${table.name}") {
+                                query.text = "SELECT ${node.name} FROM ${table.name}"
+                            },
+                        ),
+                    )
+                }
 
                 else -> null
             }
@@ -248,9 +266,10 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
             HorizontalSplitPane(
                 sortableTree.component,
                 VerticalSplitPane(
-                    FlatScrollPane(queryPanel),
+                    queryPanel,
                     results,
                     resizeWeight = 0.2,
+                    expandableSide = FlatSplitPane.ExpandableSide.both,
                 ),
                 resizeWeight = 0.1,
             ),

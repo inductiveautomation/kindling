@@ -9,7 +9,7 @@ import java.net.URI
 import javax.swing.event.HyperlinkEvent
 
 @Serializable
-@Suppress("ktlint:trailing-comma-on-declaration-site")
+@Suppress("ktlint:standard:trailing-comma-on-declaration-site")
 enum class LinkHandlingStrategy(val description: String) {
     OpenInBrowser("Open links in default browser") {
         override fun handleEvent(event: HyperlinkEvent) {

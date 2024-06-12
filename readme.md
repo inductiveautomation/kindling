@@ -2,8 +2,8 @@
 
 <img src="src/main/resources/logo.svg" width="250" alt="Kindling">
 
-A standalone collection of utilities to help [Ignition](https://inductiveautomation.com/) users. Features various tools
-to help work with Ignition's custom data export formats.
+A standalone desktop application targeted to advanced [Ignition](https://inductiveautomation.com/) users.
+Features various tools to read and access Ignition's myriad data export formats.
 
 ## Tools
 
@@ -20,6 +20,7 @@ Has special handling for:
 
 - Metrics files
 - System logs
+- Images in the configuration DB
 
 ### Log Viewer
 
@@ -30,7 +31,7 @@ sequence them and present as a single view.
 ### Archive Explorer
 
 Opens a zip file (including Ignition files like `.gwbk` or `.modl`). Allows opening other tools against the files within
-the zip, including the .idb files in a gateway backup.
+the zip, including the .idb files in a gateway backup, or the files in a diagnostics bundle.
 
 ### Store and Forward Cache Viewer
 
@@ -40,17 +41,34 @@ falls back to a string explanation of the serialized data.
 
 Note: If you encounter any issues with missing classes, please file an issue.
 
+### Alarm Cache Viewer
+
+Opens the Java serialized `.alarms_$timestamp` files Ignition uses to persist alarm information between Gateway
+restarts.
+Only works for alarm caches from 8.1.20 and up gateways.
+
+Note: If you encounter any issues with missing classes, please file an issue.
+
 ### Gateway Network Diagram Viewer
 
 Validates a Gateway Network Diagram, as exported from the Gateway webpage (see instructions below). You can load from a
 .json or .txt file on disk, or paste directly from the clipboard. Click the 'View Diagram in Browser' button to launch
 the diagram visualization in a local web browser.
 
-#### To Obtain a GAN Diagram JSON
+#### To Obtain a GAN Diagram JSON (8.1.37 and below)
 
 1. Set the `gateway.routes.status.GanRoutes` logger to DEBUG.
 2. Return to the gateway network status page and view the live graph.
 3. Return to the logs and copy the JSON to the clipboard or save it to a local file.
+
+### XML Viewer
+
+Opens Ignition XML files in a simple text view.
+
+Has special handling for:
+
+- Logback configuration files, with a special interactive editor
+- Store and Forward quarantine files, with an _attempt_ made to deserialize any Java-serialized data within
 
 ## Usage
 
@@ -58,8 +76,7 @@ the diagram visualization in a local web browser.
    page: https://inductiveautomation.github.io/kindling/download.html
 2. Run the Kindling application.
 3. Open a supported file - either drag and drop directly onto the application window, click the `+` icon in the tab
-   strip,
-   or select a tool to open from the menubar.
+   strip, or select a tool to open from the menubar.
 
 Preferences are stored in `~/.kindling/preferences.json` and can be modified within the application from the menu bar.
 

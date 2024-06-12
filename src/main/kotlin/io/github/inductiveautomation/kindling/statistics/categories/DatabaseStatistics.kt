@@ -24,7 +24,7 @@ data class DatabaseStatistics(
     )
 
     @Suppress("SqlResolve")
-    companion object : StatisticCalculator<DatabaseStatistics> {
+    companion object Calculator : StatisticCalculator<DatabaseStatistics> {
         private val DATABASE_STATS =
             """
             SELECT

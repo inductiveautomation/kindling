@@ -53,7 +53,7 @@ data class ProjectStatistics(
         val typeId: String,
     )
 
-    companion object : StatisticCalculator<ProjectStatistics> {
+    companion object Calculator : StatisticCalculator<ProjectStatistics> {
         const val PERSPECTIVE_MODULE_ID = "com.inductiveautomation.perspective"
         const val VISION_MODULE_ID = "com.inductiveautomation.vision"
 
