@@ -1,13 +1,16 @@
-package io.github.inductiveautomation.kindling.utils
+package io.github.inductiveautomation.kindling.utils.diff
 
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
+import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.addLineHighlighter
 import net.miginfocom.swing.MigLayout
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.Color
 import java.awt.Font
 import java.awt.event.ItemEvent
+import javax.swing.BorderFactory
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -15,15 +18,15 @@ import javax.swing.JTextArea
 import javax.swing.JToggleButton
 import javax.swing.SwingUtilities
 
-class DiffView<T>(
-    pre: List<T>,
-    post: List<T>,
-    equalityPredicate: (T, T) -> Boolean = { item1, item2 -> item1 == item2 },
+class DiffView(
+    pre: List<String>,
+    post: List<String>,
+    equalityPredicate: (String, String) -> Boolean = String::equals,
 ) : JPanel(MigLayout("fill, ins 10, hidemode 3")) {
     // Main data object to get all relevant diff information, lists, etc.
     // Even though this is running on the EDT,
     // in my testing it's fast enough to not matter for any normal stacktrace length
-    private val diffData = DiffData(pre, post, equalityPredicate)
+    private val diffUtil = DiffUtil.create(pre, post, equalityPredicate)
 
     private val singleMultiToggle = JToggleButton("Toggle Unified View").apply {
         addItemListener { event ->
@@ -52,8 +55,8 @@ class DiffView<T>(
         theme = Theme.currentValue
         isEditable = false
 
-        text = diffData.unifiedDiffList.map {
-            it.value.toString().also { s ->
+        text = diffUtil.unifiedDiffList.map {
+            it.value.also { s ->
                 if (s.length > columnCount) columnCount = s.length
             }
         }.joinToString("\n") {
@@ -61,119 +64,117 @@ class DiffView<T>(
         }
 
         addLineHighlighter(addBackground) { _, lineNum ->
-            diffData.unifiedDiffList[lineNum].type == DiffType.ADDITION
+            diffUtil.unifiedDiffList[lineNum] is Diff.Addition
         }
 
         addLineHighlighter(delBackground) { _, lineNum ->
-            diffData.unifiedDiffList[lineNum].type == DiffType.DELETION
+            diffUtil.unifiedDiffList[lineNum] is Diff.Deletion
         }
     }
 
-    private val leftTextArea = JTextArea(
-        diffData.leftDiffList.size,
+    private val leftTextArea = RSyntaxTextArea(
+        diffUtil.leftDiffList.size,
         columnCount,
     ).apply {
+        theme = Theme.currentValue
         isEditable = false
 
-        text = diffData.leftDiffList.joinToString("\n") {
-            if (it is Diff.Addition) " " else it.value.toString().padEnd(columnCount)
+        text = diffUtil.leftDiffList.joinToString("\n") {
+            if (it is Diff.Addition) " " else it.value.padEnd(columnCount)
         }
 
         font = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
         addLineHighlighter(delBackground) { _, lineNum ->
-            diffData.leftDiffList[lineNum].type == DiffType.DELETION
+            diffUtil.leftDiffList[lineNum] is Diff.Deletion
         }
     }
 
-    private val rightTextArea = JTextArea(
-        diffData.rightDiffList.size,
+    private val rightTextArea = RSyntaxTextArea(
+        diffUtil.rightDiffList.size,
         columnCount,
     ).apply {
+        theme = Theme.currentValue
         isEditable = false
 
-        text = diffData.rightDiffList.joinToString("\n") {
-            if (it is Diff.Deletion) " " else it.value.toString().padEnd(columnCount)
+        text = diffUtil.rightDiffList.joinToString("\n") {
+            if (it is Diff.Deletion) " " else it.value.padEnd(columnCount)
         }
 
         font = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
         addLineHighlighter(addBackground) { _, lineNum ->
-            diffData.rightDiffList[lineNum].type == DiffType.ADDITION
+            diffUtil.rightDiffList[lineNum] is Diff.Addition
         }
     }
 
     // Gutters
-
-    private val leftGutter = JTextArea(
-        diffData.leftDiffList.size,
-        SIDE_BY_SIDE_GUTTER_WIDTH,
+    private val sideBySideGutter = JTextArea(
+        diffUtil.rightDiffList.size,
+        SIDE_BY_SIDE_GUTTER_WIDTH * 2 + 3,
     ).apply {
-        val width = SIDE_BY_SIDE_GUTTER_WIDTH
-        text = diffData.leftDiffList.joinToString("\n") { diff ->
-            when (diff) {
-                is Diff.Addition -> diff.type.symbol
-                is Diff.Deletion -> diff.type.symbol + " " + String.format("%${width - 2}d", diff.index + 1)
-                is Diff.NoChange -> String.format("%${width}d", diff.index + 1)
+        val w = SIDE_BY_SIDE_GUTTER_WIDTH
+        text = diffUtil.leftDiffList.zip(diffUtil.rightDiffList).joinToString("\n") { (left, right) ->
+            val leftText = when (left) {
+                is Diff.Addition -> left.key + " ".repeat(w - 1)
+                is Diff.Deletion -> left.key + " " + String.format("%${w - 2}d", left.index + 1)
+                is Diff.NoChange -> "  " + String.format("%${w - 2}d", left.index + 1)
             }
-        }
-        font = leftTextArea.font
-    }
 
-    private val rightGutter = JTextArea(
-        diffData.rightDiffList.size,
-        SIDE_BY_SIDE_GUTTER_WIDTH,
-    ).apply {
-        val width = SIDE_BY_SIDE_GUTTER_WIDTH
-        text = diffData.rightDiffList.joinToString("\n") { diff ->
-            when (diff) {
-                is Diff.Deletion -> diff.type.symbol
-                is Diff.Addition -> diff.type.symbol + " " + String.format("%${width - 2}d", diff.index + 1)
-                is Diff.NoChange -> String.format("%${width}d", diff.index + 1)
+            val rightText = when (right) {
+                is Diff.Deletion -> " ".repeat(w - 1) + right.key
+                is Diff.Addition -> String.format("%-${w - 2}d", right.index + 1) + " " + right.key
+                is Diff.NoChange -> String.format("%-${w - 2}d", right.index + 1) + "  "
             }
+
+            "$leftText | $rightText"
         }
+
         font = rightTextArea.font
     }
 
     private val unifiedGutter = JTextArea(
-        diffData.unifiedDiffList.size,
+        diffUtil.unifiedDiffList.size,
         UNIFIED_GUTTER_WIDTH,
     ).apply {
-        val width = UNIFIED_GUTTER_WIDTH
+        val w = UNIFIED_GUTTER_WIDTH
 
-        text = diffData.unifiedDiffList.joinToString("\n") { diff ->
+        text = diffUtil.unifiedDiffList.joinToString("\n") { diff ->
             when (diff) {
                 is Diff.Addition -> {
                     String.format(
-                        "%${width - 4}s %${width - 6}d",
-                        diff.type.symbol,
+                        "%${w - 4}s %${w - 6}d",
+                        diff.key,
                         diff.index + 1,
                     )
                 }
 
                 is Diff.Deletion -> {
                     String.format(
-                        "%${width - 6}d %-${width - 4}s",
+                        "%-${w - 6}d %-${w - 4}s",
                         diff.index + 1,
-                        diff.type.symbol,
+                        diff.key,
                     )
                 }
 
                 is Diff.NoChange -> {
-                    String.format("%3d %s %3d", diff.preIndex!! + 1, "|", diff.postIndex!! + 1)
+                    String.format("%-3d %s %3d", diff.preIndex!! + 1, "|", diff.postIndex!! + 1)
                 }
             }
         }
+
+        margin = unifiedTextArea.margin
         font = unifiedTextArea.font
     }
 
     // ScrollPanes
 
     private val leftScrollPane = FlatScrollPane(leftTextArea) {
-        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_NEVER
         horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
 
-        setRowHeaderView(leftGutter)
+        setRowHeaderView(verticalScrollBar)
+        border = BorderFactory.createEmptyBorder()
     }
 
     private val rightScrollPane = FlatScrollPane(rightTextArea) {
@@ -182,7 +183,8 @@ class DiffView<T>(
         verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
 
-        setRowHeaderView(rightGutter)
+        setRowHeaderView(sideBySideGutter)
+        border = BorderFactory.createEmptyBorder()
     }
 
     private val unifiedScrollPane = RTextScrollPane(unifiedTextArea, false).apply {
@@ -193,15 +195,15 @@ class DiffView<T>(
     }
 
     private val additionDeletionLabel = JLabel(
-        "Showing ${diffData.additions.size} Additions and ${diffData.deletions.size} Deletions",
+        "Showing ${diffUtil.additions.size} Additions and ${diffUtil.deletions.size} Deletions",
     ).apply {
         font = font.deriveFont(Font.BOLD, 14F)
     }
 
     // Main Views
     private val sideBySide = JPanel(MigLayout("fill, ins 0")).apply {
-        add(leftScrollPane, "push, grow, sg")
-        add(rightScrollPane, "push, grow, sg")
+        add(leftScrollPane, "push, grow")
+        add(rightScrollPane, "push, grow")
     }
 
     private val singleView = JPanel(MigLayout("fill, ins 3")).apply {

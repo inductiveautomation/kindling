@@ -14,7 +14,7 @@ import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowNullT
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
 import io.github.inductiveautomation.kindling.utils.Action
-import io.github.inductiveautomation.kindling.utils.DiffView
+import io.github.inductiveautomation.kindling.utils.diff.DiffView
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ScrollingTextPane
 import io.github.inductiveautomation.kindling.utils.add
