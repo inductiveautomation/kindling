@@ -14,7 +14,7 @@ import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowNullT
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
 import io.github.inductiveautomation.kindling.utils.Action
-import io.github.inductiveautomation.kindling.utils.DiffView
+import io.github.inductiveautomation.kindling.utils.diff.DiffView
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.add
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 
 class ThreadComparisonPane(
     totalThreadDumps: Int,
-    version: String,
+    private val version: String,
 ) : JPanel(MigLayout("fill, ins 0")) {
     private val listeners = EventListenerList()
 
