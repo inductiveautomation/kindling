@@ -5,7 +5,6 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatLabel
 import com.jidesoft.swing.StyledLabel
 import io.github.inductiveautomation.kindling.core.DetailsPane
-import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
 import io.github.inductiveautomation.kindling.thread.MultiThreadView.Companion.toDetail
@@ -22,27 +21,24 @@ import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.jFrame
+import io.github.inductiveautomation.kindling.utils.scrollToTop
 import io.github.inductiveautomation.kindling.utils.style
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.event.ItemEvent
 import java.text.DecimalFormat
 import java.util.EventListener
 import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.JLabel
+import javax.swing.JCheckBox
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JToggleButton
 import javax.swing.JTextPane
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
 import javax.swing.event.HyperlinkEvent
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.properties.Delegates
 import net.miginfocom.swing.MigLayout
 import kotlinx.coroutines.launch
@@ -64,9 +60,8 @@ class ThreadComparisonPane(
     private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) { i ->
         ThreadContainer(version).apply {
             blockerButton.addActionListener {
-                val blocker = blockerButton.blocker
-                if (blocker != null) {
-                    fireBlockerSelectedEvent(blocker)
+                blockerButton.blocker?.let {
+                    fireBlockerSelectedEvent(it)
                 }
             }
 
@@ -89,6 +84,21 @@ class ThreadComparisonPane(
             }
         }
     }
+
+    private val diffCheckBoxList = threadContainers.map { it.diffCheckBox }
+
+    init {
+        for (checkBox in diffCheckBoxList) {
+            val others = diffCheckBoxList.filter { it !== checkBox }
+            others.forEach { otherCheckBox ->
+                otherCheckBox.addItemListener { _ ->
+                    checkBox.isEnabled = others.count { it.isSelected } < 2
+                }
+            }
+        }
+    }
+
+    private val header = HeaderPanel()
 
     init {
         ShowNullThreads.addChangeListener {
@@ -191,13 +201,44 @@ class ThreadComparisonPane(
             isLineWrap = false
         }
 
-        private var diffSelector: StackTraceDiffSelector? = null
-
         private val diffSelection = JButton(
             Action("Compare Diffs") {
-                diffSelector?.isVisible = true
+                val selectedIndices = diffCheckBoxList.mapIndexedNotNull { index, jCheckBox ->
+                    if (jCheckBox.isSelected) index else null
+                }
+
+                // Should never happen but might as well check
+                if (selectedIndices.size != 2) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Please Select 2 Thread Dumps",
+                        "Unable to show Diff",
+                        JOptionPane.ERROR_MESSAGE,
+                    )
+                } else {
+                    val thread1 = threads[selectedIndices[0]]!!
+                    val thread2 = threads[selectedIndices[1]]!!
+
+                    val i1 = selectedIndices[0] + 1
+                    val i2 = selectedIndices[1] + 1
+
+                    jFrame(
+                        title = "Comparing stacks for ${thread1.name} from thread dumps $i1 and $i2",
+                        width = 1000,
+                        height = 600,
+                    ) {
+                        add(DiffView(thread1.stacktrace, thread2.stacktrace))
+                    }
+                }
             },
-        )
+        ).apply {
+            isEnabled = false
+            diffCheckBoxList.forEach { checkBox ->
+                checkBox.addItemListener { _ ->
+                    isEnabled = diffCheckBoxList.count { it.isSelected } == 2
+                }
+            }
+        }
 
         init {
             add(nameLabel, "pushx, growx")
@@ -205,9 +246,6 @@ class ThreadComparisonPane(
         }
 
         fun setThread(thread: Thread) {
-            diffSelector?.dispose()
-            diffSelector = StackTraceDiffSelector()
-
             nameLabel.style {
                 add(thread.name, Font.BOLD)
                 add("\n")
@@ -438,6 +476,8 @@ class ThreadComparisonPane(
 
         val blockerButton = BlockerButton()
 
+        val diffCheckBox = JCheckBox("Diff").apply { isVisible = false }
+
         private val monitors = DetailContainer("Locked Monitors")
         private val synchronizers = DetailContainer("Synchronizers")
         private val stacktrace = DetailContainer("Stacktrace", false)
@@ -447,6 +487,7 @@ class ThreadComparisonPane(
                 JPanel(MigLayout("fill, ins 5, hidemode 3")).apply {
                     add(detailsButton)
                     add(titleLabel, "push, grow, gapleft 8")
+                    add(diffCheckBox)
                     add(blockerButton)
                 }, "wmax 100%"
             )
@@ -537,93 +578,11 @@ class ThreadComparisonPane(
                     isHightlighted = highlightStacktrace
                 }
             }
-        }
-    }
 
-    private inner class StackTraceDiffSelector : JFrame() {
-        private val mainPanel = JPanel(MigLayout("ins 5, fill, gap 5"))
-
-        private var firstSelected: Int = -1
-            set(value) {
-                stateIsChanging = true
-                if (field > -1) selectionButtons[field].isSelected = false
-                field = value
-                stateIsChanging = false
+            diffCheckBox.apply {
+                isSelected = false
+                isVisible = !thread?.stacktrace.isNullOrEmpty()
             }
-
-        private var secondSelected: Int = -1
-
-        private var stateIsChanging: Boolean = false
-
-        private val prompt = JLabel("Select two stacktraces from the list below. Sizes are shown.")
-
-        private val selectionButtons = threads.mapIndexed { index, thread ->
-            JToggleButton("${thread?.stacktrace?.size}").apply {
-                isEnabled = thread != null
-                addItemListener { itemEvent ->
-                    if (!stateIsChanging) {
-                        if (itemEvent.stateChange == ItemEvent.SELECTED) {
-                            when {
-                                firstSelected >= 0 && secondSelected < 0 -> {
-                                    secondSelected = index
-                                }
-
-                                firstSelected < 0 && secondSelected < 0 -> {
-                                    firstSelected = index
-                                }
-
-                                else -> {
-                                    firstSelected = secondSelected
-                                    secondSelected = index
-                                }
-                            }
-                        } else if (itemEvent.stateChange == ItemEvent.DESELECTED) {
-                            if (index == firstSelected) {
-                                firstSelected = secondSelected
-                                secondSelected = -1
-                            }
-                            if (index == secondSelected) secondSelected = -1
-                        }
-                    }
-                }
-            }
-        }
-
-        private val submit = JButton("Show Diff").apply {
-            addActionListener {
-                if (firstSelected >= 0 && secondSelected >= 0) {
-                    jFrame(
-                        title = "Stacktrace Diff",
-                        width = 1000,
-                        height = 600,
-                    ) {
-                        val leftIndex = min(firstSelected, secondSelected)
-                        val rightIndex = max(firstSelected, secondSelected)
-                        add(DiffView(threads[leftIndex]!!.stacktrace, threads[rightIndex]!!.stacktrace))
-                    }
-                    this@StackTraceDiffSelector.dispose()
-                }
-            }
-        }
-
-        init {
-            mainPanel.apply {
-                add(prompt, "spanx")
-                for (button in selectionButtons) {
-                    add(button, "sg")
-                }
-                add(submit, "newline, spanx, align right")
-            }
-
-            add(mainPanel)
-
-            setSize(500, 180)
-            iconImages = Kindling.frameIcons
-            defaultCloseOperation = DISPOSE_ON_CLOSE
-
-            setLocationRelativeTo(null)
-
-            pack()
         }
     }
 

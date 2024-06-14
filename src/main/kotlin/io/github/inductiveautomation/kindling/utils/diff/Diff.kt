@@ -43,11 +43,9 @@ class DiffUtil private constructor(
     val deletions: List<Diff.Deletion<String>>,
 ) {
     val leftDiffList = buildList {
-        addAll(
-            original.mapIndexed { index, s ->
-                deletions.find { it.index == index } ?: Diff.NoChange(s, index, null)
-            },
-        )
+        original.mapIndexedTo(this) { index, s ->
+            deletions.find { it.index == index } ?: Diff.NoChange(s, index, null)
+        }
 
         var offset = 0
         additions.forEach {
@@ -60,11 +58,9 @@ class DiffUtil private constructor(
     }
 
     val rightDiffList = buildList {
-        addAll(
-            modified.mapIndexed { index, s ->
-                additions.find { it.index == index } ?: Diff.NoChange(s, index, null)
-            },
-        )
+        modified.mapIndexedTo(this) { index, s ->
+            additions.find { it.index == index } ?: Diff.NoChange(s, index, null)
+        }
 
         deletions.forEach {
             val existingAddition: Diff<String>? = getOrNull(it.index)
@@ -72,19 +68,6 @@ class DiffUtil private constructor(
             if (existingAddition !is Diff.Addition) {
                 add(it.index, it)
             }
-        }
-    }
-
-    init {
-        val maxLength = maxOf(leftDiffList.size, rightDiffList.size)
-        val leftArr = Array(maxLength) {
-            leftDiffList.getOrNull(it)
-        }
-        val rightArr = Array(maxLength) {
-            rightDiffList.getOrNull(it)
-        }
-        for (pair in leftArr.zip(rightArr)) {
-            println("${pair.first} : ${pair.second}")
         }
     }
 
