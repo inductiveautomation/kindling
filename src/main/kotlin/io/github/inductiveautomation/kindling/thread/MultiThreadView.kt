@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.thread
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.extras.components.FlatRadioButton
 import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Detail
@@ -36,19 +37,15 @@ import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import io.github.inductiveautomation.kindling.utils.transferTo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.decorator.ColorHighlighter
-import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
 import java.awt.Rectangle
 import java.nio.file.Files
 import java.nio.file.Path
+import javax.swing.ButtonGroup
 import javax.swing.JLabel
 import javax.swing.JMenu
 import javax.swing.JMenuBar
+import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
@@ -57,6 +54,13 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 
 class MultiThreadView(
     val paths: List<Path>,
@@ -505,6 +509,44 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
+    val DefaultDiffView: Preference<DiffViewPreference> = preference(
+        name = "Default Diff View",
+        default = DiffViewPreference.UNIFIED,
+        editor = {
+            JPanel(MigLayout("ins 0")).apply {
+                val unifiedByDefault = currentValue == DiffViewPreference.UNIFIED
+
+                val unifiedOption = FlatRadioButton().apply {
+                    text = "Unified"
+                    isSelected = unifiedByDefault
+                    addActionListener {
+                        currentValue = DiffViewPreference.UNIFIED
+                    }
+                }
+
+                val sideBySideOption = FlatRadioButton().apply {
+                    text = "Side-by-side"
+                    isSelected = !unifiedByDefault
+                    addActionListener {
+                        currentValue = DiffViewPreference.SIDEBYSIDE
+                    }
+                }
+
+                ButtonGroup().apply {
+                    add(unifiedOption)
+                    add(sideBySideOption)
+                }
+
+                add(unifiedOption)
+                add(sideBySideOption)
+            }
+        }
+    )
+
+    enum class DiffViewPreference {
+        UNIFIED, SIDEBYSIDE;
+    }
+
     override val displayName = "Thread View"
-    override val preferences = listOf(ShowNullThreads, ShowEmptyValues)
+    override val preferences = listOf(ShowNullThreads, ShowEmptyValues, DefaultDiffView)
 }

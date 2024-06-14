@@ -2,11 +2,12 @@ package io.github.inductiveautomation.kindling.utils.diff
 
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
+import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.DefaultDiffView
+import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.DiffViewPreference.SIDEBYSIDE
+import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.DiffViewPreference.UNIFIED
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.addLineHighlighter
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rtextarea.RTextScrollPane
+import io.github.inductiveautomation.kindling.utils.scrollToTop
 import java.awt.Color
 import java.awt.Font
 import java.awt.event.ItemEvent
@@ -17,6 +18,9 @@ import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.JToggleButton
 import javax.swing.SwingUtilities
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rtextarea.RTextScrollPane
 
 class DiffView(
     pre: List<String>,
@@ -29,6 +33,7 @@ class DiffView(
     private val diffUtil = DiffUtil.create(pre, post, equalityPredicate)
 
     private val singleMultiToggle = JToggleButton("Toggle Unified View").apply {
+        isSelected = DefaultDiffView.currentValue == SIDEBYSIDE
         addItemListener { event ->
             if (event.stateChange == ItemEvent.SELECTED) {
                 singleView.isVisible = false
@@ -63,6 +68,8 @@ class DiffView(
             it.padEnd(columnCount)
         }
 
+        font = textAreaFont
+
         addLineHighlighter(addBackground) { _, lineNum ->
             diffUtil.unifiedDiffList[lineNum] is Diff.Addition
         }
@@ -83,7 +90,7 @@ class DiffView(
             if (it is Diff.Addition) " " else it.value.padEnd(columnCount)
         }
 
-        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+        font = textAreaFont
 
         addLineHighlighter(delBackground) { _, lineNum ->
             diffUtil.leftDiffList[lineNum] is Diff.Deletion
@@ -101,7 +108,7 @@ class DiffView(
             if (it is Diff.Deletion) " " else it.value.padEnd(columnCount)
         }
 
-        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+        font = textAreaFont
 
         addLineHighlighter(addBackground) { _, lineNum ->
             diffUtil.rightDiffList[lineNum] is Diff.Addition
@@ -130,7 +137,7 @@ class DiffView(
             "$leftText | $rightText"
         }
 
-        font = rightTextArea.font
+        font = textAreaFont
     }
 
     private val unifiedGutter = JTextArea(
@@ -164,7 +171,7 @@ class DiffView(
         }
 
         margin = unifiedTextArea.margin
-        font = unifiedTextArea.font
+        font = textAreaFont
     }
 
     // ScrollPanes
@@ -173,6 +180,7 @@ class DiffView(
         verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_NEVER
         horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
 
+        // Weird way to switch the scrollbar to the other side. Looks nice and symmetric
         setRowHeaderView(verticalScrollBar)
         border = BorderFactory.createEmptyBorder()
     }
@@ -216,10 +224,21 @@ class DiffView(
         add(singleView, "push, grow, span")
         add(sideBySide, "push, grow, span")
 
-        sideBySide.isVisible = false
+        (DefaultDiffView.currentValue == UNIFIED).let {
+            singleView.isVisible = it
+            sideBySide.isVisible = !it
+        }
+
+        listOf(
+            leftScrollPane,
+            rightScrollPane,
+            unifiedScrollPane,
+        ).forEach { it.scrollToTop() }
+
     }
 
     companion object {
+        private val textAreaFont = Font(Font.MONOSPACED, Font.PLAIN, 12)
         private const val SIDE_BY_SIDE_GUTTER_WIDTH = 5
         private const val UNIFIED_GUTTER_WIDTH = 9
 
