@@ -5,15 +5,23 @@ import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.DefaultDiffView
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.DiffViewPreference.SIDEBYSIDE
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.DiffViewPreference.UNIFIED
+import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.addLineHighlighter
+import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.scrollToTop
+import io.github.inductiveautomation.kindling.utils.toTempFile
 import java.awt.Color
+import java.awt.Desktop
 import java.awt.Font
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.awt.event.ItemEvent
 import javax.swing.BorderFactory
+import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.JToggleButton
@@ -27,9 +35,11 @@ class DiffView(
     post: List<String>,
     equalityPredicate: (String, String) -> Boolean = String::equals,
 ) : JPanel(MigLayout("fill, ins 10, hidemode 3")) {
-    // Main data object to get all relevant diff information, lists, etc.
-    // Even though this is running on the EDT,
-    // in my testing it's fast enough to not matter for any normal stacktrace length
+    /*
+        Main data object to get all relevant diff information, lists, etc.
+       Even though this is running on the EDT,
+       in my testing it's fast enough to not matter for any normal stacktrace length
+     */
     private val diffUtil = DiffUtil.create(pre, post, equalityPredicate)
 
     private val singleMultiToggle = JToggleButton("Toggle Unified View").apply {
@@ -52,6 +62,17 @@ class DiffView(
             }
         }
     }
+
+    private val openInExternalEditor = JButton(
+        Action("Open in External Editor") {
+            val desktop = Desktop.getDesktop()
+
+            listOf(
+                diffUtil.original.joinToString("\n").toTempFile("stack-original-", ".txt"),
+                diffUtil.modified.joinToString("\n").toTempFile("stack-modified", ".txt"),
+            ).forEach { desktop.open(it.toFile()) }
+        }
+    )
 
     private var columnCount: Int = 0
 
@@ -220,6 +241,7 @@ class DiffView(
 
     init {
         add(additionDeletionLabel)
+        add(openInExternalEditor, "align right")
         add(singleMultiToggle, "align right, wrap")
         add(singleView, "push, grow, span")
         add(sideBySide, "push, grow, span")
@@ -233,8 +255,38 @@ class DiffView(
             leftScrollPane,
             rightScrollPane,
             unifiedScrollPane,
-        ).forEach { it.scrollToTop() }
+        ).forEach { scrollPane -> scrollPane.scrollToTop() }
 
+        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+
+        singleView.attachPopupMenu {
+            val gutterLines = unifiedGutter.text.split("\n")
+            val unifiedText = diffUtil.unifiedDiffList
+
+            val outputText = gutterLines.zip(unifiedText).joinToString("\n") { (gutter, diff) ->
+                "$gutter ${diff.value}"
+            }
+
+            JPopupMenu().apply {
+                add(
+                    Action("Copy to Clipboard") {
+                        clipboard.setContents(StringSelection(outputText), null)
+                    }
+                )
+            }
+        }
+
+        leftTextArea.popupMenu.add(
+            Action("Copy original Stacktrace") {
+                clipboard.setContents(StringSelection(diffUtil.original.joinToString("\n")), null)
+            }
+        )
+
+        rightTextArea.popupMenu.add(
+            Action("Copy original Stacktrace") {
+                clipboard.setContents(StringSelection(diffUtil.modified.joinToString("\n")), null)
+            }
+        )
     }
 
     companion object {
