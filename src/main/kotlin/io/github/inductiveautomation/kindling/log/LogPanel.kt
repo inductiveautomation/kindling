@@ -5,7 +5,6 @@ import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
 import io.github.inductiveautomation.kindling.core.FilterPanel
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.Debug
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
@@ -135,10 +134,9 @@ class LogPanel(
                     }
 
                     is WrapperLogEvent -> {
-                        text in event.message || event.logger.contains(text, ignoreCase = true) ||
-                            event.stacktrace.any { stacktrace ->
-                                stacktrace.contains(text, ignoreCase = true)
-                            } ||
+                        text in event.message ||
+                            event.logger.contains(text, ignoreCase = true) ||
+                            event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) } ||
                             (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
                     }
                 }
@@ -148,19 +146,9 @@ class LogPanel(
 
     private val dataUpdater = debounce(50.milliseconds, BACKGROUND) {
         val selectedEvents = table.selectedRowIndices().map { row -> table.model[row].hashCode() }
-        val filteredData =
-            if (Debug.currentValue) {
-                // use a less efficient, but more debuggable, filtering sequence
-                filters.fold(rawData) { acc, logFilter ->
-                    acc.filter(logFilter::filter).also {
-                        println("${it.size} left after $logFilter")
-                    }
-                }
-            } else {
-                rawData.filter { event ->
-                    filters.all { filter -> filter.filter(event) }
-                }
-            }
+        val filteredData = rawData.filter { event ->
+            filters.all { filter -> filter.filter(event) }
+        }
 
         EDT_SCOPE.launch {
             table.apply {
@@ -420,7 +408,7 @@ class LogPanel(
         private val versionLabel = JLabel("Version")
 
         val versionPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
-            border = BorderFactory.createTitledBorder("Hyperlink Strategy")
+            border = BorderFactory.createTitledBorder("Stacktrace Links")
             add(versionLabel)
             add(version, "growy")
         }
@@ -450,7 +438,8 @@ class LogPanel(
         }
 
         private fun updateVersionVisibility() {
-            val isVisible = UseHyperlinks.currentValue && HyperlinkStrategy.currentValue == LinkHandlingStrategy.OpenInBrowser
+            val isVisible =
+                UseHyperlinks.currentValue && HyperlinkStrategy.currentValue == LinkHandlingStrategy.OpenInBrowser
             versionPanel.isVisible = isVisible
         }
 

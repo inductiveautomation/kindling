@@ -30,7 +30,9 @@ import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
 import javax.swing.tree.TreePath
 
-class LoggerNamePanel(private val rawData: List<LogEvent>) : FilterPanel<LogEvent>(), PopupMenuCustomizer {
+class LoggerNamePanel(private val rawData: List<LogEvent>) :
+    FilterPanel<LogEvent>(),
+    PopupMenuCustomizer {
     private val isTreeAvailable = rawData.first() is SystemLogEvent
 
     private var isTreeMode: Boolean = ShowLogTree.currentValue && isTreeAvailable
@@ -97,30 +99,32 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) : FilterPanel<LogEven
         selectionModel = NoSelectionModel()
         checkBoxTreeSelectionModel.addTreeSelectionListener {
             if (!isContextChanging) {
+                // Build a set containing the subset of all selected nodes, to catch messages on "parent" keys
+                // e.g. `Alarming.Notification` and `Alarming.Notification.Voice` which might both have logged messages.
+                selectedTreeNodes = selectedNodes.flatMapTo(mutableSetOf()) {
+                    it.name.split(".").runningReduce { acc, s ->
+                        "$acc.$s"
+                    }
+                }
                 listeners.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
             }
         }
     }
 
-    private val currentSelectedLeafNodes: List<String>
-        get() = filterTree.selectedNodes.map { it.name }
+    private var selectedTreeNodes: Set<String> = emptySet()
 
-    override fun filter(item: LogEvent): Boolean {
-        return if (isTreeMode) {
-            item.logger in currentSelectedLeafNodes
-        } else {
-            item.logger in filterList.checkBoxListSelectedValues
-        }
+    override fun filter(item: LogEvent): Boolean = if (isTreeMode) {
+        item.logger in selectedTreeNodes
+    } else {
+        item.logger in filterList.checkBoxListSelectedValues
     }
 
     override val tabName: String = "Loggers"
 
-    override fun isFilterApplied(): Boolean {
-        return if (isTreeMode) {
-            !filterTree.checkBoxTreeSelectionModel.isRowSelected(0)
-        } else {
-            filterList.checkBoxListSelectedValues.singleOrNull() != CheckBoxList.ALL_ENTRY
-        }
+    override fun isFilterApplied(): Boolean = if (isTreeMode) {
+        !filterTree.checkBoxTreeSelectionModel.isRowSelected(0)
+    } else {
+        filterList.checkBoxListSelectedValues.singleOrNull() != CheckBoxList.ALL_ENTRY
     }
 
     private val mainListComponent = ButtonPanel(sortButtons).apply {
@@ -179,6 +183,7 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) : FilterPanel<LogEven
                         selectionModel.clearSelection()
                         requestFocusInWindow()
                         expandPath(treePath)
+                        scrollPathToVisible(treePath)
                         selectionModel.selectionPath = treePath
                     }
                 },
@@ -239,7 +244,7 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) : FilterPanel<LogEven
                 return
             }
 
-            val indices = currentSelectedLeafNodes.map { filterList.model.indexOf(it) }
+            val indices = selectedTreeNodes.map { filterList.model.indexOf(it) }
 
             filterList.checkBoxListSelectionModel.clearSelection()
 

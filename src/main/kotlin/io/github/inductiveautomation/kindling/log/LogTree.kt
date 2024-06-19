@@ -4,15 +4,9 @@ import com.jidesoft.comparator.AlphanumComparator
 import com.jidesoft.swing.CheckBoxTree
 import com.jidesoft.swing.TreeSearchable
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
-import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
-import io.github.inductiveautomation.kindling.utils.attachPopupMenu
-import io.github.inductiveautomation.kindling.utils.collapseAll
-import io.github.inductiveautomation.kindling.utils.expandAll
 import io.github.inductiveautomation.kindling.utils.selectAll
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
-import javax.swing.JMenuItem
-import javax.swing.JPopupMenu
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
@@ -40,7 +34,7 @@ class LogEventNode(
         if (this.isLeaf) {
             frequency
         } else {
-            frequency + depthFirstChildren().filterIsInstance<LogEventNode>().sumOf { it.frequency }
+            frequency + children.filterIsInstance<LogEventNode>().sumOf { it.frequency }
         }
     }
 }
@@ -100,25 +94,6 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
                 this
             },
         )
-
-        attachPopupMenu {
-            JPopupMenu().apply {
-                add(
-                    JMenuItem(
-                        Action("Expand All") {
-                            expandAll()
-                        },
-                    ),
-                )
-                add(
-                    JMenuItem(
-                        Action("Collapse All") {
-                            collapseAll()
-                        },
-                    ),
-                )
-            }
-        }
 
         object : TreeSearchable(this) {
             init {
