@@ -148,8 +148,13 @@ data object Kindling {
 
             override val displayName: String = "General"
             override val serialKey: String = "general"
-            override val preferences: List<Preference<*>> =
-                listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, ShowLogTree, UseHyperlinks)
+            override val preferences: List<Preference<*>> = listOf(
+                HomeLocation,
+                DefaultTool,
+                ShowFullLoggerNames,
+                ShowLogTree,
+                UseHyperlinks,
+            )
         }
 
         data object UI : PreferenceCategory {
