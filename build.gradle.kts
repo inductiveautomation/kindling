@@ -44,19 +44,59 @@ group = "io.github.inductiveautomation"
 
 application {
     mainClass = "io.github.inductiveautomation.kindling.MainPanel"
-    applicationDefaultJvmArgs +=
-        listOf(
-            "--add-exports=java.base/sun.security.action=ALL-UNNAMED",
-            "--add-exports=java.desktop/com.sun.java.swing.plaf.windows=ALL-UNNAMED",
-            "--add-exports=java.desktop/apple.laf=ALL-UNNAMED",
-            "-XX:+UseZGC",
-            "-XX:+ZGenerational",
-        )
+    applicationDefaultJvmArgs += listOf(
+        "--add-exports=java.base/sun.security.action=ALL-UNNAMED",
+        "--add-exports=java.desktop/com.sun.java.swing.plaf.windows=ALL-UNNAMED",
+        "--add-exports=java.desktop/apple.laf=ALL-UNNAMED",
+        "-XX:+UseZGC",
+        "-XX:+ZGenerational",
+    )
 }
+
+private val javadocDirectory = project.layout.buildDirectory.dir("javadocs")
 
 tasks {
     test {
         useJUnitPlatform()
+    }
+    val createDirectory by registering(Task::class) {
+        doFirst {
+            javadocDirectory.get().asFile.mkdirs()
+        }
+    }
+    val download79 by registering(DownloadJavadocs::class) {
+        version = "7.9"
+        urls = listOf(
+            "https://files.inductiveautomation.com/sdk/javadoc/ignition79/7921/allclasses-noframe.html",
+            "https://docs.oracle.com/javase/8/docs/api/allclasses-noframe.html",
+            "https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/allclasses-noframe.html",
+        )
+        tempDirectory = javadocDirectory
+        dependsOn(createDirectory)
+    }
+    val download80 by registering(DownloadJavadocs::class) {
+        version = "8.0"
+        urls = listOf(
+            "https://files.inductiveautomation.com/sdk/javadoc/ignition80/8.0.14/allclasses.html",
+            "https://docs.oracle.com/en/java/javase/11/docs/api/allclasses.html",
+            "https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/allclasses-noframe.html",
+        )
+        tempDirectory = javadocDirectory
+        dependsOn(createDirectory)
+    }
+    val download81 by registering(DownloadJavadocs::class) {
+        version = "8.1"
+        urls = listOf(
+            "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.41/allclasses-index.html",
+            "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
+            "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
+        )
+        tempDirectory = javadocDirectory
+        dependsOn(createDirectory)
+    }
+    processResources {
+        duplicatesStrategy = DuplicatesStrategy.WARN
+        dependsOn(download79, download80, download81)
     }
 }
 
@@ -67,35 +107,7 @@ kotlin {
     }
     sourceSets {
         main {
-            resources.srcDirs(
-                tasks.register<DownloadJavadocs>("download79") {
-                    version = "7.9"
-                    urls =
-                        listOf(
-                            "https://files.inductiveautomation.com/sdk/javadoc/ignition79/7921/allclasses-noframe.html",
-                            "https://docs.oracle.com/javase/8/docs/api/allclasses-noframe.html",
-                            "https://www.javadoc.io/static/org.python/jython-standalone/2.5.3/allclasses-noframe.html",
-                        )
-                },
-                tasks.register<DownloadJavadocs>("download80") {
-                    version = "8.0"
-                    urls =
-                        listOf(
-                            "https://files.inductiveautomation.com/sdk/javadoc/ignition80/8.0.14/allclasses.html",
-                            "https://docs.oracle.com/en/java/javase/11/docs/api/allclasses.html",
-                            "https://www.javadoc.io/static/org.python/jython-standalone/2.7.1/allclasses-noframe.html",
-                        )
-                },
-                tasks.register<DownloadJavadocs>("download81") {
-                    version = "8.1"
-                    urls =
-                        listOf(
-                            "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.38/allclasses-index.html",
-                            "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
-                            "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
-                        )
-                },
-            )
+            resources.srcDir(javadocDirectory)
         }
     }
 }
