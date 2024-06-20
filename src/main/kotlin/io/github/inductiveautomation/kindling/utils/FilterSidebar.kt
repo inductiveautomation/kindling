@@ -13,6 +13,7 @@ import javax.swing.UIManager
 class FilterSidebar<T>(
     vararg panels: FilterPanel<T>?,
 ) : FlatTabbedPane() {
+
     val filterPanels = panels.filterNotNull()
 
     override fun createToolTip(): JToolTip = JToolTip().apply {
@@ -43,7 +44,8 @@ class FilterSidebar<T>(
         isShowContentSeparators = false
 
         preferredSize = Dimension(250, 100)
-        filterPanels.forEachIndexed { i, filterPanel ->
+
+        filterPanels.forEachIndexed { index, filterPanel ->
             addTab(
                 null,
                 filterPanel.icon,
@@ -58,7 +60,7 @@ class FilterSidebar<T>(
             )
             filterPanel.addFilterChangeListener {
                 filterPanel.updateTabState()
-                selectedIndex = i
+                selectedIndex = index
             }
         }
 

@@ -130,6 +130,14 @@ data object Kindling {
                 },
             )
 
+            val ShowLogTree: Preference<Boolean> = preference(
+                name = "Logger Name Format",
+                default = false,
+                editor = {
+                    PreferenceCheckbox("Show logger names as a tree view for system log files")
+                },
+            )
+
             val UseHyperlinks: Preference<Boolean> = preference(
                 name = "Hyperlinks",
                 default = true,
@@ -140,8 +148,13 @@ data object Kindling {
 
             override val displayName: String = "General"
             override val serialKey: String = "general"
-            override val preferences: List<Preference<*>> =
-                listOf(HomeLocation, DefaultTool, ShowFullLoggerNames, UseHyperlinks)
+            override val preferences: List<Preference<*>> = listOf(
+                HomeLocation,
+                DefaultTool,
+                ShowFullLoggerNames,
+                ShowLogTree,
+                UseHyperlinks,
+            )
         }
 
         data object UI : PreferenceCategory {

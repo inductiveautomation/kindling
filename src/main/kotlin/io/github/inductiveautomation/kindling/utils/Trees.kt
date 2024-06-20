@@ -1,8 +1,11 @@
 package io.github.inductiveautomation.kindling.utils
 
+import com.jidesoft.swing.CheckBoxTree
 import java.util.Collections
 import java.util.Enumeration
+import javax.swing.JTree
 import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
 
 abstract class AbstractTreeNode : TreeNode {
     open val children: MutableList<TreeNode> = object : ArrayList<TreeNode>() {
@@ -32,4 +35,28 @@ abstract class AbstractTreeNode : TreeNode {
 
 abstract class TypedTreeNode<T> : AbstractTreeNode() {
     abstract val userObject: T
+}
+
+fun JTree.expandAll() {
+    var i = 0
+    while (i < rowCount) {
+        expandRow(i)
+        i += 1
+    }
+}
+
+fun JTree.collapseAll() {
+    var i = rowCount - 1 // Skip the root node
+    while (i > 0) {
+        collapseRow(i)
+        i -= 1
+    }
+}
+
+fun CheckBoxTree.selectAll() {
+    checkBoxTreeSelectionModel.addSelectionPath(TreePath(model.root))
+}
+
+fun CheckBoxTree.unselectAll() {
+    checkBoxTreeSelectionModel.clearSelection()
 }

@@ -5,10 +5,10 @@ import com.jidesoft.swing.CheckBoxTree
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
 import io.github.inductiveautomation.kindling.utils.asActionIcon
+import io.github.inductiveautomation.kindling.utils.expandAll
+import io.github.inductiveautomation.kindling.utils.selectAll
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreeNode
-import javax.swing.tree.TreePath
 
 data class MetricNode(override val userObject: List<String>) : TypedTreeNode<List<String>>() {
     constructor(vararg parts: String) : this(parts.toList())
@@ -84,30 +84,9 @@ class MetricTree(metrics: List<Metric>) : CheckBoxTree(DefaultTreeModel(RootNode
     }
 
     val selectedLeafNodes: List<MetricNode>
-        get() = checkBoxTreeSelectionModel.selectionPaths
-            .flatMap {
-                (it.lastPathComponent as AbstractTreeNode).depthFirstChildren()
-            }.filterIsInstance<MetricNode>()
-
-    private fun TreeNode.depthFirstChildren(): Sequence<AbstractTreeNode> = sequence {
-        if (isLeaf) {
-            yield(this@depthFirstChildren as AbstractTreeNode)
-        } else {
-            for (child in children()) {
-                yieldAll(child.depthFirstChildren())
-            }
-        }
-    }
-
-    private fun expandAll() {
-        var i = 0
-        while (i < rowCount) {
-            expandRow(i)
-            i += 1
-        }
-    }
-
-    private fun selectAll() = checkBoxTreeSelectionModel.addSelectionPath(TreePath(model.root))
+        get() = checkBoxTreeSelectionModel.selectionPaths.flatMap {
+            (it.lastPathComponent as MetricNode).depthFirstChildren()
+        }.filterIsInstance<MetricNode>()
 
     companion object {
         private val CHART_ICON = FlatSVGIcon("icons/bx-line-chart.svg")
