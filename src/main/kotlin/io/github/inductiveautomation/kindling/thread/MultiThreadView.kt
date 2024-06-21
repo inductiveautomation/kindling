@@ -36,12 +36,6 @@ import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import io.github.inductiveautomation.kindling.utils.transferTo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.decorator.ColorHighlighter
-import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
 import java.awt.Rectangle
 import java.nio.file.Files
@@ -57,6 +51,12 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 
 class MultiThreadView(
     val paths: List<Path>,
@@ -262,54 +262,61 @@ class MultiThreadView(
         }
     }
 
+    // Setting the model will fire a selection event. This gets around that.
+    private var tableModelIsAdjusting = false
+
     private fun updateData() {
-        BACKGROUND.launch {
-            val filteredThreadDumps = currentLifespanList.filter { lifespan ->
-                lifespan.any {
-                    filters.all { threadFilter -> threadFilter.filter(it) }
+        EDT_SCOPE.launch {
+            val filteredThreadDumps = withContext(Dispatchers.Default) {
+                currentLifespanList.filter { lifespan ->
+                    lifespan.any {
+                        filters.all { threadFilter -> threadFilter.filter(it) }
+                    }
                 }
             }
 
-            EDT_SCOPE.launch {
-                val selectedID = if (!mainTable.selectionModel.isSelectionEmpty) {
-                    /* Maintain selection when model changes */
-                    val previousSelectedIndex = mainTable.convertRowIndexToModel(mainTable.selectedRow)
-                    mainTable.model[previousSelectedIndex, mainTable.model.columns.id]
-                } else {
-                    null
-                }
-
-                val sortedColumnIdentifier = mainTable.sortedColumn?.identifier
-                val sortOrder = sortedColumnIdentifier?.let(mainTable::getSortOrder)
-
-                val newModel = ThreadModel(filteredThreadDumps)
-                mainTable.columnFactory = newModel.columns.toColumnFactory()
-                mainTable.model = newModel
-                mainTable.createDefaultColumnsFromModel()
-                exportMenu.isEnabled = newModel.isSingleContext
-
-                if (selectedID != null) {
-                    val newSelectedIndex = mainTable.model.threadData.indexOfFirst { lifespan ->
-                        selectedID in lifespan.mapNotNull { thread -> thread?.id }
-                    }
-                    if (newSelectedIndex > -1) {
-                        val newSelectedViewIndex = mainTable.convertRowIndexToView(newSelectedIndex)
-                        mainTable.selectionModel.setSelectionInterval(0, newSelectedViewIndex)
-                        mainTable.scrollRectToVisible(Rectangle(mainTable.getCellRect(newSelectedViewIndex, 0, true)))
-                    }
-                }
-
-                // Set visible and/or sort by previously sorted column
-                val columnExt = sortedColumnIdentifier?.let(mainTable::getColumnExt)
-                if (columnExt != null) {
-                    columnExt.isVisible = true
-                    if (sortOrder != null) {
-                        mainTable.setSortOrder(sortedColumnIdentifier, sortOrder)
-                    }
-                }
-
-                threadCountLabel.visibleThreads = mainTable.model.threadData.flatten().filterNotNull().size
+            val selectedID = if (!mainTable.selectionModel.isSelectionEmpty) {
+                /* Maintain selection when model changes */
+                val previousSelectedIndex = mainTable.convertRowIndexToModel(mainTable.selectedRow)
+                mainTable.model[previousSelectedIndex, mainTable.model.columns.id]
+            } else {
+                null
             }
+
+            val sortedColumnIdentifier = mainTable.sortedColumn?.identifier
+            val sortOrder = sortedColumnIdentifier?.let(mainTable::getSortOrder)
+
+            val newModel = ThreadModel(filteredThreadDumps)
+            mainTable.columnFactory = newModel.columns.toColumnFactory()
+
+            tableModelIsAdjusting = true
+            mainTable.model = newModel
+            tableModelIsAdjusting = false
+
+            mainTable.createDefaultColumnsFromModel()
+            exportMenu.isEnabled = newModel.isSingleContext
+
+            if (selectedID != null) {
+                val newSelectedIndex = mainTable.model.threadData.indexOfFirst { lifespan ->
+                    selectedID in lifespan.mapNotNull { thread -> thread?.id }
+                }
+                if (newSelectedIndex > -1) {
+                    val newSelectedViewIndex = mainTable.convertRowIndexToView(newSelectedIndex)
+                    mainTable.selectionModel.setSelectionInterval(0, newSelectedViewIndex)
+                    mainTable.scrollRectToVisible(Rectangle(mainTable.getCellRect(newSelectedViewIndex, 0, true)))
+                }
+            }
+
+            // Set visible and/or sort by previously sorted column
+            val columnExt = sortedColumnIdentifier?.let(mainTable::getColumnExt)
+            if (columnExt != null) {
+                columnExt.isVisible = true
+                if (sortOrder != null) {
+                    mainTable.setSortOrder(sortedColumnIdentifier, sortOrder)
+                }
+            }
+
+            threadCountLabel.visibleThreads = mainTable.model.threadData.flatten().filterNotNull().size
         }
     }
 
@@ -358,7 +365,7 @@ class MultiThreadView(
 
         mainTable.selectionModel.apply {
             addListSelectionListener {
-                if (!it.valueIsAdjusting) {
+                if (!it.valueIsAdjusting && !tableModelIsAdjusting) {
                     val selectedRowIndices = mainTable.selectedRowIndices()
                     if (selectedRowIndices.isNotEmpty()) {
                         comparison.threads = mainTable.model.threadData[selectedRowIndices.first()]
@@ -394,7 +401,7 @@ class MultiThreadView(
                 ),
                 comparison,
             ),
-            "push, grow, span",
+            "push, grow, span, wmax 100%",
         )
 
         sidebar.selectedIndex = 0
@@ -415,8 +422,6 @@ class MultiThreadView(
     }
 
     companion object {
-        private val BACKGROUND = CoroutineScope(Dispatchers.Default)
-
         private fun List<ThreadDump?>.toLifespanList(): List<ThreadLifespan> {
             val idsToLifespans = mutableMapOf<Int, Array<Thread?>>()
             forEachIndexed { i, threadDump ->
