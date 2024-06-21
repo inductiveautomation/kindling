@@ -1,15 +1,14 @@
 package io.github.inductiveautomation.kindling.thread
 
 import com.jidesoft.swing.CheckBoxList
+import io.github.inductiveautomation.kindling.thread.model.ThreadDump
 import io.github.inductiveautomation.kindling.utils.NoSelectionModel
 import io.github.inductiveautomation.kindling.utils.listCellRenderer
-import java.nio.file.Path
 import javax.swing.AbstractListModel
 import javax.swing.JList
 import javax.swing.ListModel
-import kotlin.io.path.name
 
-class ThreadDumpListModel(private val values: List<Path>) : AbstractListModel<Any>() {
+class ThreadDumpListModel(private val values: List<ThreadDump>) : AbstractListModel<Any>() {
     override fun getSize(): Int = values.size + 1
     override fun getElementAt(index: Int): Any? = when (index) {
         0 -> CheckBoxList.ALL_ENTRY
@@ -17,22 +16,23 @@ class ThreadDumpListModel(private val values: List<Path>) : AbstractListModel<An
     }
 }
 
-class ThreadDumpCheckboxList(data: List<Path>) : CheckBoxList(ThreadDumpListModel(data)) {
+class ThreadDumpCheckboxList(data: List<ThreadDump>) : CheckBoxList(ThreadDumpListModel(data)) {
     init {
         layoutOrientation = JList.HORIZONTAL_WRAP
         visibleRowCount = 0
         isClickInCheckBoxOnly = false
         selectionModel = NoSelectionModel()
 
-        cellRenderer = listCellRenderer<Any?> { _, value, index, _, _ ->
-            text = when (index) {
-                0 -> "All"
-                else -> index.toString()
+        cellRenderer = listCellRenderer { _, value: Any, index, _, _ ->
+            val textToDisplay = when(value) {
+                ALL_ENTRY -> "All"
+                else -> {
+                    val valueAsThreadDump = value as ThreadDump
+                    val cpuUsage = valueAsThreadDump.threads.sumOf { it.cpuUsage ?: 0.0 }
+                    "%d (%.2f%%)".format(index, cpuUsage)
+                }
             }
-            toolTipText = when (value) {
-                is Path -> value.name
-                else -> null
-            }
+            text = textToDisplay
         }
         selectAll()
     }
