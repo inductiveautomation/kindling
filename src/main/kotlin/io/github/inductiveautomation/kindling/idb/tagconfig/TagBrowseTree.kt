@@ -5,6 +5,7 @@ import com.jidesoft.swing.TreeSearchable
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.Node
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
+import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import kotlinx.coroutines.Dispatchers
@@ -14,30 +15,29 @@ import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
+import kotlin.properties.Delegates
 
 class TagBrowseTree : JTree(NO_SELECTION) {
-    var provider: TagProviderRecord? = null
-        set(value) {
-            field = value
-
-            if (value == null) {
-                model = DefaultTreeModel(NO_SELECTION)
-                return
-            }
-
+    var provider: TagProviderRecord? by Delegates.observable(null) { _, _, newValue ->
+        if (newValue == null) {
+            model = NO_SELECTION
+        } else {
             EDT_SCOPE.launch {
-                model = DefaultTreeModel(NO_SELECTION)
-                val providerNode = withContext(Dispatchers.Default) { value.getProviderNode().await() }
+                model = NO_SELECTION
+                val providerNode = withContext(Dispatchers.Default) {
+                    newValue.getProviderNode().await()
+                }
                 model = DefaultTreeModel(providerNode)
             }
         }
+    }
 
     init {
         isRootVisible = false
         setShowsRootHandles(true)
 
         setCellRenderer(
-            treeCellRenderer { _, value, _, expanded, _, _, _ ->
+            treeCellRenderer { _, value, selected, expanded, _, _, _ ->
                 val actualValue = value as? Node
 
                 text = if (actualValue?.inferredNode == true) {
@@ -55,10 +55,12 @@ class TagBrowseTree : JTree(NO_SELECTION) {
                 icon = when (actualValue?.config?.tagType) {
                     "AtomicTag" -> TAG_ICON
                     "UdtInstance", "UdtType" -> UDT_ICON
-                    else -> {
-                        if (expanded) FOLDER_OPEN_ICON else FOLDER_CLOSED_ICON
+                    else -> if (expanded) {
+                        FOLDER_OPEN_ICON
+                    } else {
+                        FOLDER_CLOSED_ICON
                     }
-                }
+                }.asActionIcon(selected)
 
                 this
             },
@@ -73,27 +75,25 @@ class TagBrowseTree : JTree(NO_SELECTION) {
             // Returns full tag path without provider name. (path/to/tag)
             override fun convertElementToString(element: Any?): String {
                 val path = (element as? TreePath)?.path ?: return ""
-                return path.asList().subList(1, path.size).joinToString("/") {
-                    (it as Node).actualName
+                return (1..path.lastIndex).joinToString("/") {
+                    (path[it] as Node).actualName
                 }
             }
         }
     }
 
     companion object {
-        private val NO_SELECTION = DefaultMutableTreeNode("Select a Tag Provider to Browse")
+        private val NO_SELECTION = DefaultTreeModel(DefaultMutableTreeNode("Select a Tag Provider to Browse"))
 
-        private const val ICON_SIZE = 18
-
-        private val UDT_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-vector.svg").derive(ICON_SIZE, ICON_SIZE)
-        private val TAG_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-purchase-tag.svg").derive(ICON_SIZE, ICON_SIZE)
-        private val FOLDER_CLOSED_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder.svg").derive(ICON_SIZE, ICON_SIZE)
-        private val FOLDER_OPEN_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder-open.svg").derive(ICON_SIZE, ICON_SIZE)
+        private val UDT_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-vector.svg")
+        private val TAG_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-purchase-tag.svg")
+        private val FOLDER_CLOSED_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder.svg")
+        private val FOLDER_OPEN_ICON: FlatSVGIcon = FlatSVGIcon("icons/bx-folder-open.svg")
 
         fun TreePath.toTagPath(): String {
             val provider = "[${(path.first() as Node).name}]"
-            val tagPath = path.asList().subList(1, path.size).joinToString("/") {
-                (it as Node).actualName
+            val tagPath = (1 until path.size).joinToString("/") {
+                (path[it] as Node).actualName
             }
             return "$provider$tagPath"
         }

@@ -7,12 +7,12 @@ import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-/*
-    We generally want to keep these statistics separate instead of referencing the config directly.
-    This allows us to copy statistics between inherited nodes without modifying their config directly.
-    The config needs to remain untouched to ensure the integrity of JSON exports.
-
-    Dynamic getters are required for almost all of these properties because the config is changed as inheritance is resolved.
+/**
+ * We generally want to keep these statistics separate instead of referencing the config directly.
+ * This allows us to copy statistics between inherited nodes without modifying their config directly.
+ * The config needs to remain untouched to ensure the integrity of JSON exports.
+ *
+ * Dynamic getters are required for almost all of these properties because the config is changed as inheritance is resolved.
  */
 class NodeStatistics(private val node: Node) {
     // Tag Type
@@ -34,11 +34,15 @@ class NodeStatistics(private val node: Node) {
             true
         }
 
-        if (name == null) null else AlarmState(name, enabled)
+        if (name == null) {
+            null
+        } else {
+            AlarmState(name, enabled)
+        }
     }?.toMutableList() ?: mutableListOf()
 
     val numAlarms: Int
-        get() = alarmStates.filter { it.enabled ?: true }.size
+        get() = alarmStates.count { it.enabled ?: true }
 
     val hasAlarms: Boolean
         get() = numAlarms > 0
@@ -47,7 +51,7 @@ class NodeStatistics(private val node: Node) {
     private val scriptStates: MutableList<ScriptConfig> = node.config.eventScripts ?: mutableListOf()
 
     val numScripts: Int
-        get() = scriptStates.filter { it.enabled ?: true }.size
+        get() = scriptStates.count { it.enabled ?: true }
     val hasScripts: Boolean
         get() = numScripts > 0
 

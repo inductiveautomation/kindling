@@ -2,6 +2,8 @@ package io.github.inductiveautomation.kindling.idb.tagconfig.model
 
 import io.github.inductiveautomation.kindling.idb.tagconfig.TagConfigView
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.NodeGroup.Companion.toNodeGroup
+import io.github.inductiveautomation.kindling.utils.executeQuery
+import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -11,8 +13,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
+import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import java.sql.Connection
+import java.sql.PreparedStatement
 import kotlin.io.path.outputStream
 
 /**
@@ -27,7 +31,7 @@ data class TagProviderRecord(
     val description: String?,
     val enabled: Boolean,
     val typeId: String,
-    val dbConnection: Connection,
+    val statement: PreparedStatement,
 ) {
     val providerStatistics = ProviderStatistics()
 
@@ -50,9 +54,7 @@ data class TagProviderRecord(
                         else -> {
                             val folderGroup = nodeGroups[folderId]
                             folderGroup?.parentNode?.addChildTag(parentNode)
-                                ?: providerStatistics.orphanedTags.value.add(
-                                    parentNode,
-                                )
+                                ?: providerStatistics.orphanedTags.value.add(parentNode)
                         }
                     }
                 }
@@ -65,22 +67,28 @@ data class TagProviderRecord(
                 }
             }
 
-            if (orphanedParentNode.config.tags.isNotEmpty()) addChildTag(orphanedParentNode)
+            if (orphanedParentNode.config.tags.isNotEmpty()) {
+                addChildTag(orphanedParentNode)
+            }
         }
     }
 
     // Effectively just the TagConfig table in memory.
     val rawNodeData by lazy {
-        dbConnection.prepareStatement(TAG_CONFIG_TABLE_QUERY).apply { setInt(1, id) }.executeQuery()
+        statement
+            .apply {
+                setInt(1, id)
+            }
+            .executeQuery()
             .toList { rs ->
                 try {
                     Node(
-                        id = rs.getString(1),
-                        providerId = rs.getInt(2),
-                        folderId = rs.getString(3),
-                        config = TagConfigView.TagExportJson.decodeFromString(TagConfigSerializer, rs.getString(4)),
-                        rank = rs.getInt(5),
-                        name = rs.getString(6),
+                        id = rs["id"],
+                        providerId = rs["providerId"],
+                        folderId = rs["folderId"],
+                        config = TagConfigView.TagExportJson.decodeFromString(TagConfigSerializer, rs["cfg"]),
+                        rank = rs["rank"],
+                        name = rs["name"],
                     )
                 } catch (e: NullPointerException) {
                     // Null records will be ignored.
@@ -102,16 +110,16 @@ data class TagProviderRecord(
         rawNodeData.groupBy { node ->
             node.id.substring(0, 36)
         }.mapValues { (_, nodes) ->
-            nodes.sortedBy { it.id }.toNodeGroup()
-        }.toList().sortedBy { (_, nodes) ->
-            nodes.first().rank
-        }.toMap()
+            nodes.toNodeGroup()
+        }.toList()
+            .sortedBy { (_, nodes) ->
+                nodes.first().rank
+            }.toMap()
     }
 
     val udtDefinitions: Map<String, Node> by lazy {
-        rawNodeData.filter { it.statistics.isUdtDefinition }.associateBy {
-            it.getFullUdtDefinitionPath(nodeGroups)
-        }
+        rawNodeData.filter { it.statistics.isUdtDefinition }
+            .associateBy { it.getFullUdtDefinitionPath(nodeGroups) }
     }
 
     val typesNode = createTypesNode(id)
@@ -159,7 +167,9 @@ data class TagProviderRecord(
         )
     }
 
-    // Export the whole tag provider to JSON, effectively just exporting the root node's config.
+    /**
+     *  Export the whole tag provider to JSON, effectively just exporting the root node's config.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     fun exportToJson(selectedFilePath: Path) {
         selectedFilePath.outputStream().use {
@@ -222,11 +232,10 @@ data class TagProviderRecord(
         val inheritedParentNode =
             parentNode.getParentType() ?: run {
                 isResolved = true
-                println("Missing UDT Definition: ${parentNode.config.typeId}")
+//                println("Missing UDT Definition: ${parentNode.config.typeId}")
                 return
             }
-        val inheritedNodeGroup =
-            nodeGroups[inheritedParentNode.id] ?: throw IllegalStateException("This should never happen")
+        val inheritedNodeGroup = checkNotNull(nodeGroups[inheritedParentNode.id]) { "This should never happen" }
 
         if (!inheritedNodeGroup.isResolved) inheritedNodeGroup.resolveInheritance(nodeGroups, udtDefinitions)
 
@@ -247,9 +256,37 @@ data class TagProviderRecord(
     }
 
     companion object {
-        private const val TAG_PROVIDER_TABLE_QUERY = "SELECT * FROM TAGPROVIDERSETTINGS ORDER BY NAME"
-        private const val TAG_CONFIG_TABLE_QUERY =
-            "SELECT id, providerid,folderid,cfg,rank,json_extract(cfg,\"\$.name\") as name FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
+        @Language("SQLite")
+        private val TAG_PROVIDER_TABLE_QUERY = """
+            SELECT
+                tagprovidersettings_id AS id,
+                name,
+                providerid,
+                description,
+                enabled,
+                typeid
+            FROM
+                tagprovidersettings
+            ORDER BY
+                name
+        """.trimIndent()
+
+        @Language("SQLite")
+        private val TAG_CONFIG_TABLE_QUERY = """
+            SELECT
+                id,
+                providerid,
+                folderid,
+                cfg,
+                rank,
+                JSON_EXTRACT(cfg, '$.name') AS name
+            FROM
+                tagconfig
+            WHERE
+                providerid = ?
+            ORDER BY
+                id
+        """.trimIndent()
 
         fun TagProviderRecord.createProviderNode(typesNode: Node? = null): Node = Node(
             id = this.uuid,
@@ -318,19 +355,23 @@ data class TagProviderRecord(
             }
         }
 
-        fun getProvidersFromDB(connection: Connection): List<TagProviderRecord> =
-            connection.prepareStatement(TAG_PROVIDER_TABLE_QUERY).executeQuery().toList { rs ->
-                runCatching {
-                    TagProviderRecord(
-                        id = rs.getInt(1),
-                        name = rs.getString(2),
-                        uuid = rs.getString(3),
-                        description = rs.getString(4),
-                        enabled = rs.getBoolean(5),
-                        typeId = rs.getString(6),
-                        dbConnection = connection,
-                    )
-                }.getOrNull()
-            }.filterNotNull()
+        fun getProvidersFromDB(connection: Connection): List<TagProviderRecord> {
+            val configStatement = connection.prepareStatement(TAG_CONFIG_TABLE_QUERY)
+
+            return connection.executeQuery(TAG_PROVIDER_TABLE_QUERY)
+                .toList { rs ->
+                    runCatching {
+                        TagProviderRecord(
+                            id = rs["id"],
+                            name = rs["name"],
+                            uuid = rs["providerid"],
+                            description = rs["description"],
+                            enabled = rs["enabled"],
+                            typeId = rs["typeid"],
+                            statement = configStatement,
+                        )
+                    }.getOrNull()
+                }.filterNotNull()
+        }
     }
 }

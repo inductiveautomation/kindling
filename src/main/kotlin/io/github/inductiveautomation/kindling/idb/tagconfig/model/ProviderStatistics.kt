@@ -82,6 +82,7 @@ class ProviderStatistics private constructor(
 
     sealed class ProviderStatistic<T>(val name: String) {
         abstract val value: T
+
         val humanReadableName = name.splitCamelCase()
             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 

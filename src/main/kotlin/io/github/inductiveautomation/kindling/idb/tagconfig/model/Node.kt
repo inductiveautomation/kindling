@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.idb.tagconfig.model
 
+import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.NodeGroup.Companion.toNodeGroup
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -50,16 +51,17 @@ data class Node(
     override fun children(): Enumeration<out TreeNode> = Collections.enumeration(config.tags)
 
     companion object {
-        private val nodeChildComparator =
-            compareBy<Node> { !it.isMeta }.thenBy { it.config.tagType }.thenBy { it.actualName.lowercase() }
+        private val nodeChildComparator = compareByDescending<Node> { it.isMeta }
+            .thenBy { it.config.tagType }
+            .thenBy(AlphanumComparator(false)) { it.actualName }
     }
 }
 
-/*
-The JSON serialization of a Node is simply its config. The Node class represents an entry in the IDB.
-Here, we delegate the serialization of a node to just use the TagConfig serializer.
-
-Serializing a node will recursively serialize all child tags, creating the complete json export.
+/**
+ * The JSON serialization of a Node is simply its config. The Node class represents an entry in the IDB.
+ * Here, we delegate the serialization of a node to just use the TagConfig serializer.
+ *
+ * Serializing a node will recursively serialize all child tags, creating the complete json export.
  */
 object NodeDelegateSerializer : KSerializer<Node> {
     @OptIn(ExperimentalSerializationApi::class)

@@ -26,6 +26,7 @@ class NodeConfigPanel(
 
     private val idbInfo = JPanel(MigLayout("fill, ins 0")).apply {
         with(node) {
+            // TODO make a real table model
             val rows = arrayOf(
                 arrayOf("id", id),
                 arrayOf("folderid", folderId.toString()),

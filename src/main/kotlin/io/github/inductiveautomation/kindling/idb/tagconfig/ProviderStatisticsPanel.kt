@@ -1,9 +1,9 @@
-@file:Suppress("unused")
-
 package io.github.inductiveautomation.kindling.idb.tagconfig
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics
+import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.MappedStatistic
+import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.ProviderStatistic
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
@@ -11,18 +11,19 @@ import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
+import io.github.inductiveautomation.kindling.utils.ReifiedTableModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.miginfocom.swing.MigLayout
-import java.awt.Font
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
 
 class ProviderStatisticsPanel :
-    JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2, hidemode 3")),
+    JPanel(MigLayout("fillx, ins 3 0 0 0, gap 10, wrap 2, hidemode 3")),
     PopupMenuCustomizer {
     var provider: TagProviderRecord? = null
         set(newProvider) {
@@ -40,15 +41,15 @@ class ProviderStatisticsPanel :
                     @Suppress("UNCHECKED_CAST")
                     val individualStats = newProvider.providerStatistics.values.filter {
                         it is ProviderStatistics.QuantitativeStatistic || it is ProviderStatistics.DependentStatistic<*, *>
-                    } as List<ProviderStatistics.ProviderStatistic<Int>>
+                    } as List<ProviderStatistic<Int>>
 
                     val mappedStats =
-                        newProvider.providerStatistics.values.filterIsInstance<ProviderStatistics.MappedStatistic>()
+                        newProvider.providerStatistics.values.filterIsInstance<MappedStatistic>()
 
                     Pair(individualStats, mappedStats)
                 }
 
-                generalStatsTable.model = IndividualStatsModel(individualStats)
+                generalStatsTable.model = ReifiedListTableModel(individualStats, IndividualStatColumns)
                 mappedStatsTables.forEachIndexed { i, table ->
                     table.model = MappedStatModel(mappedStats[i])
                 }
@@ -57,29 +58,23 @@ class ProviderStatisticsPanel :
             }
         }
 
-    private val generalStatsTable = ReifiedJXTable(IndividualStatsModel(), IndividualStatsModel.IndividualStatColumns)
+    private val generalStatsTable = ReifiedJXTable(ReifiedListTableModel(emptyList(), IndividualStatColumns))
     private val generalStatsScrollPane = FlatScrollPane(generalStatsTable)
 
-    private val mappedStatsTables =
-        List(ProviderStatistics().values.filterIsInstance<ProviderStatistics.MappedStatistic>().size) {
-            val model = MappedStatModel()
-            ReifiedJXTable(model, model.columns)
-        }
+    private val mappedStatsTables = ProviderStatistics().values
+        .filterIsInstance<MappedStatistic>()
+        .map { ReifiedJXTable(MappedStatModel()) }
 
-    private val mappedStatsScrollPanes = mappedStatsTables.map {
-        FlatScrollPane(it)
-    }
+    private val mappedStatsScrollPanes = mappedStatsTables.map(::FlatScrollPane)
 
     private val throbber = JLabel(FlatSVGIcon("icons/bx-loader-circle.svg").derive(50, 50))
 
     private val generalStatsLabel = JLabel("General Statistics").apply {
-        font = font.deriveFont(Font.BOLD, 16F)
-        horizontalAlignment = JLabel.CENTER
+        putClientProperty("FlatLaf.styleClass", "h3")
     }
 
     private val mappedStatsLabel = JLabel("Grouped Statistics").apply {
-        font = font.deriveFont(Font.BOLD, 16F)
-        horizontalAlignment = JLabel.CENTER
+        putClientProperty("FlatLaf.styleClass", "h3")
     }
 
     private var loading: Boolean = false
@@ -89,7 +84,9 @@ class ProviderStatisticsPanel :
             mappedStatsLabel.isVisible = !value
 
             generalStatsScrollPane.isVisible = !value
-            mappedStatsScrollPanes.forEach { it.isVisible = !value }
+            mappedStatsScrollPanes.forEach {
+                it.isVisible = !value
+            }
 
             throbber.isVisible = value
         }
@@ -100,7 +97,7 @@ class ProviderStatisticsPanel :
         add(generalStatsScrollPane, "growx, span, h 250!")
 
         add(mappedStatsLabel, "growx, span")
-        mappedStatsScrollPanes.forEach { pane ->
+        for (pane in mappedStatsScrollPanes) {
             add(pane, "growx")
         }
 
@@ -111,35 +108,19 @@ class ProviderStatisticsPanel :
     override fun customizePopupMenu(menu: JPopupMenu) = menu.removeAll()
 }
 
-class IndividualStatsModel(
-    private val data: List<ProviderStatistics.ProviderStatistic<Int>> = emptyList(),
-) : AbstractTableModel() {
-    override fun getColumnName(column: Int): String = IndividualStatColumns[column].header
-    override fun getRowCount(): Int = data.size
-    override fun getColumnCount(): Int = size
-    override fun getValueAt(row: Int, column: Int): Any? = get(row, IndividualStatColumns[column])
-    override fun getColumnClass(column: Int): Class<*> = IndividualStatColumns[column].clazz
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
+@Suppress("unused")
+object IndividualStatColumns : ColumnList<ProviderStatistic<Int>>() {
+    val stat by column("Stat") { it.name }
 
-    operator fun <R> get(row: Int, column: Column<ProviderStatistics.ProviderStatistic<Int>, R>): R? = data.getOrNull(row)?.let { stat ->
-        column.getValue(stat)
-    }
-
-    companion object IndividualStatColumns : ColumnList<ProviderStatistics.ProviderStatistic<Int>>() {
-        val stat by column("Stat") {
-            it.name
-        }
-
-        val value by column("Value") {
-            it.value
-        }
-    }
+    val value by column("Value") { it.value }
 }
 
 class MappedStatModel(
-    private val data: ProviderStatistics.MappedStatistic? = null,
-) : AbstractTableModel() {
-    val columns = object : ColumnList<Map.Entry<String, Int>>() {
+    private val data: MappedStatistic? = null,
+) : AbstractTableModel(),
+    ReifiedTableModel<Map.Entry<String, Int>> {
+    @Suppress("unused")
+    override val columns = object : ColumnList<Map.Entry<String, Int>>() {
         val statName by column(data?.humanReadableName) {
             it.key
         }
@@ -156,7 +137,9 @@ class MappedStatModel(
     override fun getColumnClass(column: Int): Class<*> = columns[column].clazz
     override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
 
-    operator fun <R> get(row: Int, column: Column<Map.Entry<String, Int>, R>): R? = data?.value?.entries?.toList()?.getOrNull(row)?.let {
-        column.getValue(it)
-    }
+    operator fun <R> get(row: Int, column: Column<Map.Entry<String, Int>, R>): R? = data?.value?.entries
+        ?.elementAtOrNull(row)
+        ?.let {
+            column.getValue(it)
+        }
 }

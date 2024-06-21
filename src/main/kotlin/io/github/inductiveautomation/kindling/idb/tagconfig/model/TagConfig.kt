@@ -11,15 +11,15 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.jsonObject
 
-/*
- All possible elements of any type of node in the tag hierarchy.
- This is 'technically' future-proof in the sense that if more tag config entries are added to ignition,
- they will be bundled with the customProperties property instead of causing an error.
-
- Values marked as JsonElement or any of its subclasses are marked as such for two reasons. Either:
- 1. We don't care about their data types and the serializers will represent them correctly for display/export purposes
- 2. The value can be multiple types, depending on the export. For example, a tag's value can be either a Json Primitive or an Object,
-    if the tag's value is bound.
+/**
+ * All possible elements of a node (of any type) in the tag hierarchy.
+ * This is 'technically' future-proof in the sense that if more tag config entries are added to ignition,
+ * they will be bundled with the customProperties property instead of causing an error.
+ *
+ * Values marked as JsonElement or any of its subclasses are marked as such for two reasons. Either:
+ * 1. We don't care about their data types, and the serializers will represent them correctly for display/export purposes.
+ * 2. The value can be multiple types, depending on the export. For example, a tag's value can be either a Json Primitive or an Object,
+ *      if the tag's value is bound.
  */
 @Serializable
 data class TagConfig(
@@ -116,9 +116,9 @@ data class AlarmState(
     var enabled: Boolean?,
 )
 
-/*
- Deserialize the json into a TagConfig object,
- grouping all custom properties into a separate "customProperties" property.
+/**
+ * Deserialize the json into a TagConfig object,
+ * grouping all custom properties into a separate `customProperties` property.
  */
 object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.serializer()) {
     @OptIn(ExperimentalSerializationApi::class)
@@ -129,11 +129,16 @@ object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.ser
 
         val elementMap = element.jsonObject.toMutableMap()
 
-        val customPropertiesMap = elementMap.filter { it.key !in elementNames }.onEach { (key, value) ->
-            elementMap.remove(key, value)
-        }
+        val customPropertiesMap = elementMap.filter { it.key !in elementNames }
+            .onEach { (key, value) ->
+                elementMap.remove(key, value)
+            }
 
-        elementMap["customProperties"] = if (customPropertiesMap.isEmpty()) JsonNull else JsonObject(customPropertiesMap)
+        elementMap["customProperties"] = if (customPropertiesMap.isEmpty()) {
+            JsonNull
+        } else {
+            JsonObject(customPropertiesMap)
+        }
 
         return JsonObject(elementMap)
     }
@@ -160,9 +165,9 @@ object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.ser
     }
 }
 
-/*
- Serialize a node without recursively serializing the tags within it.
- This is used to display a single nodes config when browsing from the Tree in the UI.
+/**
+ * Serialize a node without recursively serializing the tags within it.
+ * This is used to display a single nodes config when browsing from the Tree in the UI.
  */
 object MinimalTagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.serializer()) {
     override fun transformDeserialize(element: JsonElement): JsonElement {

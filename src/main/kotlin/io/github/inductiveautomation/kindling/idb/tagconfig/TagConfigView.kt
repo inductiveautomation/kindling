@@ -72,21 +72,6 @@ class TagConfigView(connection: Connection) : ToolPanel() {
             }
         }
 
-        // Dummy Tag Provider Record for preferred size
-        prototypeDisplayValue = (
-            tagProviderData + TagProviderRecord(
-                dbConnection = connection,
-                description = "",
-                name = "Select a Tag Provider...",
-                enabled = false,
-                id = 0,
-                typeId = "",
-                uuid = "",
-            )
-            ).maxBy {
-            it.name.length
-        }
-
         configureCellRenderer { _, value, _, _, _ ->
             text = value?.name ?: defaultPrompt
         }
@@ -174,7 +159,7 @@ class TagConfigView(connection: Connection) : ToolPanel() {
 
     init {
         val leftPane = JPanel(MigLayout("fill, ins 5")).apply {
-            add(providerDropdown, "pushx, growx")
+            add(providerDropdown, "pushx, growx, wmin 200")
             add(exportButton, "wrap")
             add(JScrollPane(tagProviderTree), "push, grow, span")
         }
