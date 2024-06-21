@@ -7,13 +7,13 @@ import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRec
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class TagBrowseTree : JTree(NO_SELECTION) {
     var provider: TagProviderRecord? = null
@@ -61,7 +61,7 @@ class TagBrowseTree : JTree(NO_SELECTION) {
                 }
 
                 this
-            }
+            },
         )
 
         object : TreeSearchable(this) {

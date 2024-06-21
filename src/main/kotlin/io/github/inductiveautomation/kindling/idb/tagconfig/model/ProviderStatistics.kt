@@ -111,7 +111,7 @@ class ProviderStatistics private constructor(
 
         companion object {
             fun quantitativeStatistic(
-                processNode: QuantitativeStatistic.(node: Node) -> Unit
+                processNode: QuantitativeStatistic.(node: Node) -> Unit,
             ) = PropertyDelegateProvider { thisRef: ProviderStatistics, property ->
                 val quantitative = QuantitativeStatistic(property.name, processNode)
                 thisRef.statsMap[property.name] = quantitative
@@ -127,9 +127,7 @@ class ProviderStatistics private constructor(
         override val value: MutableMap<String, Int> = mutableMapOf()
         override fun processNode(node: Node) = processNode(this, node)
 
-        override fun toString(): String {
-            return name + value.entries.joinToString("\n|- ", prefix = "|- ") { (key, value) -> "$key: $value" }
-        }
+        override fun toString(): String = name + value.entries.joinToString("\n|- ", prefix = "|- ") { (key, value) -> "$key: $value" }
 
         companion object {
             fun mappedStatistic(

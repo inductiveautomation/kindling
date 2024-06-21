@@ -7,7 +7,6 @@ import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-
 /*
     We generally want to keep these statistics separate instead of referencing the config directly.
     This allows us to copy statistics between inherited nodes without modifying their config directly.
@@ -118,7 +117,8 @@ class NodeStatistics(private val node: Node) {
         }
 
         scriptStates.forEach { parentScriptState ->
-            val matchingChildState = overrideNodeStatistics.scriptStates.find { it.eventId == parentScriptState.eventId }
+            val matchingChildState =
+                overrideNodeStatistics.scriptStates.find { it.eventId == parentScriptState.eventId }
 
             if (matchingChildState == null) {
                 overrideNodeStatistics.scriptStates.add(parentScriptState)

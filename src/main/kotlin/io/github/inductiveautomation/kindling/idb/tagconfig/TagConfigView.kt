@@ -9,6 +9,11 @@ import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
+import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToStream
+import net.miginfocom.swing.MigLayout
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -23,11 +28,6 @@ import javax.swing.JScrollPane
 import javax.swing.JSplitPane
 import javax.swing.tree.TreeNode
 import kotlin.io.path.Path
-import kotlinx.coroutines.launch
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToStream
-import net.miginfocom.swing.MigLayout
 
 @OptIn(ExperimentalSerializationApi::class)
 class TagConfigView(connection: Connection) : ToolPanel() {
@@ -109,7 +109,7 @@ class TagConfigView(connection: Connection) : ToolPanel() {
             },
         )
 
-        attachPopupMenu {mouseEvent ->
+        attachPopupMenu { mouseEvent ->
             val configAction = Action("Open Config") {
                 val pathAtPoint = getClosestPathForLocation(mouseEvent.x, mouseEvent.y)
 
@@ -196,4 +196,3 @@ class TagConfigView(connection: Connection) : ToolPanel() {
         }
     }
 }
-

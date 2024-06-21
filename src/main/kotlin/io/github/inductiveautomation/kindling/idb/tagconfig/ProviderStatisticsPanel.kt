@@ -11,17 +11,19 @@ import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
 import java.awt.Font
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import net.miginfocom.swing.MigLayout
 
-class ProviderStatisticsPanel : JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2, hidemode 3")), PopupMenuCustomizer {
+class ProviderStatisticsPanel :
+    JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2, hidemode 3")),
+    PopupMenuCustomizer {
     var provider: TagProviderRecord? = null
         set(newProvider) {
             field = newProvider
@@ -40,7 +42,8 @@ class ProviderStatisticsPanel : JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2
                         it is ProviderStatistics.QuantitativeStatistic || it is ProviderStatistics.DependentStatistic<*, *>
                     } as List<ProviderStatistics.ProviderStatistic<Int>>
 
-                    val mappedStats = newProvider.providerStatistics.values.filterIsInstance<ProviderStatistics.MappedStatistic>()
+                    val mappedStats =
+                        newProvider.providerStatistics.values.filterIsInstance<ProviderStatistics.MappedStatistic>()
 
                     Pair(individualStats, mappedStats)
                 }
@@ -57,10 +60,12 @@ class ProviderStatisticsPanel : JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2
     private val generalStatsTable = ReifiedJXTable(IndividualStatsModel(), IndividualStatsModel.IndividualStatColumns)
     private val generalStatsScrollPane = FlatScrollPane(generalStatsTable)
 
-    private val mappedStatsTables = List(ProviderStatistics().values.filterIsInstance<ProviderStatistics.MappedStatistic>().size) {
-        val model = MappedStatModel()
-        ReifiedJXTable(model, model.columns)
-    }
+    private val mappedStatsTables =
+        List(ProviderStatistics().values.filterIsInstance<ProviderStatistics.MappedStatistic>().size) {
+            val model = MappedStatModel()
+            ReifiedJXTable(model, model.columns)
+        }
+
     private val mappedStatsScrollPanes = mappedStatsTables.map {
         FlatScrollPane(it)
     }
@@ -106,7 +111,6 @@ class ProviderStatisticsPanel : JPanel(MigLayout("fillx, ins 0, gap 10px, wrap 2
     override fun customizePopupMenu(menu: JPopupMenu) = menu.removeAll()
 }
 
-
 class IndividualStatsModel(
     private val data: List<ProviderStatistics.ProviderStatistic<Int>> = emptyList(),
 ) : AbstractTableModel() {
@@ -117,10 +121,8 @@ class IndividualStatsModel(
     override fun getColumnClass(column: Int): Class<*> = IndividualStatColumns[column].clazz
     override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
 
-    operator fun <R> get(row: Int, column: Column<ProviderStatistics.ProviderStatistic<Int>, R>): R? {
-        return data.getOrNull(row)?.let { stat ->
-            column.getValue(stat)
-        }
+    operator fun <R> get(row: Int, column: Column<ProviderStatistics.ProviderStatistic<Int>, R>): R? = data.getOrNull(row)?.let { stat ->
+        column.getValue(stat)
     }
 
     companion object IndividualStatColumns : ColumnList<ProviderStatistics.ProviderStatistic<Int>>() {
@@ -146,6 +148,7 @@ class MappedStatModel(
             it.value
         }
     }
+
     override fun getColumnName(column: Int): String = columns[column].header
     override fun getRowCount(): Int = data?.value?.size ?: 0
     override fun getColumnCount(): Int = columns.size
@@ -153,9 +156,7 @@ class MappedStatModel(
     override fun getColumnClass(column: Int): Class<*> = columns[column].clazz
     override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
 
-    operator fun <R> get(row: Int, column: Column<Map.Entry<String, Int>, R>): R? {
-        return data?.value?.entries?.toList()?.getOrNull(row)?.let {
-            column.getValue(it)
-        }
+    operator fun <R> get(row: Int, column: Column<Map.Entry<String, Int>, R>): R? = data?.value?.entries?.toList()?.getOrNull(row)?.let {
+        column.getValue(it)
     }
 }

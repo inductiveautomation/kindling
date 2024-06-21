@@ -3,23 +3,21 @@ package io.github.inductiveautomation.kindling.idb.tagconfig.model
 import io.github.inductiveautomation.kindling.idb.tagconfig.TagConfigView
 import io.github.inductiveautomation.kindling.idb.tagconfig.model.NodeGroup.Companion.toNodeGroup
 import io.github.inductiveautomation.kindling.utils.toList
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.encodeToStream
-import java.nio.file.Path
-import java.sql.Connection
-import kotlin.io.path.outputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.encodeToStream
+import java.nio.file.Path
+import java.sql.Connection
+import kotlin.io.path.outputStream
 
-
-/*
-    Primary constructor parameters represent an entry in the IDB for a tag provider.
-
-    The class body is all the parsing logic to parse the tag config table and build the node hierarchy for this provider.
+/**
+ * Primary constructor parameters represent an entry in the IDB for a tag provider.
+ * The class body is all the parsing logic to parse the tag config table and build the node hierarchy for this provider.
  */
 @Suppress("MemberVisibilityCanBePrivate")
 data class TagProviderRecord(
@@ -51,9 +49,10 @@ data class TagProviderRecord(
                         null -> addChildTag(parentNode)
                         else -> {
                             val folderGroup = nodeGroups[folderId]
-                            folderGroup?.parentNode?.addChildTag(parentNode) ?: providerStatistics.orphanedTags.value.add(
-                                parentNode,
-                            )
+                            folderGroup?.parentNode?.addChildTag(parentNode)
+                                ?: providerStatistics.orphanedTags.value.add(
+                                    parentNode,
+                                )
                         }
                     }
                 }
@@ -90,15 +89,14 @@ data class TagProviderRecord(
             }.filterNotNull()
     }
 
-    /*
-     Group and sort nodes by their "NodeGroup"
-
-     A node's ID tells us how many UDT's deep it is.
-     A node with a standard 36-length ID is a "top-level" node. ie it is not within a UDT.
-
-     Nodes are grouped by the first UUID in their total UUID. So a nodegroup will consist of the parent UDT + any children.
-
-     Some NodeGroups, like top-level folders, only contain themselves.
+    /**
+     * Group and sort nodes by their "NodeGroup".
+     *
+     * A node's ID tells us how many UDT's deep it is.
+     * A node with a standard 36-length ID is a "top-level" node. i.e., it is not within a UDT.
+     *
+     * Nodes are grouped by the first UUID in their total UUID, so a nodegroup will consist of the parent UDT + any children.
+     * Some NodeGroups, like top-level folders, only contain themselves.
      */
     val nodeGroups: Map<String, NodeGroup> by lazy {
         rawNodeData.groupBy { node ->
@@ -182,7 +180,8 @@ data class TagProviderRecord(
         return if (folderId == "_types_") {
             lowercaseName
         } else {
-            val parentName = nodeGroups[folderId!!]?.parentNode?.getFullUdtDefinitionPath(nodeGroups) ?: "<No Name Found?>"
+            val parentName =
+                nodeGroups[folderId!!]?.parentNode?.getFullUdtDefinitionPath(nodeGroups) ?: "<No Name Found?>"
             "$parentName/$lowercaseName"
         }
     }
@@ -249,7 +248,8 @@ data class TagProviderRecord(
 
     companion object {
         private const val TAG_PROVIDER_TABLE_QUERY = "SELECT * FROM TAGPROVIDERSETTINGS ORDER BY NAME"
-        private const val TAG_CONFIG_TABLE_QUERY = "SELECT id, providerid,folderid,cfg,rank,json_extract(cfg,\"\$.name\") as name FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
+        private const val TAG_CONFIG_TABLE_QUERY =
+            "SELECT id, providerid,folderid,cfg,rank,json_extract(cfg,\"\$.name\") as name FROM TAGCONFIG WHERE PROVIDERID = ? ORDER BY ID"
 
         fun TagProviderRecord.createProviderNode(typesNode: Node? = null): Node = Node(
             id = this.uuid,
@@ -318,8 +318,8 @@ data class TagProviderRecord(
             }
         }
 
-        fun getProvidersFromDB(connection: Connection): List<TagProviderRecord> {
-            return connection.prepareStatement(TAG_PROVIDER_TABLE_QUERY).executeQuery().toList { rs ->
+        fun getProvidersFromDB(connection: Connection): List<TagProviderRecord> =
+            connection.prepareStatement(TAG_PROVIDER_TABLE_QUERY).executeQuery().toList { rs ->
                 runCatching {
                     TagProviderRecord(
                         id = rs.getInt(1),
@@ -332,6 +332,5 @@ data class TagProviderRecord(
                     )
                 }.getOrNull()
             }.filterNotNull()
-        }
     }
 }
