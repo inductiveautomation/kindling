@@ -124,16 +124,17 @@ data class TagProviderRecord(
 
     val typesNode = createTypesNode(id)
 
-    /*
-        // This gets initialized when the loadProvider job is finished.
-        // loadProvider is started when getProviderNode() is called, or when loadProvider.join() is called
-     */
+    // This gets initialized when the loadProvider job is finished.
+    // loadProvider is started when getProviderNode() is called, or when loadProvider.join() is called
     private lateinit var providerNode: Node
 
     suspend fun getProviderNode() = CoroutineScope(Dispatchers.Default).async {
         loadProvider.join()
         providerNode
     }
+
+    val isInitialized: Boolean
+        get() = ::providerNode.isInitialized
 
     val orphanedParentNode by lazy {
         Node(
@@ -211,7 +212,9 @@ data class TagProviderRecord(
             )
 
             // nodeGroups being ordered by rank will make this check not succeed very often
-            if (!childDefinitionGroup.isResolved) childDefinitionGroup.resolveInheritance(nodeGroups, udtDefinitions)
+            if (!childDefinitionGroup.isResolved) {
+                childDefinitionGroup.resolveInheritance(nodeGroups, udtDefinitions)
+            }
 
             copyChildrenFrom(childDefinitionGroup, instanceId = childInstance.id)
         }
@@ -222,22 +225,24 @@ data class TagProviderRecord(
         nodeGroups: Map<String, NodeGroup>,
         udtDefinitions: Map<String, Node>,
     ) {
-        if (parentNode.statistics.isUdtDefinition) resolveNestedChildInstances(nodeGroups, udtDefinitions)
+        if (parentNode.statistics.isUdtDefinition) {
+            resolveNestedChildInstances(nodeGroups, udtDefinitions)
+        }
 
         if (parentNode.config.typeId.isNullOrEmpty()) {
             isResolved = true
             return
         }
 
-        val inheritedParentNode =
-            parentNode.getParentType() ?: run {
-                isResolved = true
-//                println("Missing UDT Definition: ${parentNode.config.typeId}")
-                return
-            }
+        val inheritedParentNode = parentNode.getParentType() ?: run {
+            isResolved = true
+            return
+        }
         val inheritedNodeGroup = checkNotNull(nodeGroups[inheritedParentNode.id]) { "This should never happen" }
 
-        if (!inheritedNodeGroup.isResolved) inheritedNodeGroup.resolveInheritance(nodeGroups, udtDefinitions)
+        if (!inheritedNodeGroup.isResolved) {
+            inheritedNodeGroup.resolveInheritance(nodeGroups, udtDefinitions)
+        }
 
         copyChildrenFrom(inheritedNodeGroup)
 

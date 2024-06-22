@@ -151,7 +151,6 @@ enum class IdbTool {
     },
     Metrics {
         override fun supports(tables: List<String>): Boolean = "SYSTEM_METRICS" in tables
-
         override fun open(connection: Connection): ToolPanel = MetricsView(connection)
     },
     Images {
