@@ -43,7 +43,7 @@ flatlaf-fonts-roboto-mono = { group = "com.formdev", name = "flatlaf-fonts-robot
 jide-common = { group = "com.formdev", name = "jide-oss", version = "3.7.15" }
 swingx = { group = "org.swinglabs.swingx", name = "swingx-all", version = "1.6.5-1" }
 rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = "3.4.0" }
-jfreechart = { group = "org.jfree", name = "jfreechart", version = "1.5.4" }
+jfreechart = { group = "org.jfree", name = "jfreechart", version = "1.5.5" }
 
 # Ignition
 ignition-common = { group = "com.inductiveautomation.ignition", name = "common", version.ref = "ignition" }
