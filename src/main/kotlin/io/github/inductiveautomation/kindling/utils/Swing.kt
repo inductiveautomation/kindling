@@ -3,12 +3,10 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.github.weisj.jsvg.SVGDocument
 import com.github.weisj.jsvg.attributes.ViewBox
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.swing.Swing
-import org.jdesktop.swingx.prompt.BuddySupport
+import java.awt.Color
 import java.awt.Component
 import java.awt.Container
+import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.event.MouseAdapter
@@ -19,13 +17,21 @@ import java.util.EventListener
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JPopupMenu
+import javax.swing.JScrollPane
+import javax.swing.JTextArea
 import javax.swing.JTextField
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.event.EventListenerList
+import javax.swing.text.DefaultHighlighter
 import javax.swing.text.Document
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import org.jdesktop.swingx.prompt.BuddySupport
 
 /**
  * A common CoroutineScope bound to the event dispatch thread (see [Dispatchers.Swing]).
@@ -37,9 +43,26 @@ val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx
 val Document.text: String
     get() = getText(0, length)
 
-inline fun <T : Component> T.attachPopupMenu(
-    crossinline menuFn: T.(event: MouseEvent) -> JPopupMenu?,
+fun JTextArea.addLineHighlighter(
+    color: Color,
+    predicate: (line: String, lineNum: Int) -> Boolean,
 ) {
+    if (text.isEmpty()) return
+    val highlighter = DefaultHighlighter.DefaultHighlightPainter(color)
+
+    for (lineNum in 0..<lineCount) {
+        val start = getLineStartOffset(lineNum)
+        val end = getLineEndOffset(lineNum)
+
+        val lineText = getText(start, end - start)
+
+        if (predicate(lineText, lineNum)) {
+            getHighlighter().addHighlight(start, end, highlighter)
+        }
+    }
+}
+
+inline fun <T : Component> T.attachPopupMenu(crossinline menuFn: T.(event: MouseEvent) -> JPopupMenu?) {
     addMouseListener(
         object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
@@ -126,6 +149,10 @@ var JTextField.rightBuddy: JComponent?
     set(buddy) {
         BuddySupport.addRight(buddy, this)
     }
+
+fun JScrollPane.scrollToTop() = EDT_SCOPE.launch {
+    viewport.viewPosition = Point(0, 0)
+}
 
 @Suppress("FunctionName")
 fun DocumentAdapter(block: (e: DocumentEvent) -> Unit): DocumentListener = object : DocumentListener {
