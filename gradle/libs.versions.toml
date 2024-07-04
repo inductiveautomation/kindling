@@ -32,7 +32,7 @@ jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-data
 jsoup = { group = "org.jsoup", name = "jsoup", version = "1.17.2" }
 
 # appearance/swing
-miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.3" }
+miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.4" }
 flatlaf-core = { group = "com.formdev", name = "flatlaf", version.ref = "flatlaf" }
 flatlaf-extras = { group = "com.formdev", name = "flatlaf-extras", version.ref = "flatlaf" }
 flatlaf-jide = { group = "com.formdev", name = "flatlaf-jide-oss", version.ref = "flatlaf" }
