@@ -9,11 +9,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.Properties
 import java.util.ServiceLoader
-import kotlin.io.path.outputStream
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.reflect.KProperty
@@ -22,16 +19,6 @@ import kotlin.time.Duration.Companion.milliseconds
 
 fun String.truncate(length: Int = 20): String {
     return asIterable().joinToString(separator = "", limit = length)
-}
-
-fun String.toTempFile(prefix: String, suffix: String): Path {
-    return Files.createTempFile(prefix, suffix).also { file ->
-        file.outputStream().use { output ->
-            this.byteInputStream().use { input ->
-                input transferTo output
-            }
-        }
-    }
 }
 
 inline fun <reified T> getLogger(): Logger {

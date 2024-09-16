@@ -35,6 +35,7 @@ import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.render
+import io.github.inductiveautomation.kindling.utils.systemClipboard
 import io.github.inductiveautomation.kindling.utils.traverseChildren
 import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
@@ -51,7 +52,6 @@ import java.awt.Menu
 import java.awt.MenuItem
 import java.awt.PopupMenu
 import java.awt.Taskbar
-import java.awt.Toolkit
 import java.awt.Window
 import java.awt.datatransfer.DataFlavor
 import java.awt.desktop.QuitStrategy
@@ -252,9 +252,8 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 Action(
                     name = "Paste ${clipboardTool.title}",
                 ) {
-                    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                    if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-                        val clipString = clipboard.getData(DataFlavor.stringFlavor) as String
+                    if (systemClipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+                        val clipString = systemClipboard.getData(DataFlavor.stringFlavor) as String
                         openOrError(clipboardTool.title, "clipboard data") {
                             clipboardTool.open(clipString)
                         }
