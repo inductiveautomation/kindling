@@ -2,8 +2,6 @@ package io.github.inductiveautomation.kindling.utils.diff
 
 import io.github.inductiveautomation.kindling.utils.nextOrNull
 
-typealias DiffList<T> = List<Diff<T>>
-
 sealed interface Diff<T> {
     val key: String
     val value: T
@@ -35,21 +33,20 @@ sealed interface Diff<T> {
     }
 }
 
-@Suppress("MemberVisibilityCanBePrivate")
-class DiffUtil private constructor(
-    val original: List<String>,
-    val modified: List<String>,
-    val additions: List<Diff.Addition<String>>,
-    val deletions: List<Diff.Deletion<String>>,
+class Difference<T> private constructor(
+    val original: List<T>,
+    val modified: List<T>,
+    val additions: List<Diff.Addition<T>>,
+    val deletions: List<Diff.Deletion<T>>,
 ) {
-    val leftDiffList = buildList {
+    val leftDiffList: List<Diff<T>> = buildList {
         original.mapIndexedTo(this) { index, s ->
             deletions.find { it.index == index } ?: Diff.NoChange(s, index, null)
         }
 
         var offset = 0
         additions.forEach {
-            val existingDeletion: Diff<String> = get(it.index)
+            val existingDeletion = get(it.index)
             if (existingDeletion !is Diff.Deletion) {
                 add(it.index, it)
                 offset++
@@ -57,13 +54,13 @@ class DiffUtil private constructor(
         }
     }
 
-    val rightDiffList = buildList {
+    val rightDiffList: List<Diff<T>> = buildList {
         modified.mapIndexedTo(this) { index, s ->
             additions.find { it.index == index } ?: Diff.NoChange(s, index, null)
         }
 
         deletions.forEach {
-            val existingAddition: Diff<String>? = getOrNull(it.index)
+            val existingAddition = getOrNull(it.index)
 
             if (existingAddition !is Diff.Addition) {
                 add(it.index, it)
@@ -71,7 +68,7 @@ class DiffUtil private constructor(
         }
     }
 
-    val unifiedDiffList: DiffList<String> = buildList {
+    val unifiedDiffList: List<Diff<T>> = buildList {
         val leftList = leftDiffList.iterator()
         val rightList = rightDiffList.iterator()
 
@@ -108,12 +105,12 @@ class DiffUtil private constructor(
     }
 
     companion object {
-        fun create(
-            original: List<String>,
-            modified: List<String>,
-            equalizer: (String, String) -> Boolean = String::equals,
-        ): DiffUtil {
-            val lcs = LongestCommonSequence.calculate(original, modified, equalizer)
+        fun <U : Comparable<U>> of(
+            original: List<U>,
+            modified: List<U>,
+            equalizer: (U, U) -> Boolean = { l, r -> compareValues(l, r) == 0 },
+        ): Difference<U> {
+            val lcs = LongestCommonSequence.of(original, modified, equalizer)
 
             val additions = modified.mapIndexedNotNull { index, item ->
                 if (item in lcs) null else Diff.Addition(item, index)
@@ -122,7 +119,7 @@ class DiffUtil private constructor(
                 if (item in lcs) null else Diff.Deletion(item, index)
             }
 
-            return DiffUtil(original, modified, additions, deletions)
+            return Difference(original, modified, additions, deletions)
         }
     }
 }

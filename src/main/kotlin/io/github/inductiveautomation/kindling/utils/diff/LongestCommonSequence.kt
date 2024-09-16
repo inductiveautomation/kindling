@@ -2,10 +2,10 @@ package io.github.inductiveautomation.kindling.utils.diff
 
 import kotlin.math.max
 
-class LongestCommonSequence private constructor(
-    private val a: List<String>,
-    private val b: List<String>,
-    private val equalityPredicate: (String, String) -> Boolean,
+class LongestCommonSequence<T : Comparable<T>> private constructor(
+    private val a: List<T>,
+    private val b: List<T>,
+    private val equalityPredicate: (T, T) -> Boolean,
 ) {
     private val lengthMatrix = Array(a.size + 1) { Array(b.size + 1) { -1 } }
 
@@ -30,7 +30,7 @@ class LongestCommonSequence private constructor(
         return result
     }
 
-    fun calculateLcs(): List<String> {
+    fun calculateLcs(): List<T> {
         var i = a.size
         val j = b.size
         buildLengthMatrix(i, j)
@@ -48,10 +48,10 @@ class LongestCommonSequence private constructor(
     }
 
     companion object {
-        fun calculate(
-            a: List<String>,
-            b: List<String>,
-            equalizer: (String, String) -> Boolean = String::equals,
+        fun <U : Comparable<U>> of(
+            a: List<U>,
+            b: List<U>,
+            equalizer: (U, U) -> Boolean = { l, r -> compareValues(l, r) == 0 },
         ) = LongestCommonSequence(a, b, equalizer).calculateLcs()
     }
 }

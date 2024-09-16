@@ -3,12 +3,18 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.github.weisj.jsvg.SVGDocument
 import com.github.weisj.jsvg.attributes.ViewBox
-import java.awt.Color
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import org.jdesktop.swingx.prompt.BuddySupport
 import java.awt.Component
 import java.awt.Container
 import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
@@ -16,22 +22,18 @@ import java.io.File
 import java.util.EventListener
 import javax.swing.JComponent
 import javax.swing.JFileChooser
+import javax.swing.JFrame
+import javax.swing.JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
 import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
-import javax.swing.JTextArea
 import javax.swing.JTextField
+import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.event.EventListenerList
-import javax.swing.text.DefaultHighlighter
 import javax.swing.text.Document
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
-import org.jdesktop.swingx.prompt.BuddySupport
 
 /**
  * A common CoroutineScope bound to the event dispatch thread (see [Dispatchers.Swing]).
@@ -40,26 +42,20 @@ val EDT_SCOPE by lazy { CoroutineScope(Dispatchers.Swing) }
 
 val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx
 
+val systemClipboard: Clipboard by lazy { Toolkit.getDefaultToolkit().systemClipboard }
+
 val Document.text: String
     get() = getText(0, length)
 
-fun JTextArea.addLineHighlighter(
-    color: Color,
-    predicate: (line: String, lineNum: Int) -> Boolean,
-) {
-    if (text.isEmpty()) return
-    val highlighter = DefaultHighlighter.DefaultHighlightPainter(color)
-
-    for (lineNum in 0..<lineCount) {
-        val start = getLineStartOffset(lineNum)
-        val end = getLineEndOffset(lineNum)
-
-        val lineText = getText(start, end - start)
-
-        if (predicate(lineText, lineNum)) {
-            getHighlighter().addHighlight(start, end, highlighter)
-        }
-    }
+fun JFrame.dismissOnEscape() {
+    rootPane.actionMap.put(
+        "dismiss",
+        Action {
+            dispose()
+        },
+    )
+    rootPane.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "dismiss")
 }
 
 inline fun <T : Component> T.attachPopupMenu(crossinline menuFn: T.(event: MouseEvent) -> JPopupMenu?) {

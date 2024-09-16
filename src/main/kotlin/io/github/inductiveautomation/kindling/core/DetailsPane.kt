@@ -7,11 +7,11 @@ import io.github.inductiveautomation.kindling.internal.DetailsIcon
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.escapeHtml
+import io.github.inductiveautomation.kindling.utils.systemClipboard
 import net.miginfocom.swing.MigLayout
 import java.awt.Component
 import java.awt.EventQueue
 import java.awt.Rectangle
-import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import javax.swing.JButton
 import javax.swing.JFileChooser
@@ -50,8 +50,7 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
         description = "Copy to Clipboard",
         icon = FlatSVGIcon("icons/bx-clipboard.svg"),
     ) {
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        clipboard.setContents(StringSelection(events.toClipboardFormat()), null)
+        systemClipboard.setContents(StringSelection(events.toClipboardFormat()), null)
     }
 
     private val save = Action(
@@ -98,7 +97,7 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
                 if (event.details.isNotEmpty()) {
                     append("&nbsp;<object ")
                     event.details.entries.joinTo(buffer = this, separator = " ") { (key, value) ->
-                        "$detailPrefix$key = \"$value\""
+                        "$DETAIL_PREFIX$key = \"$value\""
                     }
                     append("/>")
                 }
@@ -135,7 +134,7 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
     }
 }
 
-private const val detailPrefix = "data-"
+private const val DETAIL_PREFIX = "data-"
 
 class DetailsEditorKit : HTMLEditorKit() {
     init {
@@ -169,7 +168,7 @@ class DetailsEditorKit : HTMLEditorKit() {
                                 elem.attributes.attributeNames.asSequence()
                                     .filterIsInstance<String>()
                                     .associate { rawAttribute ->
-                                        rawAttribute.removePrefix(detailPrefix) to elem.attributes.getAttribute(rawAttribute) as String
+                                        rawAttribute.removePrefix(DETAIL_PREFIX) to elem.attributes.getAttribute(rawAttribute) as String
                                     }
                             return DetailsIcon(details)
                         }

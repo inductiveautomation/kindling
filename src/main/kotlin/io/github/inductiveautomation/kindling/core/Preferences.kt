@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.core
 
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.StyledLabel
+import io.github.inductiveautomation.kindling.utils.dismissOnEscape
 import io.github.inductiveautomation.kindling.utils.jFrame
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
@@ -39,7 +40,7 @@ class Preference<T : Any>(
     var dependency: Preference<*>? = null
 
     var currentValue
-        get() = Kindling.Preferences[category, this] ?: default
+        get() = runCatching { Kindling.Preferences[category, this] }.getOrNull() ?: default
         set(value) {
             Kindling.Preferences[category, this] = value
             for (listener in listeners) {
@@ -113,6 +114,7 @@ class Preference<T : Any>(
 val preferencesEditor by lazy {
     jFrame("Preferences", 600, 800, initiallyVisible = false) {
         defaultCloseOperation = JFrame.HIDE_ON_CLOSE
+        dismissOnEscape()
 
         val closeButton = JButton("Close").apply {
             addActionListener {
