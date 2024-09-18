@@ -35,28 +35,31 @@ import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
-import io.github.inductiveautomation.kindling.utils.transferTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
 import java.awt.Rectangle
-import java.nio.file.Files
 import java.nio.file.Path
+import javax.swing.ButtonGroup
 import javax.swing.JLabel
 import javax.swing.JMenu
 import javax.swing.JMenuBar
+import javax.swing.JPanel
 import javax.swing.JPopupMenu
+import javax.swing.JRadioButton
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import javax.swing.UIManager
+import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.outputStream
+import kotlin.io.path.writeText
 
 class MultiThreadView(
     val paths: List<Path>,
@@ -255,8 +258,8 @@ class MultiThreadView(
 
             thread!!.id.toString().contains(query) ||
                 thread.name.contains(query, ignoreCase = true) ||
-                thread.system != null && thread.system.contains(query, ignoreCase = true) ||
-                thread.scope != null && thread.scope.contains(query, ignoreCase = true) ||
+                (thread.system != null && thread.system.contains(query, ignoreCase = true)) ||
+                (thread.scope != null && thread.scope.contains(query, ignoreCase = true)) ||
                 thread.state.name.contains(query, ignoreCase = true) ||
                 thread.stacktrace.any { stack -> stack.contains(query, ignoreCase = true) }
         }
@@ -484,8 +487,8 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     }
 
     override fun open(data: String): ToolPanel {
-        val tempFile = Files.createTempFile("kindling", "cb")
-        data.byteInputStream() transferTo tempFile.outputStream()
+        val tempFile = createTempFile(prefix = "kindling", suffix = "cb")
+        tempFile.writeText(data)
         return open(tempFile)
     }
 
@@ -505,6 +508,41 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
+    val DefaultDiffView: Preference<DiffViewPreference> = preference(
+        name = "Default Diff View",
+        default = DiffViewPreference.UNIFIED,
+        editor = {
+            JPanel(MigLayout("ins 0")).apply {
+                background = null
+
+                val unifiedOption = JRadioButton(
+                    Action("Unified", selected = currentValue == DiffViewPreference.UNIFIED) {
+                        currentValue = DiffViewPreference.UNIFIED
+                    },
+                )
+
+                val sideBySideOption = JRadioButton(
+                    Action("Side-by-side", selected = currentValue == DiffViewPreference.SIDE_BY_SIDE) {
+                        currentValue = DiffViewPreference.SIDE_BY_SIDE
+                    },
+                )
+
+                ButtonGroup().apply {
+                    add(unifiedOption)
+                    add(sideBySideOption)
+                }
+
+                add(unifiedOption)
+                add(sideBySideOption)
+            }
+        },
+    )
+
+    enum class DiffViewPreference {
+        UNIFIED,
+        SIDE_BY_SIDE,
+    }
+
     override val displayName = "Thread View"
-    override val preferences = listOf(ShowNullThreads, ShowEmptyValues)
+    override val preferences = listOf(ShowNullThreads, ShowEmptyValues, DefaultDiffView)
 }
