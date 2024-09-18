@@ -8,6 +8,8 @@ import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.sort.SortController
 import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
+import java.text.SimpleDateFormat
+import java.util.Date
 import javax.swing.JComponent
 import javax.swing.SortOrder
 import javax.swing.UIManager
@@ -40,11 +42,6 @@ class ReifiedJXTable<T : TableModel>(
         }
         isColumnControlVisible = true
 
-        setDefaultRenderer<String>(
-            getText = { it },
-            getTooltip = { it },
-        )
-
         setSortOrderCycle(SortOrder.ASCENDING, SortOrder.DESCENDING, SortOrder.UNSORTED)
 
         // TODO header name as tooltip without breaking sorting
@@ -61,6 +58,19 @@ class ReifiedJXTable<T : TableModel>(
 
     override fun createDefaultColumnControl(): JComponent {
         return ColumnControlButton(this, FlatSVGIcon("icons/bx-column.svg").derive(0.8F))
+    }
+
+    override fun createDefaultRenderers() {
+        super.createDefaultRenderers()
+
+        setDefaultRenderer<String>(
+            getText = { it },
+            getTooltip = { it },
+        )
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+        setDefaultRenderer<Date>(
+            getText = { it?.let(format::format) },
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
