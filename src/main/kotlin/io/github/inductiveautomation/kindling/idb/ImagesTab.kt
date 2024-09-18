@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.idb
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.github.weisj.jsvg.parser.LoaderContext
 import com.github.weisj.jsvg.parser.SVGLoader
 import com.inductiveautomation.ignition.gateway.images.ImageFormat
 import io.github.inductiveautomation.kindling.core.ToolPanel
@@ -209,7 +210,7 @@ private class ImageRow(
 
     val image: BufferedImage? by lazy {
         if (type == ImageFormat.SVG) {
-            return@lazy SVGLoader().load(data.inputStream())?.let { svg ->
+            return@lazy SVGLoader().load(data.inputStream(), null, LoaderContext.createDefault())?.let { svg ->
                 val size = svg.size()
                 svg.render(size.width.toInt().coerceAtLeast(20), size.height.toInt().coerceAtLeast(20))
             }
