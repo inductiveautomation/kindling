@@ -12,8 +12,8 @@ import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowEmpty
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowNullThreads
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
+import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
-import io.github.inductiveautomation.kindling.utils.ScrollingTextPane
 import io.github.inductiveautomation.kindling.utils.add
 import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.getAll
@@ -21,28 +21,35 @@ import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.style
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.toBodyLine
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXTaskPane
-import org.jdesktop.swingx.JXTaskPaneContainer
 import java.awt.Color
+import java.awt.Dimension
 import java.awt.Font
 import java.text.DecimalFormat
 import java.util.EventListener
+import javax.swing.JButton
+import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JTextPane
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
 import javax.swing.event.HyperlinkEvent
 import kotlin.properties.Delegates
+import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
 
 class ThreadComparisonPane(
     totalThreadDumps: Int,
-    private val version: String,
+    version: String,
 ) : JPanel(MigLayout("fill, ins 0")) {
     private val listeners = EventListenerList()
 
     var threads: ThreadLifespan by Delegates.observable(emptyList()) { _, _, _ ->
         updateData()
     }
+
+    private val header = HeaderPanel()
+    private val body = JPanel((MigLayout("fill, ins 0, hidemode 3")))
+    private val footer = if (totalThreadDumps > 3) FooterPanel() else null
 
     private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) {
         ThreadContainer(version).apply {
@@ -55,13 +62,13 @@ class ThreadComparisonPane(
         }
     }
 
-    private val header = HeaderPanel()
-
     init {
         ShowNullThreads.addChangeListener {
             for (container in threadContainers) {
                 container.updateThreadInfo()
             }
+
+            footer?.reset()
         }
         ShowEmptyValues.addChangeListener {
             for (container in threadContainers) {
@@ -76,15 +83,19 @@ class ThreadComparisonPane(
 
         add(header, "growx, spanx")
         add(
-            FlatScrollPane(
-                JPanel(MigLayout("fill, hidemode 3, ins 0")).apply {
-                    for (container in threadContainers) {
-                        add(container, "push, grow, sizegroup")
-                    }
-                },
-            ),
-            "push, grow",
+            body.apply {
+                for ((index, container) in threadContainers.withIndex()) {
+                    add(container, "grow, sizegroup, w 33%!")
+
+                    if (index > 2) container.isVisible = false
+                }
+            },
+            "pushy, grow,  spanx, w 100%!",
         )
+
+        if (footer != null) {
+            add(footer, "growx")
+        }
     }
 
     private fun updateData() {
@@ -115,7 +126,21 @@ class ThreadComparisonPane(
         for ((container, thread) in threadContainers.zip(threads)) {
             container.highlightCpu = highestCpu != null && thread?.cpuUsage == highestCpu
             container.highlightStacktrace = largestDepth != null && thread?.stacktrace?.size == largestDepth
+
             container.thread = thread
+        }
+
+        footer?.reset() ?: recalculateConstraints()
+    }
+
+    /* Need to calculate the width of the containers after threads have changed. */
+    private fun recalculateConstraints() {
+        val containerSize = 100 / threadContainers.count { it.isViewable && it.isSelected }
+        for (container in threadContainers) {
+            (body.layout as MigLayout).setComponentConstraints(
+                container,
+                "grow, sizegroup, w $containerSize%!",
+            )
         }
     }
 
@@ -166,6 +191,81 @@ class ThreadComparisonPane(
         }
     }
 
+    inner class FooterPanel : JPanel(MigLayout("fill, ins 3")) {
+        private val nextButton = JButton(nextIcon).apply {
+            addActionListener { selectNext() }
+            isEnabled = false
+        }
+
+        private val previousButton = JButton(previousIcon).apply {
+            addActionListener { selectPrevious() }
+            isEnabled = false
+        }
+
+        private val infoLabel = JLabel().apply {
+            horizontalAlignment = JLabel.CENTER
+        }
+
+        private var selectedIndices = emptyList<Int>()
+            set(value) {
+                field = value
+                nextButton.isEnabled = canSelectNext
+                previousButton.isEnabled = canSelectPrevious
+                infoLabel.text = "Showing threads from dumps " + value.joinToString(", ", postfix = ".") {
+                    (it + 1).toString()
+                }
+
+                threadContainers.forEachIndexed { index, threadContainer ->
+                    threadContainer.isSelected = index in value
+                }
+
+                recalculateConstraints()
+            }
+        private val canSelectNext: Boolean
+            get() {
+                if (selectedIndices.isEmpty()) return false
+                return threadContainers.indexOfLast { it.isViewable } > selectedIndices.last()
+            }
+
+        private val canSelectPrevious: Boolean
+            get() {
+                if (selectedIndices.isEmpty()) return false
+                return threadContainers.indexOfFirst { it.isViewable } < selectedIndices.first()
+            }
+
+        init {
+            add(previousButton, "west")
+            add(infoLabel, "growx")
+            add(nextButton, "east")
+        }
+
+        fun reset() {
+            selectedIndices = threadContainers.mapIndexedNotNull { index, threadContainer ->
+                if (threadContainer.isViewable) index else null
+            }.take(3).onEach {
+                threadContainers[it].isSelected = true
+            }
+        }
+
+        private fun selectNext() {
+            val lastSelectedIndex = selectedIndices.lastOrNull() ?: return
+            val nextIndex = threadContainers.withIndex().find { (index, value) ->
+                value.isViewable && index > lastSelectedIndex
+            }?.index ?: return
+
+            selectedIndices = selectedIndices.drop(1) + listOf(nextIndex)
+        }
+
+        private fun selectPrevious() {
+            val firstSelectedIndex = selectedIndices.firstOrNull() ?: return
+            val previousIndex = threadContainers.subList(0, firstSelectedIndex).indexOfLast { it.isViewable }
+
+            if (previousIndex != -1) {
+                selectedIndices = listOf(previousIndex) + selectedIndices.dropLast(1)
+            }
+        }
+    }
+
     private class BlockerButton : FlatButton() {
         var blocker: Int? = null
             set(value) {
@@ -181,14 +281,58 @@ class ThreadComparisonPane(
         }
     }
 
-    private class DetailContainer(val prefix: String) : JXTaskPane() {
+    private class DetailContainer(
+        val prefix: String,
+        collapsed: Boolean = true,
+    ) : JPanel(MigLayout("ins 0, fill, flowy, hidemode 3")) {
+        var isCollapsed: Boolean = collapsed
+            set(value) {
+                field = value
+                scrollPane.isVisible = !value
+                headerButton.icon = if (value) expandIcon else collapseIcon
+
+                // Preferred size needs to be recalculated or something like that
+                EDT_SCOPE.launch {
+                    revalidate()
+                    repaint()
+                }
+            }
+
         var itemCount = 0
             set(value) {
-                title = "$prefix: $value"
+                headerButton.text = "$prefix: $value"
                 field = value
             }
 
-        private val scrollingTextPane = ScrollingTextPane().apply {
+        var isHightlighted: Boolean = false
+            set(value) {
+                field = value
+                if (value) {
+                    headerButton.foreground = threadHighlightColor
+                } else {
+                    headerButton.foreground = UIManager.getColor("Button.foreground")
+                }
+            }
+
+        private val headerButton = object : JButton(prefix, if (collapsed) expandIcon else collapseIcon) {
+            init {
+                horizontalTextPosition = LEFT
+                horizontalAlignment = LEFT
+
+                addActionListener { isCollapsed = !isCollapsed }
+            }
+
+            // This effectively right-aligns the icon
+            override fun getIconTextGap(): Int {
+                val fm = getFontMetrics(font)
+                return size.width - insets.left - insets.right - icon.iconWidth - fm.stringWidth(text)
+            }
+        }
+
+        private val textArea = JTextPane().apply {
+            isEditable = false
+            contentType = "text/html"
+
             addHyperlinkListener { event ->
                 if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                     HyperlinkStrategy.currentValue.handleEvent(event)
@@ -196,23 +340,48 @@ class ThreadComparisonPane(
             }
         }
 
-        var text: String? by scrollingTextPane::text
+        private val scrollPane = FlatScrollPane(textArea) {
+            horizontalScrollBar.preferredSize = Dimension(0, 10)
+            verticalScrollBar.preferredSize = Dimension(10, 0)
+
+            isVisible = !collapsed
+        }
+
+        var text: String?
+            get() = textArea.text
+            set(value) {
+                textArea.text = value
+            }
 
         init {
-            isCollapsed = true
-            isAnimated = false
+            add(headerButton, "growx, top, wmax 100%")
+            add(scrollPane, "push, grow, top, wmax 100%")
+        }
 
-            add(scrollingTextPane)
+        companion object {
+            private val collapseIcon = FlatSVGIcon("icons/bx-chevrons-up.svg")
+            private val expandIcon = FlatSVGIcon("icons/bx-chevrons-down.svg")
         }
     }
 
-    private class ThreadContainer(private val version: String) : JXTaskPaneContainer() {
+    private class ThreadContainer(
+        private val version: String
+    ) : JPanel(MigLayout("fill, flowy, hidemode 3, gapy 5, ins 0")) {
         var thread: Thread? by Delegates.observable(null) { _, _, _ ->
             updateThreadInfo()
         }
 
         var highlightCpu: Boolean = false
         var highlightStacktrace: Boolean = true
+
+        val isViewable: Boolean
+            get() = thread != null || ShowNullThreads.currentValue
+
+        var isSelected: Boolean = true
+            set(value) {
+                field = value
+                isVisible = isViewable && value
+            }
 
         private val titleLabel = FlatLabel()
         private val detailsButton = FlatButton().apply {
@@ -231,9 +400,7 @@ class ThreadComparisonPane(
 
         private val monitors = DetailContainer("Locked Monitors")
         private val synchronizers = DetailContainer("Synchronizers")
-        private val stacktrace = DetailContainer("Stacktrace").apply {
-            isCollapsed = false
-        }
+        private val stacktrace = DetailContainer("Stacktrace", false)
 
         init {
             add(
@@ -241,16 +408,17 @@ class ThreadComparisonPane(
                     add(detailsButton)
                     add(titleLabel, "push, grow, gapleft 8")
                     add(blockerButton)
-                },
+                }, "wmax 100%"
             )
 
-            add(monitors)
-            add(synchronizers)
-            add(stacktrace)
+            // Ensure that the top two don't get pushed below their preferred size.
+            add(monitors, "grow, h pref:pref:300, top, wmax 100%")
+            add(synchronizers, "grow, h pref:pref:300, top, wmax 100%")
+            add(stacktrace, "push, grow, top, wmax 100%")
         }
 
         fun updateThreadInfo() {
-            isVisible = thread != null || ShowNullThreads.currentValue
+            isVisible = isViewable && isSelected
 
             titleLabel.text = buildString {
                 tag("html") {
@@ -326,7 +494,7 @@ class ThreadComparisonPane(
                                 stackLine
                             }
                         }
-                    isSpecial = highlightStacktrace
+                    isHightlighted = highlightStacktrace
                 }
             }
         }
@@ -340,5 +508,8 @@ class ThreadComparisonPane(
 
         private val threadHighlightColor: Color
             get() = UIManager.getColor("Component.warning.focusedBorderColor")
+
+        private val nextIcon = FlatSVGIcon("icons/bx-chevron-right.svg")
+        private val previousIcon = FlatSVGIcon("icons/bx-chevron-left.svg")
     }
 }
