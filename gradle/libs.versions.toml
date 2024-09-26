@@ -1,7 +1,7 @@
 [versions]
 java = "21"
 kotlin = "1.9.24"
-coroutines = "1.8.1"
+coroutines = "1.9.0"
 flatlaf = "3.5.1"
 kotest = "5.9.1"
 ignition = "8.1.20"
