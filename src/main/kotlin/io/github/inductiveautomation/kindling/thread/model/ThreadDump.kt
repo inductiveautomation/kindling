@@ -11,6 +11,7 @@ import java.io.InputStream
 import java.lang.Thread.State as ThreadState
 
 @Serializable
+@ConsistentCopyVisibility
 data class ThreadDump internal constructor(
     val version: String,
     val threads: List<Thread>,
