@@ -19,7 +19,7 @@ dokka = { id = "org.jetbrains.dokka", version = "1.9.20" }
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.7.2" }
-xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.46.1.0" }
+xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.46.1.3" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.5.8" }
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.3" }
 poi = { group = "org.apache.poi", name = "poi-ooxml", version = "5.3.0" }
