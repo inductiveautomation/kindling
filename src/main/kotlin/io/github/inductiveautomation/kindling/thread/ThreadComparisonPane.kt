@@ -12,12 +12,16 @@ import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowEmpty
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.ShowNullThreads
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
+import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ScrollingTextPane
 import io.github.inductiveautomation.kindling.utils.add
+import io.github.inductiveautomation.kindling.utils.attachPopupMenu
+import io.github.inductiveautomation.kindling.utils.dismissOnEscape
 import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.jFrame
+import io.github.inductiveautomation.kindling.utils.scrollToTop
 import io.github.inductiveautomation.kindling.utils.style
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.toBodyLine
@@ -28,7 +32,10 @@ import java.awt.Color
 import java.awt.Font
 import java.text.DecimalFormat
 import java.util.EventListener
+import javax.swing.JButton
+import javax.swing.JCheckBox
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
 import javax.swing.event.HyperlinkEvent
@@ -36,7 +43,7 @@ import kotlin.properties.Delegates
 
 class ThreadComparisonPane(
     totalThreadDumps: Int,
-    private val version: String,
+    version: String,
 ) : JPanel(MigLayout("fill, ins 0")) {
     private val listeners = EventListenerList()
 
@@ -44,12 +51,31 @@ class ThreadComparisonPane(
         updateData()
     }
 
-    private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) {
-        ThreadContainer(version).apply {
+    private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) { i ->
+        ThreadContainer(i, version).apply {
             blockerButton.addActionListener {
-                val blocker = blockerButton.blocker
-                if (blocker != null) {
-                    fireBlockerSelectedEvent(blocker)
+                blockerButton.blocker?.let {
+                    fireBlockerSelectedEvent(it)
+                }
+            }
+
+            if (i + 1 < totalThreadDumps) {
+                attachPopupMenu {
+                    val next = threads.getOrNull(i + 1) ?: return@attachPopupMenu null
+                    JPopupMenu().apply {
+                        add(
+                            Action("Compare with next trace") {
+                                jFrame(
+                                    title = "Stacktrace Diff",
+                                    width = 1000,
+                                    height = 600,
+                                ) {
+                                    add(ThreadDiffView(threads[i]!!, next))
+                                    dismissOnEscape()
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -57,7 +83,19 @@ class ThreadComparisonPane(
 
     private val header = HeaderPanel()
 
+    private var selectionModel = ThreadSelectionModel()
+
     init {
+        for (threadContainer in threadContainers) {
+            threadContainer.addPropertyChangeListener("selected") { e ->
+                if (e.newValue == true) {
+                    selectionModel.add(threadContainer)
+                } else {
+                    selectionModel.remove(threadContainer)
+                }
+            }
+        }
+
         ShowNullThreads.addChangeListener {
             for (container in threadContainers) {
                 container.updateThreadInfo()
@@ -91,6 +129,8 @@ class ThreadComparisonPane(
         threads.firstOrNull { it != null }?.let {
             header.setThread(it)
         }
+
+        selectionModel = ThreadSelectionModel()
 
         val moreThanOneThread = threads.count { it != null } > 1
 
@@ -133,13 +173,31 @@ class ThreadComparisonPane(
         fun onBlockerSelected(threadId: Int)
     }
 
-    private class HeaderPanel : JPanel(MigLayout("fill, ins 3")) {
+    private inner class HeaderPanel : JPanel(MigLayout("fill, ins 3")) {
         private val nameLabel = StyledLabel().apply {
             isLineWrap = false
         }
 
+        val diffSelection = JButton(
+            Action("Compare Diffs") {
+                val (thread1, thread2) = selectionModel.asList()
+
+                jFrame(
+                    title = "Comparing ${thread1.name} from thread dumps ${thread1.index + 1} and ${thread2.index + 1}",
+                    width = 1000,
+                    height = 600,
+                ) {
+                    add(ThreadDiffView(thread1.thread!!, thread2.thread!!))
+                    dismissOnEscape()
+                }
+            },
+        ).apply {
+            isEnabled = false
+        }
+
         init {
             add(nameLabel, "pushx, growx")
+            add(diffSelection, "east")
         }
 
         fun setThread(thread: Thread) {
@@ -164,6 +222,34 @@ class ThreadComparisonPane(
                 }
             }
         }
+    }
+
+    private inner class ThreadSelectionModel {
+        private val internal = ArrayDeque<ThreadContainer>(2)
+
+        init {
+            updateEnabled()
+        }
+
+        fun add(container: ThreadContainer) {
+            if (internal.size == 2) {
+                val toDeselect = internal.removeFirst()
+                toDeselect.diffCheckBox.isSelected = false
+            }
+            internal.addLast(container)
+            updateEnabled()
+        }
+
+        fun remove(container: ThreadContainer) {
+            internal.remove(container)
+            updateEnabled()
+        }
+
+        private fun updateEnabled() {
+            header.diffSelection.isEnabled = internal.size == 2
+        }
+
+        fun asList(): List<ThreadContainer> = internal.sortedBy { it.index }
     }
 
     private class BlockerButton : FlatButton() {
@@ -196,7 +282,12 @@ class ThreadComparisonPane(
             }
         }
 
-        var text: String? by scrollingTextPane::text
+        var text: String?
+            get() = scrollingTextPane.text
+            set(value) {
+                scrollingTextPane.text = value
+                scrollingTextPane.scrollToTop()
+            }
 
         init {
             isCollapsed = true
@@ -206,7 +297,10 @@ class ThreadComparisonPane(
         }
     }
 
-    private class ThreadContainer(private val version: String) : JXTaskPaneContainer() {
+    private class ThreadContainer(
+        val index: Int,
+        private val version: String,
+    ) : JXTaskPaneContainer() {
         var thread: Thread? by Delegates.observable(null) { _, _, _ ->
             updateThreadInfo()
         }
@@ -220,14 +314,22 @@ class ThreadComparisonPane(
             toolTipText = "Open in details popup"
             addActionListener {
                 thread?.let {
-                    jFrame("Thread ${it.id} Details", 900, 500) {
+                    jFrame("Thread ${it.name} Details", 900, 500) {
                         contentPane = DetailsPane(listOf(it.toDetail(version)))
+                        dismissOnEscape()
                     }
                 }
             }
         }
 
         val blockerButton = BlockerButton()
+
+        val diffCheckBox = JCheckBox("Diff").apply {
+            isVisible = false
+            addActionListener {
+                this@ThreadContainer.firePropertyChange("selected", !isSelected, isSelected)
+            }
+        }
 
         private val monitors = DetailContainer("Locked Monitors")
         private val synchronizers = DetailContainer("Synchronizers")
@@ -240,6 +342,7 @@ class ThreadComparisonPane(
                 JPanel(MigLayout("fill, ins 5, hidemode 3")).apply {
                     add(detailsButton)
                     add(titleLabel, "push, grow, gapleft 8")
+                    add(diffCheckBox)
                     add(blockerButton)
                 },
             )
@@ -328,6 +431,11 @@ class ThreadComparisonPane(
                         }
                     isSpecial = highlightStacktrace
                 }
+            }
+
+            diffCheckBox.apply {
+                isSelected = false
+                isVisible = !thread?.stacktrace.isNullOrEmpty()
             }
         }
     }
