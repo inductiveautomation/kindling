@@ -54,7 +54,7 @@ apache-commons = { group = "org.apache.commons", name = "commons-lang3", version
 slf4j = { group = "org.slf4j", name = "slf4j-log4j12", version = "2.0.16" }
 google-guava = { module = "com.google.guava:guava", version = "26.0-jre" }
 ia-gson = { module = "com.inductiveautomation.ignition:ia-gson", version = "2.10.1" }
-ia-jython = { module = "org.python:jython-ia", version = "2.7.3.3" }
+ia-jython = { module = "org.python:jython-ia", version = "2.7.3.4" }
 
 # test framework
 kotest-junit = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
