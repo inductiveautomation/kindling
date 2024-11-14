@@ -21,7 +21,6 @@ import io.github.inductiveautomation.kindling.utils.collapseAll
 import io.github.inductiveautomation.kindling.utils.expandAll
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.selectAll
-import net.miginfocom.swing.MigLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JMenuItem
@@ -29,6 +28,7 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
 import javax.swing.tree.TreePath
+import net.miginfocom.swing.MigLayout
 
 class LoggerNamePanel(private val rawData: List<LogEvent>) :
     FilterPanel<LogEvent>(),

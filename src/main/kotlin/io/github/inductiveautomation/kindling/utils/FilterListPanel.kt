@@ -18,7 +18,7 @@ abstract class FilterListPanel<T>(
 
     init {
         filterList.checkBoxListSelectionModel.addListSelectionListener { e ->
-            if (!e.valueIsAdjusting) {
+            if (!e.valueIsAdjusting && !filterList.comparatorIsAdjusting) {
                 listeners.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
             }
         }

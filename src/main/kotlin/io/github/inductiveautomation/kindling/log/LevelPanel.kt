@@ -11,7 +11,7 @@ internal class LevelPanel(rawData: List<LogEvent>) : FilterListPanel<LogEvent>("
     override val icon = FlatSVGIcon("icons/bx-bar-chart-alt.svg")
 
     init {
-        filterList.setModel(FilterModel(rawData.groupingBy { it.level?.name }.eachCount()))
+        filterList.setModel(FilterModel.fromRawData(rawData, filterList.comparator) { it.level?.name })
         filterList.selectAll()
     }
 

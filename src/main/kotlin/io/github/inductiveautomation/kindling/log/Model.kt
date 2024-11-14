@@ -3,6 +3,10 @@ package io.github.inductiveautomation.kindling.log
 import io.github.inductiveautomation.kindling.utils.StackTrace
 import java.time.Instant
 
+typealias LogFile = List<LogEvent>
+typealias SystemLogFile = List<SystemLogEvent>
+typealias WrapperLogFile = List<WrapperLogEvent>
+
 sealed interface LogEvent {
     var marked: Boolean
     val timestamp: Instant

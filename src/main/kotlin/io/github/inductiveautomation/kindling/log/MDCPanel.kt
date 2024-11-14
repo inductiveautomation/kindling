@@ -15,9 +15,6 @@ import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.getAll
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.renderer.CheckBoxProvider
-import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.util.Vector
@@ -29,6 +26,9 @@ import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.renderer.CheckBoxProvider
+import org.jdesktop.swingx.renderer.DefaultTableRenderer
 
 internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() {
     override val icon = FlatSVGIcon("icons/bx-key.svg")

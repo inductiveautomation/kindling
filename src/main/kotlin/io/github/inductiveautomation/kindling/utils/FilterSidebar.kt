@@ -10,11 +10,10 @@ import javax.swing.JPopupMenu
 import javax.swing.JToolTip
 import javax.swing.UIManager
 
-class FilterSidebar<T>(
-    vararg panels: FilterPanel<T>?,
-) : FlatTabbedPane() {
-
-    val filterPanels = panels.filterNotNull()
+open class FilterSidebar<T>(
+    private val filterPanels: List<FilterPanel<T>>
+) : FlatTabbedPane(), List<FilterPanel<T>> by filterPanels {
+    constructor(vararg panels: FilterPanel<T>?) : this(panels.filterNotNull())
 
     override fun createToolTip(): JToolTip = JToolTip().apply {
         font = UIManager.getFont("h3.regular.font")
@@ -45,22 +44,15 @@ class FilterSidebar<T>(
 
         preferredSize = Dimension(250, 100)
 
-        filterPanels.forEachIndexed { index, filterPanel ->
+        filterPanels.forEach { filterPanel ->
             addTab(
                 null,
                 filterPanel.icon,
                 filterPanel.component,
-                buildString {
-                    tag("html") {
-                        tag("p", "style" to "margin: 3px;") {
-                            append(filterPanel.tabName)
-                        }
-                    }
-                },
+                filterPanel.formattedTabName,
             )
             filterPanel.addFilterChangeListener {
                 filterPanel.updateTabState()
-                selectedIndex = index
             }
         }
 
@@ -98,5 +90,16 @@ class FilterSidebar<T>(
         filterPanels?.forEach {
             it.updateTabState()
         }
+    }
+
+    companion object {
+        val FilterPanel<*>.formattedTabName
+            get() = buildString {
+                tag("html") {
+                    tag("p", "style" to "margin: 3px;") {
+                        append(tabName)
+                    }
+                }
+            }
     }
 }

@@ -15,9 +15,6 @@ import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.getAncestorOfClass
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXDatePicker
-import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import java.awt.Cursor
 import java.awt.EventQueue
 import java.awt.Insets
@@ -52,6 +49,9 @@ import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
 import kotlin.math.absoluteValue
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXDatePicker
+import org.jdesktop.swingx.renderer.DefaultTableRenderer
 
 internal class TimePanel(
     data: List<LogEvent>,
