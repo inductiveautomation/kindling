@@ -5,6 +5,7 @@ import io.github.inductiveautomation.kindling.alarm.AlarmViewer
 import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.gatewaynetwork.GatewayNetworkTool
 import io.github.inductiveautomation.kindling.idb.IdbViewer
+import io.github.inductiveautomation.kindling.localization.TranslationTool
 import io.github.inductiveautomation.kindling.log.LogViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.utils.FileFilter
@@ -54,6 +55,7 @@ interface Tool : KindlingSerializable {
                 add(GatewayNetworkTool)
                 add(AlarmViewer)
                 add(XmlTool)
+                add(TranslationTool)
                 addAll(loadService<Tool>())
             }
         }
