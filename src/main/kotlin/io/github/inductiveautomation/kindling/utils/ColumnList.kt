@@ -7,8 +7,8 @@ import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
 abstract class ColumnList<R> private constructor(
-    @PublishedApi internal val list: MutableList<Column<R, *>>,
-) : List<Column<R, *>> by list {
+    @PublishedApi internal val list: MutableList<Column<R, Any?>>,
+) : List<Column<R, Any?>> by list {
     constructor() : this(mutableListOf())
 
     /**
@@ -18,22 +18,24 @@ abstract class ColumnList<R> private constructor(
     protected inline fun <reified T> column(
         name: String? = null,
         noinline column: (TableColumnExt.(model: TableModel) -> Unit)? = null,
-        noinline value: (R) -> T,
-    ): PropertyDelegateProvider<ColumnList<R>, ReadOnlyProperty<ColumnList<R>, Column<R, T>>> {
-        return PropertyDelegateProvider { thisRef, prop ->
-            val actual = Column(
-                header = name ?: prop.name,
-                getValue = value,
-                columnCustomization = column,
-                clazz = T::class.java,
-            )
-            thisRef.add(actual)
-            ReadOnlyProperty { _, _ -> actual }
-        }
+        noinline setValue: SetValue<R, T>? = null,
+        noinline value: GetValue<R, T>,
+    ) = PropertyDelegateProvider<ColumnList<R>, ReadOnlyProperty<ColumnList<R>, Column<R, T>>> { _, prop ->
+        val actual = Column(
+            header = name ?: prop.name,
+            setValue = setValue,
+            getValue = value,
+            columnCustomization = column,
+            clazz = T::class.java,
+        )
+        @Suppress("UNCHECKED_CAST")
+        add(actual as Column<R, Any?>)
+        ReadOnlyProperty { _, _ -> actual }
     }
 
-    fun add(column: Column<R, *>) {
-        list.add(column)
+    fun add(column: Column<R, out Any?>) {
+        @Suppress("UNCHECKED_CAST")
+        list.add(column as Column<R, Any?>)
     }
 
     operator fun get(column: Column<*, *>): Int = indexOf(column)
