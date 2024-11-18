@@ -131,8 +131,9 @@ internal class TimePanel(
     private fun selectTime(timeToSelect: Instant) {
         val table = containingLogPanel?.table ?: return
 
-        val modelIndex = (table.model as LogsModel<*>).data
-            .indexOfFirst { it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect }
+        val modelIndex = table.model.data.indexOfFirst {
+            it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect
+        }
         if (modelIndex == -1) return
 
         val viewIndex = table.convertRowIndexToView(modelIndex)

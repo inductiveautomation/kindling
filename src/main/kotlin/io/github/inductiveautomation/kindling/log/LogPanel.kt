@@ -13,6 +13,7 @@ import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FilterSidebar
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -70,7 +71,7 @@ class LogPanel(
 
     private val footer = Footer(totalRows)
 
-    private val columnList = if (rawData.first() is SystemLogEvent) {
+    private val columnList: LogColumnList = if (rawData.first() is SystemLogEvent) {
         SystemLogColumns
     } else {
         WrapperLogColumns
@@ -79,7 +80,7 @@ class LogPanel(
     val table = run {
         val initialModel = createModel(rawData)
         ReifiedJXTable(initialModel, columnList).apply {
-            setSortOrder(initialModel.columns.Timestamp, SortOrder.ASCENDING)
+            setSortOrder((initialModel.columns as LogColumnList).Timestamp, SortOrder.ASCENDING)
         }
     }
 
@@ -174,7 +175,7 @@ class LogPanel(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun createModel(rawData: List<LogEvent>): LogsModel<out LogEvent> = when (columnList) {
+    private fun createModel(rawData: List<LogEvent>): LogsModel = when (columnList) {
         is WrapperLogColumns -> LogsModel(rawData as List<WrapperLogEvent>, columnList)
         is SystemLogColumns -> LogsModel(rawData as List<SystemLogEvent>, columnList)
     }
@@ -231,7 +232,8 @@ class LogPanel(
                             filterPanel.customizePopupMenu(this, column, event)
                         }
 
-                        if (colAtPoint == model.markIndex) {
+                        val marked = (model.columns as LogColumnList).Marked
+                        if (colAtPoint == model.columns.indexOf<Column<LogEvent, out Any?>>(marked)) {
                             add(clearAllMarks)
                         }
 
