@@ -16,6 +16,9 @@ import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.getAll
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.renderer.CheckBoxProvider
+import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import java.awt.EventQueue
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -29,12 +32,9 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
 import kotlin.properties.Delegates
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.renderer.CheckBoxProvider
-import org.jdesktop.swingx.renderer.DefaultTableRenderer
 
 internal class MDCPanel(
-    events: List<SystemLogEvent>
+    events: List<SystemLogEvent>,
 ) : FilterPanel<SystemLogEvent>(), FileFilterResponsive<SystemLogEvent> {
     override val icon = FlatSVGIcon("icons/bx-key.svg")
 
@@ -58,7 +58,7 @@ internal class MDCPanel(
         .sortedByDescending(Map.Entry<String, Int>::value)
         .associate(Map.Entry<String, Int>::toPair)
 
-    private var countByKeyAndValue:  Map<Pair<String, String?>, Int> = allMDCs
+    private var countByKeyAndValue: Map<Pair<String, String?>, Int> = allMDCs
         .groupingBy(MDC::toPair)
         .eachCount()
 
@@ -241,7 +241,7 @@ internal class MDCPanel(
 
     override fun setModelData(data: List<SystemLogEvent>) {
         allMDCs = data.flatMap(SystemLogEvent::mdc)
-        
+
         // Key Combobox
         val selectedMdcKey = keyCombo.selectedItem?.let {
             if (it !in countByKey.keys) null else it as String
@@ -264,7 +264,6 @@ internal class MDCPanel(
         }.map { (index, _) -> index }
 
         toRemove.forEach(tableModel::removeAt)
-
     }
 
     override fun isFilterApplied(): Boolean = tableModel.data.isNotEmpty()

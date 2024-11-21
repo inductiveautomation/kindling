@@ -4,14 +4,13 @@ import io.github.inductiveautomation.kindling.core.FilterPanel
 import java.nio.file.Path
 import java.util.EventListener
 
-
 /*
  * A Filter Sidebar which automatically manages its filters by setting the models appropriately.
  * The FilterPanel must implement setModelData() in order for it to be responsive to file changes.
  */
 class FileFilterSidebar<T> private constructor(
     initialPanels: List<FilterPanel<T>?>,
-    fileData: Map<Path, Collection<T>>
+    fileData: Map<Path, Collection<T>>,
 ) : FilterSidebar<T>(initialPanels.filterNotNull()) {
 
     var listModelsAreAdjusting = false

@@ -93,7 +93,7 @@ class FilterModel<T>(
             data: List<T>,
             comparator: FilterComparator,
             sortKey: (R) -> String = Any?::toString,
-            transform: (T) -> R
+            transform: (T) -> R,
         ): FilterModel<R> {
             val sortedData: Map<R, Int> = data.groupingBy(transform).eachCount().entries
                 .sortedWith(

@@ -37,7 +37,7 @@ class WrapperLogPanel(
             LevelPanel(rawData),
             TimePanel(rawData),
         ),
-        fileData = paths.zip(fileData).toMap()
+        fileData = paths.zip(fileData).toMap(),
     )
 
     init {

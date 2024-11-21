@@ -489,6 +489,7 @@ private data class DenseTime(
 )
 
 private object DensityColumns : ColumnList<DenseTime>() {
+    @Suppress("PropertyName", "RedundantSuppression")
     private lateinit var _formatter: DateTimeFormatter
 
     private val minuteFormatter: DateTimeFormatter

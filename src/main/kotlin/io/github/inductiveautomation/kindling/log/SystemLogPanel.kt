@@ -11,7 +11,7 @@ import java.time.Instant
 
 class SystemLogPanel(
     paths: List<Path>,
-    private val fileData: List<LogFile<SystemLogEvent>>
+    private val fileData: List<LogFile<SystemLogEvent>>,
 ) : LogPanel<SystemLogEvent>(fileData.flatten(), SystemLogColumns) {
 
     override val sidebar = FileFilterSidebar(
@@ -22,7 +22,7 @@ class SystemLogPanel(
             ThreadPanel(rawData),
             TimePanel(rawData),
         ),
-        fileData = paths.zip(fileData).toMap()
+        fileData = paths.zip(fileData).toMap(),
     )
 
     init {

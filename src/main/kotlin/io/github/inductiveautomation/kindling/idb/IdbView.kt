@@ -18,10 +18,10 @@ import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
+import org.sqlite.SQLiteConnection
 import java.nio.file.Path
 import java.sql.Connection
 import kotlin.io.path.name
-import org.sqlite.SQLiteConnection
 
 class IdbView(paths: List<Path>) : ToolPanel() {
     private val data = paths.map(::IdbFileData)
@@ -65,7 +65,7 @@ class IdbView(paths: List<Path>) : ToolPanel() {
             }
             addedTabs = supportedMultiTools.size
         } else {
-            for ((_, connection, ) in data) {
+            for ((_, connection) in data) {
                 tabs.addTab(
                     tabName = "Tables",
                     component = GenericView(connection),
@@ -186,7 +186,7 @@ data object IdbViewer : MultiTool, PreferenceCategory {
         default = false,
         editor = {
             PreferenceCheckbox("Include tabs for Generic IDB browser when opening multiple IDB Files")
-        }
+        },
     )
 
     override val preferences: List<Preference<*>> = listOf(ShowGenericViewWithMultiTools)

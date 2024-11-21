@@ -11,7 +11,7 @@ import javax.swing.JToolTip
 import javax.swing.UIManager
 
 open class FilterSidebar<T>(
-    private val filterPanels: List<FilterPanel<T>>
+    private val filterPanels: List<FilterPanel<T>>,
 ) : FlatTabbedPane(), List<FilterPanel<T>> by filterPanels {
 
     override fun createToolTip(): JToolTip = JToolTip().apply {

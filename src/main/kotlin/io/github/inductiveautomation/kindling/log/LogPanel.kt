@@ -28,6 +28,12 @@ import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.isSortedBy
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
 import java.util.Vector
 import javax.swing.BorderFactory
@@ -41,12 +47,6 @@ import javax.swing.JSeparator
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
 typealias LogFilter = Filter<LogEvent>
@@ -62,7 +62,7 @@ sealed class LogPanel<T : LogEvent> private constructor(
     // Ensures that the list will always be sorted.
     constructor(
         rawData: List<T>,
-        columnList: LogColumnList<T>
+        columnList: LogColumnList<T>,
     ) : this(SortedList(rawData.toMutableList(), compareBy(LogEvent::timestamp)), columnList)
     protected var selectedData: List<T> = rawData
         set(value) {
@@ -110,7 +110,7 @@ sealed class LogPanel<T : LogEvent> private constructor(
             override fun filter(item: T): Boolean {
                 return header.markedBehavior.selectedItem != "Only Show Marked" || item.marked
             }
-        }
+        },
     )
 
     private val dataUpdater = debounce(50.milliseconds, BACKGROUND) {

@@ -6,10 +6,12 @@ import io.github.inductiveautomation.kindling.utils.FileFilterResponsive
 import io.github.inductiveautomation.kindling.utils.FilterListPanel
 import io.github.inductiveautomation.kindling.utils.FilterModel
 
-class PoolPanel : FilterListPanel<Thread?>(
-    tabName = "Pool",
-    toStringFn = { it?.toString() ?: "(No Pool)" },
-), FileFilterResponsive<Thread?> {
+class PoolPanel :
+    FilterListPanel<Thread?>(
+        tabName = "Pool",
+        toStringFn = { it?.toString() ?: "(No Pool)" },
+    ),
+    FileFilterResponsive<Thread?> {
     override val icon = FlatSVGIcon("icons/bx-chip.svg")
 
     override fun setModelData(data: List<Thread?>) {

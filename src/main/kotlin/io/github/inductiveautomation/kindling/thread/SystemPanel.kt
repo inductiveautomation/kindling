@@ -6,10 +6,12 @@ import io.github.inductiveautomation.kindling.utils.FileFilterResponsive
 import io.github.inductiveautomation.kindling.utils.FilterListPanel
 import io.github.inductiveautomation.kindling.utils.FilterModel
 
-class SystemPanel : FilterListPanel<Thread?>(
-    tabName = "System",
-    toStringFn = { it?.toString() ?: "Unassigned" },
-), FileFilterResponsive<Thread?> {
+class SystemPanel :
+    FilterListPanel<Thread?>(
+        tabName = "System",
+        toStringFn = { it?.toString() ?: "Unassigned" },
+    ),
+    FileFilterResponsive<Thread?> {
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")
 
     override fun setModelData(data: List<Thread?>) {

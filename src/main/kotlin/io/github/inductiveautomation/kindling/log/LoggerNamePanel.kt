@@ -22,6 +22,7 @@ import io.github.inductiveautomation.kindling.utils.expandAll
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.isAllSelected
 import io.github.inductiveautomation.kindling.utils.selectAll
+import net.miginfocom.swing.MigLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JMenuItem
@@ -30,7 +31,6 @@ import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
-import net.miginfocom.swing.MigLayout
 
 class LoggerNamePanel<T : LogEvent>(private val rawData: List<T>) :
     FilterPanel<T>(),
@@ -119,7 +119,9 @@ class LoggerNamePanel<T : LogEvent>(private val rawData: List<T>) :
             val previousExpandedPaths = (0..<filterTree.rowCount).mapNotNull { i ->
                 if (filterTree.isExpanded(i)) {
                     (filterTree.getPathForRow(i).lastPathComponent as? LogEventNode)?.name
-                } else null
+                } else {
+                    null
+                }
             }
 
             if (allSelected) {

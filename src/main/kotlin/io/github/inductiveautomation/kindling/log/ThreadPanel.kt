@@ -9,7 +9,7 @@ import io.github.inductiveautomation.kindling.utils.FilterModel
 import javax.swing.JPopupMenu
 
 internal class ThreadPanel(
-    events: List<SystemLogEvent>
+    events: List<SystemLogEvent>,
 ) : FilterListPanel<SystemLogEvent>("Threads"), FileFilterResponsive<SystemLogEvent> {
     override val icon = FlatSVGIcon("icons/bx-chip.svg")
 
