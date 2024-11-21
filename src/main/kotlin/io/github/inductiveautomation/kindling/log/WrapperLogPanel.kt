@@ -8,52 +8,70 @@ import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
+import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
 import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
 import io.github.inductiveautomation.kindling.utils.getValue
-import java.awt.Desktop
-import java.io.File
+import io.github.inductiveautomation.kindling.utils.transferTo
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.zone.ZoneRulesProvider
 import java.util.Vector
-import javax.swing.Icon
 import javax.swing.JComboBox
-import javax.swing.JPopupMenu
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
+import kotlin.io.path.outputStream
 import kotlin.io.path.useLines
 
-class WrapperLogView(
-    events: List<WrapperLogEvent>,
-    tabName: String,
-    private val fromFile: Boolean,
-) : ToolPanel() {
-    private val logPanel = LogPanel(events)
+class WrapperLogPanel(
+    paths: List<Path>,
+    private val fileData: List<LogFile<WrapperLogEvent>>,
+) : LogPanel<WrapperLogEvent>(fileData.flatten(), WrapperLogColumns) {
+
+    override val sidebar = FileFilterSidebar(
+        listOf(
+            LoggerNamePanel(rawData),
+            LevelPanel(rawData),
+            TimePanel(rawData),
+        ),
+        fileData = paths.zip(fileData).toMap()
+    )
 
     init {
-        name = tabName
-        toolTipText = tabName
+        name = "Wrapper Logs [${fileData.size}]"
+        toolTipText = paths.joinToString("\n") { it.absolutePathString() }
 
-        add(logPanel, "push, grow")
-    }
+        filters.add { event ->
+            val text = header.search.text
+            if (text.isNullOrEmpty()) {
+                true
+            } else {
+                text in event.message ||
+                    event.logger.contains(text, ignoreCase = true) ||
+                    event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) } ||
+                    (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
+            }
+        }
 
-    override val icon: Icon = LogViewer.icon
+        addSidebar(sidebar)
 
-    override fun customizePopupMenu(menu: JPopupMenu) {
-        menu.add(
-            exportMenu { logPanel.table.model },
-        )
-        if (fromFile) {
-            menu.addSeparator()
-            menu.add(
-                Action(name = "Open in External Editor") {
-                    Desktop.getDesktop().open(File(tabName))
-                },
-            )
+        sidebar.forEach { filterPanel ->
+            filterPanel.addFilterChangeListener {
+                if (!sidebar.listModelsAreAdjusting) updateData()
+            }
+        }
+
+        sidebar.addFileFilterChangeListener {
+            selectedData = List(fileData.size) { index ->
+                if (sidebar.isSelectedFileIndex(index + 1)) {
+                    fileData[index]
+                } else {
+                    null
+                }
+            }.filterNotNull().flatten()
         }
     }
 
@@ -144,21 +162,26 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
         // flip the paths, so the .5, .4, .3, .2, .1 - this hopefully helps with the per-event sort below
         val reverseOrder = paths.sortedWith(compareBy(AlphanumComparator(), Path::name).reversed())
-        val events = reverseOrder.flatMap { path ->
-            path.useLines(DefaultEncoding.currentValue) { lines -> WrapperLogView.parseLogs(lines) }
+        val fileData = reverseOrder.map { path ->
+            path.useLines(DefaultEncoding.currentValue) { lines ->
+                WrapperLogPanel.parseLogs(lines)
+            }
         }
-        return WrapperLogView(
-            events = events.sortedBy { it.timestamp },
-            tabName = paths.first().name,
-            fromFile = true,
+        return WrapperLogPanel(
+            reverseOrder,
+            fileData,
         )
     }
 
-    override fun open(data: String): ToolPanel = WrapperLogView(
-        events = WrapperLogView.parseLogs(data.lineSequence()),
-        tabName = "Paste at ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
-        fromFile = false,
-    )
+    override fun open(data: String): ToolPanel {
+        val tempFile = Files.createTempFile("paste", "kindl")
+        data.byteInputStream() transferTo tempFile.outputStream()
+
+        val fileData = tempFile.useLines(DefaultEncoding.currentValue) { lines ->
+            WrapperLogPanel.parseLogs(lines)
+        }
+        return WrapperLogPanel(listOf(tempFile), listOf(fileData))
+    }
 
     val SelectedTimeZone = preference(
         name = "Timezone",

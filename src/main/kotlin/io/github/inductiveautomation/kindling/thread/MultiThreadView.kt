@@ -70,9 +70,11 @@ class MultiThreadView(
     private val searchField = JXSearchField("Search")
 
     private val sidebar = FileFilterSidebar(
-        statePanel,
-        systemPanel,
-        poolPanel,
+        listOf(
+            statePanel,
+            systemPanel,
+            poolPanel,
+        ),
         fileData = paths.zip(threadDumps.map { it.threads }).toMap(),
     )
 

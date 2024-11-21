@@ -11,7 +11,6 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
 import io.github.inductiveautomation.kindling.core.Kindling
-import net.miginfocom.swing.MigLayout
 import java.awt.Component
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -21,6 +20,7 @@ import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
+import net.miginfocom.swing.MigLayout
 
 inline fun FlatScrollPane(
     component: Component,

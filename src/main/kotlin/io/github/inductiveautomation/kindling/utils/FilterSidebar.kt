@@ -13,7 +13,6 @@ import javax.swing.UIManager
 open class FilterSidebar<T>(
     private val filterPanels: List<FilterPanel<T>>
 ) : FlatTabbedPane(), List<FilterPanel<T>> by filterPanels {
-    constructor(vararg panels: FilterPanel<T>?) : this(panels.filterNotNull())
 
     override fun createToolTip(): JToolTip = JToolTip().apply {
         font = UIManager.getFont("h3.regular.font")
@@ -75,7 +74,7 @@ open class FilterSidebar<T>(
         selectedIndex = 0
     }
 
-    private fun FilterPanel<*>.updateTabState() {
+    protected fun FilterPanel<*>.updateTabState() {
         val index = indexOfComponent(component)
         if (isFilterApplied()) {
             setBackgroundAt(index, UIManager.getColor("TabbedPane.focusColor"))

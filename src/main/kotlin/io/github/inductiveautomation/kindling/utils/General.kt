@@ -1,11 +1,6 @@
 package io.github.inductiveautomation.kindling.utils
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.jidesoft.swing.CheckBoxListSelectionModel
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Properties
@@ -15,6 +10,12 @@ import kotlin.math.pow
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 fun String.truncate(length: Int = 20): String {
     return asIterable().joinToString(separator = "", limit = length)
@@ -129,3 +130,5 @@ infix fun InputStream.transferTo(output: OutputStream) {
         output.use(input::transferTo)
     }
 }
+
+fun CheckBoxListSelectionModel.isAllSelected() = isSelectedIndex(allEntryIndex)

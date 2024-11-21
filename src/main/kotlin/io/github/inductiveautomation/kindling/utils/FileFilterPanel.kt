@@ -35,7 +35,7 @@ class FileFilterPanel<T>(data: Map<Path, Collection<T>>) : FilterPanel<Path>() {
 
     override fun filter(item: Path): Boolean = item in fileList.checkBoxListSelectedValues
     override fun reset() = fileList.selectAll()
-    override fun isFilterApplied(): Boolean = fileList.checkBoxListSelectedValues.size != fileList.model.size - 1
+    override fun isFilterApplied(): Boolean = !fileList.checkBoxListSelectionModel.isAllSelected()
     override fun customizePopupMenu(menu: JPopupMenu, column: Column<out Path, *>, event: Path) = Unit
 }
 

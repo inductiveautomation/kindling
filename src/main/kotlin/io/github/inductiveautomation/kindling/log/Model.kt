@@ -3,9 +3,7 @@ package io.github.inductiveautomation.kindling.log
 import io.github.inductiveautomation.kindling.utils.StackTrace
 import java.time.Instant
 
-typealias LogFile = List<LogEvent>
-typealias SystemLogFile = List<SystemLogEvent>
-typealias WrapperLogFile = List<WrapperLogEvent>
+typealias LogFile<T> = List<T>
 
 sealed interface LogEvent {
     var marked: Boolean

@@ -10,6 +10,7 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.EmptyBorder
+import io.github.inductiveautomation.kindling.utils.FileFilterResponsive
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
@@ -53,19 +54,19 @@ import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXDatePicker
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
 
-internal class TimePanel(
-    data: List<LogEvent>,
-) : FilterPanel<LogEvent>() {
+internal class TimePanel<T : LogEvent>(
+    data: List<T>,
+) : FilterPanel<T>(), FileFilterResponsive<T> {
     override val icon = FlatSVGIcon("icons/bx-time-five.svg")
 
-    private val lowerBound: Instant = data.first().timestamp
-    private val upperBound: Instant = data.last().timestamp
+    private var lowerBound: Instant = data.first().timestamp
+    private var upperBound: Instant = data.last().timestamp
 
     private var coveredRange: ClosedRange<Instant> = lowerBound..upperBound
-    private val initialRange = coveredRange
+    private var totalCurrentRange = coveredRange
 
-    private val startSelector = DateTimeSelector(lowerBound, initialRange)
-    private val endSelector = DateTimeSelector(upperBound, initialRange)
+    private val startSelector = DateTimeSelector(lowerBound, totalCurrentRange)
+    private val endSelector = DateTimeSelector(upperBound, totalCurrentRange)
 
     private val denseMinutesTable =
         ReifiedJXTable(
@@ -195,8 +196,8 @@ internal class TimePanel(
             add(FlatScrollPane(denseMinutesTable), "pushx, growx")
         }
 
-    private val containingLogPanel: LogPanel?
-        get() = component.getAncestorOfClass<LogPanel>()
+    private val containingLogPanel: LogPanel<*>?
+        get() = component.getAncestorOfClass<LogPanel<*>>()
 
     init {
         startSelector.addPropertyChangeListener("time") {
@@ -207,7 +208,7 @@ internal class TimePanel(
         }
     }
 
-    override fun isFilterApplied(): Boolean = coveredRange != initialRange
+    override fun isFilterApplied(): Boolean = coveredRange != totalCurrentRange
 
     private fun updateCoveredRange() {
         coveredRange = startSelector.time..endSelector.time
@@ -215,12 +216,45 @@ internal class TimePanel(
         listeners.getAll<FilterChangeListener>().forEach(FilterChangeListener::filterChanged)
     }
 
-    override fun filter(item: LogEvent): Boolean = item.timestamp in coveredRange
+    override fun filter(item: T): Boolean = item.timestamp in coveredRange
+
+    override fun setModelData(data: List<T>) {
+        val isFilterApplied = isFilterApplied()
+        lowerBound = data.minOf { it.timestamp }
+        upperBound = data.maxOf { it.timestamp }
+        totalCurrentRange = lowerBound..upperBound
+
+        denseMinutesTable.model = ReifiedListTableModel(
+            data.groupingBy { it.timestamp.truncatedTo(ChronoUnit.MINUTES) }
+                .eachCount()
+                .entries
+                .filter { it.value > 60 }
+                .map { entry ->
+                    DenseTime(entry.key, entry.value)
+                },
+            DensityColumns,
+        )
+
+        if (!isFilterApplied) {
+            reset()
+            return
+        }
+
+        if (lowerBound > startSelector.time) {
+            startSelector.time = lowerBound
+        }
+
+        if (upperBound < startSelector.time) {
+            startSelector.time = upperBound
+        }
+
+        updateCoveredRange()
+    }
 
     override fun customizePopupMenu(
         menu: JPopupMenu,
-        column: Column<out LogEvent, *>,
-        event: LogEvent,
+        column: Column<out T, *>,
+        event: T,
     ) {
         if (column == WrapperLogColumns.Timestamp || column == SystemLogColumns.Timestamp) {
             menu.add(
@@ -455,7 +489,6 @@ private data class DenseTime(
 )
 
 private object DensityColumns : ColumnList<DenseTime>() {
-    @Suppress("PropertyName")
     private lateinit var _formatter: DateTimeFormatter
 
     private val minuteFormatter: DateTimeFormatter

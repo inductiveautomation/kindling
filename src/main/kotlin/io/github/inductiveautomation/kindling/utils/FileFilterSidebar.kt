@@ -9,18 +9,10 @@ import java.util.EventListener
  * A Filter Sidebar which automatically manages its filters by setting the models appropriately.
  * The FilterPanel must implement setModelData() in order for it to be responsive to file changes.
  */
-class FileFilterSidebar<T>(
+class FileFilterSidebar<T> private constructor(
     initialPanels: List<FilterPanel<T>?>,
     fileData: Map<Path, Collection<T>>
 ) : FilterSidebar<T>(initialPanels.filterNotNull()) {
-    constructor(
-        vararg panels: FilterPanel<T>?,
-        fileData: Map<Path, Collection<T>>,
-    ) : this(panels.toList(), fileData)
-
-    init {
-        require(fileData.isNotEmpty()) { "File data must not be empty. Use FilterSidebar instead." }
-    }
 
     var listModelsAreAdjusting = false
         private set
@@ -44,7 +36,7 @@ class FileFilterSidebar<T>(
             panel.reset()
         }
 
-        if (fileData.isNotEmpty()) {
+        if (fileData.size > 1) {
             addTab(
                 null,
                 filePanel.icon,
@@ -55,9 +47,8 @@ class FileFilterSidebar<T>(
 
             filePanel.addFilterChangeListener {
                 listModelsAreAdjusting = true
-                val selectedData = filePanel.fileList.checkBoxListSelectedIndices.filter { it != 0 }.flatMap {
-                    val entry = filePanel.fileList.model.entries[it - 1]
-                    entry.second
+                val selectedData = filePanel.fileList.checkBoxListSelectedIndices.flatMap {
+                    filePanel.fileList.model.entries[it - 1].second
                 }
                 if (selectedData.isNotEmpty()) {
                     for (panel in this) {
@@ -69,9 +60,23 @@ class FileFilterSidebar<T>(
                 }
                 listModelsAreAdjusting = false
 
+                filePanel.updateTabState()
+
                 // Fire the "external" listeners.
-                listenerList.getAll<FileFilterChangeListener>().forEach(FileFilterChangeListener::fileFilterChanged)
+                listenerList.getAll<FileFilterChangeListener>().forEach { it.fileFilterChanged() }
             }
+        }
+    }
+
+    companion object {
+        /*
+         * Quiz: Figure out why this doesn't work with `vararg panels: S`
+         */
+        operator fun <S, T> invoke(
+            panels: List<S>,
+            fileData: Map<Path, Collection<T>>,
+        ): FileFilterSidebar<T> where S : FilterPanel<T>, S : FileFilterResponsive<T> {
+            return FileFilterSidebar(panels.toList(), fileData)
         }
     }
 }
