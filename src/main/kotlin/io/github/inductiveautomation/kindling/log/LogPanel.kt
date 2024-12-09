@@ -32,18 +32,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
+import java.awt.Color
 import java.util.Vector
-import javax.swing.BorderFactory
-import javax.swing.Icon
-import javax.swing.JButton
-import javax.swing.JComboBox
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JPopupMenu
-import javax.swing.JSeparator
-import javax.swing.ListSelectionModel
-import javax.swing.SortOrder
+import javax.swing.*
 import kotlin.time.Duration.Companion.milliseconds
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
@@ -317,6 +311,24 @@ class LogPanel(
             return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
         }
 
+        fun highlightAllMarked(){
+            val markedRows = mutableListOf<Int>()
+
+            for((rowIndex, event) in table.model.data.withIndex()){
+                if (event.marked){
+                    markedRows.add(rowIndex)
+                }
+            }
+            val regBackground: Color? = UIManager.getColor("UIColorHighlighter.stripingBackground")
+            val markedTrue= HighlightPredicate { renderer, adapter ->  adapter.row in markedRows}
+            val markedFalse = HighlightPredicate.ODD
+            val highlighter= ColorHighlighter(markedTrue, Color.BLACK, Color.GREEN)
+            val regularTable = ColorHighlighter(markedFalse, regBackground, Color.LIGHT_GRAY)
+
+            table.setHighlighters(regularTable, highlighter)
+
+        }
+
         header.apply {
             search.addActionListener {
                 updateData()
@@ -347,6 +359,9 @@ class LogPanel(
             nextMarked.addActionListener {
                 val nextMarkedIndex = getNextMarkedIndex()
                 if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
+            }
+            highlightMarked.addActionListener{
+                highlightAllMarked()
             }
         }
 
@@ -424,12 +439,16 @@ class LogPanel(
         }
         val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Always Show Marked"))
 
+        val highlightMarked = JButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
+            toolTipText = "Highlight marked items"
+        }
         val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
             border = BorderFactory.createTitledBorder("Marking")
             add(prevMarked)
             add(nextMarked)
             add(markedBehavior, "growy")
             add(clearMarked)
+            add(highlightMarked)
         }
 
         val searchPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
