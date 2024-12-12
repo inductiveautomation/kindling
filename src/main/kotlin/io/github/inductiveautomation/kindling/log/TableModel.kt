@@ -10,9 +10,9 @@ import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.StringProvider
 import io.github.inductiveautomation.kindling.utils.asActionIcon
-import java.time.Instant
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import org.jdesktop.swingx.renderer.StringValues
+import java.time.Instant
 
 class LogsModel<T : LogEvent>(
     data: List<T>,

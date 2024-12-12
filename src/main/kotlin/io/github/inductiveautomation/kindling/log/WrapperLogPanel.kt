@@ -13,6 +13,10 @@ import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
 import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
 import io.github.inductiveautomation.kindling.utils.getValue
 import io.github.inductiveautomation.kindling.utils.transferTo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
@@ -25,10 +29,6 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
 import kotlin.io.path.useLines
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
 
 class WrapperLogPanel(
     paths: List<Path>,
@@ -88,7 +88,7 @@ class WrapperLogPanel(
             }
 
             rawData.addAll(
-                newFileData.flatMap { it.second.items }
+                newFileData.flatMap { it.second.items },
             )
 
             newFileData.toMap()

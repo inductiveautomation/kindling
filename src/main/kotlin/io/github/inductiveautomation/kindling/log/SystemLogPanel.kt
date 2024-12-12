@@ -6,13 +6,13 @@ import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
 import io.github.inductiveautomation.kindling.utils.toMap
-import java.nio.file.Path
-import java.sql.Connection
-import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import java.nio.file.Path
+import java.sql.Connection
+import java.time.Instant
 
 class SystemLogPanel(
     paths: List<Path>,
@@ -75,7 +75,7 @@ class SystemLogPanel(
             }
 
             rawData.addAll(
-                newFileData.flatMap { it.second.items }
+                newFileData.flatMap { it.second.items },
             )
 
             newFileData.toMap()

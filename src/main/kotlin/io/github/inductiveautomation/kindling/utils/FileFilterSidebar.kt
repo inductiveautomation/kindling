@@ -4,6 +4,10 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.internal.FileTransferHandler
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.renderer.DefaultTableRenderer
+import org.jdesktop.swingx.renderer.StringValues
 import java.awt.Color
 import java.nio.file.Files
 import java.nio.file.Path
@@ -21,10 +25,6 @@ import javax.swing.JTextField
 import javax.swing.UIManager
 import javax.swing.event.TableModelEvent
 import kotlin.io.path.div
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.decorator.ColorHighlighter
-import org.jdesktop.swingx.renderer.DefaultTableRenderer
-import org.jdesktop.swingx.renderer.StringValues
 
 /**
  * A Filter Sidebar which automatically manages its filters by setting the models appropriately.
@@ -66,7 +66,8 @@ class FileFilterSidebar<T> private constructor(
 
             filePanel.table.model.addTableModelListener {
                 if (it.column == filePanel.table.model.columns[filePanel.table.model.columns.Show] ||
-                    it.type == TableModelEvent.INSERT) {
+                    it.type == TableModelEvent.INSERT
+                ) {
                     filterModelsAreAdjusting = true
 
                     val selectedData = selectedFiles.flatMap { f -> f.items }
@@ -160,7 +161,7 @@ class FileFilterSidebar<T> private constructor(
      * to do what it needs with the data before passing it back to the sidebar for filter updating.
      */
     fun configureFileDrop(
-        configure: (List<Path>) -> Map<Path, FileFilterableCollection<T>>
+        configure: (List<Path>) -> Map<Path, FileFilterableCollection<T>>,
     ) {
         filePanel.dropEnabled = true
 
@@ -172,7 +173,6 @@ class FileFilterSidebar<T> private constructor(
                 val startIndex = filePanel.table.model.rowCount
                 val endIndex = startIndex + addedEntries.size - 1
 
-
                 // Add new data to the table and to the item map
                 filePanel.table.model.data.addAll(
                     addedEntries.entries.map { (path, file) ->
@@ -182,11 +182,11 @@ class FileFilterSidebar<T> private constructor(
                             color = UIManager.getColor("Table.background"),
                             show = true,
                         )
-                    }
+                    },
                 )
 
                 filePanel.filesByFilterItems.putAll(
-                    addedEntries.entries.flatMap { (_, c) -> c.items.map { it to c } }
+                    addedEntries.entries.flatMap { (_, c) -> c.items.map { it to c } },
                 )
 
                 filePanel.table.model.fireTableRowsInserted(startIndex, endIndex)
@@ -209,7 +209,7 @@ class FileFilterSidebar<T> private constructor(
     }
 
     private inner class FileFilterPanel<T>(
-        data: Map<Path, FileFilterableCollection<T>>
+        data: Map<Path, FileFilterableCollection<T>>,
     ) : FilterPanel<FileFilterConfigItem<T>>() {
 
         // A map whose keys are unique by the system default implementations of hashcode()
@@ -220,7 +220,6 @@ class FileFilterSidebar<T> private constructor(
                 putAll(mappedData)
             }
         }
-
 
         val enableHighlightCheckbox = JCheckBox(
             "Enable Highlight",
@@ -245,7 +244,7 @@ class FileFilterSidebar<T> private constructor(
                             show = true,
                         )
                     }
-                }.toMutableList()
+                }.toMutableList(),
             ),
         ).apply {
             dragEnabled = false
@@ -265,7 +264,9 @@ class FileFilterSidebar<T> private constructor(
 
         var dropEnabled: Boolean
             get() = fileDropButton.isVisible
-            set(value) { fileDropButton.isVisible = value }
+            set(value) {
+                fileDropButton.isVisible = value
+            }
 
         val selectedFiles: List<FileFilterableCollection<T>>
             get() = table.model.data.filter { it.show }.map { it.filterableCollection }
@@ -305,7 +306,6 @@ class FileFilterSidebar<T> private constructor(
         ): FileFilterSidebar<T> where S : FilterPanel<T>, S : FileFilterResponsive<T> {
             return FileFilterSidebar(panels.toList(), fileData)
         }
-
 
         // Can be adjusted for better colors. Default background for first 5 files opened.
         // https://youtrack.jetbrains.com/issue/KT-2780

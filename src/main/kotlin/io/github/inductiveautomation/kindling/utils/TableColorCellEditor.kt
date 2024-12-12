@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
 import com.jidesoft.icons.IconsFactory
+import net.miginfocom.swing.MigLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.EventQueue
@@ -17,7 +18,6 @@ import javax.swing.JTable
 import javax.swing.colorchooser.AbstractColorChooserPanel
 import javax.swing.table.TableCellEditor
 import kotlin.random.Random
-import net.miginfocom.swing.MigLayout
 
 /*
  * A cell editor for editing table data which holds a java.awt.Color

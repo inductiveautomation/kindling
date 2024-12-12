@@ -19,6 +19,11 @@ import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
 import java.awt.Color
 import java.nio.file.Path
 import javax.swing.JLabel
@@ -26,11 +31,6 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXSearchField
 
 class AlarmCacheView(path: Path) : ToolPanel() {
     override val icon = FlatSVGIcon("icons/bx-bell.svg")
