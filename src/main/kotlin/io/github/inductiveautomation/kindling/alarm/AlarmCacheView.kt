@@ -12,18 +12,13 @@ import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.utils.ColorPalette
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.decorator.ColorHighlighter
 import java.awt.Color
 import java.nio.file.Path
 import javax.swing.JLabel
@@ -31,6 +26,11 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
 
 class AlarmCacheView(path: Path) : ToolPanel() {
     override val icon = FlatSVGIcon("icons/bx-bell.svg")
@@ -53,14 +53,10 @@ class AlarmCacheView(path: Path) : ToolPanel() {
     ).apply {
         alarmStateColors.forEach { (state, colorPalette) ->
             addHighlighter(
-                ColorHighlighter(
-                    { _, adapter ->
-                        val viewRow = convertRowIndexToModel(adapter.row)
-                        state == model[viewRow].state
-                    },
-                    colorPalette.background,
-                    colorPalette.foreground,
-                ),
+                colorPalette.toHighLighter { _, adapter ->
+                    val viewRow = convertRowIndexToModel(adapter.row)
+                    state == model[viewRow].state
+                },
             )
         }
     }
@@ -153,17 +149,12 @@ class AlarmCacheView(path: Path) : ToolPanel() {
         }
     }
 
-    private data class AlarmStateColorPalette(
-        val background: Color,
-        val foreground: Color,
-    )
-
     companion object {
-        private val alarmStateColors = mapOf(
-            AlarmState.ActiveAcked to AlarmStateColorPalette(Color(0xAB0000), Color(0xD0D0D0)),
-            AlarmState.ActiveUnacked to AlarmStateColorPalette(Color(0xEC2215), Color(0xD0D0D0)),
-            AlarmState.ClearAcked to AlarmStateColorPalette(Color(0xDCDCFE), Color(0x262626)),
-            AlarmState.ClearUnacked to AlarmStateColorPalette(Color(0x49ABAB), Color(0x262626)),
+        private val alarmStateColors: Map<AlarmState, ColorPalette> = mapOf(
+            AlarmState.ActiveAcked to ColorPalette(Color(0xAB0000), Color(0xD0D0D0)),
+            AlarmState.ActiveUnacked to ColorPalette(Color(0xEC2215), Color(0xD0D0D0)),
+            AlarmState.ClearAcked to ColorPalette(Color(0xDCDCFE), Color(0x262626)),
+            AlarmState.ClearUnacked to ColorPalette(Color(0x49ABAB), Color(0x262626)),
         )
     }
 }

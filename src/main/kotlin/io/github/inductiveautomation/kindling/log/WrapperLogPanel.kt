@@ -25,11 +25,15 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
 import kotlin.io.path.useLines
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 
 class WrapperLogPanel(
     paths: List<Path>,
-    private val fileData: List<LogFile<WrapperLogEvent>>,
-) : LogPanel<WrapperLogEvent>(fileData.flatten(), WrapperLogColumns) {
+    fileData: List<LogFile<WrapperLogEvent>>,
+) : LogPanel<WrapperLogEvent>(fileData.flatMap { it.items }, WrapperLogColumns) {
 
     override val sidebar = FileFilterSidebar(
         listOf(
@@ -51,8 +55,7 @@ class WrapperLogPanel(
             } else {
                 text in event.message ||
                     event.logger.contains(text, ignoreCase = true) ||
-                    event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) } ||
-                    (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
+                    event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) }
             }
         }
 
@@ -60,18 +63,35 @@ class WrapperLogPanel(
 
         sidebar.forEach { filterPanel ->
             filterPanel.addFilterChangeListener {
-                if (!sidebar.listModelsAreAdjusting) updateData()
+                if (!sidebar.filterModelsAreAdjusting) updateData()
             }
         }
 
-        sidebar.addFileFilterChangeListener {
-            selectedData = List(fileData.size) { index ->
-                if (sidebar.isSelectedFileIndex(index + 1)) {
-                    fileData[index]
-                } else {
-                    null
-                }
-            }.filterNotNull().flatten()
+        if (paths.size > 1) {
+            sidebar.addFileFilterChangeListener {
+                selectedData = sidebar.selectedFiles.flatMap { it.items }
+            }
+
+            sidebar.registerHighlighters(table)
+        }
+
+        sidebar.configureFileDrop { files ->
+            val newFileData = runBlocking {
+                files.map { path ->
+                    async(Dispatchers.IO) {
+                        val logFile = path.useLines {
+                            LogFile(parseLogs(it))
+                        }
+                        path to logFile
+                    }
+                }.awaitAll()
+            }
+
+            rawData.addAll(
+                newFileData.flatMap { it.second.items }
+            )
+
+            newFileData.toMap()
         }
     }
 
@@ -164,7 +184,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         val reverseOrder = paths.sortedWith(compareBy(AlphanumComparator(), Path::name).reversed())
         val fileData = reverseOrder.map { path ->
             path.useLines(DefaultEncoding.currentValue) { lines ->
-                WrapperLogPanel.parseLogs(lines)
+                LogFile(WrapperLogPanel.parseLogs(lines))
             }
         }
         return WrapperLogPanel(
@@ -177,9 +197,11 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         val tempFile = Files.createTempFile("paste", "kindl")
         data.byteInputStream() transferTo tempFile.outputStream()
 
-        val fileData = tempFile.useLines(DefaultEncoding.currentValue) { lines ->
-            WrapperLogPanel.parseLogs(lines)
-        }
+        val fileData = LogFile(
+            tempFile.useLines(DefaultEncoding.currentValue) { lines ->
+                WrapperLogPanel.parseLogs(lines)
+            },
+        )
         return WrapperLogPanel(listOf(tempFile), listOf(fileData))
     }
 

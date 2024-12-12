@@ -2,11 +2,6 @@ package io.github.inductiveautomation.kindling.utils
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
-import org.jdesktop.swingx.JXTable
-import org.jdesktop.swingx.decorator.ColorHighlighter
-import org.jdesktop.swingx.decorator.HighlightPredicate
-import org.jdesktop.swingx.sort.SortController
-import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -15,6 +10,11 @@ import javax.swing.SortOrder
 import javax.swing.UIManager
 import javax.swing.table.TableModel
 import kotlin.time.Duration.Companion.milliseconds
+import org.jdesktop.swingx.JXTable
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.decorator.HighlightPredicate
+import org.jdesktop.swingx.sort.SortController
+import org.jdesktop.swingx.table.ColumnControlButton
 
 /**
  * An implementation of JXTable that is specifically assigned a model class on construction and is guaranteed to always

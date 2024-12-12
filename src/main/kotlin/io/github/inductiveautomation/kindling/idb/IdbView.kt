@@ -11,6 +11,7 @@ import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
 import io.github.inductiveautomation.kindling.idb.tagconfig.TagConfigView
+import io.github.inductiveautomation.kindling.log.LogFile
 import io.github.inductiveautomation.kindling.log.SystemLogPanel
 import io.github.inductiveautomation.kindling.log.SystemLogPanel.Companion.parseLogs
 import io.github.inductiveautomation.kindling.utils.FileFilter
@@ -155,7 +156,9 @@ private enum class MultiIdbTool : IdbTool {
             val paths = fileData.map { it.path }
 
             val logFiles = fileData.map { (_, connection, _) ->
-                connection.parseLogs().also { connection.close() }
+                LogFile(
+                    connection.parseLogs().also { connection.close() },
+                )
             }
 
             return SystemLogPanel(paths, logFiles)

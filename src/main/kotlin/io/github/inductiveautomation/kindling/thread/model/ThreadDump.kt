@@ -2,10 +2,12 @@ package io.github.inductiveautomation.kindling.thread.model
 
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
+import io.github.inductiveautomation.kindling.utils.FileFilterableCollection
 import io.github.inductiveautomation.kindling.utils.getValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.lang.Thread.State as ThreadState
@@ -17,7 +19,10 @@ data class ThreadDump internal constructor(
     val threads: List<Thread>,
     @SerialName("deadlocks")
     val deadlockIds: List<Int> = emptyList(),
-) {
+) : FileFilterableCollection<Thread?> {
+    @Transient
+    override val items = threads
+
     companion object {
         private val JSON = Json {
             ignoreUnknownKeys = true

@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.log
 
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
+import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
@@ -8,11 +9,15 @@ import io.github.inductiveautomation.kindling.utils.toMap
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 
 class SystemLogPanel(
     paths: List<Path>,
-    private val fileData: List<LogFile<SystemLogEvent>>,
-) : LogPanel<SystemLogEvent>(fileData.flatten(), SystemLogColumns) {
+    fileData: List<LogFile<SystemLogEvent>>,
+) : LogPanel<SystemLogEvent>(fileData.flatMap { it.items }, SystemLogColumns) {
 
     override val sidebar = FileFilterSidebar(
         listOf(
@@ -44,18 +49,36 @@ class SystemLogPanel(
 
         sidebar.forEach { filterPanel ->
             filterPanel.addFilterChangeListener {
-                if (!sidebar.listModelsAreAdjusting) updateData()
+                if (!sidebar.filterModelsAreAdjusting) updateData()
             }
         }
 
-        sidebar.addFileFilterChangeListener {
-            selectedData = List(fileData.size) { index ->
-                if (sidebar.isSelectedFileIndex(index + 1)) {
-                    fileData[index]
-                } else {
-                    null
-                }
-            }.filterNotNull().flatten()
+        if (paths.size > 1) {
+            sidebar.addFileFilterChangeListener {
+                selectedData = sidebar.selectedFiles.flatMap { it.items }
+            }
+
+            sidebar.registerHighlighters(table)
+        }
+
+        sidebar.configureFileDrop { files ->
+            val newFileData = runBlocking {
+                files.map { path ->
+                    async(Dispatchers.IO) {
+                        val connection = SQLiteConnection(path)
+                        val logFile = LogFile(
+                            connection.parseLogs().also { connection.close() },
+                        )
+                        path to logFile
+                    }
+                }.awaitAll()
+            }
+
+            rawData.addAll(
+                newFileData.flatMap { it.second.items }
+            )
+
+            newFileData.toMap()
         }
     }
 

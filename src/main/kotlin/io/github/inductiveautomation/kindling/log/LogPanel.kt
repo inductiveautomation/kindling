@@ -1,7 +1,6 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import com.jidesoft.utils.SortedList
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
@@ -25,15 +24,8 @@ import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
-import io.github.inductiveautomation.kindling.utils.isSortedBy
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
 import java.util.Vector
 import javax.swing.BorderFactory
@@ -47,26 +39,28 @@ import javax.swing.JSeparator
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
 typealias LogFilter = Filter<LogEvent>
 
-sealed class LogPanel<T : LogEvent> private constructor(
+sealed class LogPanel<T : LogEvent>(
     /**
      * Pass a **sorted** list of LogEvents, in ascending order.
      */
-    protected val rawData: SortedList<T>,
+    rawData: List<T>,
     private val columnList: LogColumnList<T>,
 ) : ToolPanel("ins 0, fill, hidemode 3") {
+    protected val rawData: MutableList<T> = rawData.sortedBy(LogEvent::timestamp).toMutableList()
 
-    // Ensures that the list will always be sorted.
-    constructor(
-        rawData: List<T>,
-        columnList: LogColumnList<T>,
-    ) : this(SortedList(rawData.toMutableList(), compareBy(LogEvent::timestamp)), columnList)
     protected var selectedData: List<T> = rawData
         set(value) {
-            field = SortedList(value.toMutableList(), compareBy(LogEvent::timestamp))
+            field = value.sortedBy(LogEvent::timestamp)
             footer.totalRows = value.size
             updateData()
         }
@@ -74,9 +68,6 @@ sealed class LogPanel<T : LogEvent> private constructor(
     init {
         if (rawData.isEmpty()) {
             throw ToolOpeningException("Opening an empty log file is pointless")
-        }
-        if (!rawData.isSortedBy(LogEvent::timestamp)) {
-            throw ToolOpeningException("Input data must be sorted by timestamp, ascending")
         }
     }
 
@@ -108,7 +99,8 @@ sealed class LogPanel<T : LogEvent> private constructor(
     protected val filters = mutableListOf<Filter<T>>(
         object : Filter<T> {
             override fun filter(item: T): Boolean {
-                return header.markedBehavior.selectedItem != "Only Show Marked" || item.marked
+                return header.markedBehavior.selectedItem != "Only Show Marked"
+                        || item.marked
             }
         },
     )

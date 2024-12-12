@@ -16,9 +16,6 @@ import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.getAncestorOfClass
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXDatePicker
-import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import java.awt.Cursor
 import java.awt.EventQueue
 import java.awt.Insets
@@ -53,6 +50,9 @@ import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
 import kotlin.math.absoluteValue
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXDatePicker
+import org.jdesktop.swingx.renderer.DefaultTableRenderer
 
 internal class TimePanel<T : LogEvent>(
     data: List<T>,
@@ -235,6 +235,12 @@ internal class TimePanel<T : LogEvent>(
             DensityColumns,
         )
 
+        startSelector.range = totalCurrentRange
+        startSelector.defaultValue = lowerBound
+
+        endSelector.range = totalCurrentRange
+        endSelector.defaultValue = upperBound
+
         if (!isFilterApplied) {
             reset()
             return
@@ -288,12 +294,22 @@ private var JXDatePicker.localDate: LocalDate?
     }
 
 class DateTimeSelector(
-    private val initialValue: Instant,
-    private val range: ClosedRange<Instant>,
+    var defaultValue: Instant,
+    initialRange: ClosedRange<Instant>,
 ) : JPanel(MigLayout("ins 0")) {
-    private val initialZonedTime = initialValue.atZone(LogViewer.SelectedTimeZone.currentValue)
+    var range: ClosedRange<Instant> = initialRange
+        set(value) {
+            field = value
+            datePicker.monthView.apply {
+                lowerBound = Date.from(value.start)
+                upperBound = Date.from(value.endInclusive)
+            }
+        }
 
-    private var datePicker =
+    private val initialZonedTime: ZonedDateTime
+        get() = defaultValue.atZone(LogViewer.SelectedTimeZone.currentValue)
+
+    private val datePicker =
         JXDatePicker().apply {
             localDate = initialZonedTime.toLocalDate()
             editor.horizontalAlignment = SwingConstants.CENTER
@@ -315,25 +331,24 @@ class DateTimeSelector(
             }
         }
 
-    private val timeSelector =
-        TimeSelector().apply {
-            localTime = initialZonedTime.toLocalTime()
-            addPropertyChangeListener("localTime") {
-                firePropertyChange("time", null, time)
-            }
+    private val timeSelector = TimeSelector().apply {
+        localTime = initialZonedTime.toLocalTime()
+        addPropertyChangeListener("localTime") {
+            firePropertyChange("time", null, time)
         }
+    }
 
     var time: Instant
         get() {
             val localDate = datePicker.localDate
             return if (localDate == null) {
-                initialValue
+                defaultValue
             } else {
                 ZonedDateTime.of(
                     localDate,
                     timeSelector.localTime,
                     LogViewer.SelectedTimeZone.currentValue,
-                ).toInstant() ?: initialValue
+                ).toInstant() ?: defaultValue
             }
         }
         set(value) {

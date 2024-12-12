@@ -1,9 +1,12 @@
 package io.github.inductiveautomation.kindling.log
 
+import io.github.inductiveautomation.kindling.utils.FileFilterableCollection
 import io.github.inductiveautomation.kindling.utils.StackTrace
 import java.time.Instant
 
-typealias LogFile<T> = List<T>
+data class LogFile<T : LogEvent>(
+    override val items: List<T>,
+) : FileFilterableCollection<T>
 
 sealed interface LogEvent {
     var marked: Boolean

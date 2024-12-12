@@ -16,14 +16,6 @@ import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.render
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
-import org.jdesktop.swingx.JXTextField
 import java.awt.Image
 import java.net.URI
 import java.nio.charset.Charset
@@ -37,6 +29,14 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
+import org.jdesktop.swingx.JXTextField
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
 
 data object Kindling {
@@ -146,6 +146,14 @@ data object Kindling {
                 },
             )
 
+            val HighlightByDefault = preference(
+                name = "Highlight",
+                default = true,
+                editor = {
+                    PreferenceCheckbox("Enable table highlighting by default for multiple log files.")
+                }
+            )
+
             override val displayName: String = "General"
             override val serialKey: String = "general"
             override val preferences: List<Preference<*>> = listOf(
@@ -154,6 +162,7 @@ data object Kindling {
                 ShowFullLoggerNames,
                 ShowLogTree,
                 UseHyperlinks,
+                HighlightByDefault,
             )
         }
 

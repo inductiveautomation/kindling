@@ -21,6 +21,7 @@ import io.github.inductiveautomation.kindling.thread.model.ThreadModel
 import io.github.inductiveautomation.kindling.thread.model.ThreadModel.MultiThreadColumns
 import io.github.inductiveautomation.kindling.thread.model.ThreadModel.SingleThreadColumns
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.ColorHighlighter
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FileFilter
@@ -35,12 +36,6 @@ import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import io.github.inductiveautomation.kindling.utils.transferTo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.decorator.ColorHighlighter
-import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
 import java.awt.Rectangle
 import java.nio.file.Files
@@ -56,6 +51,11 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 
 class MultiThreadView(
     val paths: List<Path>,
@@ -75,7 +75,7 @@ class MultiThreadView(
             systemPanel,
             poolPanel,
         ),
-        fileData = paths.zip(threadDumps.map { it.threads }).toMap(),
+        fileData = paths.zip(threadDumps).toMap(),
     )
 
     private var visibleThreadDumps: List<ThreadDump?> = emptyList()
@@ -124,14 +124,13 @@ class MultiThreadView(
 
             addHighlighter(
                 ColorHighlighter(
-                    { _, adapter ->
-                        threadDumps.any { threadDump ->
-                            model[adapter.row, model.columns.id] in threadDump.deadlockIds
-                        }
-                    },
                     UIManager.getColor("Actions.Red"),
                     null,
-                ),
+                ) { _, adapter ->
+                    threadDumps.any { threadDump ->
+                        model[adapter.row, model.columns.id] in threadDump.deadlockIds
+                    }
+                },
             )
 
             fun toggleMarkAllWithSameValue(property: Column<ThreadLifespan, *>) {
@@ -318,7 +317,7 @@ class MultiThreadView(
 
         sidebar.forEach { panel ->
             panel.addFilterChangeListener {
-                if (!sidebar.listModelsAreAdjusting) updateData()
+                if (!sidebar.filterModelsAreAdjusting) updateData()
             }
         }
 
@@ -327,12 +326,9 @@ class MultiThreadView(
         }
 
         sidebar.addFileFilterChangeListener {
-            visibleThreadDumps = List(threadDumps.size) { i ->
-                if (sidebar.isSelectedFileIndex(i + 1)) {
-                    threadDumps[i]
-                } else {
-                    null
-                }
+            val selectedFiles = sidebar.selectedFiles
+            visibleThreadDumps = threadDumps.map {
+                if (it in selectedFiles) it else null
             }
         }
 
