@@ -163,7 +163,7 @@ class WrapperLogParsingTests : FunSpec(
 ) {
     companion object {
         fun parse(logs: String): List<WrapperLogEvent> {
-            return WrapperLogView.parseLogs(logs.trimIndent().lineSequence())
+            return WrapperLogPanel.parseLogs(logs.trimIndent().lineSequence())
         }
     }
 }

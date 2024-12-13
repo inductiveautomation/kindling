@@ -1,7 +1,12 @@
 package io.github.inductiveautomation.kindling.log
 
+import io.github.inductiveautomation.kindling.utils.FileFilterableCollection
 import io.github.inductiveautomation.kindling.utils.StackTrace
 import java.time.Instant
+
+data class LogFile<T : LogEvent>(
+    override val items: List<T>,
+) : FileFilterableCollection<T>
 
 sealed interface LogEvent {
     var marked: Boolean
@@ -43,7 +48,7 @@ data class SystemLogEvent(
     override var marked: Boolean = false,
 ) : LogEvent
 
-@Suppress("ktlint:trailing-comma-on-declaration-site")
+@Suppress("ktlint:standard:trailing-comma-on-declaration-site")
 enum class Level {
     TRACE,
     DEBUG,

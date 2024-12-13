@@ -1,7 +1,6 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import com.jidesoft.swing.CheckBoxList
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
@@ -10,6 +9,7 @@ import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ButtonPanel
 import io.github.inductiveautomation.kindling.utils.Column
+import io.github.inductiveautomation.kindling.utils.FileFilterResponsive
 import io.github.inductiveautomation.kindling.utils.FilterList
 import io.github.inductiveautomation.kindling.utils.FilterModel
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -20,6 +20,7 @@ import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.collapseAll
 import io.github.inductiveautomation.kindling.utils.expandAll
 import io.github.inductiveautomation.kindling.utils.getAll
+import io.github.inductiveautomation.kindling.utils.isAllSelected
 import io.github.inductiveautomation.kindling.utils.selectAll
 import net.miginfocom.swing.MigLayout
 import javax.swing.JButton
@@ -28,11 +29,13 @@ import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
+import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
 
-class LoggerNamePanel(private val rawData: List<LogEvent>) :
-    FilterPanel<LogEvent>(),
-    PopupMenuCustomizer {
+class LoggerNamePanel<T : LogEvent>(private val rawData: List<T>) :
+    FilterPanel<T>(),
+    PopupMenuCustomizer,
+    FileFilterResponsive<T> {
     private val isTreeAvailable = rawData.first() is SystemLogEvent
 
     private var isTreeMode: Boolean = ShowLogTree.currentValue && isTreeAvailable
@@ -51,12 +54,7 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) :
     private var isContextChanging: Boolean = false
 
     private val filterList = FilterList(toStringFn = ::getSortKey).apply {
-        setModel(
-            FilterModel(
-                rawData.groupingBy(LogEvent::logger).eachCount(),
-                ::getSortKey,
-            ),
-        )
+        setModel(FilterModel.fromRawData(rawData, comparator, ::getSortKey, LogEvent::logger))
         selectAll()
 
         // Right clicking will check and uncheck an item. We don't want that for this list.
@@ -113,7 +111,46 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) :
 
     private var selectedTreeNodes: Set<String> = emptySet()
 
-    override fun filter(item: LogEvent): Boolean = if (isTreeMode) {
+    @Suppress("unchecked_cast")
+    override fun setModelData(data: List<T>) {
+        if (isTreeAvailable && isTreeMode) {
+            val allSelected = filterTree.checkBoxTreeSelectionModel.isRowSelected(0)
+
+            val previousExpandedPaths = (0..<filterTree.rowCount).mapNotNull { i ->
+                if (filterTree.isExpanded(i)) {
+                    (filterTree.getPathForRow(i).lastPathComponent as? LogEventNode)?.name
+                } else {
+                    null
+                }
+            }
+
+            if (allSelected) {
+                filterTree.model = DefaultTreeModel(RootNode(data as List<SystemLogEvent>))
+                filterTree.selectAll()
+            } else {
+                val previousSelection = filterTree.checkBoxTreeSelectionModel.selectionPaths.map {
+                    (it.lastPathComponent as LogEventNode).name
+                }
+
+                filterTree.model = DefaultTreeModel(RootNode(data as List<SystemLogEvent>))
+
+                val newSelection = previousSelection.mapNotNull {
+                    filterTree.pathFromLogger(it)
+                }.toTypedArray()
+
+                filterTree.checkBoxTreeSelectionModel.selectionPaths = newSelection
+            }
+
+            val newExpandedPaths = previousExpandedPaths.map {
+                filterTree.pathFromLogger(it)
+            }.distinct()
+
+            newExpandedPaths.forEach(filterTree::expandPath)
+        }
+        filterList.model = FilterModel.fromRawData(data, filterList.comparator) { it.logger }
+    }
+
+    override fun filter(item: T): Boolean = if (isTreeMode) {
         item.logger in selectedTreeNodes
     } else {
         item.logger in filterList.checkBoxListSelectedValues
@@ -124,7 +161,7 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) :
     override fun isFilterApplied(): Boolean = if (isTreeMode) {
         !filterTree.checkBoxTreeSelectionModel.isRowSelected(0)
     } else {
-        filterList.checkBoxListSelectedValues.singleOrNull() != CheckBoxList.ALL_ENTRY
+        !filterList.checkBoxListSelectionModel.isAllSelected()
     }
 
     private val mainListComponent = ButtonPanel(sortButtons).apply {
@@ -173,11 +210,11 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) :
         }
     }
 
-    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out LogEvent, *>, event: LogEvent) {
+    override fun customizePopupMenu(menu: JPopupMenu, column: Column<out T, *>, event: T) {
         if (isTreeMode) {
             menu.add(
                 Action("Focus in Tree") {
-                    val treePath = filterTree.pathFromLogger(event.logger)
+                    val treePath = filterTree.pathFromLogger(event.logger) ?: return@Action
 
                     filterTree.apply {
                         selectionModel.clearSelection()
@@ -228,10 +265,8 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) :
                 return
             }
 
-            val currentSelection = filterList.checkBoxListSelectionModel.selectedIndices.let { indices ->
-                indices.map {
-                    filterList.model.getElementAt(it) as String
-                }
+            val currentSelection = filterList.checkBoxListSelectionModel.selectedIndices.map {
+                filterList.model.getElementAt(it) as String
             }
 
             val treePaths = currentSelection.map { filterTree.pathFromLogger(it) }
@@ -258,21 +293,27 @@ class LoggerNamePanel(private val rawData: List<LogEvent>) :
         private val expandIcon = FlatSVGIcon("icons/bx-expand-vertical.svg").asActionIcon()
         private val collapseIcon = FlatSVGIcon("icons/bx-collapse-vertical.svg").asActionIcon()
 
-        // It's a shame that there's no easier way to do this.
-        private fun LogTree.pathFromLogger(logger: String): TreePath {
+        /*
+         * return a TreePath given a fully qualified logger name.
+         * Returns null if the logger does not exist in the tree model.
+         */
+        private fun LogTree.pathFromLogger(logger: String): TreePath? {
             val loggerParts = logger.split(".")
             val selectedPath = mutableListOf(model.root as AbstractTreeNode)
             var currentNode = selectedPath.first()
 
             for (part in loggerParts) {
+                var foundChild = false
                 for (child in currentNode.children) {
                     child as LogEventNode
                     if (child.userObject.last() == part) {
                         selectedPath.add(child)
                         currentNode = child
+                        foundChild = true
                         break
                     }
                 }
+                if (!foundChild) return null
             }
 
             return TreePath(selectedPath.toTypedArray())

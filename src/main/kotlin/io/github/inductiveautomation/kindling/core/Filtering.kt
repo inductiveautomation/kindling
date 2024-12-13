@@ -8,7 +8,7 @@ import javax.swing.JComponent
 import javax.swing.JPopupMenu
 import javax.swing.event.EventListenerList
 
-fun interface Filter<T> {
+fun interface Filter<in T> {
     /**
      * Return true if this filter should display this item.
      */

@@ -24,7 +24,6 @@ import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
-import io.github.inductiveautomation.kindling.utils.isSortedBy
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +32,7 @@ import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
+import java.awt.BorderLayout
 import java.util.Vector
 import javax.swing.BorderFactory
 import javax.swing.Icon
@@ -49,32 +49,31 @@ import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
 typealias LogFilter = Filter<LogEvent>
 
-class LogPanel(
+sealed class LogPanel<T : LogEvent>(
     /**
      * Pass a **sorted** list of LogEvents, in ascending order.
      */
-    private val rawData: List<LogEvent>,
+    rawData: List<T>,
+    private val columnList: LogColumnList<T>,
 ) : ToolPanel("ins 0, fill, hidemode 3") {
+    protected val rawData: MutableList<T> = rawData.sortedBy(LogEvent::timestamp).toMutableList()
+
+    protected var selectedData: List<T> = rawData
+        set(value) {
+            field = value.sortedBy(LogEvent::timestamp)
+            footer.totalRows = value.size
+            updateData()
+        }
+
     init {
         if (rawData.isEmpty()) {
             throw ToolOpeningException("Opening an empty log file is pointless")
         }
-        if (!rawData.isSortedBy(LogEvent::timestamp)) {
-            throw ToolOpeningException("Input data must be sorted by timestamp, ascending")
-        }
     }
 
-    private val totalRows: Int = rawData.size
+    protected val header = Header()
 
-    private val header = Header()
-
-    private val footer = Footer(totalRows)
-
-    private val columnList = if (rawData.first() is SystemLogEvent) {
-        SystemLogColumns
-    } else {
-        WrapperLogColumns
-    }
+    private val footer = Footer(selectedData.size)
 
     val table = run {
         val initialModel = createModel(rawData)
@@ -85,69 +84,33 @@ class LogPanel(
 
     private val tableScrollPane = FlatScrollPane(table)
 
-    private val sidebar = FilterSidebar(
-        LoggerNamePanel(rawData),
-        LevelPanel(rawData),
-        if (rawData.first() is SystemLogEvent) {
-            @Suppress("UNCHECKED_CAST")
-            MDCPanel(rawData as List<SystemLogEvent>)
-        } else {
-            null
-        },
-        if (rawData.first() is SystemLogEvent) {
-            @Suppress("UNCHECKED_CAST")
-            ThreadPanel(rawData as List<SystemLogEvent>)
-        } else {
-            null
-        },
-        TimePanel(
-            rawData,
-        ),
-    )
+    abstract val sidebar: FilterSidebar<T>
+
+    private val sidebarContainer = JPanel(BorderLayout())
+
+    protected fun addSidebar(sidebar: FilterSidebar<T>) {
+        sidebarContainer.add(sidebar, BorderLayout.CENTER)
+
+        filters.addAll(sidebar)
+    }
 
     private val details = DetailsPane()
 
-    private val filters: List<LogFilter> = buildList {
-        for (panel in sidebar.filterPanels) {
-            add { event ->
-                panel.filter(event) ||
-                    (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
+    protected val filters = mutableListOf<Filter<T>>(
+        object : Filter<T> {
+            override fun filter(item: T): Boolean {
+                return header.markedBehavior.selectedItem != "Only Show Marked" ||
+                    item.marked
             }
-        }
-        add { event ->
-            header.markedBehavior.selectedItem != "Only Show Marked" || event.marked
-        }
-        add { event ->
-            val text = header.search.text
-            if (text.isNullOrEmpty()) {
-                true
-            } else {
-                when (event) {
-                    is SystemLogEvent -> {
-                        text in event.message ||
-                            event.logger.contains(text, ignoreCase = true) ||
-                            event.thread.contains(text, ignoreCase = true) ||
-                            event.stacktrace.any { stacktrace ->
-                                stacktrace.contains(text, ignoreCase = true)
-                            } ||
-                            (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
-                    }
-
-                    is WrapperLogEvent -> {
-                        text in event.message ||
-                            event.logger.contains(text, ignoreCase = true) ||
-                            event.stacktrace.any { stacktrace -> stacktrace.contains(text, ignoreCase = true) } ||
-                            (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
-                    }
-                }
-            }
-        }
-    }
+        },
+    )
 
     private val dataUpdater = debounce(50.milliseconds, BACKGROUND) {
         val selectedEvents = table.selectedRowIndices().map { row -> table.model[row].hashCode() }
-        val filteredData = rawData.filter { event ->
-            filters.all { filter -> filter.filter(event) }
+        val filteredData = selectedData.filter { event ->
+            filters.all { filter ->
+                filter.filter(event)
+            } || (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
         }
 
         EDT_SCOPE.launch {
@@ -166,26 +129,69 @@ class LogPanel(
         }
     }
 
-    private fun updateData() = dataUpdater()
+    protected fun updateData() = dataUpdater()
 
     fun reset() {
-        sidebar.filterPanels.forEach(FilterPanel<LogEvent>::reset)
+        sidebar.forEach(FilterPanel<*>::reset)
         header.search.text = null
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun createModel(rawData: List<LogEvent>): LogsModel<out LogEvent> = when (columnList) {
-        is WrapperLogColumns -> LogsModel(rawData as List<WrapperLogEvent>, columnList)
-        is SystemLogColumns -> LogsModel(rawData as List<SystemLogEvent>, columnList)
+    private fun createModel(rawData: List<T>): LogsModel<out T> = LogsModel(rawData, columnList)
+
+    override val icon: Icon = LogViewer.icon
+
+    private fun getNextMarkedIndex(): Int {
+        val currentSelectionIndex = table.selectionModel.selectedIndices?.lastOrNull() ?: 0
+        val markedEvents = table.model.data
+            .filter { it.marked }
+            .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
+        val rowIndex = when (markedEvents.size) {
+            0 -> -1
+            1 -> table.model.data.indexOf(markedEvents.first())
+            else -> {
+                val nextMarkedEvent =
+                    markedEvents.firstOrNull { event ->
+                        table.convertRowIndexToView(table.model.data.indexOf(event)) > currentSelectionIndex
+                    }
+                if (nextMarkedEvent == null) {
+                    table.model.data.indexOf(markedEvents.first())
+                } else {
+                    table.model.data.indexOf(nextMarkedEvent)
+                }
+            }
+        }
+        return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
     }
 
-    override val icon: Icon? = null
+    private fun getPrevMarkedIndex(): Int {
+        val currentSelectionIndex = table.selectionModel.selectedIndices?.firstOrNull() ?: 0
+        val markedEvents = table.model.data
+            .filter { it.marked }
+            .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
+        val rowIndex = when (markedEvents.size) {
+            0 -> -1
+            1 -> table.model.data.indexOf(markedEvents.first())
+            else -> {
+                val prevMarkedEvent =
+                    markedEvents.lastOrNull { event ->
+                        table.convertRowIndexToView(table.model.data.indexOf(event)) < currentSelectionIndex
+                    }
+                if (prevMarkedEvent == null) {
+                    table.model.data.indexOf(markedEvents.last())
+                } else {
+                    table.model.data.indexOf(prevMarkedEvent)
+                }
+            }
+        }
+        return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
+    }
 
     init {
+        @Suppress("LeakingThis")
         add(
             VerticalSplitPane(
                 HorizontalSplitPane(
-                    sidebar,
+                    sidebarContainer,
                     JPanel(MigLayout("ins 0, fill")).apply {
                         add(header, "wrap, growx")
                         add(tableScrollPane, "grow, push")
@@ -196,6 +202,7 @@ class LogPanel(
             ),
             "wrap, push, grow",
         )
+        @Suppress("LeakingThis")
         add(footer, "growx, spanx 2")
 
         table.apply {
@@ -227,7 +234,7 @@ class LogPanel(
                     JPopupMenu().apply {
                         val column = model.columns[convertColumnIndexToModel(colAtPoint)]
                         val event = model[convertRowIndexToModel(rowAtPoint)]
-                        for (filterPanel in sidebar.filterPanels) {
+                        for (filterPanel in sidebar) {
                             filterPanel.customizePopupMenu(this, column, event)
                         }
 
@@ -271,52 +278,6 @@ class LogPanel(
             }
         }
 
-        fun getNextMarkedIndex(): Int {
-            val currentSelectionIndex = table.selectionModel.selectedIndices?.lastOrNull() ?: 0
-            val markedEvents = table.model.data
-                .filter { it.marked }
-                .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
-            val rowIndex = when (markedEvents.size) {
-                0 -> -1
-                1 -> table.model.data.indexOf(markedEvents.first())
-                else -> {
-                    val nextMarkedEvent =
-                        markedEvents.firstOrNull { event ->
-                            table.convertRowIndexToView(table.model.data.indexOf(event)) > currentSelectionIndex
-                        }
-                    if (nextMarkedEvent == null) {
-                        table.model.data.indexOf(markedEvents.first())
-                    } else {
-                        table.model.data.indexOf(nextMarkedEvent)
-                    }
-                }
-            }
-            return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
-        }
-
-        fun getPrevMarkedIndex(): Int {
-            val currentSelectionIndex = table.selectionModel.selectedIndices?.firstOrNull() ?: 0
-            val markedEvents = table.model.data
-                .filter { it.marked }
-                .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
-            val rowIndex = when (markedEvents.size) {
-                0 -> -1
-                1 -> table.model.data.indexOf(markedEvents.first())
-                else -> {
-                    val prevMarkedEvent =
-                        markedEvents.lastOrNull { event ->
-                            table.convertRowIndexToView(table.model.data.indexOf(event)) < currentSelectionIndex
-                        }
-                    if (prevMarkedEvent == null) {
-                        table.model.data.indexOf(markedEvents.last())
-                    } else {
-                        table.model.data.indexOf(prevMarkedEvent)
-                    }
-                }
-            }
-            return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
-        }
-
         header.apply {
             search.addActionListener {
                 updateData()
@@ -350,10 +311,6 @@ class LogPanel(
             }
         }
 
-        sidebar.filterPanels.forEach { filterPanel ->
-            filterPanel.addFilterChangeListener(::updateData)
-        }
-
         ShowFullLoggerNames.addChangeListener {
             table.model.fireTableDataChanged()
         }
@@ -366,6 +323,12 @@ class LogPanel(
         LogViewer.SelectedTimeZone.addChangeListener {
             table.model.fireTableDataChanged()
         }
+    }
+
+    override fun customizePopupMenu(menu: JPopupMenu) {
+        menu.add(
+            exportMenu { table.model },
+        )
     }
 
     private fun ListSelectionModel.updateDetails() {
@@ -389,13 +352,13 @@ class LogPanel(
                         },
                         details = when (event) {
                             is SystemLogEvent -> event.mdc.associate { (key, value) -> key to value }
-                            is WrapperLogEvent -> emptyMap()
+                            else -> emptyMap()
                         },
                     )
                 }
     }
 
-    private class Header : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
+    protected class Header : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
         val search = JXSearchField("")
 
         val version: JComboBox<MajorVersion> =
@@ -407,7 +370,7 @@ class LogPanel(
             }
         private val versionLabel = JLabel("Version")
 
-        val versionPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
+        private val versionPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
             border = BorderFactory.createTitledBorder("Stacktrace Links")
             add(versionLabel)
             add(version, "growy")
@@ -424,7 +387,7 @@ class LogPanel(
         }
         val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Always Show Marked"))
 
-        val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
+        private val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
             border = BorderFactory.createTitledBorder("Marking")
             add(prevMarked)
             add(nextMarked)
@@ -432,7 +395,7 @@ class LogPanel(
             add(clearMarked)
         }
 
-        val searchPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
+        private val searchPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
             border = BorderFactory.createTitledBorder("Search")
             add(search, "grow")
         }
@@ -453,12 +416,19 @@ class LogPanel(
         }
     }
 
-    private class Footer(val totalRows: Int) : JPanel(MigLayout("ins 2 4 0 4, fill, gap 10")) {
+    private class Footer(totalRows: Int) : JPanel(MigLayout("ins 2 4 0 4, fill, gap 10")) {
         var displayedRows = totalRows
             set(value) {
                 field = value
                 events.text = "Showing $value of $totalRows events"
             }
+
+        var totalRows: Int = totalRows
+            set(value) {
+                field = value
+                events.text = "Showing $displayedRows of $value events"
+            }
+
         var selectedRows: IntRange? = null
             set(value) {
                 field = value

@@ -7,22 +7,18 @@ import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider
+import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.StringProvider
 import io.github.inductiveautomation.kindling.utils.asActionIcon
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import org.jdesktop.swingx.renderer.StringValues
 import java.time.Instant
-import javax.swing.table.AbstractTableModel
 
 class LogsModel<T : LogEvent>(
-    val data: List<T>,
-    val columns: LogColumnList<T>,
-) : AbstractTableModel() {
-    override fun getColumnName(column: Int): String = columns[column].header
-    override fun getRowCount(): Int = data.size
-    override fun getColumnCount(): Int = columns.size
-    override fun getValueAt(row: Int, column: Int): Any? = get(row, columns[column])
-    override fun getColumnClass(column: Int): Class<*> = columns[column].clazz
+    data: List<T>,
+    override val columns: LogColumnList<T>,
+) : ReifiedListTableModel<T>(data, columns) {
+
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
         return columnIndex == markIndex
     }
@@ -33,13 +29,6 @@ class LogsModel<T : LogEvent>(
             is WrapperLogColumns -> WrapperLogColumns.Marked
         },
     ]
-
-    operator fun get(row: Int): T = data[row]
-    operator fun <R> get(row: Int, column: Column<T, R>): R? {
-        return data.getOrNull(row)?.let { event ->
-            column.getValue(event)
-        }
-    }
 
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
         require(isCellEditable(rowIndex, columnIndex))
