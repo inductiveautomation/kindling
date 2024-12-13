@@ -24,7 +24,9 @@ import javax.swing.JPopupMenu
 import javax.swing.JTextField
 import javax.swing.UIManager
 import javax.swing.event.TableModelEvent
+import javax.swing.event.TableModelListener
 import kotlin.io.path.div
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A Filter Sidebar which automatically manages its filters by setting the models appropriately.
@@ -35,7 +37,7 @@ import kotlin.io.path.div
 class FileFilterSidebar<T> private constructor(
     initialPanels: List<FilterPanel<T>?>,
     initialFileData: Map<Path, FileFilterableCollection<T>>,
-) : FilterSidebar<T>(initialPanels.filterNotNull()) {
+) : FilterSidebar<T>(initialPanels.filterNotNull()), TableModelListener {
     private val filePanel = FileFilterPanel(initialFileData)
 
     private val highlighters = mutableMapOf<FileFilterableCollection<T>, ColorHighlighter>()
@@ -64,28 +66,34 @@ class FileFilterSidebar<T> private constructor(
                 filePanel.formattedTabName,
             )
 
-            filePanel.table.model.addTableModelListener {
-                if (it.column == filePanel.table.model.columns[filePanel.table.model.columns.Show] ||
-                    it.type == TableModelEvent.INSERT
-                ) {
-                    filterModelsAreAdjusting = true
+            filePanel.table.model.addTableModelListener(this)
+        }
+    }
 
-                    val selectedData = selectedFiles.flatMap { f -> f.items }
-                    if (selectedData.isNotEmpty()) {
-                        for (panel in this) {
-                            @Suppress("unchecked_cast")
-                            (panel as? FileFilterResponsive<T>)?.setModelData(selectedData)
-                        }
-                    }
-                    filterModelsAreAdjusting = false
+    override fun tableChanged(e: TableModelEvent?) = with(filePanel.table.model) {
+        if (e?.column == columns[columns.Show] || e?.type == TableModelEvent.INSERT) {
+            println("Event fired: ${e?.type == TableModelEvent.UPDATE}")
+            update.invoke()
+        }
+    }
 
-                    filePanel.updateTabState()
+    private val update = debounce(400.milliseconds, EDT_SCOPE) {
+        println("Running update")
+        filterModelsAreAdjusting = true
 
-                    // Fire the "external" listeners.
-                    listenerList.getAll<FileFilterChangeListener>().forEach { e -> e.fileFilterChanged() }
-                }
+        val selectedData = selectedFiles.flatMap { f -> f.items }
+        if (selectedData.isNotEmpty()) {
+            for (panel in this) {
+                @Suppress("unchecked_cast")
+                (panel as? FileFilterResponsive<T>)?.setModelData(selectedData)
             }
         }
+        filterModelsAreAdjusting = false
+
+        filePanel.updateTabState()
+
+        // Fire the "external" listeners.
+        listenerList.getAll<FileFilterChangeListener>().forEach { e -> e.fileFilterChanged() }
     }
 
     /**
