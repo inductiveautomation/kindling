@@ -14,6 +14,7 @@ import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JTree
 import javax.swing.ListCellRenderer
+import javax.swing.UIManager
 import javax.swing.plaf.basic.BasicComboBoxRenderer
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.TreeCellRenderer
@@ -32,7 +33,6 @@ class ReifiedLabelProvider<T : Any>(
     override fun createRendererComponent(): JLabel = JRendererLabel()
 
     override fun configureState(context: CellContext) {
-        // TODO - Color icon when selected
         rendererComponent.horizontalAlignment = horizontalAlignment
     }
 
@@ -40,7 +40,11 @@ class ReifiedLabelProvider<T : Any>(
         rendererComponent.apply {
             val value = valueClass.safeCast(context.value)
             text = getText(value)
-            icon = getIcon(value)
+            val icon = getIcon(value)
+            if (icon is FlatSVGIcon && context.isSelected) {
+                icon.colorFilter = FlatSVGIcon.ColorFilter { UIManager.getColor("Tree.selectionForeground") }
+            }
+            this.icon = icon
             toolTipText = getTooltip(value)
         }
     }
