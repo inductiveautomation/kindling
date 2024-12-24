@@ -1,7 +1,9 @@
 package io.github.inductiveautomation.kindling.log
 
+import io.github.inductiveautomation.kindling.idb.IdbView
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
+import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
@@ -10,9 +12,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import java.awt.Container
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
+import javax.swing.SwingUtilities
 
 class SystemLogPanel(
     paths: List<Path>,
@@ -56,6 +60,18 @@ class SystemLogPanel(
         if (paths.size > 1) {
             sidebar.addFileFilterChangeListener {
                 selectedData = sidebar.selectedFiles.flatMap { it.items }
+
+                // Since this toolPanel is not a direct child of MainPanel's tabstrip, this is what must be done.
+
+                val mainTabbedPane = SwingUtilities.getAncestorNamed("MainTabStrip", this) as? TabStrip
+                val parentToolPanel: Container? = SwingUtilities.getAncestorOfClass(IdbView::class.java, this)
+
+                if (mainTabbedPane != null && parentToolPanel != null) {
+                    val index = mainTabbedPane.indexOfComponent(parentToolPanel)
+
+                    mainTabbedPane.setTitleAt(index, "System Logs [${sidebar.allData.size}]")
+                    mainTabbedPane.setToolTipTextAt(index, sidebar.allData.keys.joinToString("\n"))
+                }
             }
 
             sidebar.registerHighlighters(table)

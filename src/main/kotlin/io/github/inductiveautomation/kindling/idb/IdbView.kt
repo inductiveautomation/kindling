@@ -54,7 +54,7 @@ class IdbView(paths: List<Path>) : ToolPanel() {
             if (IdbViewer.ShowGenericViewWithMultiTools.currentValue || paths.size == 1) {
                 for ((path, connection, _) in data) {
                     tabs.addTab(
-                        tabName = "Tables: $path",
+                        tabName = path.name,
                         component = GenericView(connection),
                         tabTooltip = null,
                         select = true,

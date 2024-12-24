@@ -1,31 +1,41 @@
 package io.github.inductiveautomation.kindling.utils
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.util.SystemInfo
+import io.github.inductiveautomation.kindling.core.CustomIconView
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
+import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.internal.FileTransferHandler
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
-import org.jdesktop.swingx.renderer.StringValues
 import java.awt.Color
+import java.awt.Cursor
+import java.awt.Desktop
+import java.awt.EventQueue
+import java.awt.event.MouseEvent
+import java.awt.event.MouseMotionAdapter
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.EventListener
 import java.util.IdentityHashMap
-import javax.swing.DefaultCellEditor
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JComponent
+import javax.swing.JFileChooser
 import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JTextField
 import javax.swing.UIManager
 import javax.swing.event.TableModelEvent
 import javax.swing.event.TableModelListener
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
+import kotlin.io.path.name
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -40,12 +50,17 @@ class FileFilterSidebar<T> private constructor(
 ) : FilterSidebar<T>(initialPanels.filterNotNull()), TableModelListener {
     private val filePanel = FileFilterPanel(initialFileData)
 
+    private lateinit var fileChooser: JFileChooser
+
     private val highlighters = mutableMapOf<FileFilterableCollection<T>, ColorHighlighter>()
 
     var filterModelsAreAdjusting = false
         private set
 
     val selectedFiles by filePanel::selectedFiles
+
+    val allData: Map<Path, FileFilterableCollection<T>>
+        get() = filePanel.table.model.data.associate { it.path to it.filterableCollection }
 
     init {
         val initialData = initialFileData.values.flatMap { it.items }
@@ -68,17 +83,42 @@ class FileFilterSidebar<T> private constructor(
 
             filePanel.table.model.addTableModelListener(this)
         }
+
+        attachPopupMenu { event ->
+            val tabIndex = indexAtLocation(event.x, event.y)
+            if (getComponentAt(tabIndex) !== filePanel.component) return@attachPopupMenu null
+
+            JPopupMenu().apply {
+                add(
+                    Action("Reset") {
+                        filePanel.reset()
+                    },
+                )
+            }
+        }
+    }
+
+    private var selectedFileIndices = filePanel.table.model.data.mapIndexedNotNull { index, item ->
+        if (item.show) index else null
     }
 
     override fun tableChanged(e: TableModelEvent?) = with(filePanel.table.model) {
         if (e?.column == columns[columns.Show] || e?.type == TableModelEvent.INSERT) {
-            println("Event fired: ${e?.type == TableModelEvent.UPDATE}")
             update.invoke()
         }
     }
 
     private val update = debounce(400.milliseconds, EDT_SCOPE) {
-        println("Running update")
+        val newSelectedIndices = filePanel.table.model.data.mapIndexedNotNull { index, item ->
+            if (item.show) index else null
+        }
+
+        if (newSelectedIndices == selectedFileIndices) {
+            return@debounce
+        } else {
+            selectedFileIndices = newSelectedIndices
+        }
+
         filterModelsAreAdjusting = true
 
         val selectedData = selectedFiles.flatMap { f -> f.items }
@@ -104,15 +144,9 @@ class FileFilterSidebar<T> private constructor(
     fun registerHighlighters(table: ReifiedJXTable<out ReifiedListTableModel<out T>>) {
         highlighters.clear()
 
-        if (filePanel.enableHighlightCheckbox.isSelected) {
-            filePanel.table.getColumnExt(filePanel.table.model.columns.Color).isVisible = true
-        }
-
-        val fileColors = filePanel.table.model.data.associate { it.filterableCollection to it.color }
-
         highlighters.putAll(
-            fileColors.mapValues { (file, color) ->
-                ColorHighlighter(color, null) { _, adapter ->
+            filePanel.table.model.data.associate { (_, file, color, _) ->
+                file to ColorHighlighter(color, null) { _, adapter ->
                     val itemAtRow = table.model[adapter.convertRowIndexToModel(adapter.row)]
                     val itemFile = filePanel.filesByFilterItems[itemAtRow]
                     itemFile === file
@@ -121,6 +155,7 @@ class FileFilterSidebar<T> private constructor(
         )
 
         if (filePanel.enableHighlightCheckbox.isSelected) {
+            filePanel.table.getColumnExt(filePanel.table.model.columns.Color).isVisible = true
             highlighters.values.forEach(table::addHighlighter)
         }
 
@@ -178,26 +213,37 @@ class FileFilterSidebar<T> private constructor(
                 val paths = files.map { it.toPath() }
                 val addedEntries = configure(paths) // Might throw exception
 
-                val startIndex = filePanel.table.model.rowCount
-                val endIndex = startIndex + addedEntries.size - 1
-
-                // Add new data to the table and to the item map
-                filePanel.table.model.data.addAll(
-                    addedEntries.entries.map { (path, file) ->
-                        FileFilterConfigItem(
-                            path = path,
-                            filterableCollection = file,
-                            color = UIManager.getColor("Table.background"),
-                            show = true,
-                        )
-                    },
+                addFileEntries(addedEntries)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Unable to open file:\n${e.message}",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE,
                 )
+            }
+        }
 
-                filePanel.filesByFilterItems.putAll(
-                    addedEntries.entries.flatMap { (_, c) -> c.items.map { it to c } },
-                )
+        filePanel.fileDropButton.addActionListener {
+            if (!::fileChooser.isInitialized) {
+                val firstFile = filePanel.table.model.data.firstOrNull()?.path
+                fileChooser = JFileChooser((firstFile ?: HomeLocation.currentValue).toFile()).apply {
+                    isMultiSelectionEnabled = true
+                    fileView = CustomIconView()
+                }
 
-                filePanel.table.model.fireTableRowsInserted(startIndex, endIndex)
+                if (firstFile != null) {
+                    fileChooser.fileFilter = Tool[firstFile].filter
+                }
+            }
+
+            try {
+                val newEntries = fileChooser.chooseFiles(null)?.map(File::toPath)?.let {
+                    configure(it)
+                }
+
+                if (!newEntries.isNullOrEmpty()) addFileEntries(newEntries)
             } catch (e: Exception) {
                 JOptionPane.showMessageDialog(
                     null,
@@ -207,6 +253,29 @@ class FileFilterSidebar<T> private constructor(
                 )
             }
         }
+    }
+
+    private fun addFileEntries(addedEntries: Map<Path, FileFilterableCollection<T>>) {
+        val startIndex = filePanel.table.model.rowCount
+        val endIndex = startIndex + addedEntries.size - 1
+
+        // Add new data to the table and to the item map
+        filePanel.table.model.data.addAll(
+            addedEntries.entries.map { (path, file) ->
+                FileFilterConfigItem(
+                    path = path,
+                    filterableCollection = file,
+                    color = UIManager.getColor("Table.background"),
+                    show = true,
+                )
+            },
+        )
+
+        filePanel.filesByFilterItems.putAll(
+            addedEntries.entries.flatMap { (_, c) -> c.items.map { it to c } },
+        )
+
+        filePanel.table.model.fireTableRowsInserted(startIndex, endIndex)
     }
 
     /**
@@ -263,6 +332,58 @@ class FileFilterSidebar<T> private constructor(
             getColumnExt(model.columns.Color).isVisible = false
 
             highlighters.forEach(::removeHighlighter)
+
+            addMouseMotionListener(
+                object : MouseMotionAdapter() {
+                    override fun mouseMoved(e: MouseEvent?) {
+                        if (e == null) return
+
+                        val colViewIndex = columnAtPoint(e.point)
+                        val rowIndex = rowAtPoint(e.point)
+                        val colModelIndex = convertColumnIndexToModel(colViewIndex)
+                        val col = model.columns.getOrNull(colModelIndex)
+
+                        cursor = when {
+                            rowIndex < 0 -> Cursor.getDefaultCursor()
+                            col == model.columns.Name -> Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR)
+                            col == model.columns.Color -> Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)
+                            else -> Cursor.getDefaultCursor()
+                        }
+                    }
+                },
+            )
+
+            attachPopupMenu { e ->
+                val rowIndex = rowAtPoint(e.point)
+
+                JPopupMenu().also { menu ->
+                    // Open file Location
+                    if (rowIndex >= 0) {
+                        val desktop = Desktop.getDesktop()
+
+                        if (desktop.isSupported(Desktop.Action.BROWSE_FILE_DIR)) {
+                            val fileBrowserName = when {
+                                SystemInfo.isMacOS -> "Finder"
+                                SystemInfo.isWindows -> "Explorer"
+                                else -> "File Browser"
+                            }
+
+                            menu.add(
+                                Action("Open in $fileBrowserName") {
+                                    desktop.browseFileDirectory(model[rowIndex].path.toFile())
+                                },
+                            )
+                        }
+
+                        menu.add(
+                            Action("Clear Highlight Color") {
+                                model.data[rowIndex].color = null
+                                model.fireTableCellUpdated(rowIndex, model.columns[model.columns.Color])
+                            },
+                        )
+                    }
+                }
+            }
         }
 
         val fileDropButton = JButton("Drop files here.").apply {
@@ -294,7 +415,7 @@ class FileFilterSidebar<T> private constructor(
 
         override fun reset() {
             table.model.data.forEach { it.show = true }
-            table.model.fireTableRowsUpdated(0, table.model.rowCount - 1)
+            table.model.fireTableColumnDataChanged(table.model.columns[table.model.columns.Show])
         }
 
         override fun customizePopupMenu(
@@ -338,7 +459,7 @@ class FileFilterSidebar<T> private constructor(
 internal data class FileFilterConfigItem<T>(
     var path: Path,
     val filterableCollection: FileFilterableCollection<T>,
-    var color: Color,
+    var color: Color?,
     var show: Boolean,
 )
 
@@ -352,35 +473,59 @@ internal class FileFilterTableModel<T>(
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
         when (columns[columnIndex]) {
             columns.Name -> {
-                aValue as String
+                if (aValue !is String) return
+
                 val oldPath = data[rowIndex].path
+                if (aValue == oldPath.name) return
+
                 val newPath = oldPath.parent / aValue
 
-                if (Files.exists(oldPath)) {
-                    Files.move(oldPath, newPath)
+                if (
+                    JOptionPane.showConfirmDialog(
+                        null,
+                        "Rename ${oldPath.fileName} to $aValue?",
+                    ) == JOptionPane.YES_OPTION
+                ) {
+                    if (Files.exists(oldPath)) {
+                        Files.move(oldPath, newPath)
+                        data[rowIndex].path = newPath
+                        fireTableCellUpdated(rowIndex, columnIndex)
+                    } else {
+                        EventQueue.invokeLater {
+                            JOptionPane.showMessageDialog(
+                                null,
+                                "Unable to rename file. Can't find path:\n${oldPath.absolutePathString()}",
+                            )
+                        }
+                        return
+                    }
                 }
-
-                data[rowIndex].path = newPath
             }
             columns.Color -> {
-                data[rowIndex].color = aValue as Color
+                data[rowIndex].color = aValue as Color?
+                fireTableCellUpdated(rowIndex, columnIndex)
             }
             columns.Show -> {
-                data[rowIndex].show = !data[rowIndex].show
+                data[rowIndex].show = aValue as Boolean
+                fireTableCellUpdated(rowIndex, columnIndex)
             }
         }
-        fireTableCellUpdated(rowIndex, columnIndex)
     }
 }
 
 @Suppress("PropertyName")
 internal class FileFilterColumns<T> : ColumnList<FileFilterConfigItem<T>>() {
-    val Name by column(
+    val Name: Column<FileFilterConfigItem<T>, Path> by column(
         column = {
             isEditable = true
-            cellEditor = DefaultCellEditor(JTextField())
+            cellRenderer = DefaultTableRenderer(
+                ReifiedLabelProvider<Path>(
+                    getText = { it?.name },
+                    getTooltip = { it?.absolutePathString() + " (Double-click to rename)" },
+                ),
+            )
         },
-        value = { it.path.fileName },
+        value = { it.path },
     )
 
     val Color by column(
@@ -390,11 +535,12 @@ internal class FileFilterColumns<T> : ColumnList<FileFilterConfigItem<T>>() {
             minWidth = 80
 
             setCellRenderer { _, value, _, _, _, _ ->
-                value as Color
+                value as Color?
                 JLabel().apply {
-                    isOpaque = true
-                    text = value.toRgbHex()
+                    isOpaque = value != null
+                    text = value?.toRgbHex().orEmpty()
                     background = value
+                    this@apply.toolTipText = "Click to change color"
                 }
             }
         },
@@ -407,9 +553,8 @@ internal class FileFilterColumns<T> : ColumnList<FileFilterConfigItem<T>>() {
             minWidth = 25
             maxWidth = 25
 
-            headerRenderer = DefaultTableRenderer(StringValues.EMPTY) {
-                FlatSVGIcon("icons/bx-show.svg")
-            }
+            headerRenderer = TableHeaderCheckbox()
+            isSortable = false
         },
         value = FileFilterConfigItem<*>::show,
     )

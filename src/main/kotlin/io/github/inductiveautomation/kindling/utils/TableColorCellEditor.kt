@@ -34,6 +34,7 @@ class TableColorCellEditor(
     init {
         colorChooser.selectionModel.addChangeListener {
             label.apply {
+                isOpaque = true
                 background = colorChooser.selectionModel.selectedColor
                 if (showHex) text = colorChooser.selectionModel.selectedColor.toRgbHex() + " (editing...)"
             }
@@ -45,7 +46,7 @@ class TableColorCellEditor(
     override fun getCellEditorValue(): Color = colorChooser.color
 
     override fun isCellEditable(e: EventObject?): Boolean {
-        return e is MouseEvent && e.clickCount == 2
+        return e is MouseEvent && e.clickCount == 1
     }
 
     override fun getTableCellEditorComponent(
@@ -55,18 +56,18 @@ class TableColorCellEditor(
         row: Int,
         column: Int,
     ): Component {
-        colorChooser.color = value as Color
+        colorChooser.color = value as Color?
 
         val renderer = table?.getCellRenderer(row, column)
         val component = renderer?.getTableCellRendererComponent(table, value, isSelected, true, row, column)
 
         if (component != null) {
             label.apply {
-                isOpaque = true
+                isOpaque = value != null
                 background = component.background
 
                 if (component is JComponent) border = component.border
-                if (showHex) text = component.background.toRgbHex() + " (editing...)"
+                if (showHex) text = component.background?.toRgbHex().orEmpty() + " (editing...)"
             }
 
             if (!::dialog.isInitialized) {

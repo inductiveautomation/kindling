@@ -10,6 +10,7 @@ import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
+import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
 import io.github.inductiveautomation.kindling.utils.getValue
 import io.github.inductiveautomation.kindling.utils.transferTo
@@ -25,6 +26,7 @@ import java.time.format.DateTimeFormatter
 import java.time.zone.ZoneRulesProvider
 import java.util.Vector
 import javax.swing.JComboBox
+import javax.swing.SwingUtilities
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
@@ -70,6 +72,15 @@ class WrapperLogPanel(
         if (paths.size > 1) {
             sidebar.addFileFilterChangeListener {
                 selectedData = sidebar.selectedFiles.flatMap { it.items }
+
+                val mainTabbedPane = SwingUtilities.getAncestorNamed("MainTabStrip", this) as? TabStrip
+
+                if (mainTabbedPane != null) {
+                    val index = mainTabbedPane.indexOfComponent(this)
+
+                    mainTabbedPane.setTitleAt(index, "System Logs [${sidebar.allData.size}]")
+                    mainTabbedPane.setToolTipTextAt(index, sidebar.allData.keys.joinToString("\n"))
+                }
             }
 
             sidebar.registerHighlighters(table)

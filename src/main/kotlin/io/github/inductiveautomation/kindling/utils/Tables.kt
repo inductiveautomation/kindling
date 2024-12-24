@@ -3,6 +3,8 @@ package io.github.inductiveautomation.kindling.utils
 import io.github.evanrupert.excelkt.workbook
 import java.io.File
 import javax.swing.JTable
+import javax.swing.event.TableModelEvent
+import javax.swing.table.AbstractTableModel
 import javax.swing.table.TableModel
 
 fun JTable.selectedRowIndices(): IntArray {
@@ -22,6 +24,19 @@ fun JTable.selectedOrAllRowIndices(): IntArray {
 
 val TableModel.rowIndices get() = 0 until rowCount
 val TableModel.columnIndices get() = 0 until columnCount
+
+/**
+ * A custom [TableModelEvent] which is fired when an unspecified number of row data has changed for a single column.
+ *
+ * @param column The column index.
+ */
+fun AbstractTableModel.fireTableColumnDataChanged(column: Int) {
+    fireTableChanged(
+        object : TableModelEvent(this) {
+            override fun getColumn(): Int = column
+        },
+    )
+}
 
 fun TableModel.exportToCSV(file: File) {
     file.printWriter().use { out ->

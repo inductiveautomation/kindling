@@ -57,7 +57,7 @@ open class FilterSidebar<T>(
 
         attachPopupMenu { event ->
             val tabIndex = indexAtLocation(event.x, event.y)
-            if (tabIndex == -1) return@attachPopupMenu null
+            if (tabIndex !in filterPanels.indices) return@attachPopupMenu null
 
             JPopupMenu().apply {
                 val filterPanel = filterPanels[tabIndex]
