@@ -386,7 +386,7 @@ class FileFilterSidebar<T> private constructor(
             }
         }
 
-        val fileDropButton = JButton("Drop files here.").apply {
+        val fileDropButton = JButton("Drop files here").apply {
             isVisible = false
             putClientProperty("FlatLaf.styleClass", "h2.regular")
         }
@@ -538,7 +538,7 @@ internal class FileFilterColumns<T> : ColumnList<FileFilterConfigItem<T>>() {
                 value as Color?
                 JLabel().apply {
                     isOpaque = value != null
-                    text = value?.toRgbHex().orEmpty()
+                    text = value?.toHexString().orEmpty()
                     background = value
                     this@apply.toolTipText = "Click to change color"
                 }

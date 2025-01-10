@@ -36,7 +36,7 @@ class TableColorCellEditor(
             label.apply {
                 isOpaque = true
                 background = colorChooser.selectionModel.selectedColor
-                if (showHex) text = colorChooser.selectionModel.selectedColor.toRgbHex() + " (editing...)"
+                if (showHex) text = colorChooser.selectionModel.selectedColor.toHexString() + " (editing...)"
             }
         }
 
@@ -67,7 +67,7 @@ class TableColorCellEditor(
                 background = component.background
 
                 if (component is JComponent) border = component.border
-                if (showHex) text = component.background?.toRgbHex().orEmpty() + " (editing...)"
+                if (showHex) text = component.background?.toHexString().orEmpty() + " (editing...)"
             }
 
             if (!::dialog.isInitialized) {
@@ -99,7 +99,7 @@ class RandomColorPanel : AbstractColorChooserPanel() {
 
     override fun updateChooser() {
         previewLabel.apply {
-            text = colorFromModel.toRgbHex()
+            text = colorFromModel.toHexString()
             background = colorFromModel
         }
     }

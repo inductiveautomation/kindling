@@ -27,33 +27,31 @@ class TableHeaderCheckbox(
 
     private val isAllDataSelected: Boolean
         get() {
-            if (!this::table.isInitialized || targetColumn == null) return false
+            val column = targetColumn
+            if (!this::table.isInitialized || column == null) return false
 
-            val columnModelIndex = table.convertColumnIndexToModel(targetColumn!!)
-            val columnClass = table.getColumnClass(targetColumn!!)
-
-            println("Column class: $columnClass")
+            val columnModelIndex = table.convertColumnIndexToModel(column)
+            val columnClass = table.getColumnClass(column)
 
             if (columnClass != java.lang.Boolean::class.java) return false
 
-            val data = (0..<table.rowCount).map {
+            return table.model.rowIndices.all {
                 table.model.getValueAt(it, columnModelIndex) as? Boolean ?: return false
             }
-
-            return data.all { it }
         }
 
     private fun handleClick() {
         valueIsAdjusting = true
 
-        if (!this::table.isInitialized || targetColumn == null) return
+        val column = targetColumn
+        if (!this::table.isInitialized || column == null) return
 
-        val columnModelIndex = table.convertColumnIndexToModel(targetColumn!!)
-        val columnClass = table.getColumnClass(targetColumn!!)
+        val columnModelIndex = table.convertColumnIndexToModel(column)
+        val columnClass = table.getColumnClass(column)
 
         if (columnClass != java.lang.Boolean::class.java) return
 
-        for (row in 0..<table.rowCount) {
+        for (row in table.model.rowIndices) {
             table.model.setValueAt(isSelected, row, columnModelIndex)
         }
 

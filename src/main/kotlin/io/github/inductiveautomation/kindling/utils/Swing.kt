@@ -3,6 +3,13 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.github.weisj.jsvg.SVGDocument
 import com.github.weisj.jsvg.attributes.ViewBox
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.swing.Swing
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.decorator.ComponentAdapter
+import org.jdesktop.swingx.decorator.HighlightPredicate
+import org.jdesktop.swingx.prompt.BuddySupport
 import java.awt.Color
 import java.awt.Component
 import java.awt.Container
@@ -23,13 +30,6 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.event.EventListenerList
 import javax.swing.text.Document
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.swing.Swing
-import org.jdesktop.swingx.decorator.ColorHighlighter
-import org.jdesktop.swingx.decorator.ComponentAdapter
-import org.jdesktop.swingx.decorator.HighlightPredicate
-import org.jdesktop.swingx.prompt.BuddySupport
 
 /**
  * A common CoroutineScope bound to the event dispatch thread (see [Dispatchers.Swing]).
@@ -155,7 +155,8 @@ fun ColorHighlighter(
     predicate: (component: Component, componentAdapter: ComponentAdapter) -> Boolean = { _, _ -> true },
 ) = ColorHighlighter(HighlightPredicate(predicate), background, foreground)
 
-fun Color.toRgbHex(): String {
-    val hexString = Integer.toHexString(rgb).substring(2)
-    return "#$hexString"
+@OptIn(ExperimentalStdlibApi::class)
+fun Color.toHexString(alpha: Boolean = false): String {
+    val hexString = rgb.toHexString()
+    return "#${if (alpha) hexString else { hexString.substring(2) }}"
 }

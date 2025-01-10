@@ -92,7 +92,8 @@ open class FilterSidebar<T>(
     }
 
     companion object {
-        val FilterPanel<*>.formattedTabName
+        @JvmStatic
+        protected val FilterPanel<*>.formattedTabName
             get() = buildString {
                 tag("html") {
                     tag("p", "style" to "margin: 3px;") {
