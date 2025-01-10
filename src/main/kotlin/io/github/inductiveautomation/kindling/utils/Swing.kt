@@ -158,5 +158,11 @@ fun ColorHighlighter(
 @OptIn(ExperimentalStdlibApi::class)
 fun Color.toHexString(alpha: Boolean = false): String {
     val hexString = rgb.toHexString()
-    return "#${if (alpha) hexString else { hexString.substring(2) }}"
+    return "#${
+        if (alpha) {
+            hexString
+        } else {
+            hexString.substring(2)
+        }
+    }"
 }
