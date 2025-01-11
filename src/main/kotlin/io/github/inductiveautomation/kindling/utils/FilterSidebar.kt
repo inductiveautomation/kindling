@@ -10,11 +10,9 @@ import javax.swing.JPopupMenu
 import javax.swing.JToolTip
 import javax.swing.UIManager
 
-class FilterSidebar<T>(
-    vararg panels: FilterPanel<T>?,
-) : FlatTabbedPane() {
-
-    val filterPanels = panels.filterNotNull()
+open class FilterSidebar<T>(
+    private val filterPanels: List<FilterPanel<T>>,
+) : FlatTabbedPane(), List<FilterPanel<T>> by filterPanels {
 
     override fun createToolTip(): JToolTip = JToolTip().apply {
         font = UIManager.getFont("h3.regular.font")
@@ -45,28 +43,21 @@ class FilterSidebar<T>(
 
         preferredSize = Dimension(250, 100)
 
-        filterPanels.forEachIndexed { index, filterPanel ->
+        filterPanels.forEach { filterPanel ->
             addTab(
                 null,
                 filterPanel.icon,
                 filterPanel.component,
-                buildString {
-                    tag("html") {
-                        tag("p", "style" to "margin: 3px;") {
-                            append(filterPanel.tabName)
-                        }
-                    }
-                },
+                filterPanel.formattedTabName,
             )
             filterPanel.addFilterChangeListener {
                 filterPanel.updateTabState()
-                selectedIndex = index
             }
         }
 
         attachPopupMenu { event ->
             val tabIndex = indexAtLocation(event.x, event.y)
-            if (tabIndex == -1) return@attachPopupMenu null
+            if (tabIndex !in filterPanels.indices) return@attachPopupMenu null
 
             JPopupMenu().apply {
                 val filterPanel = filterPanels[tabIndex]
@@ -83,7 +74,7 @@ class FilterSidebar<T>(
         selectedIndex = 0
     }
 
-    private fun FilterPanel<*>.updateTabState() {
+    protected fun FilterPanel<*>.updateTabState() {
         val index = indexOfComponent(component)
         if (isFilterApplied()) {
             setBackgroundAt(index, UIManager.getColor("TabbedPane.focusColor"))
@@ -98,5 +89,17 @@ class FilterSidebar<T>(
         filterPanels?.forEach {
             it.updateTabState()
         }
+    }
+
+    companion object {
+        @JvmStatic
+        protected val FilterPanel<*>.formattedTabName
+            get() = buildString {
+                tag("html") {
+                    tag("p", "style" to "margin: 3px;") {
+                        append(tabName)
+                    }
+                }
+            }
     }
 }

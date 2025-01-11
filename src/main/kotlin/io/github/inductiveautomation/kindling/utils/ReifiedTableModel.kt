@@ -2,8 +2,8 @@ package io.github.inductiveautomation.kindling.utils
 
 import javax.swing.table.AbstractTableModel
 
-class ReifiedListTableModel<T>(
-    val data: List<T>,
+open class ReifiedListTableModel<T>(
+    open val data: List<T>,
     override val columns: ColumnList<T>,
 ) : AbstractTableModel(), ReifiedTableModel<T> {
     override fun getColumnCount(): Int = columns.size
