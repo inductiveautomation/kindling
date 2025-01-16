@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
+import org.apache.poi.ss.usermodel.Footer
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
@@ -311,22 +312,23 @@ class LogPanel(
             return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
         }
 
-        fun highlightAllMarked(){
-            val markedRows = mutableListOf<Int>()
+        fun highlightAllMarked(enableMark: Boolean){
+            //val markedRows = mutableListOf<Int>()
+            //for((rowIndex, event) in table.model.data.withIndex()){
+            //    if (event.marked){
 
-            for((rowIndex, event) in table.model.data.withIndex()){
-                if (event.marked){
-                    markedRows.add(rowIndex)
-                }
+           //    }
+            //}
+            fun setEnabled(){
+                var enableMark = true
             }
-            val regBackground: Color? = UIManager.getColor("UIColorHighlighter.stripingBackground")
-            val markedTrue= HighlightPredicate { renderer, adapter ->  adapter.row in markedRows}
-            val markedFalse = HighlightPredicate.ODD
-            val highlighter= ColorHighlighter(markedTrue, Color.BLACK, Color.GREEN)
-            val regularTable = ColorHighlighter(markedFalse, regBackground, Color.LIGHT_GRAY)
+            if (enableMark == true){
+                val markedTrue =
+                    HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
+                val highlighter = ColorHighlighter(markedTrue, Color.BLACK, Color.GREEN)
 
-            table.setHighlighters(regularTable, highlighter)
-
+                table.addHighlighter(highlighter)
+            }
         }
 
         header.apply {
@@ -439,7 +441,7 @@ class LogPanel(
         }
         val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Always Show Marked"))
 
-        val highlightMarked = JButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
+        val highlightMarked = JToggleButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
             toolTipText = "Highlight marked items"
         }
         val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
