@@ -31,7 +31,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
-import org.apache.poi.ss.usermodel.Footer
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
@@ -313,20 +312,9 @@ class LogPanel(
         }
 
         fun highlightAllMarked(enableMark: Boolean){
-            //val markedRows = mutableListOf<Int>()
-            //for((rowIndex, event) in table.model.data.withIndex()){
-            //    if (event.marked){
-
-           //    }
-            //}
-            fun setEnabled(){
-                var enableMark = true
-            }
-            if (enableMark == true){
-                val markedTrue =
-                    HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
-                val highlighter = ColorHighlighter(markedTrue, Color.BLACK, Color.GREEN)
-
+            val markedTrue = HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
+            val highlighter = ColorHighlighter(markedTrue, Color.BLACK, Color.GREEN)
+            if (enableMark){
                 table.addHighlighter(highlighter)
             }
         }
@@ -363,7 +351,12 @@ class LogPanel(
                 if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
             }
             highlightMarked.addActionListener{
-                highlightAllMarked()
+                if (highlightMarked.isEnabled) {
+                    highlightAllMarked(true)
+                }
+                else if (highlightMarked.isEnabled == false){
+                    highlightAllMarked(false)
+                }
             }
         }
 
