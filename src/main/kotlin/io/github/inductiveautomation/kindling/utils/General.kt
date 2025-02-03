@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.utils
 
+import com.jidesoft.swing.CheckBoxListSelectionModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -129,3 +130,5 @@ infix fun InputStream.transferTo(output: OutputStream) {
         output.use(input::transferTo)
     }
 }
+
+fun CheckBoxListSelectionModel.isAllSelected() = isSelectedIndex(allEntryIndex)

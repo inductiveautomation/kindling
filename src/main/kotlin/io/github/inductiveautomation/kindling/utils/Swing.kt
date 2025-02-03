@@ -6,7 +6,11 @@ import com.github.weisj.jsvg.attributes.ViewBox
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.decorator.ComponentAdapter
+import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.prompt.BuddySupport
+import java.awt.Color
 import java.awt.Component
 import java.awt.Container
 import java.awt.RenderingHints
@@ -68,7 +72,7 @@ fun FlatSVGIcon.asActionIcon(selected: Boolean = false): FlatSVGIcon {
     }
 }
 
-fun JFileChooser.chooseFiles(parent: JComponent): List<File>? {
+fun JFileChooser.chooseFiles(parent: JComponent?): List<File>? {
     return if (showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
         selectedFiles.toList()
     } else {
@@ -132,4 +136,33 @@ fun DocumentAdapter(block: (e: DocumentEvent) -> Unit): DocumentListener = objec
     override fun changedUpdate(e: DocumentEvent) = block(e)
     override fun insertUpdate(e: DocumentEvent) = block(e)
     override fun removeUpdate(e: DocumentEvent) = block(e)
+}
+
+data class ColorPalette(
+    val background: Color?,
+    val foreground: Color?,
+) {
+    fun toHighLighter(
+        predicate: (component: Component, componentAdapter: ComponentAdapter) -> Boolean = { _, _ -> true },
+    ): ColorHighlighter {
+        return ColorHighlighter(background, foreground, predicate)
+    }
+}
+
+fun ColorHighlighter(
+    background: Color?,
+    foreground: Color?,
+    predicate: (component: Component, componentAdapter: ComponentAdapter) -> Boolean = { _, _ -> true },
+) = ColorHighlighter(HighlightPredicate(predicate), background, foreground)
+
+@OptIn(ExperimentalStdlibApi::class)
+fun Color.toHexString(alpha: Boolean = false): String {
+    val hexString = rgb.toHexString()
+    return "#${
+        if (alpha) {
+            hexString
+        } else {
+            hexString.substring(2)
+        }
+    }"
 }

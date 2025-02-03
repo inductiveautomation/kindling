@@ -88,6 +88,22 @@ class FilterModel<T>(
 
     companion object {
         private val percentFormat = DecimalFormat.getPercentInstance()
+
+        fun <T, R> fromRawData(
+            data: List<T>,
+            comparator: FilterComparator,
+            sortKey: (R) -> String = Any?::toString,
+            transform: (T) -> R,
+        ): FilterModel<R> {
+            val sortedData: Map<R, Int> = data.groupingBy(transform).eachCount().entries
+                .sortedWith(
+                    compareBy(comparator) { (key, value) ->
+                        FilterModelEntry(sortKey(key), value)
+                    },
+                )
+                .associate(Map.Entry<R, Int>::toPair)
+            return FilterModel(sortedData, sortKey)
+        }
     }
 }
 
@@ -99,6 +115,8 @@ class FilterList(
     private val toStringFn: Stringifier = { it?.toString() },
 ) : CheckBoxList(FilterModel(emptyMap())) {
     private var lastSelection = arrayOf<Any>()
+
+    var comparatorIsAdjusting = false
 
     init {
         selectionModel = NoSelectionModel()
@@ -141,8 +159,10 @@ class FilterList(
 
     var comparator: FilterComparator = initialComparator
         set(newComparator) {
-            model = model.copy(newComparator)
+            comparatorIsAdjusting = true
             field = newComparator
+            model = model.copy(newComparator)
+            comparatorIsAdjusting = false
         }
 
     @Suppress("UNCHECKED_CAST")
@@ -151,6 +171,8 @@ class FilterList(
     override fun setModel(model: ListModel<*>) {
         require(model is FilterModel<*>)
         val currentSelection = checkBoxListSelectedValues
+        val allSelected = currentSelection.size + 1 == this.model.size
+
         lastSelection = if (currentSelection.isEmpty()) {
             lastSelection
         } else {
@@ -162,7 +184,12 @@ class FilterList(
         for (sortAction in sortActions) {
             sortAction.selected = comparator == sortAction.comparator
         }
-        addCheckBoxListSelectedValues(lastSelection)
+
+        if (allSelected) {
+            selectAll()
+        } else {
+            addCheckBoxListSelectedValues(lastSelection)
+        }
     }
 
     private val sortActions: List<SortAction> = FilterComparator.entries.map { filterComparator ->

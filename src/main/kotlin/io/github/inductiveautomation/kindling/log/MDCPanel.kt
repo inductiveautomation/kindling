@@ -9,6 +9,7 @@ import io.github.inductiveautomation.kindling.log.MDCTableModel.MDCColumns
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
+import io.github.inductiveautomation.kindling.utils.FileFilterResponsive
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.asActionIcon
@@ -18,6 +19,7 @@ import io.github.inductiveautomation.kindling.utils.getAll
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.renderer.CheckBoxProvider
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
+import java.awt.EventQueue
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.util.Vector
@@ -29,24 +31,38 @@ import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
+import kotlin.properties.Delegates
 
-internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() {
+internal class MDCPanel(
+    events: List<SystemLogEvent>,
+) : FilterPanel<SystemLogEvent>(), FileFilterResponsive<SystemLogEvent> {
     override val icon = FlatSVGIcon("icons/bx-key.svg")
 
-    private val allMDCs = events.flatMap(SystemLogEvent::mdc)
+    private var allMDCs by Delegates.observable(events.flatMap(SystemLogEvent::mdc)) { _, _, new ->
+        countByKey = new
+            .groupingBy(MDC::key)
+            .eachCount()
+            .entries
+            .sortedByDescending(Map.Entry<String, Int>::value)
+            .associate(Map.Entry<String, Int>::toPair)
 
-    private val countByKey = allMDCs
+        countByKeyAndValue = new.groupingBy(MDC::toPair).eachCount()
+
+        mdcValuesPerKey = new.groupBy(MDC::key).mapValues { it.value.distinct() }
+    }
+
+    private var countByKey: Map<String, Int> = allMDCs
         .groupingBy(MDC::key)
         .eachCount()
         .entries
         .sortedByDescending(Map.Entry<String, Int>::value)
         .associate(Map.Entry<String, Int>::toPair)
 
-    private val countByKeyAndValue = allMDCs
+    private var countByKeyAndValue: Map<Pair<String, String?>, Int> = allMDCs
         .groupingBy(MDC::toPair)
         .eachCount()
 
-    private val mdcValuesPerKey = allMDCs
+    private var mdcValuesPerKey: Map<String, List<MDC>> = allMDCs
         .groupBy(MDC::key)
         .mapValues { it.value.distinct() }
 
@@ -223,18 +239,45 @@ internal class MDCPanel(events: List<SystemLogEvent>) : FilterPanel<LogEvent>() 
         }
     }
 
+    override fun setModelData(data: List<SystemLogEvent>) {
+        allMDCs = data.flatMap(SystemLogEvent::mdc)
+
+        // Key Combobox
+        val selectedMdcKey = keyCombo.selectedItem?.let {
+            if (it !in countByKey.keys) null else it as String
+        }
+        keyCombo.model = DefaultComboBoxModel(countByKey.keys.sortedWith(AlphanumComparator()).toTypedArray())
+        keyCombo.setSelectedItem(selectedMdcKey)
+
+        // Value ComboBoc. Key ComboBox sets the model in an action listener.
+        EventQueue.invokeLater {
+            val selectedMdcValue = valueCombo.selectedItem?.let {
+                if (it !in countByKey.keys) null else it as String
+            }
+            valueCombo.setSelectedItem(selectedMdcValue)
+        }
+
+        // Remove MDCs which are no longer in the data
+        val toRemove = tableModel.data.withIndex().filter { (_, row) ->
+            val mdcsWithKey = mdcValuesPerKey[row.key] ?: return@filter true
+            row.value !in mdcsWithKey.map { it.value }
+        }.map { (index, _) -> index }
+
+        toRemove.forEach(tableModel::removeAt)
+    }
+
     override fun isFilterApplied(): Boolean = tableModel.data.isNotEmpty()
 
     override val tabName: String = "MDC"
 
-    override fun filter(item: LogEvent): Boolean = tableModel.filter(item)
+    override fun filter(item: SystemLogEvent): Boolean = tableModel.filter(item)
 
     override fun customizePopupMenu(
         menu: JPopupMenu,
-        column: Column<out LogEvent, *>,
-        event: LogEvent,
+        column: Column<out SystemLogEvent, *>,
+        event: SystemLogEvent,
     ) {
-        if (column == SystemLogColumns.Message && (event as SystemLogEvent).mdc.isNotEmpty()) {
+        if (column == SystemLogColumns.Message && event.mdc.isNotEmpty()) {
             for ((key, values) in event.mdc.groupBy { it.key }) {
                 menu.add(
                     JMenu("MDC: '$key'").apply {

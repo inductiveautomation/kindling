@@ -37,6 +37,16 @@ class LogEventNode(
             frequency + children.filterIsInstance<LogEventNode>().sumOf { it.frequency }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is LogEventNode) {
+            return false
+        }
+
+        return other.userObject == this.userObject
+    }
+
+    override fun hashCode(): Int = userObject.hashCode()
 }
 
 class RootNode(logEvents: List<SystemLogEvent>) : AbstractTreeNode() {

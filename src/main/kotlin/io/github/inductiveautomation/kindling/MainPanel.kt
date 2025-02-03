@@ -174,6 +174,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
 
     private val tabs = object : TabStrip() {
         init {
+            name = "MainTabStrip"
             isVisible = false
 
             if (SystemInfo.isMacFullWindowContentSupported) {
