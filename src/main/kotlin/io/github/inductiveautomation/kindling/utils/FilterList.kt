@@ -5,6 +5,7 @@ import com.jidesoft.comparator.AlphanumComparator
 import com.jidesoft.swing.CheckBoxList
 import com.jidesoft.swing.ListSearchable
 import io.github.inductiveautomation.kindling.utils.FilterComparator.ByCountDescending
+import org.jdesktop.swingx.JXSearchField
 import java.text.DecimalFormat
 import javax.swing.AbstractListModel
 import javax.swing.ButtonGroup
@@ -21,6 +22,11 @@ enum class FilterComparator(
     val icon: FlatSVGIcon,
     val comparator: Comparator<FilterModelEntry>,
 ) : Comparator<FilterModelEntry> by comparator {
+    BySearchTest(
+        tooltip = "Sort by Count (descending)",
+        icon = FlatSVGIcon("icons/bx-sort-down.svg"),
+        comparator = compareBy(FilterModelEntry::key),
+    ),
     ByNameAscending(
         tooltip = "Sort A-Z",
         icon = FlatSVGIcon("icons/bx-sort-a-z.svg"),
@@ -208,7 +214,10 @@ class FilterList(
         var comparator: FilterComparator by actionValue("filterComparator", comparator)
     }
 
+
+
     fun createSortButtons(): ButtonGroup = ButtonGroup().apply {
+
         for (sortAction in sortActions) {
             add(
                 JToggleButton(

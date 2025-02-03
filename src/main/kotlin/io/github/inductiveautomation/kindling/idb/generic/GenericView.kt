@@ -23,6 +23,7 @@ import net.miginfocom.swing.MigLayout
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
+import org.jdesktop.swingx.JXSearchField
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.JDBCType
