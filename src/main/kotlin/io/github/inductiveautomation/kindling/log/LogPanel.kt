@@ -403,7 +403,7 @@ sealed class LogPanel<T : LogEvent>(
             add(version, "growy")
         }
 
-        val highlightMarked = JToggleButton(FlatSVGIcon("icons/new-highlight.svg").asActionIcon()).apply {
+        val highlightMarked = JToggleButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
             toolTipText = "Highlight all marked log events"
         }
         val clearMarked = JButton(FlatSVGIcon("icons/bxs-eraser.svg").asActionIcon()).apply {
