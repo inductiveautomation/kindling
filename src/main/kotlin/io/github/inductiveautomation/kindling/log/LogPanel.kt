@@ -198,6 +198,7 @@ sealed class LogPanel<T : LogEvent>(
             table.addHighlighter(highlighter)
         }
         if (!enableMark) {
+            println(table.highlighters.last())
             table.removeHighlighter(table.highlighters.last())
         }
     }
@@ -316,11 +317,9 @@ sealed class LogPanel<T : LogEvent>(
             highlightMarked.addActionListener{
                 if (highlightMarked.isSelected == true) {
                     highlightAllMarked(enableMark = true)
-                    println ("enableMark is true")
                 }
                 else if (highlightMarked.isSelected == false){
                     highlightAllMarked(enableMark = false)
-                    println ("enableMark is false")
                 }
             }
             clearMarked.addActionListener {
@@ -403,7 +402,7 @@ sealed class LogPanel<T : LogEvent>(
             add(version, "growy")
         }
 
-        val highlightMarked = JToggleButton(FlatSVGIcon("icons/new-highlight.svg").asActionIcon()).apply {
+        val highlightMarked = JToggleButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
             toolTipText = "Highlight all marked log events"
         }
         val clearMarked = JButton(FlatSVGIcon("icons/bxs-eraser.svg").asActionIcon()).apply {
