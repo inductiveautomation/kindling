@@ -194,11 +194,11 @@ sealed class LogPanel<T : LogEvent>(
         val isMarked =
             HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
         val highlighter = ColorHighlighter(isMarked, Color.BLACK, Color.GREEN)
-        if (enableMark == true) {
+        if (enableMark) {
             table.addHighlighter(highlighter)
         }
-        if (enableMark == false) {
-            table.removeHighlighter(highlighter)
+        if (!enableMark) {
+            table.removeHighlighter(table.highlighters.last())
         }
     }
 
@@ -403,7 +403,7 @@ sealed class LogPanel<T : LogEvent>(
             add(version, "growy")
         }
 
-        val highlightMarked = JToggleButton(FlatSVGIcon("icons/bx-arrow-up.svg").asActionIcon()).apply {
+        val highlightMarked = JToggleButton(FlatSVGIcon("icons/new-highlight.svg").asActionIcon()).apply {
             toolTipText = "Highlight all marked log events"
         }
         val clearMarked = JButton(FlatSVGIcon("icons/bxs-eraser.svg").asActionIcon()).apply {
