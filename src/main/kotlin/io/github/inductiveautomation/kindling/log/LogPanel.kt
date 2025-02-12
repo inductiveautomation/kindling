@@ -12,20 +12,7 @@ import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
-import io.github.inductiveautomation.kindling.utils.Action
-import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
-import io.github.inductiveautomation.kindling.utils.FilterSidebar
-import io.github.inductiveautomation.kindling.utils.FlatScrollPane
-import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
-import io.github.inductiveautomation.kindling.utils.MajorVersion
-import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
-import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
-import io.github.inductiveautomation.kindling.utils.asActionIcon
-import io.github.inductiveautomation.kindling.utils.attachPopupMenu
-import io.github.inductiveautomation.kindling.utils.configureCellRenderer
-import io.github.inductiveautomation.kindling.utils.debounce
-import io.github.inductiveautomation.kindling.utils.selectedRowIndices
-import io.github.inductiveautomation.kindling.utils.toBodyLine
+import io.github.inductiveautomation.kindling.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -190,16 +177,17 @@ sealed class LogPanel<T : LogEvent>(
         }
         return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
     }
+    private val isMarked = HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
+
+    private val highlighter = ColorHighlighter(isMarked, Color.BLACK, Color.GREEN)
+
     private fun highlightAllMarked(enableMark: Boolean){
-        val isMarked =
-            HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
-        val highlighter = ColorHighlighter(isMarked, Color.BLACK, Color.GREEN)
         if (enableMark) {
             table.addHighlighter(highlighter)
         }
-        if (!enableMark) {
-            println(table.highlighters.last())
-            table.removeHighlighter(table.highlighters.last())
+        else {
+            table.removeHighlighter(highlighter)
+            table.repaint()
         }
     }
 
