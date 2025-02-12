@@ -178,7 +178,7 @@ sealed class LogPanel<T : LogEvent>(
         return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
     }
     //Setting these as global variables so that table.addHighighter and .remoeHighighter reference
-    //the same highlighter element in table.highlighters
+    //the same highlighter element in table.highlighters.
     private val isMarked = HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
 
     private val highlighter = ColorHighlighter(isMarked, Color.BLACK, Color.GREEN)
