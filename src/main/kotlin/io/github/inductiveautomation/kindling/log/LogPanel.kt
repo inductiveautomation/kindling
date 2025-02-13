@@ -189,7 +189,6 @@ sealed class LogPanel<T : LogEvent>(
         }
         else {
             table.removeHighlighter(highlighter)
-            table.repaint()
         }
     }
 
