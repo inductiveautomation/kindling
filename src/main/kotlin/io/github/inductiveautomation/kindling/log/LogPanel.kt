@@ -30,20 +30,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
+import org.apache.poi.ss.usermodel.Footer
 import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
+import java.awt.Color
 import java.util.Vector
-import javax.swing.BorderFactory
-import javax.swing.Icon
-import javax.swing.JButton
-import javax.swing.JComboBox
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JPopupMenu
-import javax.swing.JSeparator
-import javax.swing.ListSelectionModel
-import javax.swing.SortOrder
+import javax.swing.*
 import kotlin.time.Duration.Companion.milliseconds
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
@@ -186,6 +181,19 @@ sealed class LogPanel<T : LogEvent>(
         return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
     }
 
+    private val isMarked = HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
+
+    private val highlighter = ColorHighlighter(isMarked, Color.BLACK, Color.GREEN)
+
+    private fun highlightAllMarked(enableMark: Boolean){
+        if (enableMark) {
+            table.addHighlighter(highlighter)
+        }
+        else {
+            table.removeHighlighter(highlighter)
+        }
+    }
+
     init {
         @Suppress("LeakingThis")
         add(
@@ -309,6 +317,14 @@ sealed class LogPanel<T : LogEvent>(
                 val nextMarkedIndex = getNextMarkedIndex()
                 if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
             }
+            highlightMarked.addActionListener{
+                if (highlightMarked.isSelected) {
+                    highlightAllMarked(enableMark = true)
+                }
+                else if (!highlightMarked.isSelected){
+                    highlightAllMarked(enableMark = false)
+                }
+            }
         }
 
         ShowFullLoggerNames.addChangeListener {
@@ -375,6 +391,8 @@ sealed class LogPanel<T : LogEvent>(
             add(versionLabel)
             add(version, "growy")
         }
+        val highlightMarked = JToggleButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
+            toolTipText = "Highlight all marked log events"}
 
         val clearMarked = JButton(FlatSVGIcon("icons/bxs-eraser.svg").asActionIcon()).apply {
             toolTipText = "Clear all visible marks"
@@ -393,6 +411,7 @@ sealed class LogPanel<T : LogEvent>(
             add(nextMarked)
             add(markedBehavior, "growy")
             add(clearMarked)
+            add(highlightMarked)
         }
 
         private val searchPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
