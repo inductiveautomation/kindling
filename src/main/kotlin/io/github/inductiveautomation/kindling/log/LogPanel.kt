@@ -35,9 +35,19 @@ import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
-import java.awt.Color
 import java.util.Vector
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JComboBox
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JPopupMenu
+import javax.swing.JSeparator
+import javax.swing.JToggleButton
+import javax.swing.ListSelectionModel
+import javax.swing.SortOrder
+import javax.swing.UIManager
 import kotlin.time.Duration.Companion.milliseconds
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
@@ -180,11 +190,13 @@ sealed class LogPanel<T : LogEvent>(
         return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
     }
 
+
     private val isMarked = HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
+    private val themeHighlighter: ColorHighlighter by lazy {ColorHighlighter(isMarked,
+        UIManager.getColor("Table.selectionBackground"),
+        UIManager.getColor("Table.selectionForeground"))}
 
-    private val highlighter = ColorHighlighter(isMarked, Color.BLACK, Color.GREEN)
-
-    private fun highlightAllMarked(enableMark: Boolean){
+    private fun highlightAllMarked(enableMark: Boolean, highlighter: ColorHighlighter){
         if (enableMark) {
             table.addHighlighter(highlighter)
         }
@@ -192,6 +204,7 @@ sealed class LogPanel<T : LogEvent>(
             table.removeHighlighter(highlighter)
         }
     }
+
 
     init {
         @Suppress("LeakingThis")
@@ -317,12 +330,7 @@ sealed class LogPanel<T : LogEvent>(
                 if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
             }
             highlightMarked.addActionListener{
-                if (highlightMarked.isSelected) {
-                    highlightAllMarked(enableMark = true)
-                }
-                else if (!highlightMarked.isSelected){
-                    highlightAllMarked(enableMark = false)
-                }
+                highlightAllMarked(highlightMarked.isSelected, themeHighlighter)
             }
         }
 
