@@ -1,31 +1,13 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import io.github.inductiveautomation.kindling.core.*
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
-import io.github.inductiveautomation.kindling.core.DetailsPane
-import io.github.inductiveautomation.kindling.core.Filter
-import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
-import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
-import io.github.inductiveautomation.kindling.core.ToolOpeningException
-import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
-import io.github.inductiveautomation.kindling.utils.Action
-import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
-import io.github.inductiveautomation.kindling.utils.FilterSidebar
-import io.github.inductiveautomation.kindling.utils.FlatScrollPane
-import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
-import io.github.inductiveautomation.kindling.utils.MajorVersion
-import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
-import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
-import io.github.inductiveautomation.kindling.utils.asActionIcon
-import io.github.inductiveautomation.kindling.utils.attachPopupMenu
-import io.github.inductiveautomation.kindling.utils.configureCellRenderer
-import io.github.inductiveautomation.kindling.utils.debounce
-import io.github.inductiveautomation.kindling.utils.selectedRowIndices
-import io.github.inductiveautomation.kindling.utils.toBodyLine
+import io.github.inductiveautomation.kindling.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,9 +17,19 @@ import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
-import java.awt.Color
 import java.util.Vector
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JComboBox
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JPopupMenu
+import javax.swing.JSeparator
+import javax.swing.JToggleButton
+import javax.swing.ListSelectionModel
+import javax.swing.SortOrder
+import javax.swing.UIManager
 import kotlin.time.Duration.Companion.milliseconds
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
@@ -180,11 +172,13 @@ sealed class LogPanel<T : LogEvent>(
         return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
     }
 
+
     private val isMarked = HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
+    private val themeHighlighter: ColorHighlighter by lazy {ColorHighlighter(isMarked,
+        UIManager.getColor("Table.selectionBackground"),
+        UIManager.getColor("Table.selectionForeground"))}
 
-    private val highlighter = ColorHighlighter(isMarked, Color.BLACK, Color.GREEN)
-
-    private fun highlightAllMarked(enableMark: Boolean){
+    private fun highlightAllMarked(enableMark: Boolean, highlighter: ColorHighlighter){
         if (enableMark) {
             table.addHighlighter(highlighter)
         }
@@ -192,6 +186,7 @@ sealed class LogPanel<T : LogEvent>(
             table.removeHighlighter(highlighter)
         }
     }
+
 
     init {
         @Suppress("LeakingThis")
@@ -317,12 +312,7 @@ sealed class LogPanel<T : LogEvent>(
                 if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
             }
             highlightMarked.addActionListener{
-                if (highlightMarked.isSelected) {
-                    highlightAllMarked(enableMark = true)
-                }
-                else if (!highlightMarked.isSelected){
-                    highlightAllMarked(enableMark = false)
-                }
+                highlightAllMarked(highlightMarked.isSelected, themeHighlighter)
             }
         }
 
