@@ -5,6 +5,7 @@ import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
 import io.github.inductiveautomation.kindling.core.FilterPanel
+import io.github.inductiveautomation.kindling.core.Kindling
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
@@ -29,11 +30,12 @@ import io.github.inductiveautomation.kindling.utils.toBodyLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
-import java.awt.Color
 import java.util.Vector
 import javax.swing.BorderFactory
 import javax.swing.Icon
@@ -191,9 +193,9 @@ sealed class LogPanel<T : LogEvent>(
 
 
     private val isMarked = HighlightPredicate { renderer, adapter -> table.model[table.convertRowIndexToModel(adapter.row)].marked }
-    private val themeHighlighter: ColorHighlighter by lazy {ColorHighlighter(isMarked,
+    private var themeHighlighter = ColorHighlighter(isMarked,
         UIManager.getColor("Table.selectionBackground"),
-        UIManager.getColor("Table.selectionForeground"))}
+        UIManager.getColor("Table.selectionForeground"))
 
     private fun highlightAllMarked(enableMark: Boolean, highlighter: ColorHighlighter){
         if (enableMark) {
@@ -201,6 +203,21 @@ sealed class LogPanel<T : LogEvent>(
         }
         else {
             table.removeHighlighter(highlighter)
+        }
+    }
+
+    init {
+        Kindling.Preferences.UI.Theme.addChangeListener {
+            val newHighlighter = ColorHighlighter(isMarked,
+                UIManager.getColor("Table.selectionBackground"),
+                UIManager.getColor("Table.selectionForeground")
+            )
+
+            if (themeHighlighter in table.highlighters){
+                table.removeHighlighter(themeHighlighter)
+                table.addHighlighter(newHighlighter)
+            }
+            themeHighlighter = newHighlighter
         }
     }
 
