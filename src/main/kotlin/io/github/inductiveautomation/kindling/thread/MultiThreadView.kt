@@ -124,7 +124,7 @@ class MultiThreadView(
 
             addHighlighter(
                 ColorHighlighter(
-                    UIManager.getColor("Actions.Red"),
+                    { UIManager.getColor("Actions.Red") },
                     null,
                 ) { _, adapter ->
                     threadDumps.any { threadDump ->

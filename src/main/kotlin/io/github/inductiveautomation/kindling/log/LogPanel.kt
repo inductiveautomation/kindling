@@ -13,6 +13,7 @@ import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.ColorHighlighter
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FilterSidebar
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -42,8 +43,10 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JSeparator
+import javax.swing.JToggleButton
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
+import javax.swing.UIManager
 import kotlin.time.Duration.Companion.milliseconds
 import io.github.inductiveautomation.kindling.core.Detail as DetailEvent
 
@@ -186,6 +189,16 @@ sealed class LogPanel<T : LogEvent>(
         return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
     }
 
+    private val markHighlighter = ColorHighlighter(
+        fgSupplier = { UIManager.getColor("Table.selectionForeground") },
+        bgSupplier = { UIManager.getColor("Table.cellFocusColor") },
+        predicate = { renderer, adapter ->
+            header.highlightMarked.isSelected &&
+                !table.isRowSelected(adapter.row) &&
+                table.model[table.convertRowIndexToModel(adapter.row)].marked
+        },
+    )
+
     init {
         @Suppress("LeakingThis")
         add(
@@ -276,6 +289,8 @@ sealed class LogPanel<T : LogEvent>(
                     null
                 }
             }
+
+            addHighlighter(markHighlighter)
         }
 
         header.apply {
@@ -287,6 +302,9 @@ sealed class LogPanel<T : LogEvent>(
             }
             markedBehavior.addActionListener {
                 updateData()
+            }
+            highlightMarked.addActionListener {
+                table.repaint()
             }
 
             fun updateSelection(index: Int) {
@@ -376,6 +394,9 @@ sealed class LogPanel<T : LogEvent>(
             add(version, "growy")
         }
 
+        val highlightMarked = JToggleButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
+            toolTipText = "Highlight all marked log events"
+        }
         val clearMarked = JButton(FlatSVGIcon("icons/bxs-eraser.svg").asActionIcon()).apply {
             toolTipText = "Clear all visible marks"
         }
@@ -393,6 +414,7 @@ sealed class LogPanel<T : LogEvent>(
             add(nextMarked)
             add(markedBehavior, "growy")
             add(clearMarked)
+            add(highlightMarked)
         }
 
         private val searchPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
