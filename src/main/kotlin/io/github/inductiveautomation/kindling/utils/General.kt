@@ -132,3 +132,48 @@ infix fun InputStream.transferTo(output: OutputStream) {
 }
 
 fun CheckBoxListSelectionModel.isAllSelected() = isSelectedIndex(allEntryIndex)
+
+/**
+ * Converts the contents of the InputStream to a human-readable binary string, with raw hex bytes on the left and
+ * best effort ASCII decoding on the right.
+ * Closes the input stream.
+ */
+fun InputStream.toHumanReadableBinary(): String {
+    use { file ->
+        val windowSize = 16
+        return sequence {
+            val buffer = ByteArray(windowSize)
+            var numberOfBytesRead: Int
+            do {
+                numberOfBytesRead = file.readNBytes(buffer, 0, windowSize)
+
+                // the last read might not be complete, so there could be stale data in the buffer
+                val toRead = buffer.sliceArray(0 until numberOfBytesRead)
+                @OptIn(ExperimentalStdlibApi::class)
+                val hexBytes = toRead.toHexString(HEX_FORMAT)
+                val decodedBytes = decodeBytes(toRead)
+                yield("${hexBytes.padEnd(47)}  $decodedBytes")
+            } while (numberOfBytesRead == windowSize)
+        }.joinToString(separator = "\n")
+    }
+}
+
+private fun decodeBytes(toRead: ByteArray): String {
+    return String(
+        CharArray(toRead.size) { i ->
+            val byte = toRead[i]
+            if (byte >= 0 && !Character.isISOControl(byte.toInt())) {
+                Char(byte.toUShort())
+            } else {
+                '.'
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+private val HEX_FORMAT = HexFormat {
+    bytes {
+        byteSeparator = " "
+    }
+}
