@@ -34,16 +34,21 @@ class SerialViewPanel(private val path: Path) : ToolPanel() {
         rawBytes.text = path.inputStream().toHumanReadableBinary()
         name = path.name
 
-        add(JLabel("Java Serialized Data: ${data.size} bytes").apply {
-            putClientProperty("FlatLaf.styleClass", "h3.regular")
-        }, "wrap")
-        add(HorizontalSplitPane(
-            FlatScrollPane(serialDump),
-            FlatScrollPane(rawBytes),
-            resizeWeight = 0.8,
-        ) {
-
-        }, "push, grow")
+        add(
+            JLabel("Java Serialized Data: ${data.size} bytes").apply {
+                putClientProperty("FlatLaf.styleClass", "h3.regular")
+            },
+            "wrap",
+        )
+        add(
+            HorizontalSplitPane(
+                FlatScrollPane(serialDump),
+                FlatScrollPane(rawBytes),
+                resizeWeight = 0.8,
+            ) {
+            },
+            "push, grow",
+        )
     }
 
     override val icon: Icon = SerialViewer.icon

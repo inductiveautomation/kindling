@@ -149,6 +149,7 @@ fun InputStream.toHumanReadableBinary(): String {
 
                 // the last read might not be complete, so there could be stale data in the buffer
                 val toRead = buffer.sliceArray(0 until numberOfBytesRead)
+
                 @OptIn(ExperimentalStdlibApi::class)
                 val hexBytes = toRead.toHexString(HEX_FORMAT)
                 val decodedBytes = decodeBytes(toRead)
