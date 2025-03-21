@@ -139,7 +139,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 putClientProperty("FlatLaf.styleClass", "h1")
             },
         )
-        for (tools in Tool.sortedByTitle.chunked(3)) {
+        for (tools in Tool.sortedByTitle.filterNot { it.isAdvanced }.chunked(3)) {
             add(toolTile(tools[0]), "sg tile, h 200!, newline, split, gaptop 20")
             for (tool in tools.drop(1)) {
                 add(toolTile(tool), "sg tile, gap 20 0 20 0")

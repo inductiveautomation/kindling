@@ -6,6 +6,7 @@ import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.gatewaynetwork.GatewayNetworkTool
 import io.github.inductiveautomation.kindling.idb.IdbViewer
 import io.github.inductiveautomation.kindling.log.LogViewer
+import io.github.inductiveautomation.kindling.serial.SerialViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.loadService
@@ -39,6 +40,12 @@ interface Tool : KindlingSerializable {
     val requiresHiddenFiles: Boolean
         get() = false
 
+    /**
+     * True if this tool is primarily intended for "advanced" users, and as such should be de-emphasized in the main UI.
+     */
+    val isAdvanced: Boolean
+        get() = false
+
     fun open(path: Path): ToolPanel
 
     val filter: FileFilter
@@ -54,6 +61,7 @@ interface Tool : KindlingSerializable {
                 add(GatewayNetworkTool)
                 add(AlarmViewer)
                 add(XmlTool)
+                add(SerialViewer)
                 addAll(loadService<Tool>())
             }
         }
