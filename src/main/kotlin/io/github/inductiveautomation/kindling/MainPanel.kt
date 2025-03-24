@@ -255,6 +255,25 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 },
             )
         }
+        addSeparator()
+        for (tool in Tool.tools.filterIsInstance<EditorTool>()) {
+            add(
+                Action(
+                    name = "New Empty ${tool.title}"
+                ) {
+                    openOrError(tool.title, tool.description, tool::open)
+                }
+            )
+        }
+        if (!SystemInfo.isMacOS) {
+            addSeparator()
+            add(
+                Action("Preferences") {
+                    preferencesEditor.isVisible = true
+                    preferencesEditor.toFront()
+                },
+            )
+        }
     }
 
     private val pasteMenu = JMenu("Paste").apply {
