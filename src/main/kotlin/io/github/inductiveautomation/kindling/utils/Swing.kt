@@ -3,9 +3,6 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.github.weisj.jsvg.SVGDocument
 import com.github.weisj.jsvg.attributes.ViewBox
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.swing.Swing
 import org.jdesktop.swingx.decorator.AbstractHighlighter
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.ComponentAdapter

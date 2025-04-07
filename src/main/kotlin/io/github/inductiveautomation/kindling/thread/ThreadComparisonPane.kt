@@ -61,7 +61,7 @@ class ThreadComparisonPane(
     private val body = JPanel((MigLayout("fill, ins 0, hidemode 3")))
     private val footer = if (totalThreadDumps > 3) FooterPanel() else null
 
-    private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) {
+    private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) { i ->
         ThreadContainer(version).apply {
             blockerButton.addActionListener {
                 val blocker = blockerButton.blocker
