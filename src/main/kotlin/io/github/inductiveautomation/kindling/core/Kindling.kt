@@ -146,6 +146,14 @@ data object Kindling {
                 },
             )
 
+            val HighlightByDefault = preference(
+                name = "Highlight",
+                default = true,
+                editor = {
+                    PreferenceCheckbox("Enable table highlighting by default for multiple log files.")
+                },
+            )
+
             override val displayName: String = "General"
             override val serialKey: String = "general"
             override val preferences: List<Preference<*>> = listOf(
@@ -154,6 +162,7 @@ data object Kindling {
                 ShowFullLoggerNames,
                 ShowLogTree,
                 UseHyperlinks,
+                HighlightByDefault,
             )
         }
 

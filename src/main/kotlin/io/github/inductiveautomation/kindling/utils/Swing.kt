@@ -6,7 +6,12 @@ import com.github.weisj.jsvg.attributes.ViewBox
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
+import org.jdesktop.swingx.decorator.AbstractHighlighter
+import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.decorator.ComponentAdapter
+import org.jdesktop.swingx.decorator.Highlighter
 import org.jdesktop.swingx.prompt.BuddySupport
+import java.awt.Color
 import java.awt.Component
 import java.awt.Container
 import java.awt.RenderingHints
@@ -68,7 +73,7 @@ fun FlatSVGIcon.asActionIcon(selected: Boolean = false): FlatSVGIcon {
     }
 }
 
-fun JFileChooser.chooseFiles(parent: JComponent): List<File>? {
+fun JFileChooser.chooseFiles(parent: JComponent?): List<File>? {
     return if (showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
         selectedFiles.toList()
     } else {
@@ -132,4 +137,52 @@ fun DocumentAdapter(block: (e: DocumentEvent) -> Unit): DocumentListener = objec
     override fun changedUpdate(e: DocumentEvent) = block(e)
     override fun insertUpdate(e: DocumentEvent) = block(e)
     override fun removeUpdate(e: DocumentEvent) = block(e)
+}
+
+typealias HighlightPredicateKt = (component: Component, adapter: ComponentAdapter) -> Boolean
+
+data class ColorPalette(
+    val background: Color?,
+    val foreground: Color?,
+) {
+    fun toHighLighter(
+        predicate: HighlightPredicateKt = { _, _ -> true },
+    ): ColorHighlighter {
+        return ColorHighlighter(predicate, background, foreground)
+    }
+}
+
+fun ColorHighlighter(
+    background: Color?,
+    foreground: Color?,
+    predicate: HighlightPredicateKt = { _, _ -> true },
+) = ColorHighlighter(predicate, background, foreground)
+
+@Suppress("FunctionName")
+fun ColorHighlighter(
+    fgSupplier: (() -> Color)?,
+    bgSupplier: (() -> Color)?,
+    predicate: HighlightPredicateKt = { _, _ -> true },
+): Highlighter = object : AbstractHighlighter(predicate) {
+    override fun doHighlight(
+        target: Component,
+        adapter: ComponentAdapter,
+    ): Component {
+        return target.apply {
+            fgSupplier?.invoke()?.let { foreground = it }
+            bgSupplier?.invoke()?.let { background = it }
+        }
+    }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+fun Color.toHexString(alpha: Boolean = false): String {
+    val hexString = rgb.toHexString()
+    return "#${
+        if (alpha) {
+            hexString
+        } else {
+            hexString.substring(2)
+        }
+    }"
 }

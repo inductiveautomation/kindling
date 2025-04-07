@@ -35,7 +35,7 @@ fun StackElement.toBodyLine(version: String): BodyLine {
     } ?: BodyLine(this)
 }
 
-@Suppress("ktlint:trailing-comma-on-declaration-site")
+@Suppress("ktlint:standard:trailing-comma-on-declaration-site")
 enum class MajorVersion(val version: String) {
     SevenNine("7.9"),
     EightZero("8.0"),

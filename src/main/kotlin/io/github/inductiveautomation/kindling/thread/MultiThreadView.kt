@@ -21,11 +21,11 @@ import io.github.inductiveautomation.kindling.thread.model.ThreadModel
 import io.github.inductiveautomation.kindling.thread.model.ThreadModel.MultiThreadColumns
 import io.github.inductiveautomation.kindling.thread.model.ThreadModel.SingleThreadColumns
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.ColorHighlighter
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FileFilter
-import io.github.inductiveautomation.kindling.utils.FilterModel
-import io.github.inductiveautomation.kindling.utils.FilterSidebar
+import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
@@ -36,6 +36,11 @@ import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import io.github.inductiveautomation.kindling.utils.transferTo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
 import java.awt.Rectangle
 import java.nio.file.Files
@@ -70,6 +75,15 @@ class MultiThreadView(
     private val statePanel = StatePanel()
     private val searchField = JXSearchField("Search")
 
+    private val sidebar = FileFilterSidebar(
+        listOf(
+            statePanel,
+            systemPanel,
+            poolPanel,
+        ),
+        fileData = paths.zip(threadDumps).toMap(),
+    )
+
     private var visibleThreadDumps: List<ThreadDump?> = emptyList()
         set(value) {
             field = value
@@ -80,15 +94,7 @@ class MultiThreadView(
     private var currentLifespanList: List<ThreadLifespan> = emptyList()
         set(value) {
             field = value
-            val allThreads = value.flatten().filterNotNull()
-            if (allThreads.isNotEmpty()) {
-                statePanel.stateList.setModel(FilterModel(allThreads.groupingBy { it.state.name }.eachCount()))
-                systemPanel.filterList.setModel(FilterModel(allThreads.groupingBy(Thread::system).eachCount()))
-                poolPanel.filterList.setModel(FilterModel(allThreads.groupingBy(Thread::pool).eachCount()))
-            }
-            if (initialized) {
-                updateData()
-            }
+            if (initialized) updateData()
         }
 
     private val threadCountLabel = object : JLabel() {
@@ -124,14 +130,13 @@ class MultiThreadView(
 
             addHighlighter(
                 ColorHighlighter(
-                    { _, adapter ->
-                        threadDumps.any { threadDump ->
-                            model[adapter.row, model.columns.id] in threadDump.deadlockIds
-                        }
-                    },
                     UIManager.getColor("Actions.Red"),
                     null,
-                ),
+                ) { _, adapter ->
+                    threadDumps.any { threadDump ->
+                        model[adapter.row, model.columns.id] in threadDump.deadlockIds
+                    }
+                },
             )
 
             fun toggleMarkAllWithSameValue(property: Column<ThreadLifespan, *>) {
@@ -220,19 +225,7 @@ class MultiThreadView(
         }
     }
 
-    private val sidebar = FilterSidebar(
-        statePanel,
-        systemPanel,
-        poolPanel,
-    )
-
     private var comparison = ThreadComparisonPane(threadDumps.size, threadDumps[0].version)
-
-    private val threadDumpCheckboxList = ThreadDumpCheckboxList(paths).apply {
-        isVisible = !mainTable.model.isSingleContext
-    }
-
-    private var listModelIsAdjusting = false
 
     private val exportMenu = run {
         val firstThreadDump = threadDumps.first()
@@ -246,7 +239,7 @@ class MultiThreadView(
     }
 
     private val filters = buildList<Filter<Thread?>> {
-        addAll(sidebar.filterPanels)
+        addAll(sidebar)
 
         add { thread -> thread != null }
 
@@ -335,9 +328,9 @@ class MultiThreadView(
         statePanel.stateList.selectAll()
         systemPanel.filterList.selectAll()
 
-        sidebar.filterPanels.forEach { panel ->
+        sidebar.forEach { panel ->
             panel.addFilterChangeListener {
-                if (!listModelIsAdjusting) updateData()
+                if (!sidebar.filterModelsAreAdjusting) updateData()
             }
         }
 
@@ -345,21 +338,10 @@ class MultiThreadView(
             updateData()
         }
 
-        threadDumpCheckboxList.checkBoxListSelectionModel.apply {
-            addListSelectionListener { event ->
-                if (!event.valueIsAdjusting) {
-                    listModelIsAdjusting = true
-
-                    val selectedThreadDumps = List(threadDumps.size) { i ->
-                        if (isSelectedIndex(i + 1)) {
-                            threadDumps[i]
-                        } else {
-                            null
-                        }
-                    }
-                    visibleThreadDumps = selectedThreadDumps
-                    listModelIsAdjusting = false
-                }
+        sidebar.addFileFilterChangeListener {
+            val selectedFiles = sidebar.selectedFiles
+            visibleThreadDumps = threadDumps.map {
+                if (it in selectedFiles) it else null
             }
         }
 
@@ -389,7 +371,6 @@ class MultiThreadView(
 
         add(JLabel("Version: ${threadDumps.first().version}"))
         add(threadCountLabel)
-        add(threadDumpCheckboxList, "gapleft 20px, pushx, growx, shpx 200")
         add(exportButton, "gapright 8")
         add(searchField, "wmin 300, wrap")
         add(
