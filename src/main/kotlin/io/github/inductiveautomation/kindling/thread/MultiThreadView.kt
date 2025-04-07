@@ -56,10 +56,10 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
-import kotlinx.coroutines.CoroutineScope
-import org.jdesktop.swingx.decorator.ColorHighlighter
 
 class MultiThreadView(
     val paths: List<Path>,

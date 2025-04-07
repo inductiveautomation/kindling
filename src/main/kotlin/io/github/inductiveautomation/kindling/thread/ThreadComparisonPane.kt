@@ -32,6 +32,7 @@ import java.text.DecimalFormat
 import java.util.EventListener
 import javax.swing.JButton
 import javax.swing.JCheckBox
+import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
@@ -97,8 +98,6 @@ class ThreadComparisonPane(
             }
         }
     }
-
-    private val header = HeaderPanel()
 
     init {
         ShowNullThreads.addChangeListener {
