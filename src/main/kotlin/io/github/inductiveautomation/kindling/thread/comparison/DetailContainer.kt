@@ -6,6 +6,8 @@ import io.github.inductiveautomation.kindling.thread.comparison.ThreadComparison
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.scrollToTop
+import kotlinx.coroutines.launch
+import net.miginfocom.swing.MigLayout
 import java.awt.Dimension
 import javax.swing.JButton
 import javax.swing.JPanel
@@ -13,8 +15,6 @@ import javax.swing.JTextPane
 import javax.swing.SwingUtilities.invokeLater
 import javax.swing.UIManager
 import javax.swing.event.HyperlinkEvent
-import kotlinx.coroutines.launch
-import net.miginfocom.swing.MigLayout
 
 internal class DetailContainer(
     val prefix: String,
@@ -99,6 +99,5 @@ internal class DetailContainer(
     companion object {
         private val collapseIcon = FlatSVGIcon("icons/bx-chevrons-up.svg")
         private val expandIcon = FlatSVGIcon("icons/bx-chevrons-down.svg")
-
     }
 }

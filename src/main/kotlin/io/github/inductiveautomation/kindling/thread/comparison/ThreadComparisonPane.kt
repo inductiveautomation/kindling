@@ -13,6 +13,7 @@ import io.github.inductiveautomation.kindling.utils.dismissOnEscape
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.style
+import net.miginfocom.swing.MigLayout
 import java.awt.Color
 import java.awt.Font
 import java.util.EventListener
@@ -23,7 +24,6 @@ import javax.swing.JPopupMenu
 import javax.swing.UIManager
 import javax.swing.event.EventListenerList
 import kotlin.properties.Delegates
-import net.miginfocom.swing.MigLayout
 
 class ThreadComparisonPane(
     totalThreadDumps: Int,

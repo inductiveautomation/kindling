@@ -15,6 +15,9 @@ import io.github.inductiveautomation.kindling.utils.diff.Diff
 import io.github.inductiveautomation.kindling.utils.diff.Difference
 import io.github.inductiveautomation.kindling.utils.scrollToTop
 import io.github.inductiveautomation.kindling.utils.systemClipboard
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.Color
 import java.awt.Desktop
 import java.awt.Font
@@ -30,9 +33,6 @@ import javax.swing.JTextArea
 import javax.swing.UIManager
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeLines
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rtextarea.RTextScrollPane
 
 class ThreadDiffView(
     first: Thread,

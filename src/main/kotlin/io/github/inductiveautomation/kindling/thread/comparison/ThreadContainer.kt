@@ -15,17 +15,17 @@ import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.tag
 import io.github.inductiveautomation.kindling.utils.toBodyLine
+import net.miginfocom.swing.MigLayout
 import java.text.DecimalFormat
 import javax.swing.Icon
 import javax.swing.JCheckBox
 import javax.swing.JPanel
 import javax.swing.UIManager
 import kotlin.properties.Delegates
-import net.miginfocom.swing.MigLayout
 
 internal class ThreadContainer(
     val index: Int,
-    private val version: String
+    private val version: String,
 ) : JPanel(MigLayout("fill, flowy, hidemode 3, gapy 5, ins 0")) {
     var thread: Thread? by Delegates.observable(null) { _, _, _ ->
         updateThreadInfo()
@@ -77,7 +77,8 @@ internal class ThreadContainer(
                 add(titleLabel, "push, grow, gapleft 8")
                 add(diffCheckBox)
                 add(blockerButton, "gapleft 8")
-            }, "wmax 100%, top, growx"
+            },
+            "wmax 100%, top, growx",
         )
 
         // Ensure that the top two don't get pushed below their preferred size.

@@ -36,6 +36,12 @@ import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXSearchField
+import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
 import java.awt.Rectangle
 import java.nio.file.Path
@@ -54,12 +60,6 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.writeText
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXSearchField
-import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 
 class MultiThreadView(
     val paths: List<Path>,
