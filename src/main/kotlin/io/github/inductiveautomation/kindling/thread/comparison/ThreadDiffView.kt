@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.thread
+package io.github.inductiveautomation.kindling.thread.comparison
 
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
@@ -15,9 +15,6 @@ import io.github.inductiveautomation.kindling.utils.diff.Diff
 import io.github.inductiveautomation.kindling.utils.diff.Difference
 import io.github.inductiveautomation.kindling.utils.scrollToTop
 import io.github.inductiveautomation.kindling.utils.systemClipboard
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.Color
 import java.awt.Desktop
 import java.awt.Font
@@ -33,6 +30,9 @@ import javax.swing.JTextArea
 import javax.swing.UIManager
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeLines
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rtextarea.RTextScrollPane
 
 class ThreadDiffView(
     first: Thread,
@@ -122,6 +122,7 @@ private class UnifiedView(
         highlightCurrentLine = false
         isEditable = false
         theme = Theme.currentValue
+        font = monospaced
 
         fun highlight() {
             removeAllLineHighlights()
@@ -221,6 +222,7 @@ private class SideBySideView(
 
         init {
             theme = Theme.currentValue
+            font = monospaced
             isEditable = false
             highlightCurrentLine = false
 

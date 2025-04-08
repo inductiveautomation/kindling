@@ -112,11 +112,17 @@ class Difference<T> private constructor(
         ): Difference<U> {
             val lcs = LongestCommonSequence.of(original, modified, equalizer)
 
+            // We need to remove from this list as we parse in order to not get hung up on duplicate lines
+            var lcsTemp = lcs.toMutableList()
             val additions = modified.mapIndexedNotNull { index, item ->
-                if (item in lcs) null else Diff.Addition(item, index)
+                val removedItem = lcsTemp.remove(item)
+                if (removedItem) null else Diff.Addition(item, index)
             }
+
+            lcsTemp = lcs.toMutableList()
             val deletions = original.mapIndexedNotNull { index, item ->
-                if (item in lcs) null else Diff.Deletion(item, index)
+                val removedItem = lcsTemp.remove(item)
+                if (removedItem) null else Diff.Deletion(item, index)
             }
 
             return Difference(original, modified, additions, deletions)
