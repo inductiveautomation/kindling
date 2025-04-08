@@ -60,7 +60,6 @@ tasks {
         useJUnitPlatform()
     }
 
-
     val download79 by registering(DownloadJavadocs::class) {
         version = "7.9"
         urls = listOf(
