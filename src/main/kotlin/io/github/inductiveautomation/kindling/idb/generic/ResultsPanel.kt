@@ -6,11 +6,11 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
+import io.github.inductiveautomation.kindling.utils.clipboardString
 import io.github.inductiveautomation.kindling.utils.selectedOrAllRowIndices
 import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
 import net.miginfocom.swing.MigLayout
 import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 import java.io.File
 import java.util.Base64
 import javax.swing.JButton
@@ -82,8 +82,7 @@ class ResultsPanel : JPanel(MigLayout("ins 0, fill, hidemode 3")) {
                 }
         }
 
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        clipboard.setContents(StringSelection(tsv), null)
+        Toolkit.getDefaultToolkit().clipboardString = tsv
     }
 
     private val save = Action(

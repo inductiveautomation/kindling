@@ -14,6 +14,7 @@ import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.add
+import io.github.inductiveautomation.kindling.thread.comparison.ThreadComparisonPane
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.thread.model.ThreadDump
 import io.github.inductiveautomation.kindling.thread.model.ThreadLifespan
@@ -35,27 +36,30 @@ import io.github.inductiveautomation.kindling.utils.escapeHtml
 import io.github.inductiveautomation.kindling.utils.rowIndices
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
-import io.github.inductiveautomation.kindling.utils.transferTo
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
 import java.awt.Rectangle
-import java.nio.file.Files
 import java.nio.file.Path
+import javax.swing.ButtonGroup
 import javax.swing.JLabel
 import javax.swing.JMenu
 import javax.swing.JMenuBar
+import javax.swing.JPanel
 import javax.swing.JPopupMenu
+import javax.swing.JRadioButton
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
 import javax.swing.UIManager
+import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.outputStream
+import kotlin.io.path.writeText
 
 class MultiThreadView(
     val paths: List<Path>,
@@ -124,7 +128,7 @@ class MultiThreadView(
 
             addHighlighter(
                 ColorHighlighter(
-                    { UIManager.getColor("Actions.Red") },
+                    UIManager.getColor("Actions.Red"),
                     null,
                 ) { _, adapter ->
                     threadDumps.any { threadDump ->
@@ -242,62 +246,67 @@ class MultiThreadView(
 
             thread!!.id.toString().contains(query) ||
                 thread.name.contains(query, ignoreCase = true) ||
-                thread.system != null && thread.system.contains(query, ignoreCase = true) ||
-                thread.scope != null && thread.scope.contains(query, ignoreCase = true) ||
+                (thread.system != null && thread.system.contains(query, ignoreCase = true)) ||
+                (thread.scope != null && thread.scope.contains(query, ignoreCase = true)) ||
                 thread.state.name.contains(query, ignoreCase = true) ||
                 thread.stacktrace.any { stack -> stack.contains(query, ignoreCase = true) }
         }
     }
 
-    private fun updateData() {
-        BACKGROUND.launch {
-            val filteredThreadDumps = currentLifespanList.filter { lifespan ->
+    // Setting the model will fire a selection event. This gets around that.
+    private var tableModelIsAdjusting = false
+
+    private fun updateData() = EDT_SCOPE.launch {
+        val filteredThreadDumps = withContext(Dispatchers.Default) {
+            currentLifespanList.filter { lifespan ->
                 lifespan.any {
                     filters.all { threadFilter -> threadFilter.filter(it) }
                 }
             }
+        }
 
-            EDT_SCOPE.launch {
-                val selectedID = if (!mainTable.selectionModel.isSelectionEmpty) {
-                    /* Maintain selection when model changes */
-                    val previousSelectedIndex = mainTable.convertRowIndexToModel(mainTable.selectedRow)
-                    mainTable.model[previousSelectedIndex, mainTable.model.columns.id]
-                } else {
-                    null
-                }
+        val selectedID = if (!mainTable.selectionModel.isSelectionEmpty) {
+            /* Maintain selection when model changes */
+            val previousSelectedIndex = mainTable.convertRowIndexToModel(mainTable.selectedRow)
+            mainTable.model[previousSelectedIndex, mainTable.model.columns.id]
+        } else {
+            null
+        }
 
-                val sortedColumnIdentifier = mainTable.sortedColumn?.identifier
-                val sortOrder = sortedColumnIdentifier?.let(mainTable::getSortOrder)
+        val sortedColumnIdentifier = mainTable.sortedColumn?.identifier
+        val sortOrder = sortedColumnIdentifier?.let(mainTable::getSortOrder)
 
-                val newModel = ThreadModel(filteredThreadDumps)
-                mainTable.columnFactory = newModel.columns.toColumnFactory()
-                mainTable.model = newModel
-                mainTable.createDefaultColumnsFromModel()
-                exportMenu.isEnabled = newModel.isSingleContext
+        val newModel = ThreadModel(filteredThreadDumps)
+        mainTable.columnFactory = newModel.columns.toColumnFactory()
 
-                if (selectedID != null) {
-                    val newSelectedIndex = mainTable.model.threadData.indexOfFirst { lifespan ->
-                        selectedID in lifespan.mapNotNull { thread -> thread?.id }
-                    }
-                    if (newSelectedIndex > -1) {
-                        val newSelectedViewIndex = mainTable.convertRowIndexToView(newSelectedIndex)
-                        mainTable.selectionModel.setSelectionInterval(0, newSelectedViewIndex)
-                        mainTable.scrollRectToVisible(Rectangle(mainTable.getCellRect(newSelectedViewIndex, 0, true)))
-                    }
-                }
+        tableModelIsAdjusting = true
+        mainTable.model = newModel
+        tableModelIsAdjusting = false
 
-                // Set visible and/or sort by previously sorted column
-                val columnExt = sortedColumnIdentifier?.let(mainTable::getColumnExt)
-                if (columnExt != null) {
-                    columnExt.isVisible = true
-                    if (sortOrder != null) {
-                        mainTable.setSortOrder(sortedColumnIdentifier, sortOrder)
-                    }
-                }
+        mainTable.createDefaultColumnsFromModel()
+        exportMenu.isEnabled = newModel.isSingleContext
 
-                threadCountLabel.visibleThreads = mainTable.model.threadData.flatten().filterNotNull().size
+        if (selectedID != null) {
+            val newSelectedIndex = mainTable.model.threadData.indexOfFirst { lifespan ->
+                selectedID in lifespan.mapNotNull { thread -> thread?.id }
+            }
+            if (newSelectedIndex > -1) {
+                val newSelectedViewIndex = mainTable.convertRowIndexToView(newSelectedIndex)
+                mainTable.selectionModel.setSelectionInterval(0, newSelectedViewIndex)
+                mainTable.scrollRectToVisible(Rectangle(mainTable.getCellRect(newSelectedViewIndex, 0, true)))
             }
         }
+
+        // Set visible and/or sort by previously sorted column
+        val columnExt = sortedColumnIdentifier?.let(mainTable::getColumnExt)
+        if (columnExt != null) {
+            columnExt.isVisible = true
+            if (sortOrder != null) {
+                mainTable.setSortOrder(sortedColumnIdentifier, sortOrder)
+            }
+        }
+
+        threadCountLabel.visibleThreads = mainTable.model.threadData.flatten().filterNotNull().size
     }
 
     init {
@@ -334,10 +343,13 @@ class MultiThreadView(
 
         mainTable.selectionModel.apply {
             addListSelectionListener {
-                if (!it.valueIsAdjusting) {
+                if (!it.valueIsAdjusting && !tableModelIsAdjusting) {
                     val selectedRowIndices = mainTable.selectedRowIndices()
                     if (selectedRowIndices.isNotEmpty()) {
-                        comparison.threads = mainTable.model.threadData[selectedRowIndices.first()]
+                        val newThreads = mainTable.model.threadData[selectedRowIndices.first()]
+                        if (comparison.threads !== newThreads) {
+                            comparison.threads = newThreads
+                        }
                     } else {
                         comparison.threads = List(threadDumps.size) { null }
                     }
@@ -369,7 +381,7 @@ class MultiThreadView(
                 ),
                 comparison,
             ),
-            "push, grow, span",
+            "push, grow, span, wmax 100%",
         )
 
         sidebar.selectedIndex = 0
@@ -390,8 +402,6 @@ class MultiThreadView(
     }
 
     companion object {
-        private val BACKGROUND = CoroutineScope(Dispatchers.Default)
-
         private fun List<ThreadDump?>.toLifespanList(): List<ThreadLifespan> {
             val idsToLifespans = mutableMapOf<Int, Array<Thread?>>()
             forEachIndexed { i, threadDump ->
@@ -459,8 +469,8 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     }
 
     override fun open(data: String): ToolPanel {
-        val tempFile = Files.createTempFile("kindling", "cb")
-        data.byteInputStream() transferTo tempFile.outputStream()
+        val tempFile = createTempFile(prefix = "kindling", suffix = "cb")
+        tempFile.writeText(data)
         return open(tempFile)
     }
 
@@ -480,6 +490,41 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
+    val DefaultDiffView: Preference<DiffViewPreference> = preference(
+        name = "Default Diff View",
+        default = DiffViewPreference.UNIFIED,
+        editor = {
+            JPanel(MigLayout("ins 0")).apply {
+                background = null
+
+                val unifiedOption = JRadioButton(
+                    Action("Unified", selected = currentValue == DiffViewPreference.UNIFIED) {
+                        currentValue = DiffViewPreference.UNIFIED
+                    },
+                )
+
+                val sideBySideOption = JRadioButton(
+                    Action("Side-by-side", selected = currentValue == DiffViewPreference.SIDE_BY_SIDE) {
+                        currentValue = DiffViewPreference.SIDE_BY_SIDE
+                    },
+                )
+
+                ButtonGroup().apply {
+                    add(unifiedOption)
+                    add(sideBySideOption)
+                }
+
+                add(unifiedOption)
+                add(sideBySideOption)
+            }
+        },
+    )
+
+    enum class DiffViewPreference {
+        UNIFIED,
+        SIDE_BY_SIDE,
+    }
+
     override val displayName = "Thread View"
-    override val preferences = listOf(ShowNullThreads, ShowEmptyValues)
+    override val preferences = listOf(ShowNullThreads, ShowEmptyValues, DefaultDiffView)
 }

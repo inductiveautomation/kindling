@@ -31,6 +31,7 @@ import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.StyledLabel
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.chooseFiles
+import io.github.inductiveautomation.kindling.utils.clipboardString
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
@@ -53,7 +54,6 @@ import java.awt.PopupMenu
 import java.awt.Taskbar
 import java.awt.Toolkit
 import java.awt.Window
-import java.awt.datatransfer.DataFlavor
 import java.awt.desktop.QuitStrategy
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -252,14 +252,13 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 Action(
                     name = "Paste ${clipboardTool.title}",
                 ) {
-                    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                    if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-                        val clipString = clipboard.getData(DataFlavor.stringFlavor) as String
-                        openOrError(clipboardTool.title, "clipboard data") {
-                            clipboardTool.open(clipString)
-                        }
-                    } else {
+                    val pasteData = Toolkit.getDefaultToolkit().clipboardString
+                    if (pasteData.isNullOrBlank()) {
                         LOGGER.info("No string data found on clipboard")
+                    } else {
+                        openOrError(clipboardTool.title, "clipboard data") {
+                            clipboardTool.open(pasteData)
+                        }
                     }
                 },
             )
@@ -306,7 +305,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 add(JLabel(FlatSVGIcon("logo.svg").derive(64, 64), CENTER))
                 add(
                     JLabel("Kindling", CENTER).apply {
-                        font = UIManager.getFont("h1.font")
+                        putClientProperty("FlatLaf.styleClass", "h1.regular")
                     },
                 )
                 add(JLabel("Version ${System.getProperty("app.version") ?: "(Dev)"}", CENTER))
