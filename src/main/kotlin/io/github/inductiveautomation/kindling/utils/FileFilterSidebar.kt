@@ -33,6 +33,7 @@ import javax.swing.JPopupMenu
 import javax.swing.UIManager
 import javax.swing.event.TableModelEvent
 import javax.swing.event.TableModelListener
+import kotlin.io.path.absolute
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
 import kotlin.io.path.name
@@ -370,7 +371,7 @@ class FileFilterSidebar<T> private constructor(
 
                             menu.add(
                                 Action("Open in $fileBrowserName") {
-                                    desktop.browseFileDirectory(model[rowIndex].path.toFile())
+                                    desktop.browseFileDirectory(model[rowIndex].path.absolute().toFile())
                                 },
                             )
                         }

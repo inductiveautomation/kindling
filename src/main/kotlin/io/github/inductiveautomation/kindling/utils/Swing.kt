@@ -18,7 +18,8 @@ import java.awt.Container
 import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.Toolkit
-import java.awt.datatransfer.Clipboard
+import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -47,7 +48,18 @@ val EDT_SCOPE by lazy { CoroutineScope(Dispatchers.Swing) }
 
 val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx
 
-val systemClipboard: Clipboard by lazy { Toolkit.getDefaultToolkit().systemClipboard }
+/**
+ * A convenience property to get or set the contents of the system clipboard as a string.
+ */
+var Toolkit.clipboardString: String?
+    get() {
+        return runCatching {
+            systemClipboard.getData(DataFlavor.stringFlavor) as? String
+        }.getOrNull()
+    }
+    set(value) {
+        systemClipboard.setContents(StringSelection(value), null)
+    }
 
 val Document.text: String
     get() = getText(0, length)

@@ -164,7 +164,7 @@ internal class ThreadContainer(
                             stackLine
                         }
                     }
-                isHightlighted = highlightStacktrace
+                isHighlighted = highlightStacktrace
             }
         }
 

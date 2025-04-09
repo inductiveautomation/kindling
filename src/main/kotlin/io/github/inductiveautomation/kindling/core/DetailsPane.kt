@@ -6,13 +6,13 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced
 import io.github.inductiveautomation.kindling.internal.DetailsIcon
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.clipboardString
 import io.github.inductiveautomation.kindling.utils.escapeHtml
-import io.github.inductiveautomation.kindling.utils.systemClipboard
 import net.miginfocom.swing.MigLayout
 import java.awt.Component
 import java.awt.EventQueue
 import java.awt.Rectangle
-import java.awt.datatransfer.StringSelection
+import java.awt.Toolkit
 import javax.swing.JButton
 import javax.swing.JFileChooser
 import javax.swing.JPanel
@@ -50,7 +50,7 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
         description = "Copy to Clipboard",
         icon = FlatSVGIcon("icons/bx-clipboard.svg"),
     ) {
-        systemClipboard.setContents(StringSelection(events.toClipboardFormat()), null)
+        Toolkit.getDefaultToolkit().clipboardString = events.toClipboardFormat()
     }
 
     private val save = Action(

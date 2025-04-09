@@ -12,7 +12,6 @@ import java.awt.Dimension
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JTextPane
-import javax.swing.SwingUtilities.invokeLater
 import javax.swing.UIManager
 import javax.swing.event.HyperlinkEvent
 
@@ -39,7 +38,7 @@ internal class DetailContainer(
             field = value
         }
 
-    var isHightlighted: Boolean = false
+    var isHighlighted: Boolean = false
         set(value) {
             field = value
             if (value) {
@@ -86,9 +85,7 @@ internal class DetailContainer(
         get() = textArea.text
         set(value) {
             textArea.text = value
-            invokeLater {
-                scrollPane.scrollToTop()
-            }
+            scrollPane.scrollToTop()
         }
 
     init {

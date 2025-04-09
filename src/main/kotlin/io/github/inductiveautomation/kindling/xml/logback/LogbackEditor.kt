@@ -12,14 +12,14 @@ import io.github.inductiveautomation.kindling.utils.EmptyBorder
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.chooseFiles
+import io.github.inductiveautomation.kindling.utils.clipboardString
 import io.github.inductiveautomation.kindling.utils.debounce
-import io.github.inductiveautomation.kindling.utils.systemClipboard
 import net.miginfocom.swing.MigLayout
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator
-import java.awt.datatransfer.StringSelection
+import java.awt.Toolkit
 import java.awt.event.ItemEvent
 import java.io.File
 import java.util.Vector
@@ -152,7 +152,7 @@ class LogbackEditor(file: List<String>) : JPanel(MigLayout("ins 6, fill, hidemod
         description = "Copy to Clipboard",
         icon = FlatSVGIcon("icons/bx-clipboard.svg"),
     ) {
-        systemClipboard.setContents(StringSelection(configData.toXml()), null)
+        Toolkit.getDefaultToolkit().clipboardString = configData.toXml()
     }
 
     private val saveXmlAction = Action(

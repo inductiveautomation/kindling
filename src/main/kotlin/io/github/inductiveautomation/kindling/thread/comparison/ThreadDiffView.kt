@@ -10,18 +10,18 @@ import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
+import io.github.inductiveautomation.kindling.utils.clipboardString
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.diff.Diff
 import io.github.inductiveautomation.kindling.utils.diff.Difference
 import io.github.inductiveautomation.kindling.utils.scrollToTop
-import io.github.inductiveautomation.kindling.utils.systemClipboard
 import net.miginfocom.swing.MigLayout
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.Color
 import java.awt.Desktop
 import java.awt.Font
-import java.awt.datatransfer.StringSelection
+import java.awt.Toolkit
 import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JComboBox
@@ -187,7 +187,7 @@ private class UnifiedView(
                         val outputText = gutterLines.zip(difference).joinToString("\n") { (gutter, diff) ->
                             "$gutter ${diff.value}"
                         }
-                        systemClipboard.setContents(StringSelection(outputText), null)
+                        Toolkit.getDefaultToolkit().clipboardString = outputText
                     },
                 )
             }
@@ -215,7 +215,7 @@ private class SideBySideView(
         override fun createPopupMenu() = JPopupMenu().apply {
             add(
                 Action("Copy original stacktrace") {
-                    systemClipboard.setContents(StringSelection(originalStack.joinToString("\n")), null)
+                    Toolkit.getDefaultToolkit().clipboardString = originalStack.joinToString("\n")
                 },
             )
         }
