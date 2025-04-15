@@ -172,7 +172,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
         border = EmptyBorder()
     }
 
-    private val tabs = object : TabStrip() {
+    private val tabs = object : TabStrip(tabsEditable = true) {
         init {
             name = "MainTabStrip"
             isVisible = false
