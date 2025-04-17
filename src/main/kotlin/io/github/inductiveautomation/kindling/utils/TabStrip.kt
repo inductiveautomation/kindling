@@ -8,6 +8,8 @@ import java.awt.Container
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
+import java.awt.event.FocusAdapter
+import java.awt.event.FocusEvent
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -45,8 +47,8 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         if (tabsEditable) {
             addMouseListener(
                 object : MouseAdapter() {
-                    override fun mouseClicked(e: MouseEvent?) {
-                        if (e != null && e.clickCount == 2) {
+                    override fun mouseClicked(e: MouseEvent) {
+                        if (e.clickCount == 2) {
                             val tabIndex = indexAtLocation(e.x, e.y)
                             if (tabIndex == -1) return
                             if (isTabClosable(tabIndex)) {
@@ -93,14 +95,14 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
                             }
                         },
                     )
-                    if (tabsEditable && isTabClosable(tabIndex)) {
+                    val closable = isTabClosable(tabIndex)
+                    if (tabsEditable && closable) {
                         add(
                             Action("Rename Tab") {
                                 editTabTitle(tabIndex)
                             },
                         )
                     }
-                    val closable = isTabClosable(tabIndex)
                     add(
                         Action(if (closable) "Pin" else "Unpin") {
                             setTabClosable(tabIndex, !closable)
@@ -177,23 +179,30 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         )
     }
 
-    fun editTabTitle(tabIndex: Int) {
-        val textField = JTextField(
-            getTitleAt(tabIndex),
+    private fun editTabTitle(tabIndex: Int) {
+        val textField = JTextField(getTitleAt(tabIndex))
+        textField.addFocusListener(
+            object : FocusAdapter() {
+                override fun focusLost(e: FocusEvent?) {
+                    setTabComponentAt(tabIndex, null)
+                }
+            },
         )
 
         textField.addKeyListener(
             object : KeyAdapter() {
-                override fun keyPressed(e: KeyEvent?) {
-                    if (e?.keyCode == KeyEvent.VK_ENTER) {
-                        val newTabName: String? = textField.text
-                        if (!newTabName.isNullOrBlank()) {
-                            setTitleAt(tabIndex, newTabName)
+                override fun keyPressed(e: KeyEvent) {
+                    when (e.keyCode) {
+                        KeyEvent.VK_ENTER -> {
+                            val newTabName: String? = textField.text
+                            if (!newTabName.isNullOrBlank()) {
+                                setTitleAt(tabIndex, newTabName)
+                                setTabComponentAt(tabIndex, null)
+                            }
+                        }
+                        KeyEvent.VK_ESCAPE -> {
                             setTabComponentAt(tabIndex, null)
                         }
-                    }
-                    if (e?.keyCode == KeyEvent.VK_ESCAPE) {
-                        setTabComponentAt(tabIndex, null)
                     }
                 }
             },
