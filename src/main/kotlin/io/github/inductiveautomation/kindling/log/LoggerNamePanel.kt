@@ -147,7 +147,7 @@ class LoggerNamePanel<T : LogEvent>(private val rawData: List<T>) :
 
             newExpandedPaths.forEach(filterTree::expandPath)
         }
-        filterList.model = FilterModel.fromRawData(data, filterList.comparator) { it.logger }
+        filterList.model = FilterModel.fromRawData(data, filterList.comparator, sortKey = ::getSortKey) { it.logger }
     }
 
     override fun filter(item: T): Boolean = if (isTreeMode) {
