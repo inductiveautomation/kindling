@@ -5,25 +5,35 @@ import com.github.weisj.jsvg.SVGDocument
 import com.github.weisj.jsvg.attributes.ViewBox
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
+import org.jdesktop.swingx.decorator.AbstractHighlighter
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.ComponentAdapter
-import org.jdesktop.swingx.decorator.HighlightPredicate
+import org.jdesktop.swingx.decorator.Highlighter
 import org.jdesktop.swingx.prompt.BuddySupport
 import java.awt.Color
 import java.awt.Component
 import java.awt.Container
+import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.Toolkit
+import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.EventListener
 import javax.swing.JComponent
+import javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
 import javax.swing.JFileChooser
+import javax.swing.JFrame
 import javax.swing.JPopupMenu
+import javax.swing.JScrollPane
 import javax.swing.JTextField
+import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
@@ -38,12 +48,34 @@ val EDT_SCOPE by lazy { CoroutineScope(Dispatchers.Swing) }
 
 val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx
 
+/**
+ * A convenience property to get or set the contents of the system clipboard as a string.
+ */
+var Toolkit.clipboardString: String?
+    get() {
+        return runCatching {
+            systemClipboard.getData(DataFlavor.stringFlavor) as? String
+        }.getOrNull()
+    }
+    set(value) {
+        systemClipboard.setContents(StringSelection(value), null)
+    }
+
 val Document.text: String
     get() = getText(0, length)
 
-inline fun <T : Component> T.attachPopupMenu(
-    crossinline menuFn: T.(event: MouseEvent) -> JPopupMenu?,
-) {
+fun JFrame.dismissOnEscape() {
+    rootPane.actionMap.put(
+        "dismiss",
+        Action {
+            dispose()
+        },
+    )
+    rootPane.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "dismiss")
+}
+
+inline fun <T : Component> T.attachPopupMenu(crossinline menuFn: T.(event: MouseEvent) -> JPopupMenu?) {
     addMouseListener(
         object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
@@ -131,6 +163,10 @@ var JTextField.rightBuddy: JComponent?
         BuddySupport.addRight(buddy, this)
     }
 
+fun JScrollPane.scrollToTop() = EDT_SCOPE.launch {
+    viewport.viewPosition = Point(0, 0)
+}
+
 @Suppress("FunctionName")
 fun DocumentAdapter(block: (e: DocumentEvent) -> Unit): DocumentListener = object : DocumentListener {
     override fun changedUpdate(e: DocumentEvent) = block(e)
@@ -138,22 +174,41 @@ fun DocumentAdapter(block: (e: DocumentEvent) -> Unit): DocumentListener = objec
     override fun removeUpdate(e: DocumentEvent) = block(e)
 }
 
+typealias HighlightPredicateKt = (component: Component, adapter: ComponentAdapter) -> Boolean
+
 data class ColorPalette(
     val background: Color?,
     val foreground: Color?,
 ) {
     fun toHighLighter(
-        predicate: (component: Component, componentAdapter: ComponentAdapter) -> Boolean = { _, _ -> true },
+        predicate: HighlightPredicateKt = { _, _ -> true },
     ): ColorHighlighter {
-        return ColorHighlighter(background, foreground, predicate)
+        return ColorHighlighter(predicate, background, foreground)
     }
 }
 
 fun ColorHighlighter(
     background: Color?,
     foreground: Color?,
-    predicate: (component: Component, componentAdapter: ComponentAdapter) -> Boolean = { _, _ -> true },
-) = ColorHighlighter(HighlightPredicate(predicate), background, foreground)
+    predicate: HighlightPredicateKt = { _, _ -> true },
+) = ColorHighlighter(predicate, background, foreground)
+
+@Suppress("FunctionName")
+fun ColorHighlighter(
+    fgSupplier: (() -> Color)?,
+    bgSupplier: (() -> Color)?,
+    predicate: HighlightPredicateKt = { _, _ -> true },
+): Highlighter = object : AbstractHighlighter(predicate) {
+    override fun doHighlight(
+        target: Component,
+        adapter: ComponentAdapter,
+    ): Component {
+        return target.apply {
+            fgSupplier?.invoke()?.let { foreground = it }
+            bgSupplier?.invoke()?.let { background = it }
+        }
+    }
+}
 
 @OptIn(ExperimentalStdlibApi::class)
 fun Color.toHexString(alpha: Boolean = false): String {

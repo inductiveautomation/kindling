@@ -5,6 +5,7 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
+import io.github.inductiveautomation.kindling.utils.toHumanReadableBinary
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.CSS
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.INI
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.JSON
@@ -137,7 +138,7 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
         val text = if (charset != null) {
             readFileAsString(charset)
         } else {
-            readFileAsBytes()
+            provider.newInputStream(path).toHumanReadableBinary()
         }
 
         textArea.text = if (syntaxCombo.selectedItem as SyntaxStyle == JSON) {
@@ -159,49 +160,11 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    private fun readFileAsBytes(): String {
-        provider.newInputStream(path).use { file ->
-            val windowSize = 16
-            return sequence {
-                val buffer = ByteArray(windowSize)
-                var numberOfBytesRead: Int
-                do {
-                    numberOfBytesRead = file.readNBytes(buffer, 0, windowSize)
-
-                    // the last read might not be complete, so there could be stale data in the buffer
-                    val toRead = buffer.sliceArray(0 until numberOfBytesRead)
-                    val hexBytes = toRead.toHexString(HEX_FORMAT)
-                    val decodedBytes = decodeBytes(toRead)
-                    yield("${hexBytes.padEnd(47)}  $decodedBytes")
-                } while (numberOfBytesRead == windowSize)
-            }.joinToString(separator = "\n")
-        }
-    }
-
-    private fun decodeBytes(toRead: ByteArray) = String(
-        CharArray(toRead.size) { i ->
-            val byte = toRead[i]
-            if (byte >= 0 && !Character.isISOControl(byte.toInt())) {
-                Char(byte.toUShort())
-            } else {
-                '.'
-            }
-        },
-    )
-
     companion object {
         @OptIn(ExperimentalSerializationApi::class)
         private val JSON_FORMAT = Json {
             prettyPrint = true
             prettyPrintIndent = "  "
-        }
-
-        @OptIn(ExperimentalStdlibApi::class)
-        private val HEX_FORMAT = HexFormat {
-            bytes {
-                byteSeparator = " "
-            }
         }
 
         private val KNOWN_EXTENSIONS: Map<String, SyntaxStyle> = mapOf(
