@@ -13,10 +13,13 @@ import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
-import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
+import io.github.inductiveautomation.kindling.utils.ReifiedTableModel
+import io.github.inductiveautomation.kindling.utils.clipboardString
+import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import net.miginfocom.swing.MigLayout
+import java.awt.BorderLayout
 import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
+import java.awt.event.KeyEvent
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.LocalTime
@@ -29,9 +32,14 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import javax.swing.Icon
 import javax.swing.JButton
+import javax.swing.JComboBox
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 import javax.swing.JPanel
+import javax.swing.KeyStroke
+import javax.swing.ListSelectionModel
 import javax.swing.filechooser.FileNameExtensionFilter
+import javax.swing.table.AbstractTableModel
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -47,69 +55,160 @@ private data class TableRow(
 class TranslationView(
     private val bundles: SortedMap<Locale, Properties>,
 ) : ToolPanel() {
+    private val model = TranslationTableModel(
+        data = bundles.toRows().toMutableList(),
+        locales = bundles.keys,
+    )
+
+    private val table = ReifiedJXTable(model).apply {
+        selectionMode = ListSelectionModel.SINGLE_SELECTION
+    }
+
+    private val addRow = Action(
+        description = "Add Row",
+        icon = FlatSVGIcon("icons/bx-plus.svg"),
+    ) {
+        val input = JOptionPane.showInputDialog(this@TranslationView, "Enter Term")
+        if (!input.isNullOrBlank()) {
+            val added = model.addTerm(input)
+            if (added != -1) {
+                table.setRowSelectionInterval(added, added)
+                table.requestFocusInWindow()
+            }
+        }
+    }
+
+    private val deleteRow = Action(
+        description = "Delete Row",
+        icon = FlatSVGIcon("icons/bx-minus.svg"),
+        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0),
+    ) {
+        val selectedRow = table.selectedRow
+        if (selectedRow != -1) {
+            model.removeTerm(selectedRow)
+            val maxRow = selectedRow.coerceAtMost(model.size)
+            table.setRowSelectionInterval(maxRow, maxRow)
+            table.requestFocusInWindow()
+        }
+    }
+
+    private val addLocale = Action(
+        description = "Add Locale Element",
+        icon = FlatSVGIcon("icons/bx-book-add.svg"),
+    ) {
+        val locales = buildList {
+            add(Locale.ROOT)
+            addAll(Locale.getAvailableLocales()
+                .filter { it.displayName.isNotEmpty() }
+                .sortedBy { it.displayName })
+        }
+
+        val localeComboBox = JComboBox(locales.toTypedArray()).apply {
+            configureCellRenderer { list, locale, row, focused, selected ->
+                text = when (locale) {
+                    Locale.ROOT -> "Select Locale"
+                    null -> null
+                    else -> locale.displayName
+                }
+            }
+            selectedIndex = 0
+        }
+
+        val panel = JPanel(BorderLayout(5, 5))
+        panel.add(localeComboBox, BorderLayout.CENTER)
+
+        val result = JOptionPane.showOptionDialog(
+            this@TranslationView,
+            panel,
+            "Add Locale",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            null,
+            null,
+        )
+
+        if (result == JOptionPane.OK_OPTION) {
+            val selectedLocale = localeComboBox.selectedItem as? Locale
+
+            if (selectedLocale != null && selectedLocale != Locale.ROOT) {
+                // Call the model's function with the selected Locale
+                model.addLocale(selectedLocale)
+            }
+        }
+    }
+
+    private val deleteLocale = Action(
+        description = "Remove Locale",
+        icon = FlatSVGIcon("icons/bx-book.svg"),
+    ) {
+        val selectedColumn = table.selectedColumn
+        if (selectedColumn > 0) {
+            val locale = Locale.forLanguageTag(table.getColumnName(selectedColumn))
+            model.removeLocale(locale)
+        }
+    }
+
+    private val copyAsCsv = Action(
+        description = "Copy As CSV",
+        icon = FlatSVGIcon("icons/bx-clipboard.svg"),
+    ) {
+        Toolkit.getDefaultToolkit().clipboardString = model.toString(", ")
+    }
+
+    private val copyAsTsv = Action(
+        description = "Copy As TSV (Excel)",
+        icon = FlatSVGIcon("icons/bx-spreadsheet.svg"),
+    ) {
+        Toolkit.getDefaultToolkit().clipboardString = model.toString("\t")
+    }
+
+    private val exportPropertiesZip = Action(
+        description = "Export Zip",
+        icon = FlatSVGIcon("icons/bx-save.svg"),
+    ) {
+        exportZipFileChooser.selectedFile = HomeLocation.currentValue.resolve("$name.zip").toFile()
+
+        if (exportZipFileChooser.showSaveDialog(this@TranslationView) == JFileChooser.APPROVE_OPTION) {
+            val exportLocation = exportZipFileChooser.selectedFile.toPath()
+
+            val updatedPropertiesMap: MutableMap<Locale, Properties> = mutableMapOf()
+            for (row in model) {
+                for ((locale, translation) in row.translationMap) {
+                    val props = updatedPropertiesMap.getOrPut(locale) { Properties() }
+                    props[row.term] = translation
+                }
+            }
+
+            ZipOutputStream(exportLocation.outputStream()).use { zos ->
+                for ((locale, properties) in updatedPropertiesMap) {
+                    zos.putNextEntry(ZipEntry("${locale.toIgnitionParseableString()}.properties"))
+                    properties.store(zos, null)
+                    zos.closeEntry()
+                }
+            }
+        }
+    }
+
+    private val actionPanel = JPanel(MigLayout("flowy, top, ins 4")).apply {
+        add(actionButton(addRow))
+        add(actionButton(deleteRow), "top, pushy")
+        add(actionButton(addLocale))
+        add(actionButton(deleteLocale))
+        add(actionButton(copyAsCsv))
+        add(actionButton(copyAsTsv))
+        add(actionButton(exportPropertiesZip))
+    }
+
     init {
-        val tableRows = buildTableRows(bundles)
-
-        val columns: ColumnList<TableRow> = createColumnList(bundles.keys)
-
-        val table = ReifiedJXTable(ReifiedListTableModel(tableRows, columns))
         add(FlatScrollPane(table), "push, grow")
-
-        val copyAsCsv = Action(description = "Copy As CSV", icon = FlatSVGIcon("icons/bx-clipboard.svg")) {
-            val csv = buildString {
-                append("Term, ")
-                bundles.keys.joinTo(this, separator = ", ", postfix = "\n") {
-                    it.toLanguageTag()
-                }
-
-                for (row in tableRows) {
-                    append(row.term).append(", ")
-                    bundles.keys.joinTo(this, separator = ", ", postfix = "\n") {
-                        row.translationMap[it].orEmpty()
-                    }
-                }
-            }
-
-            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-            clipboard.setContents(StringSelection(csv), null)
-        }
-
-        val exportPropertiesZip = Action(description = "Save as Zip", icon = FlatSVGIcon("icons/bx-save.svg")) {
-            exportZipFileChooser.selectedFile = HomeLocation.currentValue.resolve("$name.zip").toFile()
-            if (exportZipFileChooser.showSaveDialog(this@TranslationView) == JFileChooser.APPROVE_OPTION) {
-                val exportLocation = exportZipFileChooser.selectedFile.toPath()
-
-                val updatedPropertiesMap: MutableMap<Locale, Properties> = mutableMapOf()
-                for (row in tableRows) {
-                    for ((locale, translation) in row.translationMap) {
-                        val props = updatedPropertiesMap.getOrPut(locale) { Properties() }
-                        props[row.term] = translation
-                    }
-                }
-
-                ZipOutputStream(exportLocation.outputStream()).use { zos ->
-                    for ((locale, properties) in updatedPropertiesMap) {
-                        zos.putNextEntry(ZipEntry("${locale.toIgnitionParseableString()}.properties"))
-                        properties.store(zos, null)
-                        zos.closeEntry()
-                    }
-                }
-            }
-        }
-
-        val actionPanel = JPanel(MigLayout("flowy, top, ins 0")).apply {
-            add(
-                JButton(copyAsCsv).apply {
-                    hideActionText = true
-                },
-            )
-            add(
-                JButton(exportPropertiesZip).apply {
-                    hideActionText = true
-                },
-            )
-        }
         add(actionPanel, "east")
+    }
+
+    private fun actionButton(action: Action): JButton {
+        return JButton(action).apply {
+            hideActionText = true
+        }
     }
 
     private fun Locale.toIgnitionParseableString() = toString()
@@ -117,45 +216,127 @@ class TranslationView(
     /**
      * Builds a list of [TableRow] objects from the given bundles.
      */
-    private fun buildTableRows(bundles: Map<Locale, Properties>): List<TableRow> {
+    private fun Map<Locale, Properties>.toRows(): List<TableRow> {
         val mapByTerm = mutableMapOf<String, MutableMap<Locale, String?>>()
 
-        for ((locale, properties) in bundles) {
+        for ((locale, properties) in this) {
             for ((term, translation) in properties.entries) {
                 val rowMap = mapByTerm.getOrPut(term.toString()) { mutableMapOf() }
                 rowMap[locale] = translation.toString().takeUnless(String::isEmpty)
             }
         }
 
-        val tableRows = mapByTerm.map { (term, translationMap) ->
+        return mapByTerm.map { (term, translationMap) ->
             TableRow(term, translationMap)
-        }
-        return tableRows
-    }
-
-    private fun createColumnList(locales: Collection<Locale>) = object : ColumnList<TableRow>() {
-        @Suppress("unused")
-        val Term by column { it.term }
-
-        init {
-            for (locale in locales) {
-                add(
-                    Column(
-                        locale.toLanguageTag(),
-                        getValue = { it.translationMap[locale] },
-                        setValue = { value ->
-                            translationMap[locale] = value
-                        },
-                        columnCustomization = {
-                            toolTipText = locale.displayName
-                        },
-                    ),
-                )
-            }
         }
     }
 
     override val icon: Icon = TranslationTool.icon
+}
+
+private class TranslationTableModel(
+    private val data: MutableList<TableRow>,
+    locales: Collection<Locale>,
+) : AbstractTableModel(), ReifiedTableModel<TableRow>, List<TableRow> by data {
+    private val index: MutableList<Locale> = mutableListOf()
+
+    override val columns = object : ColumnList<TableRow>() {
+        val Term by column { it.term }
+    }
+
+    init {
+        for ((i, locale) in locales.withIndex()) {
+            index.add(locale)
+
+            columns.add(locale.toColumn())
+        }
+    }
+
+    override fun getRowCount(): Int = data.size
+    override fun getColumnCount(): Int = columns.size
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex != 0
+    override fun getColumnClass(columnIndex: Int): Class<*>? = columns[columnIndex].clazz
+    override fun getColumnName(column: Int): String? = columns[column].header
+
+    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
+        return columns[columnIndex].getValue.invoke(data[rowIndex])
+    }
+
+    override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
+        if (columnIndex == 0) return
+        val locale = index.getOrNull(columnIndex - 1) ?: return
+        data[rowIndex].translationMap[locale] = aValue?.toString()
+        fireTableCellUpdated(rowIndex, columnIndex)
+    }
+
+    fun addTerm(key: String): Int {
+        val conflict = data.find { it.term == key }
+        if (conflict != null) {
+            return -1
+        }
+
+        data.add(TableRow(key, mutableMapOf()))
+        fireTableRowsInserted(data.lastIndex, data.lastIndex)
+        return data.lastIndex
+    }
+
+    fun removeTerm(index: Int) {
+        data.removeAt(index)
+        fireTableRowsDeleted(index, index)
+    }
+
+    fun addLocale(locale: Locale): Int {
+        if (index.contains(locale)) {
+            return -1
+        }
+
+        index.add(locale)
+
+        columns.add(locale.toColumn())
+
+        fireTableStructureChanged()
+        return index.lastIndex
+    }
+
+    fun removeLocale(locale: Locale) {
+        val i = index.indexOf(locale)
+        if (i == -1) {
+            return
+        }
+
+        index.removeAt(i)
+        columns.removeAt(i + 1)
+
+        for (row in data) {
+            row.translationMap.remove(locale)
+        }
+
+        fireTableStructureChanged()
+    }
+
+    private fun Locale.toColumn(): Column<TableRow, String?> = Column(
+        toLanguageTag(),
+        getValue = { row -> row.translationMap[this] },
+        columnCustomization = {
+            toolTipText = displayName
+        },
+    )
+
+    fun toString(delimiter: String): String {
+        return buildString {
+            append("Term").append(delimiter)
+            index.joinTo(this, separator = delimiter, postfix = "\n") {
+                it.toLanguageTag()
+            }
+
+            for (row in data) {
+                append(row.term).append(delimiter)
+                index.joinTo(this, separator = delimiter, postfix = "\n") {
+                    row.translationMap[it].orEmpty()
+                }
+            }
+        }
+    }
 }
 
 data object TranslationTool : MultiTool, ClipboardTool {

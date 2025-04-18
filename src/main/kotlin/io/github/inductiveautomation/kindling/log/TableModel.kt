@@ -14,15 +14,32 @@ import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import org.jdesktop.swingx.renderer.StringValues
 import java.time.Instant
 
-class LogsModel(
-    data: List<LogEvent>,
-    columns: LogColumnList,
-) : ReifiedListTableModel<LogEvent>(data, columns) {
+class LogsModel<T : LogEvent>(
+    data: List<T>,
+    override val columns: LogColumnList<T>,
+) : ReifiedListTableModel<T>(data, columns) {
+
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
+        return columnIndex == markIndex
+    }
+
+    val markIndex = columns[
+        when (columns) {
+            is SystemLogColumns -> SystemLogColumns.Marked
+            is WrapperLogColumns -> WrapperLogColumns.Marked
+        },
+    ]
+
+    override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
+        require(isCellEditable(rowIndex, columnIndex))
+        data[rowIndex].marked = aValue as Boolean
+    }
+
     /**
      * Update marks in the model, efficiently.
      * Return true to set marked, false to clear a mark, or null to bypass the row.
      */
-    fun markRows(predicate: (LogEvent) -> Boolean?) {
+    fun markRows(predicate: (T) -> Boolean?) {
         var firstIndex = -1
         var lastIndex = -1
 
@@ -39,8 +56,8 @@ class LogsModel(
 }
 
 @Suppress("PropertyName")
-sealed class LogColumnList : ColumnList<LogEvent>() {
-    val Marked = Column<LogEvent, Boolean>(
+sealed class LogColumnList<T : LogEvent> : ColumnList<T>() {
+    val Marked = Column<T, Boolean>(
         header = "Marked",
         columnCustomization = {
             minWidth = 25
@@ -50,13 +67,10 @@ sealed class LogColumnList : ColumnList<LogEvent>() {
                 FlatSVGIcon("icons/bx-star.svg").asActionIcon()
             }
         },
-        setValue = { newValue ->
-            marked = newValue ?: false
-        },
         getValue = LogEvent::marked,
     )
 
-    val Level = Column<LogEvent, Level?>(
+    val Level = Column<T, Level?>(
         header = "Level",
         columnCustomization = {
             minWidth = 55
@@ -65,7 +79,7 @@ sealed class LogColumnList : ColumnList<LogEvent>() {
         getValue = LogEvent::level,
     )
 
-    val Timestamp = Column<LogEvent, Instant>(
+    val Timestamp = Column<T, Instant>(
         header = "Timestamp",
         columnCustomization = {
             minWidth = 155
@@ -77,7 +91,7 @@ sealed class LogColumnList : ColumnList<LogEvent>() {
         getValue = LogEvent::timestamp,
     )
 
-    val Logger = Column<LogEvent, String>(
+    val Logger = Column<T, String>(
         header = "Logger",
         columnCustomization = {
             minWidth = 50
@@ -101,7 +115,7 @@ sealed class LogColumnList : ColumnList<LogEvent>() {
         getValue = LogEvent::logger,
     )
 
-    val Message = Column<LogEvent, String>(
+    val Message = Column<T, String>(
         header = "Message",
         columnCustomization = {
             isSortable = false
@@ -118,14 +132,14 @@ sealed class LogColumnList : ColumnList<LogEvent>() {
     }
 }
 
-data object SystemLogColumns : LogColumnList() {
+data object SystemLogColumns : LogColumnList<SystemLogEvent>() {
     val Thread by column(
         column = {
             minWidth = 50
             isSortable = false
         },
-        value = { (it as SystemLogEvent).thread },
+        value = SystemLogEvent::thread,
     )
 }
 
-data object WrapperLogColumns : LogColumnList()
+data object WrapperLogColumns : LogColumnList<WrapperLogEvent>()

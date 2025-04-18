@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.utils
 
+import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import org.jdesktop.swingx.JXTable
 import org.jdesktop.swingx.renderer.CellContext
@@ -50,11 +51,13 @@ class ReifiedLabelProvider<T : Any>(
     }
 
     companion object {
-        private val NULL_ICON = FlatSVGIcon("icons/null.svg")
-
         fun <T> defaultIconFunction(): IconProvider<T> = {
             if (it == null) {
-                NULL_ICON
+                FlatSVGIcon("icons/null.svg").apply {
+                    if (!FlatLaf.isLafDark()) {
+                        colorFilter = FlatSVGIcon.ColorFilter { UIManager.getColor("Table.foreground") }
+                    }
+                }
             } else {
                 null
             }

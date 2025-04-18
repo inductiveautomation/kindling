@@ -10,7 +10,6 @@ import io.github.inductiveautomation.kindling.log.LogViewer
 import io.github.inductiveautomation.kindling.serial.SerialViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.utils.FileFilter
-import io.github.inductiveautomation.kindling.utils.loadService
 import io.github.inductiveautomation.kindling.xml.XmlTool
 import io.github.inductiveautomation.kindling.zip.ZipViewer
 import java.io.File
@@ -53,19 +52,18 @@ interface Tool : KindlingSerializable {
 
     companion object {
         val tools: List<Tool> by lazy {
-            buildList {
-                add(ZipViewer)
-                add(MultiThreadViewer)
-                add(LogViewer)
-                add(IdbViewer)
-                add(CacheViewer)
-                add(GatewayNetworkTool)
-                add(AlarmViewer)
-                add(XmlTool)
-                add(SerialViewer)
-                add(TranslationTool)
-                addAll(loadService<Tool>())
-            }
+            listOf(
+                ZipViewer,
+                MultiThreadViewer,
+                LogViewer,
+                IdbViewer,
+                CacheViewer,
+                GatewayNetworkTool,
+                AlarmViewer,
+                XmlTool,
+                SerialViewer,
+                TranslationTool,
+            )
         }
 
         val sortedByTitle: List<Tool> by lazy {

@@ -14,7 +14,6 @@ import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ColorHighlighter
-import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FilterSidebar
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -82,7 +81,7 @@ sealed class LogPanel<T : LogEvent>(
     val table = run {
         val initialModel = createModel(rawData)
         ReifiedJXTable(initialModel, columnList).apply {
-            setSortOrder((initialModel.columns as LogColumnList).Timestamp, SortOrder.ASCENDING)
+            setSortOrder(initialModel.columns.Timestamp, SortOrder.ASCENDING)
         }
     }
 
@@ -252,8 +251,7 @@ sealed class LogPanel<T : LogEvent>(
                             filterPanel.customizePopupMenu(this, column, event)
                         }
 
-                        val marked = (model.columns as LogColumnList).Marked
-                        if (colAtPoint == model.columns.indexOf<Column<LogEvent, out Any?>>(marked)) {
+                        if (colAtPoint == model.markIndex) {
                             add(clearAllMarks)
                         }
 
