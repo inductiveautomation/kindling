@@ -22,7 +22,7 @@ abstract class ToolPanel(
 ) : JPanel(MigLayout(layoutConstraints)), FloatableComponent, PopupMenuCustomizer {
     abstract override val icon: Icon?
     override val tabName: String get() = name ?: this.paramString()
-    override val tabTooltip: String get() = toolTipText
+    override val tabTooltip: String? get() = toolTipText
 
     override fun customizePopupMenu(menu: JPopupMenu) = Unit
 

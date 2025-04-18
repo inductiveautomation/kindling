@@ -36,6 +36,10 @@ abstract class ColumnList<R> private constructor(
         list.add(column)
     }
 
+    fun removeAt(index: Int) {
+        list.removeAt(index)
+    }
+
     operator fun get(column: Column<*, *>): Int = indexOf(column)
 
     fun toColumnFactory() = object : ColumnFactory() {

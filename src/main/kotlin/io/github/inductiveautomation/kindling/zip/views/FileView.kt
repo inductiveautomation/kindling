@@ -7,7 +7,9 @@ import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.toHumanReadableBinary
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.CSS
+import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.INI
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.JSON
+import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.Markdown
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.Plaintext
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.Properties
 import io.github.inductiveautomation.kindling.zip.views.FileView.SyntaxStyle.Python
@@ -174,10 +176,10 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
             "xml" to XML,
             "css" to CSS,
             "txt" to Plaintext,
-            "md" to Plaintext,
+            "md" to Markdown,
             "p7b" to Plaintext,
             "log" to Plaintext,
-            "ini" to Plaintext,
+            "ini" to INI,
         )
 
         private val KNOWN_FILENAMES = setOf(
