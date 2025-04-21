@@ -98,9 +98,11 @@ class TranslationView(
     ) {
         val locales = buildList {
             add(Locale.ROOT)
-            addAll(Locale.getAvailableLocales()
-                .filter { it.displayName.isNotEmpty() }
-                .sortedBy { it.displayName })
+            addAll(
+                Locale.getAvailableLocales()
+                    .filter { it.displayName.isNotEmpty() }
+                    .sortedBy { it.displayName },
+            )
         }
 
         val localeComboBox = JComboBox(locales.toTypedArray()).apply {
@@ -205,10 +207,8 @@ class TranslationView(
         add(actionPanel, "east")
     }
 
-    private fun actionButton(action: Action): JButton {
-        return JButton(action).apply {
-            hideActionText = true
-        }
+    private fun actionButton(action: Action): JButton = JButton(action).apply {
+        hideActionText = true
     }
 
     private fun Locale.toIgnitionParseableString() = toString()
@@ -237,7 +237,9 @@ class TranslationView(
 private class TranslationTableModel(
     private val data: MutableList<TableRow>,
     locales: Collection<Locale>,
-) : AbstractTableModel(), ReifiedTableModel<TableRow>, List<TableRow> by data {
+) : AbstractTableModel(),
+    ReifiedTableModel<TableRow>,
+    List<TableRow> by data {
     private val index: MutableList<Locale> = mutableListOf()
 
     override val columns = object : ColumnList<TableRow>() {
@@ -258,9 +260,7 @@ private class TranslationTableModel(
     override fun getColumnClass(columnIndex: Int): Class<*>? = columns[columnIndex].clazz
     override fun getColumnName(column: Int): String? = columns[column].header
 
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
-        return columns[columnIndex].getValue.invoke(data[rowIndex])
-    }
+    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = columns[columnIndex].getValue.invoke(data[rowIndex])
 
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
         if (columnIndex == 0) return
@@ -322,18 +322,16 @@ private class TranslationTableModel(
         },
     )
 
-    fun toString(delimiter: String): String {
-        return buildString {
-            append("Term").append(delimiter)
-            index.joinTo(this, separator = delimiter, postfix = "\n") {
-                it.toLanguageTag()
-            }
+    fun toString(delimiter: String): String = buildString {
+        append("Term").append(delimiter)
+        index.joinTo(this, separator = delimiter, postfix = "\n") {
+            it.toLanguageTag()
+        }
 
-            for (row in data) {
-                append(row.term).append(delimiter)
-                index.joinTo(this, separator = delimiter, postfix = "\n") {
-                    row.translationMap[it].orEmpty()
-                }
+        for (row in data) {
+            append(row.term).append(delimiter)
+            index.joinTo(this, separator = delimiter, postfix = "\n") {
+                row.translationMap[it].orEmpty()
             }
         }
     }
