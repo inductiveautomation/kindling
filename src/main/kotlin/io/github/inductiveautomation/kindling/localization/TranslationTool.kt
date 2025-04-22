@@ -53,7 +53,7 @@ private data class TableRow(
 )
 
 class TranslationView(
-    private val bundles: SortedMap<Locale, Properties>,
+    bundles: SortedMap<Locale, Properties>,
 ) : ToolPanel() {
     private val model = TranslationTableModel(
         data = bundles.toRows().toMutableList(),
@@ -93,7 +93,7 @@ class TranslationView(
     }
 
     private val addLocale = Action(
-        description = "Add Locale Element",
+        description = "Add Locale",
         icon = FlatSVGIcon("icons/bx-book-add.svg"),
     ) {
         val locales = buildList {
@@ -169,7 +169,7 @@ class TranslationView(
         description = "Export Zip",
         icon = FlatSVGIcon("icons/bx-save.svg"),
     ) {
-        exportZipFileChooser.selectedFile = HomeLocation.currentValue.resolve("$name.zip").toFile()
+        exportZipFileChooser.selectedFile = HomeLocation.currentValue.resolve("${this@TranslationView.name}.zip").toFile()
 
         if (exportZipFileChooser.showSaveDialog(this@TranslationView) == JFileChooser.APPROVE_OPTION) {
             val exportLocation = exportZipFileChooser.selectedFile.toPath()
@@ -222,7 +222,7 @@ class TranslationView(
         for ((locale, properties) in this) {
             for ((term, translation) in properties.entries) {
                 val rowMap = mapByTerm.getOrPut(term.toString()) { mutableMapOf() }
-                rowMap[locale] = translation.toString().takeUnless(String::isEmpty)
+                rowMap[locale] = translation.toString().takeUnless(String::isBlank)
             }
         }
 
@@ -318,7 +318,8 @@ private class TranslationTableModel(
         toLanguageTag(),
         getValue = { row -> row.translationMap[this] },
         columnCustomization = {
-            toolTipText = displayName
+            title = "$displayName [${toLanguageTag()}]"
+            toolTipText = title
         },
     )
 
@@ -413,7 +414,7 @@ data object TranslationTool : MultiTool, ClipboardTool {
     }
 
     override val title: String = "Translation Bundle"
-    override val description: String = ""
+    override val description: String = "Translation Bundle Files (\$locale.properties, \$locale.xml)"
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-globe.svg")
     override val filter: FileFilter = FileFilter(description, "properties", "xml")
     override val serialKey: String = "bundle-view"
