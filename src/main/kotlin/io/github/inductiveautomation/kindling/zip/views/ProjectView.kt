@@ -52,7 +52,7 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-box.svg").asActionIcon()
 
     companion object {
-        val exportZipFileChooser by lazy {
+        internal val exportZipFileChooser by lazy {
             JFileChooser(HomeLocation.currentValue.toFile()).apply {
                 isMultiSelectionEnabled = false
                 isAcceptAllFileFilterUsed = false

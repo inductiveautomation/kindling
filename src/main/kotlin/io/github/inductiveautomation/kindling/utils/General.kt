@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Properties
-import java.util.ServiceLoader
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.reflect.KProperty
@@ -74,8 +73,8 @@ fun Properties(
 private val prefix = arrayOf("", "k", "m", "g", "t", "p", "e", "z", "y")
 
 fun Long.toFileSizeLabel(): String =
-    when {
-        this == 0L -> "0B"
+    when (this) {
+        0L -> "0B"
         else -> {
             val digits = log2(toDouble()).toInt() / 10
             val precision = digits.coerceIn(0, 2)
@@ -88,10 +87,6 @@ operator fun MatchGroupCollection.getValue(
     property: KProperty<*>,
 ): MatchGroup {
     return requireNotNull(get(property.name))
-}
-
-inline fun <reified S> loadService(): ServiceLoader<S> {
-    return ServiceLoader.load(S::class.java)
 }
 
 fun String.escapeHtml(): String {
