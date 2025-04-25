@@ -5,7 +5,7 @@ coroutines = "1.10.2"
 flatlaf = "3.6"
 kotest = "5.9.1"
 ignition = "8.1.20"
-jackson = "2.18.3"
+jackson = "2.19.0"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
