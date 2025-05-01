@@ -10,7 +10,7 @@ data class MetaStatistics(
     val uuid: String?,
     val gatewayName: String,
     val edition: String,
-    val role: String,
+    val role: String?,
     val version: String,
     val initMemory: Int,
     val maxMemory: Int,

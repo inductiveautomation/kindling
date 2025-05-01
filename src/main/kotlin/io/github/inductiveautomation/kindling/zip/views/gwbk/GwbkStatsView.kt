@@ -14,6 +14,7 @@ import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.zip.views.SinglePathView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import java.nio.file.Path
@@ -84,7 +85,7 @@ class GwbkStatsView(
     }
 
     companion object {
-        private val BACKGROUND = CoroutineScope(Dispatchers.IO)
+        private val BACKGROUND = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         fun isGatewayBackup(path: Path): Boolean = path.extension.lowercase() == "gwbk"
     }
