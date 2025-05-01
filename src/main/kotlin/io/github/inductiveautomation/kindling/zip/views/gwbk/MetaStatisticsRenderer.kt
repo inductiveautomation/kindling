@@ -38,7 +38,7 @@ class MetaStatisticsRenderer : StatisticRenderer<MetaStatistics> {
     companion object {
         private val displayedStatistics: List<MetaStatistic> = listOf(
             MetaStatistic("Version") { it.version },
-            MetaStatistic("Role") { it.role },
+            MetaStatistic("Role") { it.role ?: "Independent" },
             MetaStatistic("Edition") { it.edition },
             MetaStatistic("UUID") { it.uuid.orEmpty() },
             MetaStatistic("Init Memory", suffix = "mB") { it.initMemory.toString() },
