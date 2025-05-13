@@ -37,7 +37,7 @@ sealed class ThreadColumnList : ColumnList<ThreadLifespan>() {
         getValue = { it.firstNotNullOf { thread -> thread?.marked } },
     )
 
-    val id = Column<ThreadLifespan, Int>(
+    val id = Column<ThreadLifespan, Long>(
         header = "Id",
         columnCustomization = {
             minWidth = 50
@@ -242,7 +242,7 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
             },
         )
 
-        val blocker = Column<ThreadLifespan, Int?>(
+        val blocker = Column<ThreadLifespan, Long?>(
             "Blocker",
             columnCustomization = {
                 minWidth = 60

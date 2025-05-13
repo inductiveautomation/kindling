@@ -42,8 +42,8 @@ class ThreadComparisonPane(
     private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) { i ->
         ThreadContainer(i, version).apply {
             blockerButton.addActionListener {
-                blockerButton.blocker?.let {
-                    fireBlockerSelectedEvent(it)
+                blockerButton.blocker?.let { blockerId ->
+                    fireBlockerSelectedEvent(blockerId)
                 }
             }
 
@@ -169,14 +169,14 @@ class ThreadComparisonPane(
         listeners.add(listener)
     }
 
-    private fun fireBlockerSelectedEvent(threadID: Int) {
+    private fun fireBlockerSelectedEvent(threadID: Long) {
         for (listener in listeners.getAll<BlockerSelectedEventListener>()) {
             listener.onBlockerSelected(threadID)
         }
     }
 
     fun interface BlockerSelectedEventListener : EventListener {
-        fun onBlockerSelected(threadId: Int)
+        fun onBlockerSelected(threadId: Long)
     }
 
     private inner class HeaderPanel : JPanel(MigLayout("fill, ins 3")) {

@@ -171,7 +171,7 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
                 FlatTextArea().apply {
                     isEditable = false
                     text = buildString {
-                        append(description(error))
+                        appendLine(description(error))
                         append((error.cause ?: error).stackTraceToString())
                     }
                 },
