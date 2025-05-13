@@ -5,7 +5,7 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.utils.asActionIcon
 
 internal class BlockerButton : FlatButton() {
-    var blocker: Int? = null
+    var blocker: Long? = null
         set(value) {
             isVisible = value != null
             text = value?.toString()

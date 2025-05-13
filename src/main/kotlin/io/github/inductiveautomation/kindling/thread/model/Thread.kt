@@ -7,7 +7,7 @@ import java.lang.Thread.State
 
 @Serializable
 data class Thread(
-    val id: Int,
+    val id: Long,
     val name: String,
     val state: State,
     @SerialName("daemon")
@@ -35,7 +35,7 @@ data class Thread(
     @Serializable
     data class Blocker(
         val lock: String,
-        val owner: Int? = null,
+        val owner: Long? = null,
     ) {
         override fun toString(): String = if (owner != null) {
             "$lock (owned by $owner)"

@@ -18,7 +18,7 @@ data class ThreadDump internal constructor(
     val version: String,
     val threads: List<Thread>,
     @SerialName("deadlocks")
-    val deadlockIds: List<Int> = emptyList(),
+    val deadlockIds: List<Long> = emptyList(),
 ) : FileFilterableCollection<Thread?> {
     @Transient
     override val items = threads
@@ -38,14 +38,16 @@ data class ThreadDump internal constructor(
                 val firstLine = lines.first()
 
                 val deadlockIds = if (lines[2].contains("Deadlock")) {
-                    deadlocksPattern.findAll(lines[3]).map { match -> match.value.toInt() }.toList()
+                    deadlocksPattern.findAll(lines[3])
+                        .map { match -> match.value.toLong() }
+                        .toList()
                 } else {
                     emptyList()
                 }
 
                 ThreadDump(
                     version = versionPattern.find(firstLine)?.value
-                        ?: throw ToolOpeningException("No version, not a thread dump"),
+                        ?: throw ToolOpeningException("Unable to read thread dump; possibly malformed"),
                     threads = when {
                         firstLine.contains(":") -> parseScript(text)
                         else -> parseWebPage(text)
@@ -84,7 +86,7 @@ data class ThreadDump internal constructor(
                 val stack by matcher.groups
 
                 Thread(
-                    id = name.value.hashCode(),
+                    id = name.value.hashCode().toLong(),
                     name = name.value,
                     cpuUsage = cpu.value.toDouble(),
                     state = ThreadState.valueOf(state.value),
@@ -110,14 +112,14 @@ data class ThreadDump internal constructor(
                     synchronizerMatcher.groups["synchronizer"]?.value
                 }.toList()
                 val blocker = webThreadBlockerRegex.find(stack)?.groups?.let { blockerMatcher ->
-                    Thread.Blocker(blockerMatcher["lock"]!!.value, blockerMatcher["owner"]?.value?.toIntOrNull())
+                    Thread.Blocker(blockerMatcher["lock"]!!.value, blockerMatcher["owner"]?.value?.toLongOrNull())
                 }
                 val parsedStack = webThreadStackRegex.findAll(stack).mapNotNull { stackMatcher ->
                     stackMatcher.groups["line"]?.value
                 }.toList()
 
                 Thread(
-                    id = id.value.toInt(),
+                    id = id.value.toLong(),
                     name = name.value,
                     state = ThreadState.valueOf(state.value),
                     isDaemon = isDaemon,

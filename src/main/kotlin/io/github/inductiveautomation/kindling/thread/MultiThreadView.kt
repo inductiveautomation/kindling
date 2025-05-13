@@ -403,7 +403,7 @@ class MultiThreadView(
 
     companion object {
         private fun List<ThreadDump?>.toLifespanList(): List<ThreadLifespan> {
-            val idsToLifespans = mutableMapOf<Int, Array<Thread?>>()
+            val idsToLifespans = mutableMapOf<Long, Array<Thread?>>()
             forEachIndexed { i, threadDump ->
                 for (thread in threadDump?.threads.orEmpty()) {
                     val array = idsToLifespans.getOrPut(thread.id) { arrayOfNulls(size) }
