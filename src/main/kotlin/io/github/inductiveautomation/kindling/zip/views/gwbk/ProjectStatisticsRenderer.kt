@@ -1,6 +1,5 @@
 package io.github.inductiveautomation.kindling.zip.views.gwbk
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics
@@ -12,10 +11,10 @@ import io.github.inductiveautomation.kindling.statistics.categories.ProjectStati
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Resource
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.ResourceType
 import io.github.inductiveautomation.kindling.utils.ColumnList
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JTabbedPane
@@ -23,7 +22,7 @@ import javax.swing.SortOrder
 
 class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
     override val title: String = "Projects"
-    override val icon: Icon = FlatSVGIcon("icons/bx-folder-open.svg").asActionIcon()
+    override val icon: Icon = FlatActionIcon("icons/bx-folder-open.svg")
 
     override fun ProjectStatistics.subtitle(): String {
         return sequence {
@@ -44,7 +43,7 @@ class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
 
             for (project in projects.sortedByDescending { it.resources.size }) {
                 val icon = if (project.hasVisionResources || project.hasPerspectiveResources) {
-                    VISUALIZATION_ICON
+                    FlatActionIcon("icons/bx-show.svg")
                 } else {
                     null
                 }
@@ -86,8 +85,6 @@ class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
             COMMON_RESOURCE_TYPES[key] ?: "${key.moduleId}.${key.typeId}"
         }
         val Count by column { it.value }
-
-        private val VISUALIZATION_ICON = FlatSVGIcon("icons/bx-show.svg").asActionIcon()
 
         private const val PLATFORM_ID = "ignition"
 

@@ -35,7 +35,6 @@ import javax.swing.JScrollPane
 import javax.swing.JTextField
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
-import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.event.EventListenerList
@@ -96,13 +95,10 @@ inline fun <T : Component> T.attachPopupMenu(crossinline menuFn: T.(event: Mouse
     )
 }
 
-fun FlatSVGIcon.asActionIcon(selected: Boolean = false): FlatSVGIcon {
-    return FlatSVGIcon(name, 0.75F).apply {
-        if (selected) {
-            colorFilter = FlatSVGIcon.ColorFilter { UIManager.getColor("Tree.selectionForeground") }
-        }
-    }
-}
+const val ACTION_ICON_SCALE_FACTOR = 0.75F
+
+@Suppress("FunctionName")
+fun FlatActionIcon(path: String): FlatSVGIcon = FlatSVGIcon(path, ACTION_ICON_SCALE_FACTOR)
 
 fun JFileChooser.chooseFiles(parent: JComponent?): List<File>? {
     return if (showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {

@@ -5,6 +5,7 @@ import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.MultiTool
+import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.localization.TranslationTool.exportZipFileChooser
 import io.github.inductiveautomation.kindling.utils.Action
@@ -341,6 +342,9 @@ private class TranslationTableModel(
 data object TranslationTool : MultiTool, ClipboardTool {
     override fun open(paths: List<Path>): ToolPanel {
         val bundles = parseToBundles(paths)
+        if (bundles.isEmpty()) {
+            throw ToolOpeningException("No locale bundles found")
+        }
         return TranslationView(bundles).apply {
             name = paths.first().name.substringBefore('_')
             toolTipText = paths.joinToString("\n") {

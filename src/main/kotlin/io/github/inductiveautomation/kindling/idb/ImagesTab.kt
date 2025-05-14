@@ -7,10 +7,10 @@ import com.inductiveautomation.ignition.gateway.images.ImageFormat
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.render
@@ -50,7 +50,7 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                 is ImageNode -> {
                     text = value.userObject.path.substringAfterLast('/')
                     toolTipText = value.userObject.description
-                    icon = FlatSVGIcon("icons/bx-image.svg").asActionIcon(selected)
+                    icon = FlatActionIcon("icons/bx-image.svg")
                 }
 
                 is ImageFolderNode -> {

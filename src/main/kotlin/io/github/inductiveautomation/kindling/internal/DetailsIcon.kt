@@ -1,7 +1,6 @@
 package io.github.inductiveautomation.kindling.internal
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.utils.asActionIcon
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import org.jdesktop.swingx.JXTable
 import org.jdesktop.swingx.decorator.HighlighterFactory
 import java.awt.event.MouseAdapter
@@ -42,6 +41,6 @@ class DetailsIcon(details: Map<String, String>) : JLabel(DETAILS_ICON) {
     }
 
     companion object {
-        private val DETAILS_ICON = FlatSVGIcon("icons/bx-search.svg").asActionIcon()
+        private val DETAILS_ICON = FlatActionIcon("icons/bx-search.svg")
     }
 }

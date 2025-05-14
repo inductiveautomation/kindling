@@ -1,8 +1,7 @@
 package io.github.inductiveautomation.kindling.thread.comparison
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatButton
-import io.github.inductiveautomation.kindling.utils.asActionIcon
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 
 internal class BlockerButton : FlatButton() {
     var blocker: Int? = null
@@ -13,7 +12,7 @@ internal class BlockerButton : FlatButton() {
         }
 
     init {
-        icon = FlatSVGIcon("icons/bx-block.svg").asActionIcon()
+        icon = FlatActionIcon("icons/bx-block.svg")
         toolTipText = "Jump to blocking thread"
         isVisible = false
     }

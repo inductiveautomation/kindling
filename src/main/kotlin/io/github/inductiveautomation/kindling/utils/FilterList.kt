@@ -23,22 +23,22 @@ enum class FilterComparator(
 ) : Comparator<FilterModelEntry> by comparator {
     ByNameAscending(
         tooltip = "Sort A-Z",
-        icon = FlatSVGIcon("icons/bx-sort-a-z.svg"),
+        icon = FlatActionIcon("icons/bx-sort-a-z.svg"),
         comparator = compareBy(nullsFirst(AlphanumComparator(false))) { it.key },
     ),
     ByNameDescending(
         tooltip = "Sort Z-A",
-        icon = FlatSVGIcon("icons/bx-sort-z-a.svg"),
+        icon = FlatActionIcon("icons/bx-sort-z-a.svg"),
         comparator = ByNameAscending.reversed(),
     ),
     ByCountAscending(
         tooltip = "Sort by Count",
-        icon = FlatSVGIcon("icons/bx-sort-up.svg"),
+        icon = FlatActionIcon("icons/bx-sort-up.svg"),
         comparator = compareBy(FilterModelEntry::count),
     ),
     ByCountDescending(
         tooltip = "Sort by Count (descending)",
-        icon = FlatSVGIcon("icons/bx-sort-down.svg"),
+        icon = FlatActionIcon("icons/bx-sort-down.svg"),
         comparator = ByCountAscending.reversed(),
     ),
 }
@@ -198,7 +198,7 @@ class FilterList(
 
     inner class SortAction(comparator: FilterComparator) : Action(
         description = comparator.tooltip,
-        icon = comparator.icon.asActionIcon(),
+        icon = comparator.icon,
         selected = this@FilterList.comparator == comparator,
         action = {
             this@FilterList.comparator = comparator

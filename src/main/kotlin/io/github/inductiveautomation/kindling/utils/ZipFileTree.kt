@@ -57,7 +57,7 @@ class ZipFileTree(fileSystem: FileSystem) : JTree(ZipFileModel(fileSystem)) {
                     toolTipText = path.toString()
                     text = path.last().toString()
                     icon = if (path.isRegularFile()) {
-                        Tool.find(path)?.icon?.asActionIcon(selected) ?: icon
+                        Tool.find(path)?.icon?.derive(ACTION_ICON_SCALE_FACTOR) ?: icon
                     } else {
                         icon
                     }

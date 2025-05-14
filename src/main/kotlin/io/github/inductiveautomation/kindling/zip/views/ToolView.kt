@@ -4,7 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.utils.asActionIcon
+import io.github.inductiveautomation.kindling.utils.ACTION_ICON_SCALE_FACTOR
 import io.github.inductiveautomation.kindling.utils.transferTo
 import java.nio.file.Files
 import java.nio.file.Path
@@ -34,7 +34,7 @@ class ToolView(
         }
     }
 
-    override val icon: FlatSVGIcon = (toolPanel.icon as FlatSVGIcon).asActionIcon()
+    override val icon: FlatSVGIcon = (toolPanel.icon as FlatSVGIcon).derive(ACTION_ICON_SCALE_FACTOR)
 
     override fun customizePopupMenu(menu: JPopupMenu) = toolPanel.customizePopupMenu(menu)
 
