@@ -1,10 +1,9 @@
 package io.github.inductiveautomation.kindling.idb.metrics
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.CheckBoxTree
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.TypedTreeNode
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.expandAll
 import io.github.inductiveautomation.kindling.utils.selectAll
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
@@ -74,7 +73,7 @@ class MetricTree(metrics: List<Metric>) : CheckBoxTree(DefaultTreeModel(RootNode
                     val path = value.userObject
                     text = path.last()
                     toolTipText = value.name
-                    icon = CHART_ICON.asActionIcon(selected)
+                    icon = FlatActionIcon("icons/bx-line-chart.svg")
                 } else {
                     icon = null
                 }
@@ -87,8 +86,4 @@ class MetricTree(metrics: List<Metric>) : CheckBoxTree(DefaultTreeModel(RootNode
         get() = checkBoxTreeSelectionModel.selectionPaths.flatMap {
             (it.lastPathComponent as MetricNode).depthFirstChildren()
         }.filterIsInstance<MetricNode>()
-
-    companion object {
-        private val CHART_ICON = FlatSVGIcon("icons/bx-line-chart.svg")
-    }
 }

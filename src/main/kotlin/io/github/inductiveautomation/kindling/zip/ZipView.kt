@@ -25,6 +25,8 @@ import io.github.inductiveautomation.kindling.zip.views.PathView
 import io.github.inductiveautomation.kindling.zip.views.ProjectView
 import io.github.inductiveautomation.kindling.zip.views.ToolView
 import io.github.inductiveautomation.kindling.zip.views.gwbk.GwbkStatsView
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -62,8 +64,20 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
 
         fileTree.addMouseListener(
             object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent?) {
-                    if (e?.clickCount == 2) {
+                override fun mousePressed(e: MouseEvent) {
+                    if (e.clickCount == 2) {
+                        val pathNode = fileTree.selectionPath?.lastPathComponent as? PathNode ?: return
+                        val actualPath = pathNode.userObject
+                        maybeAddNewTab(actualPath)
+                    }
+                }
+            },
+        )
+
+        fileTree.addKeyListener(
+            object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_ENTER || e.keyCode == KeyEvent.VK_SPACE) {
                         val pathNode = fileTree.selectionPath?.lastPathComponent as? PathNode ?: return
                         val actualPath = pathNode.userObject
                         maybeAddNewTab(actualPath)

@@ -6,13 +6,13 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
+import io.github.inductiveautomation.kindling.utils.ACTION_ICON_SCALE_FACTOR
 import io.github.inductiveautomation.kindling.utils.CharsetSerializer
 import io.github.inductiveautomation.kindling.utils.DocumentAdapter
 import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
 import io.github.inductiveautomation.kindling.utils.ThemeSerializer
 import io.github.inductiveautomation.kindling.utils.ToolSerializer
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.render
@@ -84,8 +84,7 @@ data object Kindling {
                         configureCellRenderer { _, value, _, selected, focused ->
                             text = value?.title
                             toolTipText = value?.description
-
-                            icon = value?.icon?.asActionIcon(selected || focused)
+                            icon = value?.icon?.derive(ACTION_ICON_SCALE_FACTOR)
                         }
 
                         addActionListener {

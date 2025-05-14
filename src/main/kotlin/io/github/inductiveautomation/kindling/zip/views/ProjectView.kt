@@ -3,7 +3,7 @@ package io.github.inductiveautomation.kindling.zip.views
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
-import io.github.inductiveautomation.kindling.utils.asActionIcon
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
@@ -49,7 +49,7 @@ class ProjectView(override val provider: FileSystemProvider, override val path: 
         add(FileView(provider, path / "project.json"), "push, grow")
     }
 
-    override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-box.svg").asActionIcon()
+    override val icon: FlatSVGIcon = FlatActionIcon("icons/bx-box.svg")
 
     companion object {
         internal val exportZipFileChooser by lazy {

@@ -28,6 +28,7 @@ import io.github.inductiveautomation.kindling.internal.FileTransferHandler
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EmptyBorder
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.RendererBase
 import io.github.inductiveautomation.kindling.utils.StyledLabel
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.chooseFiles
@@ -41,6 +42,7 @@ import net.miginfocom.layout.PlatformDefaults
 import net.miginfocom.layout.UnitValue
 import net.miginfocom.swing.MigLayout
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Component
 import java.awt.Cursor
 import java.awt.Cursor.HAND_CURSOR
@@ -61,6 +63,7 @@ import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.charset.Charset
+import java.util.function.BiFunction
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComboBox
@@ -430,6 +433,14 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 put("TabbedPane.tabType", "card")
                 put("MenuItem.minimumIconSize", Dimension()) // https://github.com/JFormDesigner/FlatLaf/issues/328
                 put("Tree.showDefaultIcons", true)
+            }
+
+            FlatSVGIcon.ColorFilter.getInstance().mapperEx = BiFunction<Component, Color, Color> { component, color ->
+                if (component is RendererBase && component.selected && component.focused) {
+                    UIManager.getColor("Tree.selectionForeground")
+                } else {
+                    color
+                }
             }
 
             PlatformDefaults.setGridCellGap(UnitValue(2.0F), UnitValue(2.0F))

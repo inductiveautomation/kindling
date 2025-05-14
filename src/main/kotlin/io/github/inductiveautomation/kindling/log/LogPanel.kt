@@ -1,6 +1,5 @@
 package io.github.inductiveautomation.kindling.log
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Detail.BodyLine
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.Filter
@@ -16,12 +15,12 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ColorHighlighter
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FilterSidebar
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.MajorVersion
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
@@ -394,16 +393,16 @@ sealed class LogPanel<T : LogEvent>(
             add(version, "growy")
         }
 
-        val highlightMarked = JToggleButton(FlatSVGIcon("icons/bx-highlight.svg").asActionIcon()).apply {
+        val highlightMarked = JToggleButton(FlatActionIcon("icons/bx-highlight.svg")).apply {
             toolTipText = "Highlight all marked log events"
         }
-        val clearMarked = JButton(FlatSVGIcon("icons/bxs-eraser.svg").asActionIcon()).apply {
+        val clearMarked = JButton(FlatActionIcon("icons/bxs-eraser.svg")).apply {
             toolTipText = "Clear all visible marks"
         }
-        val prevMarked = JButton(FlatSVGIcon("icons/bx-arrow-up.svg").asActionIcon()).apply {
+        val prevMarked = JButton(FlatActionIcon("icons/bx-arrow-up.svg")).apply {
             toolTipText = "Jump to previous marked log event"
         }
-        val nextMarked = JButton(FlatSVGIcon("icons/bx-arrow-down.svg").asActionIcon()).apply {
+        val nextMarked = JButton(FlatActionIcon("icons/bx-arrow-down.svg")).apply {
             toolTipText = "Jump to next marked log event"
         }
         val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Always Show Marked"))

@@ -1,9 +1,8 @@
 package io.github.inductiveautomation.kindling.idb.generic
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTree
 import com.jidesoft.swing.TreeSearchable
-import io.github.inductiveautomation.kindling.utils.asActionIcon
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import javax.swing.tree.TreeModel
@@ -25,7 +24,7 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
                             append(" ")
                             append("(${value.size.toFileSizeLabel()})")
                         }
-                        icon = TABLE_ICON.asActionIcon(selected && hasFocus)
+                        icon = FlatActionIcon("icons/bx-table.svg")
                     }
 
                     is Column -> {
@@ -34,7 +33,7 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
                             append(" ")
                             append(value.type.takeIf { it.isNotEmpty() } ?: "UNKNOWN")
                         }
-                        icon = COLUMN_ICON.asActionIcon(selected && hasFocus)
+                        icon = FlatActionIcon("icons/bx-column.svg")
                     }
                 }
                 this
@@ -55,10 +54,5 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
                 }
             }
         }
-    }
-
-    companion object {
-        private val TABLE_ICON = FlatSVGIcon("icons/bx-table.svg")
-        private val COLUMN_ICON = FlatSVGIcon("icons/bx-column.svg")
     }
 }

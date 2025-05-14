@@ -1,19 +1,18 @@
 package io.github.inductiveautomation.kindling.zip.views.gwbk
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.statistics.categories.OpcServerStatistics
 import io.github.inductiveautomation.kindling.utils.ColumnList
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import javax.swing.Icon
 import javax.swing.SortOrder
 
 class OpcConnectionsStatisticsRenderer : StatisticRenderer<OpcServerStatistics> {
     override val title: String = "OPC Server Connections"
-    override val icon: Icon = FlatSVGIcon("icons/bx-purchase-tag.svg").asActionIcon()
+    override val icon: Icon = FlatActionIcon("icons/bx-purchase-tag.svg")
 
     override fun OpcServerStatistics.subtitle() = "$uaServers UA, $comServers COM"
 

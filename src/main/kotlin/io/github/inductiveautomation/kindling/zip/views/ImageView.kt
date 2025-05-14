@@ -3,7 +3,7 @@ package io.github.inductiveautomation.kindling.zip.views
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.swing.SimpleScrollPane
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
-import io.github.inductiveautomation.kindling.utils.asActionIcon
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import java.nio.file.Path
 import java.nio.file.spi.FileSystemProvider
 import javax.imageio.ImageIO
@@ -36,7 +36,7 @@ class ImageView(override val provider: FileSystemProvider, override val path: Pa
         )
     }
 
-    override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-image.svg").asActionIcon()
+    override val icon: FlatSVGIcon = FlatActionIcon("icons/bx-image.svg")
 
     companion object {
         private val KNOWN_EXTENSIONS = setOf(

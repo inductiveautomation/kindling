@@ -10,9 +10,9 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FileFilterResponsive
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
-import io.github.inductiveautomation.kindling.utils.asActionIcon
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.getAll
@@ -135,7 +135,7 @@ internal class MDCPanel(
 
     private val addFilter = Action(
         description = "Add MDC Key/Value Filter",
-        icon = FlatSVGIcon("icons/bx-plus.svg").asActionIcon(),
+        icon = FlatActionIcon("icons/bx-plus.svg"),
     ) {
         addFilter()
     }
@@ -152,7 +152,7 @@ internal class MDCPanel(
     private val removeFilter = Action(
         name = "Remove",
         description = "Remove Selected Filter",
-        icon = FlatSVGIcon("icons/bx-minus.svg").asActionIcon(),
+        icon = FlatActionIcon("icons/bx-minus.svg"),
     ) {
         removeFilter()
     }
@@ -175,7 +175,7 @@ internal class MDCPanel(
     private val removeAllFilters = Action(
         name = "Clear All",
         description = "Remove All Filters",
-        icon = FlatSVGIcon("icons/bx-x.svg").asActionIcon(),
+        icon = FlatActionIcon("icons/bx-x.svg"),
     ) {
         reset()
     }
