@@ -81,7 +81,7 @@ tasks {
     val download81 by registering(DownloadJavadocs::class) {
         version = "8.1"
         urls = listOf(
-            "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.41/allclasses-index.html",
+            "https://files.inductiveautomation.com/sdk/javadoc/ignition81/8.1.48/allclasses-index.html",
             "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
             "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
         )
