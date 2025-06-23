@@ -29,7 +29,7 @@ jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-modul
 jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
 # build
-jsoup = { group = "org.jsoup", name = "jsoup", version = "1.20.1" }
+jsoup = { group = "org.jsoup", name = "jsoup", version = "1.21.1" }
 
 # appearance/swing
 miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.4.2" }
