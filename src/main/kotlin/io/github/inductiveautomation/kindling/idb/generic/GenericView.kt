@@ -278,6 +278,11 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
     override val icon: Icon? = null
 
     companion object {
-        private val TIMESTAMP_COLUMN_NAMES = setOf("timestamp", "timestmp", "t_stamp", "tstamp")
+        private val TIMESTAMP_COLUMN_NAMES = setOf(
+            "timestamp",
+            "timestmp",
+            "t_stamp",
+            "tstamp",
+        )
     }
 }
