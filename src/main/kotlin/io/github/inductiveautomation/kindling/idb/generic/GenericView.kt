@@ -27,7 +27,6 @@ import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.Date
 import java.sql.JDBCType
-import java.sql.Timestamp
 import java.util.Collections
 import java.util.Enumeration
 import javax.swing.ButtonGroup
@@ -198,17 +197,16 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                             }
                         }
 
-
-                            val data = resultSet.toList {
-                                List(columnCount) { i ->
-                                    val value = resultSet.getObject(i + 1)
-                                    when {
-                                        types[i] == Boolean::class.javaObjectType -> value == 1
-                                        types[i] == Date::class.java && value is Number -> Date(value.toLong())
-                                        else -> value
-                                    }
+                        val data = resultSet.toList {
+                            List(columnCount) { i ->
+                                val value = resultSet.getObject(i + 1)
+                                when {
+                                    types[i] == Boolean::class.javaObjectType -> value == 1
+                                    types[i] == Date::class.java && value is Number -> Date(value.toLong())
+                                    else -> value
                                 }
                             }
+                        }
 
                         QueryResult.Success(names, types, data)
                     }
