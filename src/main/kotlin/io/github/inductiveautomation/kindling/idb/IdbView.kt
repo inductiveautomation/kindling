@@ -157,7 +157,7 @@ private enum class MultiIdbTool : IdbTool {
 
             val logFiles = fileData.map { (_, connection, _) ->
                 LogFile(
-                    connection.parseLogs().also { connection.close() },
+                    connection.parseLogs(),
                 )
             }
 
