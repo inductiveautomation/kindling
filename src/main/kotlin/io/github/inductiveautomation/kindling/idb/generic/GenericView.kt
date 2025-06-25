@@ -25,6 +25,7 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
 import java.sql.Connection
+import java.sql.Date
 import java.sql.JDBCType
 import java.sql.Timestamp
 import java.util.Collections
@@ -185,27 +186,25 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                             resultSet.metaData.getColumnName(i + 1)
                         }
                         val types = List(columnCount) { i ->
-                            val timestamp =
-                                TIMESTAMP_COLUMN_NAMES.any {
-                                    resultSet.metaData.getColumnName(i + 1).contains(it, true)
-                                }
-
-                            if (timestamp) {
-                                Timestamp::class.java
+                            val isTimestamp = TIMESTAMP_COLUMN_NAMES.any {
+                                resultSet.metaData.getColumnName(i + 1).contains(it, ignoreCase = true)
+                            }
+                            if (isTimestamp) {
+                                Date::class.java
                             } else {
                                 val sqlType = resultSet.metaData.getColumnType(i + 1)
                                 val jdbcType = JDBCType.valueOf(sqlType)
                                 jdbcType.javaType
                             }
-                        }
+
 
                         val data = resultSet.toList {
                             List(columnCount) { i ->
-                                // SQLite stores booleans as ints, we'll use actual booleans to make things easier
-                                if (types[i] == Boolean::class.javaObjectType) {
-                                    resultSet.getObject(i + 1) == 1
-                                } else {
-                                    resultSet.getObject(i + 1)
+                                val value = resultSet.getObject(i + 1)
+                                when {
+                                    types[i] == Boolean::class.javaObjectType -> value == 1
+                                    types[i] == Date::class.java && value is Number -> Date(value.toLong())
+                                    else -> value
                                 }
                             }
                         }
