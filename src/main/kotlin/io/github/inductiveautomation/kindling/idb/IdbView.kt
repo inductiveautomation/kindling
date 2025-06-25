@@ -61,7 +61,7 @@ class IdbView(paths: List<Path>) : ToolPanel() {
 }
 
 private class IdbConnection(
-    val path: Path
+    val path: Path,
 ) : AutoCloseable {
     val connection = SQLiteConnection(path)
 
