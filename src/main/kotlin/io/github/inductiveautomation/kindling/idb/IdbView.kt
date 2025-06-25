@@ -1,12 +1,9 @@
 package io.github.inductiveautomation.kindling.idb
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
 import io.github.inductiveautomation.kindling.core.MultiTool
-import io.github.inductiveautomation.kindling.core.Preference
-import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
-import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
-import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
@@ -19,77 +16,33 @@ import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
-import org.sqlite.SQLiteConnection
 import java.nio.file.Path
-import java.sql.Connection
+import javax.swing.SwingConstants
 import kotlin.io.path.name
 
 class IdbView(paths: List<Path>) : ToolPanel() {
-    private val data = paths.map(::IdbFileData)
+    private val connections = paths.map(::IdbConnection)
 
-    private val tabs = TabStrip().apply {
-        trailingComponent = null
+    private val tabs = TabStrip(false).apply {
         isTabsClosable = false
-        tabType = TabType.underlined
+        tabType = TabType.card
         tabHeight = 16
         isHideTabAreaWithOneTab = true
+        tabPlacement = SwingConstants.LEFT
+        tabRotation = FlatTabbedPane.TabRotation.auto
     }
 
     init {
         name = paths.first().name
         toolTipText = paths.joinToString("\n")
 
-        var addedTabs = 0
-
-        /*
-         * Not doing partial subsets of files for now.
-         * (e.g. Multitool X supports files A and B, Multitool Y supports files C and D)
-         * i.e. we assume the user is opening multiple IDBs they expect to work together
-         */
-        val supportedMultiTools = MultiIdbTool.entries.filter { tool ->
-            data.all { tool.supports(it.tables) }
+        val addedTabs = IdbTool.entries.filter { tool ->
+            tool.supports(connections)
+        }.map { tool ->
+            tabs.addLazyTab(tool.tabName) { tool.open(connections) }
         }
 
-        if (supportedMultiTools.isNotEmpty()) {
-            if (IdbViewer.ShowGenericViewWithMultiTools.currentValue || paths.size == 1) {
-                for ((path, connection, _) in data) {
-                    tabs.addTab(
-                        tabName = path.name,
-                        component = GenericView(connection),
-                        tabTooltip = null,
-                        select = true,
-                    )
-                }
-            }
-            for (tool in supportedMultiTools) {
-                tabs.addLazyTab(tabName = tool.tabName) { tool.open(data) }
-            }
-            addedTabs = supportedMultiTools.size
-        } else {
-            for ((_, connection) in data) {
-                tabs.addTab(
-                    tabName = "Tables",
-                    component = GenericView(connection),
-                    tabTooltip = null,
-                    select = true,
-                )
-            }
-
-            for (tool in SingleIdbTool.entries) {
-                for (idbFile in data) {
-                    if (tool.supports(idbFile.tables)) {
-                        tabs.addLazyTab(
-                            tabName = tool.tabName,
-                        ) {
-                            tool.open(idbFile)
-                        }
-                        addedTabs += 1
-                    }
-                }
-            }
-        }
-
-        if (addedTabs > 0) {
+        if (addedTabs.isNotEmpty()) {
             tabs.selectedIndex = tabs.indices.last
         }
 
@@ -100,65 +53,75 @@ class IdbView(paths: List<Path>) : ToolPanel() {
 
     override fun removeNotify() {
         super.removeNotify()
-        data.forEach { it.connection.close() }
-    }
 
-    companion object {
-        fun Connection.getAllTableNames(): List<String> {
-            if (this !is SQLiteConnection) return emptyList()
-            return metaData
-                .getTables("", "", "", null)
-                .toList { rs -> rs[3] }
+        for (connection in connections) {
+            connection.close()
         }
     }
+}
 
-    internal class IdbFileData(val path: Path) {
-        val connection = SQLiteConnection(path)
-        val tables = connection.getAllTableNames()
+private class IdbConnection(
+    val path: Path
+) : AutoCloseable {
+    val connection = SQLiteConnection(path)
 
-        operator fun component1() = path
-        operator fun component2() = connection
-        operator fun component3() = tables
+    val tables = connection.metaData
+        .getTables("", "", "", null)
+        .toList<String> { rs -> rs["TABLE_NAME"] }
+
+    override fun close() {
+        connection.close()
     }
 }
 
-private sealed interface IdbTool {
-    fun supports(tables: List<String>): Boolean
+private enum class IdbTool {
+    Generic {
+        override fun supports(connections: List<IdbConnection>): Boolean {
+            return connections.size == 1
+        }
 
-    fun open(fileData: IdbView.IdbFileData): ToolPanel
+        override fun open(connections: List<IdbConnection>): ToolPanel {
+            return GenericView(connections.single().connection)
+        }
 
-    val tabName: String
-}
-
-private enum class SingleIdbTool : IdbTool {
+        override val tabName: String = "Tables"
+    },
     Metrics {
-        override fun supports(tables: List<String>): Boolean = "SYSTEM_METRICS" in tables
-        override fun open(fileData: IdbView.IdbFileData): ToolPanel = MetricsView(fileData.connection)
+        override fun supports(connections: List<IdbConnection>): Boolean {
+            return connections.singleOrNull { "SYSTEM_METRICS" in it.tables } != null
+        }
+        override fun open(connections: List<IdbConnection>): ToolPanel {
+            return MetricsView(connections.single().connection)
+        }
     },
     Images {
-        override fun supports(tables: List<String>): Boolean = "IMAGES" in tables
-        override fun open(fileData: IdbView.IdbFileData): ToolPanel = ImagesPanel(fileData.connection)
+        override fun supports(connections: List<IdbConnection>): Boolean {
+            return connections.singleOrNull { "IMAGES" in it.tables } != null
+        }
+        override fun open(connections: List<IdbConnection>): ToolPanel {
+            return ImagesPanel(connections.single().connection)
+        }
     },
     TagConfig {
-        override fun supports(tables: List<String>): Boolean = "TAGCONFIG" in tables
-        override fun open(fileData: IdbView.IdbFileData): ToolPanel = TagConfigView(fileData.connection)
+        override fun supports(connections: List<IdbConnection>): Boolean {
+            return connections.singleOrNull { "TAGCONFIG" in it.tables } != null
+        }
+        override fun open(connections: List<IdbConnection>): ToolPanel {
+            return TagConfigView(connections.single().connection)
+        }
+
         override val tabName: String = "Tag Config"
     },
-    ;
-
-    override val tabName: String = name
-}
-
-private enum class MultiIdbTool : IdbTool {
     Logs {
-        override fun supports(tables: List<String>): Boolean = "logging_event" in tables
-        override fun open(fileData: List<IdbView.IdbFileData>): ToolPanel {
-            val paths = fileData.map { it.path }
+        override fun supports(connections: List<IdbConnection>): Boolean {
+            return connections.all { conn -> "logging_event" in conn.tables }
+        }
 
-            val logFiles = fileData.map { (_, connection, _) ->
-                LogFile(
-                    connection.parseLogs(),
-                )
+        override fun open(connections: List<IdbConnection>): ToolPanel {
+            val paths = connections.map { it.path }
+
+            val logFiles = connections.map { it ->
+                LogFile(it.connection.parseLogs())
             }
 
             return SystemLogPanel(paths, logFiles)
@@ -166,12 +129,14 @@ private enum class MultiIdbTool : IdbTool {
     },
     ;
 
-    abstract fun open(fileData: List<IdbView.IdbFileData>): ToolPanel
-    override fun open(fileData: IdbView.IdbFileData): ToolPanel = open(listOf(fileData))
-    override val tabName = name
+    open val tabName: String = name
+
+    abstract fun supports(connections: List<IdbConnection>): Boolean
+
+    abstract fun open(connections: List<IdbConnection>): ToolPanel
 }
 
-data object IdbViewer : MultiTool, PreferenceCategory {
+data object IdbViewer : MultiTool {
     override val serialKey = "idb-viewer"
     override val title = "SQLite Database"
     override val description = "SQLite Database (.idb)"
@@ -181,16 +146,4 @@ data object IdbViewer : MultiTool, PreferenceCategory {
     override fun open(path: Path): ToolPanel = IdbView(listOf(path))
 
     override fun open(paths: List<Path>): ToolPanel = IdbView(paths)
-
-    override val displayName = "IDB Viewer"
-
-    val ShowGenericViewWithMultiTools: Preference<Boolean> = preference(
-        name = "Include Generic IDB Tabs with Multiple Files",
-        default = false,
-        editor = {
-            PreferenceCheckbox("Include tabs for Generic IDB browser when opening multiple IDB Files")
-        },
-    )
-
-    override val preferences: List<Preference<*>> = listOf(ShowGenericViewWithMultiTools)
 }
