@@ -196,18 +196,19 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                                 val jdbcType = JDBCType.valueOf(sqlType)
                                 jdbcType.javaType
                             }
+                        }
 
 
-                        val data = resultSet.toList {
-                            List(columnCount) { i ->
-                                val value = resultSet.getObject(i + 1)
-                                when {
-                                    types[i] == Boolean::class.javaObjectType -> value == 1
-                                    types[i] == Date::class.java && value is Number -> Date(value.toLong())
-                                    else -> value
+                            val data = resultSet.toList {
+                                List(columnCount) { i ->
+                                    val value = resultSet.getObject(i + 1)
+                                    when {
+                                        types[i] == Boolean::class.javaObjectType -> value == 1
+                                        types[i] == Date::class.java && value is Number -> Date(value.toLong())
+                                        else -> value
+                                    }
                                 }
                             }
-                        }
 
                         QueryResult.Success(names, types, data)
                     }
