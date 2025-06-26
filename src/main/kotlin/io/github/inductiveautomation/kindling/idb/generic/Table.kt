@@ -18,7 +18,7 @@ data class Table(
     override fun isLeaf(): Boolean = false
     override fun children(): Enumeration<out TreeNode> = Collections.enumeration(columns)
 
-    override fun toString() : String {
+    override fun toString(): String {
         return this.name
     }
 }
