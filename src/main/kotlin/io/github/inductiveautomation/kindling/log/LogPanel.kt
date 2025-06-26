@@ -101,21 +101,17 @@ sealed class LogPanel<T : LogEvent>(
     protected val filters = mutableListOf<Filter<T>>(
         object : Filter<T> {
             override fun filter(item: T): Boolean {
-                return when (header.markedBehavior.selectedItem) {
-                    "Only Show Marked" -> item.marked
-                    "Only Show Unmarked" -> !item.marked
-                    else -> true // "Show All Events" and fallback
-                }
+                val behavior = header.markedBehavior.selectedItem as? MarkedBehavior ?: MarkedBehavior.ShowAll
+                return behavior.shouldInclude(item)
             }
         },
     )
 
     private val dataUpdater = debounce(50.milliseconds, BACKGROUND) {
         val selectedEvents = table.selectedRowIndices().map { row -> table.model[row].hashCode() }
+        val behavior = header.markedBehavior.selectedItem as? MarkedBehavior ?: MarkedBehavior.ShowAll
         val filteredData = selectedData.filter { event ->
-            filters.all { filter ->
-                filter.filter(event)
-            } || (header.markedBehavior.selectedItem == "Always Show Marked" && event.marked)
+            filters.all { it.filter(event) } || (behavior == MarkedBehavior.AlwaysShowMarked && event.marked)
         }
 
         EDT_SCOPE.launch {
@@ -408,7 +404,9 @@ sealed class LogPanel<T : LogEvent>(
         val nextMarked = JButton(FlatActionIcon("icons/bx-arrow-down.svg")).apply {
             toolTipText = "Jump to next marked log event"
         }
-        val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Only Show Unmarked", "Always Show Marked"))
+        val markedBehavior = JComboBox(Vector(MarkedBehavior.entries)).apply {
+            selectedItem = MarkedBehavior.ShowAll
+        }
 
         private val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
             border = BorderFactory.createTitledBorder("Marking")
@@ -471,5 +469,26 @@ sealed class LogPanel<T : LogEvent>(
 
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)
+    }
+}
+
+enum class MarkedBehavior(val displayName: String) {
+    ShowAll("Show All Events") {
+        override fun shouldInclude(event: LogEvent) = true
+    },
+    OnlyMarked("Only Show Marked") {
+        override fun shouldInclude(event: LogEvent) = event.marked
+    },
+    OnlyUnmarked("Only Show Unmarked") {
+        override fun shouldInclude(event: LogEvent) = !event.marked
+    },
+    AlwaysShowMarked("Always Show Marked") {
+        override fun shouldInclude(event: LogEvent) = true // filtering handled separately
+    };
+    abstract fun shouldInclude(event: LogEvent): Boolean
+    override fun toString(): String = displayName
+    companion object {
+        fun fromDisplayName(name: String): MarkedBehavior =
+            entries.firstOrNull { it.displayName == name } ?: ShowAll
     }
 }
