@@ -484,7 +484,8 @@ enum class MarkedBehavior(val displayName: String) {
     },
     AlwaysShowMarked("Always Show Marked") {
         override fun shouldInclude(event: LogEvent) = true // filtering handled separately
-    };
+    }, ;
+
     abstract fun shouldInclude(event: LogEvent): Boolean
     override fun toString(): String = displayName
     companion object {
