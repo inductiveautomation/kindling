@@ -13,6 +13,10 @@ data class MetricNode(override val userObject: List<String>) : TypedTreeNode<Lis
     constructor(vararg parts: String) : this(parts.toList())
 
     val name by lazy { userObject.joinToString(".") }
+
+    override fun toString(): String {
+        return name
+    }
 }
 
 class RootNode(metrics: List<Metric>) : AbstractTreeNode() {

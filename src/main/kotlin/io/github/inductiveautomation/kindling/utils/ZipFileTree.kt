@@ -1,4 +1,3 @@
-
 package io.github.inductiveautomation.kindling.utils
 
 import com.jidesoft.comparator.AlphanumComparator
@@ -16,7 +15,11 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.walk
 
-data class PathNode(override val userObject: Path) : TypedTreeNode<Path>()
+data class PathNode(override val userObject: Path) : TypedTreeNode<Path>() {
+    override fun toString(): String {
+        return userObject.name
+    }
+}
 
 @OptIn(ExperimentalPathApi::class)
 class RootNode(zipFile: FileSystem) : AbstractTreeNode() {
