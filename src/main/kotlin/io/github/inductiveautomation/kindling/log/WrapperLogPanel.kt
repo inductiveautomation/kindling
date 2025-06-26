@@ -110,66 +110,59 @@ class WrapperLogPanel(
         private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
             .withZone(ZoneId.systemDefault())
         private val DEFAULT_WRAPPER_MESSAGE_FORMAT =
-            "^[^|]+\\|(?<jvm>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))\$".toRegex()
-
+            "^[^|]+\\|(?<jvm>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))$".toRegex()
         fun parseLogs(lines: Sequence<String>): List<WrapperLogEvent> {
             val events = mutableListOf<WrapperLogEvent>()
             val currentStack = mutableListOf<String>()
             var partialEvent: WrapperLogEvent? = null
             var lastEventTimestamp: Instant? = null
-
             fun WrapperLogEvent?.flush() {
                 if (this != null) {
-                    // flush our previously built event
                     events += this.copy(stacktrace = currentStack.toList())
                     currentStack.clear()
                     partialEvent = null
                 }
             }
-
             for ((index, line) in lines.withIndex()) {
                 if (line.isBlank()) {
                     continue
                 }
-
                 val match = DEFAULT_WRAPPER_MESSAGE_FORMAT.matchEntire(line)
                 if (match != null) {
                     val timestamp by match.groups
-                    val time = DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(timestamp.value.trim(), Instant::from)
-
-                    // we hit an actual logged event
+                    val time = try {
+                        DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(timestamp!!.value.trim(), Instant::from)
+                    } catch (e: Exception) {
+                        continue
+                    }
                     if (match.groups["level"] != null) {
                         partialEvent.flush()
-
-                        // now build up a new partial (the next line(s) may have stacktrace)
                         val level by match.groups
                         val logger by match.groups
                         val message by match.groups
                         lastEventTimestamp = time
                         partialEvent = WrapperLogEvent(
                             timestamp = time,
-                            message = message.value.trim(),
-                            logger = logger.value.trim(),
-                            level = Level.valueOf(level.value.single()),
+                            message = message!!.value.trim(),
+                            logger = logger!!.value.trim(),
+                            level = Level.valueOf(level!!.value.single()),
                         )
                     } else {
                         val stack by match.groups
-
                         if (lastEventTimestamp == time) {
-                            // same timestamp - must be attached stacktrace
-                            currentStack += stack.value
+                            currentStack += stack!!.value
                         } else {
                             partialEvent.flush()
-                            // different timestamp, but doesn't match our regex - just try to display it in a useful way
                             events += WrapperLogEvent(
                                 timestamp = time,
-                                message = stack.value,
+                                message = stack!!.value,
                                 level = Level.INFO,
                             )
                         }
                     }
                 } else {
-                    throw IllegalArgumentException("Error parsing line $index, unparseable value: $line")
+                    // Skip lines that don't match the pattern
+                    continue
                 }
             }
             partialEvent.flush()
