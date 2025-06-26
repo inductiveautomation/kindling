@@ -101,8 +101,11 @@ sealed class LogPanel<T : LogEvent>(
     protected val filters = mutableListOf<Filter<T>>(
         object : Filter<T> {
             override fun filter(item: T): Boolean {
-                return header.markedBehavior.selectedItem != "Only Show Marked" ||
-                    item.marked
+                return when (header.markedBehavior.selectedItem) {
+                    "Only Show Marked" -> item.marked
+                    "Only Show Unmarked" -> !item.marked
+                    else -> true // "Show All Events" and fallback
+                }
             }
         },
     )
@@ -405,7 +408,7 @@ sealed class LogPanel<T : LogEvent>(
         val nextMarked = JButton(FlatActionIcon("icons/bx-arrow-down.svg")).apply {
             toolTipText = "Jump to next marked log event"
         }
-        val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Always Show Marked"))
+        val markedBehavior = JComboBox(arrayOf("Show All Events", "Only Show Marked", "Only Show Unmarked", "Always Show Marked"))
 
         private val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
             border = BorderFactory.createTitledBorder("Marking")
