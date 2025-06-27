@@ -33,12 +33,15 @@ import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
+import java.awt.Component
 import java.util.Vector
 import javax.swing.BorderFactory
+import javax.swing.DefaultListCellRenderer
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JLabel
+import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JSeparator
@@ -77,11 +80,9 @@ sealed class LogPanel<T : LogEvent>(
 
     private val footer = Footer(selectedData.size)
 
-    val table = run {
-        val initialModel = createModel(rawData)
-        ReifiedJXTable(initialModel, columnList).apply {
-            setSortOrder(initialModel.columns.Timestamp, SortOrder.ASCENDING)
-        }
+    val model = createModel(rawData)
+    val table = ReifiedJXTable(model, columnList).apply {
+        setSortOrder(model.columns.Timestamp, SortOrder.ASCENDING)
     }
 
     private val tableScrollPane = FlatScrollPane(table)
@@ -101,8 +102,13 @@ sealed class LogPanel<T : LogEvent>(
     protected val filters = mutableListOf<Filter<T>>(
         object : Filter<T> {
             override fun filter(item: T): Boolean {
-                val behavior = header.markedBehavior.selectedItem as? MarkedBehavior ?: MarkedBehavior.ShowAll
-                return behavior.shouldInclude(item)
+                val behavior = header.markedBehavior.selectedItem as MarkedBehavior
+                return when (behavior) {
+                    MarkedBehavior.ShowAll -> true
+                    MarkedBehavior.OnlyMarked -> item.marked
+                    MarkedBehavior.OnlyUnmarked -> !item.marked
+                    MarkedBehavior.AlwaysShowMarked -> true
+                }
             }
         },
     )
@@ -141,50 +147,22 @@ sealed class LogPanel<T : LogEvent>(
 
     override val icon: Icon = LogViewer.icon
 
-    private fun getNextMarkedIndex(): Int {
-        val currentSelectionIndex = table.selectionModel.selectedIndices?.lastOrNull() ?: 0
-        val markedEvents = table.model.data
-            .filter { it.marked }
-            .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
-        val rowIndex = when (markedEvents.size) {
-            0 -> -1
-            1 -> table.model.data.indexOf(markedEvents.first())
-            else -> {
-                val nextMarkedEvent =
-                    markedEvents.firstOrNull { event ->
-                        table.convertRowIndexToView(table.model.data.indexOf(event)) > currentSelectionIndex
-                    }
-                if (nextMarkedEvent == null) {
-                    table.model.data.indexOf(markedEvents.first())
-                } else {
-                    table.model.data.indexOf(nextMarkedEvent)
-                }
-            }
+    private fun getMarkedIndex(forward: Boolean): Int {
+        val current = if (forward) {
+            table.selectionModel.selectedIndices?.lastOrNull() ?: 0
+        } else {
+            table.selectionModel.selectedIndices?.firstOrNull() ?: 0
         }
-        return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
-    }
-
-    private fun getPrevMarkedIndex(): Int {
-        val currentSelectionIndex = table.selectionModel.selectedIndices?.firstOrNull() ?: 0
-        val markedEvents = table.model.data
-            .filter { it.marked }
-            .sortedBy { table.convertRowIndexToView(table.model.data.indexOf(it)) }
-        val rowIndex = when (markedEvents.size) {
-            0 -> -1
-            1 -> table.model.data.indexOf(markedEvents.first())
-            else -> {
-                val prevMarkedEvent =
-                    markedEvents.lastOrNull { event ->
-                        table.convertRowIndexToView(table.model.data.indexOf(event)) < currentSelectionIndex
-                    }
-                if (prevMarkedEvent == null) {
-                    table.model.data.indexOf(markedEvents.last())
-                } else {
-                    table.model.data.indexOf(prevMarkedEvent)
-                }
-            }
+        val markedEvents = table.model.data.filter { it.marked }
+        val sorted = markedEvents.sortedBy {
+            table.convertRowIndexToView(table.model.data.indexOf(it))
         }
-        return if (rowIndex != -1) table.convertRowIndexToView(rowIndex) else -1
+        val targetEvent = if (forward) {
+            sorted.firstOrNull { table.convertRowIndexToView(table.model.data.indexOf(it)) > current }
+        } else {
+            sorted.lastOrNull { table.convertRowIndexToView(table.model.data.indexOf(it)) < current }
+        } ?: if (forward) sorted.firstOrNull() else sorted.lastOrNull()
+        return targetEvent?.let { table.convertRowIndexToView(table.model.data.indexOf(it)) } ?: -1
     }
 
     private val markHighlighter = ColorHighlighter(
@@ -257,7 +235,7 @@ sealed class LogPanel<T : LogEvent>(
                             add(
                                 Action("Mark all with same message") {
                                     model.markRows { row ->
-                                        (row.message == event.message).takeIf { it }
+                                        row.message == event.message
                                     }
                                 },
                             )
@@ -318,11 +296,11 @@ sealed class LogPanel<T : LogEvent>(
                 updateData()
             }
             prevMarked.addActionListener {
-                val prevMarkedIndex = getPrevMarkedIndex()
+                val prevMarkedIndex = getMarkedIndex(false)
                 if (prevMarkedIndex != -1) updateSelection(prevMarkedIndex)
             }
             nextMarked.addActionListener {
-                val nextMarkedIndex = getNextMarkedIndex()
+                val nextMarkedIndex = getMarkedIndex(true)
                 if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
             }
         }
@@ -406,6 +384,20 @@ sealed class LogPanel<T : LogEvent>(
         }
         val markedBehavior = JComboBox(Vector(MarkedBehavior.entries)).apply {
             selectedItem = MarkedBehavior.ShowAll
+
+            renderer = object : DefaultListCellRenderer() {
+                override fun getListCellRendererComponent(
+                    list: JList<*>,
+                    value: Any?,
+                    index: Int,
+                    isSelected: Boolean,
+                    cellHasFocus: Boolean,
+                ): Component {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                    text = (value as? MarkedBehavior)?.displayName ?: ""
+                    return this
+                }
+            }
         }
 
         private val markedPanel = JPanel(MigLayout("fill, ins 0 2 0 2")).apply {
@@ -458,7 +450,9 @@ sealed class LogPanel<T : LogEvent>(
             }
 
         private val events = JLabel("Showing $displayedRows of $totalRows events")
-        private val selectedRow = JLabel("Selected Row(s): ${selectedRows?.toString().orEmpty()}")
+        private val selectedRow = JLabel(
+            "Selected Row(s): ${selectedRows?.joinToString(prefix = "[", postfix = "]") ?: "None"}",
+        )
 
         init {
             add(events, "growx")
@@ -473,23 +467,11 @@ sealed class LogPanel<T : LogEvent>(
 }
 
 enum class MarkedBehavior(val displayName: String) {
-    ShowAll("Show All Events") {
-        override fun shouldInclude(event: LogEvent) = true
-    },
-    OnlyMarked("Only Show Marked") {
-        override fun shouldInclude(event: LogEvent) = event.marked
-    },
-    OnlyUnmarked("Only Show Unmarked") {
-        override fun shouldInclude(event: LogEvent) = !event.marked
-    },
-    AlwaysShowMarked("Always Show Marked") {
-        override fun shouldInclude(event: LogEvent) = true // filtering handled separately
-    }, ;
+    ShowAll("Show All Events"),
+    OnlyMarked("Only Show Marked"),
+    OnlyUnmarked("Only Show Unmarked"),
+    AlwaysShowMarked("Always Show Marked"),
+    ;
 
-    abstract fun shouldInclude(event: LogEvent): Boolean
     override fun toString(): String = displayName
-    companion object {
-        fun fromDisplayName(name: String): MarkedBehavior =
-            entries.firstOrNull { it.displayName == name } ?: ShowAll
-    }
 }
