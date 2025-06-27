@@ -471,7 +471,4 @@ enum class MarkedBehavior(val displayName: String) {
     OnlyMarked("Only Show Marked"),
     OnlyUnmarked("Only Show Unmarked"),
     AlwaysShowMarked("Always Show Marked"),
-    ;
-
-    override fun toString(): String = displayName
 }
