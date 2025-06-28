@@ -34,6 +34,7 @@ import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
 import javax.swing.JTextField
 import javax.swing.KeyStroke
+import javax.swing.ListSelectionModel
 import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -217,3 +218,9 @@ fun Color.toHexString(alpha: Boolean = false): String {
         }
     }"
 }
+
+val ListSelectionModel.minSelectedIndex: Int?
+    get() = minSelectionIndex.takeIf { it != -1 }
+
+val ListSelectionModel.maxSelectedIndex: Int?
+    get() = maxSelectionIndex.takeIf { it != -1 }
