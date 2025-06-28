@@ -3,16 +3,19 @@ package io.github.inductiveautomation.kindling.utils
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import org.jdesktop.swingx.JXTable
+import org.jdesktop.swingx.JXTableHeader
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.sort.SortController
 import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
+import java.awt.event.MouseEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import javax.swing.JComponent
 import javax.swing.SortOrder
 import javax.swing.UIManager
+import javax.swing.table.JTableHeader
 import javax.swing.table.TableModel
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -44,8 +47,6 @@ class ReifiedJXTable<T : TableModel>(
 
         setSortOrderCycle(SortOrder.ASCENDING, SortOrder.DESCENDING, SortOrder.UNSORTED)
 
-        // TODO header name as tooltip without breaking sorting
-
         addHighlighter(
             object : ColorHighlighter(HighlightPredicate.ODD) {
                 override fun getBackground(): Color? = UIManager.getColor("UIColorHighlighter.stripingBackground")
@@ -54,6 +55,21 @@ class ReifiedJXTable<T : TableModel>(
 
         packLater()
         actionMap.remove("find")
+    }
+
+    override fun createDefaultTableHeader(): JTableHeader? {
+        return object : JXTableHeader(columnModel) {
+            override fun getToolTipText(event: MouseEvent): String? {
+                return super.getToolTipText(event) ?: run {
+                    val columnIndex = columnAtPoint(event.point)
+                    if (columnIndex != -1) {
+                        columnModel.getColumn(columnIndex).headerValue.toString()
+                    } else {
+                        null
+                    }
+                }
+            }
+        }
     }
 
     override fun createDefaultColumnControl(): JComponent {

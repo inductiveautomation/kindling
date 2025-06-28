@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
 import org.intellij.lang.annotations.Language
+import org.sqlite.SQLiteConnection
 import org.sqlite.SQLiteDataSource
 import java.math.BigDecimal
 import java.nio.file.Path
@@ -78,17 +79,16 @@ inline fun <reified T> sqliteCoercion(raw: Any?): T {
     } as T
 }
 
-@Suppress("FunctionName")
 fun SQLiteConnection(
     path: Path,
     readOnly: Boolean = true,
-): Connection {
+): SQLiteConnection {
     return SQLiteDataSource().apply {
         url = "jdbc:sqlite:file:$path"
         setReadOnly(readOnly)
         setJournalMode("OFF")
         setSynchronous("OFF")
-    }.connection
+    }.connection as SQLiteConnection
 }
 
 val JDBCType.javaType: Class<*>
