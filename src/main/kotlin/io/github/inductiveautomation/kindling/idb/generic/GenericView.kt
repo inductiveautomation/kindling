@@ -14,6 +14,7 @@ import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
+import io.github.inductiveautomation.kindling.utils.containsInOrder
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.javaType
@@ -185,9 +186,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                             resultSet.metaData.getColumnName(i + 1)
                         }
                         val types = List(columnCount) { i ->
-                            val isTimestamp = TIMESTAMP_COLUMN_NAMES.any {
-                                resultSet.metaData.getColumnName(i + 1).contains(it, ignoreCase = true)
-                            }
+                            val isTimestamp = names[i].containsInOrder("tsmp", true)
                             if (isTimestamp) {
                                 Date::class.java
                             } else {
@@ -276,13 +275,4 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
     }
 
     override val icon: Icon? = null
-
-    companion object {
-        private val TIMESTAMP_COLUMN_NAMES = setOf(
-            "timestamp",
-            "timestmp",
-            "t_stamp",
-            "tstamp",
-        )
-    }
 }

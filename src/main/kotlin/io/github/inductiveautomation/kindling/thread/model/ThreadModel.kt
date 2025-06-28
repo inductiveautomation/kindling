@@ -9,11 +9,6 @@ import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import org.jdesktop.swingx.renderer.LabelProvider
 import org.jdesktop.swingx.renderer.StringValues
 import java.awt.Font
-import java.lang.Thread.State.BLOCKED
-import java.lang.Thread.State.NEW
-import java.lang.Thread.State.RUNNABLE
-import java.lang.Thread.State.TIMED_WAITING
-import java.lang.Thread.State.WAITING
 import java.text.DecimalFormat
 import javax.swing.table.AbstractTableModel
 import java.lang.Thread.State as ThreadState
@@ -155,13 +150,24 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
     data object MultiThreadColumns : ThreadColumnList() {
         private val MONOSPACED = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
-        val state = Column<ThreadLifespan, String>(
+        val state = Column<ThreadLifespan, List<ThreadState?>>(
             "State",
             columnCustomization = {
                 minWidth = 105
                 cellRenderer = DefaultTableRenderer(
                     object : LabelProvider() {
-                        override fun configureVisuals(context: CellContext?) {
+                        override fun format(context: CellContext) {
+                            @Suppress("UNCHECKED_CAST") val value = context.value as List<ThreadState?>
+                            rendererComponent.text = value.joinToString("⇨") { state ->
+                                state?.name?.first()?.toString() ?: "X"
+                            }
+                            rendererComponent.toolTipText = value.withIndex()
+                                .joinToString(prefix = "<html>", separator = "<br>") { (i, state) ->
+                                    "${i + 1}: ${state?.name ?: "N/A"}"
+                                }
+                        }
+
+                        override fun configureVisuals(context: CellContext) {
                             super.configureVisuals(context).also {
                                 rendererComponent.font = MONOSPACED
                             }
@@ -170,16 +176,7 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
                 )
             },
             getValue = { threadList ->
-                threadList.joinToString(" → ") { thread ->
-                    when (thread?.state) {
-                        NEW -> "N"
-                        RUNNABLE -> "R"
-                        BLOCKED -> "B"
-                        WAITING -> "W"
-                        TIMED_WAITING -> "T"
-                        else -> "X"
-                    }
-                }
+                threadList.map { it?.state }
             },
         )
 

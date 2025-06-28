@@ -177,3 +177,15 @@ private val HEX_FORMAT = HexFormat {
 fun <T> Iterator<T>.nextOrNull(): T? {
     return if (hasNext()) next() else null
 }
+
+fun String.containsInOrder(pattern: String, ignoreCase: Boolean): Boolean {
+    if (pattern.isEmpty()) return true // An empty pattern is always found
+
+    var patternIndex = 0
+    for (charInString in this) {
+        if (patternIndex < pattern.length && charInString.equals(pattern[patternIndex], ignoreCase)) {
+            patternIndex++
+        }
+    }
+    return patternIndex == pattern.length
+}

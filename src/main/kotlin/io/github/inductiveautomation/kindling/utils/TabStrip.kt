@@ -154,7 +154,7 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         component: () -> T,
     ) where T : Container, T : FloatableComponent {
         addTab(
-            tabName.truncate(30),
+            tabName,
             icon,
             LazyTab(tabName, icon, tabTooltip, component),
             tabTooltip,
