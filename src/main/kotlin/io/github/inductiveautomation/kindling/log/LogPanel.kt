@@ -24,6 +24,8 @@ import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
+import io.github.inductiveautomation.kindling.utils.maxSelectedIndex
+import io.github.inductiveautomation.kindling.utils.minSelectedIndex
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
 import io.github.inductiveautomation.kindling.utils.toBodyLine
 import kotlinx.coroutines.CoroutineScope
@@ -33,15 +35,12 @@ import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
-import java.awt.Component
 import java.util.Vector
 import javax.swing.BorderFactory
-import javax.swing.DefaultListCellRenderer
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JLabel
-import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JSeparator
@@ -80,9 +79,11 @@ sealed class LogPanel<T : LogEvent>(
 
     private val footer = Footer(selectedData.size)
 
-    val model = createModel(rawData)
-    val table = ReifiedJXTable(model, columnList).apply {
-        setSortOrder(model.columns.Timestamp, SortOrder.ASCENDING)
+    val table = run {
+        val initialModel = createModel(rawData)
+        ReifiedJXTable(initialModel, columnList).apply {
+            setSortOrder(initialModel.columns.Timestamp, SortOrder.ASCENDING)
+        }
     }
 
     private val tableScrollPane = FlatScrollPane(table)
@@ -147,22 +148,21 @@ sealed class LogPanel<T : LogEvent>(
 
     override val icon: Icon = LogViewer.icon
 
-    private fun getMarkedIndex(forward: Boolean): Int {
-        val current = if (forward) {
-            table.selectionModel.selectedIndices?.lastOrNull() ?: 0
+    private fun getNextMarkedIndex(forward: Boolean): Int? {
+        val viewRowCount = table.rowSorter.viewRowCount
+
+        val indicesToSearch = if (forward) {
+            val startIndex = table.selectionModel.minSelectedIndex?.let { it + 1 } ?: 0
+            startIndex until viewRowCount
         } else {
-            table.selectionModel.selectedIndices?.firstOrNull() ?: 0
+            val startIndex = table.selectionModel.maxSelectedIndex?.let { it - 1 } ?: (viewRowCount - 1)
+            startIndex downTo 0
         }
-        val markedEvents = table.model.data.filter { it.marked }
-        val sorted = markedEvents.sortedBy {
-            table.convertRowIndexToView(table.model.data.indexOf(it))
+
+        return indicesToSearch.find { viewIndex ->
+            val modelIndex = table.convertRowIndexToModel(viewIndex)
+            table.model.data[modelIndex].marked
         }
-        val targetEvent = if (forward) {
-            sorted.firstOrNull { table.convertRowIndexToView(table.model.data.indexOf(it)) > current }
-        } else {
-            sorted.lastOrNull { table.convertRowIndexToView(table.model.data.indexOf(it)) < current }
-        } ?: if (forward) sorted.firstOrNull() else sorted.lastOrNull()
-        return targetEvent?.let { table.convertRowIndexToView(table.model.data.indexOf(it)) } ?: -1
     }
 
     private val markHighlighter = ColorHighlighter(
@@ -283,25 +283,21 @@ sealed class LogPanel<T : LogEvent>(
                 table.repaint()
             }
 
-            fun updateSelection(index: Int) {
-                table.selectionModel.setSelectionInterval(index, index)
-                val rect = table.bounds
-                rect.y = index * table.rowHeight
-                rect.height = tableScrollPane.height - table.tableHeader.height - 2
-                table.scrollRectToVisible(rect)
-                table.updateUI()
+            fun updateSelection(viewIndex: Int) {
+                if (viewIndex < 0 || viewIndex >= table.rowCount) return
+                table.selectionModel.setSelectionInterval(viewIndex, viewIndex)
+                val cellRect = table.getCellRect(viewIndex, 0, true)
+                table.scrollRectToVisible(cellRect)
             }
             clearMarked.addActionListener {
                 table.model.markRows { false }
                 updateData()
             }
             prevMarked.addActionListener {
-                val prevMarkedIndex = getMarkedIndex(false)
-                if (prevMarkedIndex != -1) updateSelection(prevMarkedIndex)
+                getNextMarkedIndex(forward = false)?.let(::updateSelection)
             }
             nextMarked.addActionListener {
-                val nextMarkedIndex = getMarkedIndex(true)
-                if (nextMarkedIndex != -1) updateSelection(nextMarkedIndex)
+                getNextMarkedIndex(forward = true)?.let(::updateSelection)
             }
         }
 
@@ -377,26 +373,18 @@ sealed class LogPanel<T : LogEvent>(
             toolTipText = "Clear all visible marks"
         }
         val prevMarked = JButton(FlatActionIcon("icons/bx-arrow-up.svg")).apply {
-            toolTipText = "Jump to previous marked log event"
+            toolTipText = "Jump to previous marked event"
         }
         val nextMarked = JButton(FlatActionIcon("icons/bx-arrow-down.svg")).apply {
-            toolTipText = "Jump to next marked log event"
+            toolTipText = "Jump to next marked event"
         }
-        val markedBehavior = JComboBox(Vector(MarkedBehavior.entries)).apply {
+
+        @Suppress("EnumValuesSoftDeprecate") // not a performance sensitive enum.values() call
+        val markedBehavior = JComboBox(MarkedBehavior.values()).apply {
             selectedItem = MarkedBehavior.ShowAll
 
-            renderer = object : DefaultListCellRenderer() {
-                override fun getListCellRendererComponent(
-                    list: JList<*>,
-                    value: Any?,
-                    index: Int,
-                    isSelected: Boolean,
-                    cellHasFocus: Boolean,
-                ): Component {
-                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-                    text = (value as? MarkedBehavior)?.displayName ?: ""
-                    return this
-                }
+            configureCellRenderer { _, value, _, _, _ ->
+                text = value?.displayName.orEmpty()
             }
         }
 
@@ -464,11 +452,11 @@ sealed class LogPanel<T : LogEvent>(
     companion object {
         private val BACKGROUND = CoroutineScope(Dispatchers.Default)
     }
-}
 
-enum class MarkedBehavior(val displayName: String) {
-    ShowAll("Show All Events"),
-    OnlyMarked("Only Show Marked"),
-    OnlyUnmarked("Only Show Unmarked"),
-    AlwaysShowMarked("Always Show Marked"),
+    protected enum class MarkedBehavior(val displayName: String) {
+        ShowAll("Show All Events"),
+        OnlyMarked("Only Show Marked"),
+        OnlyUnmarked("Only Show Unmarked"),
+        AlwaysShowMarked("Always Show Marked"),
+    }
 }

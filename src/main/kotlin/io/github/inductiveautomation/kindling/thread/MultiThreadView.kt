@@ -43,7 +43,6 @@ import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.Desktop
-import java.awt.Rectangle
 import java.nio.file.Path
 import javax.swing.ButtonGroup
 import javax.swing.JLabel
@@ -293,7 +292,7 @@ class MultiThreadView(
             if (newSelectedIndex > -1) {
                 val newSelectedViewIndex = mainTable.convertRowIndexToView(newSelectedIndex)
                 mainTable.selectionModel.setSelectionInterval(0, newSelectedViewIndex)
-                mainTable.scrollRectToVisible(Rectangle(mainTable.getCellRect(newSelectedViewIndex, 0, true)))
+                mainTable.scrollRectToVisible(mainTable.getCellRect(newSelectedViewIndex, 0, true))
             }
         }
 
@@ -362,7 +361,7 @@ class MultiThreadView(
                 if (selectedID == mainTable.model[i, mainTable.model.columns.id]) {
                     val rowIndex = mainTable.convertRowIndexToView(i)
                     mainTable.selectionModel.setSelectionInterval(0, rowIndex)
-                    mainTable.scrollRectToVisible(Rectangle(mainTable.getCellRect(rowIndex, 0, true)))
+                    mainTable.scrollRectToVisible(mainTable.getCellRect(rowIndex, 0, true))
                     break
                 }
             }
