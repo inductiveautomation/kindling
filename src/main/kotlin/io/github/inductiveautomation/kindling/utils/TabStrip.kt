@@ -40,6 +40,7 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         tabLayoutPolicy = SCROLL_TAB_LAYOUT
         tabAlignment = TabAlignment.leading
         isTabsClosable = true
+        maximumTabWidth = 250
 
         setTabCloseCallback { _, i ->
             removeTabAt(i)
@@ -140,7 +141,7 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         icon: Icon? = component.icon,
         select: Boolean = true,
     ) where T : Container, T : FloatableComponent {
-        addTab(tabName.truncate(30), icon, component, tabTooltip)
+        addTab(tabName, icon, component, tabTooltip)
         if (select) {
             selectedIndex = indices.last
         }
@@ -153,7 +154,7 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         component: () -> T,
     ) where T : Container, T : FloatableComponent {
         addTab(
-            tabName.truncate(30),
+            tabName,
             icon,
             LazyTab(tabName, icon, tabTooltip, component),
             tabTooltip,

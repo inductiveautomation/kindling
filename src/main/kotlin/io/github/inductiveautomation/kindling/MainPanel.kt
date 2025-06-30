@@ -31,6 +31,7 @@ import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.RendererBase
 import io.github.inductiveautomation.kindling.utils.StyledLabel
 import io.github.inductiveautomation.kindling.utils.TabStrip
+import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.chooseFiles
 import io.github.inductiveautomation.kindling.utils.clipboardString
 import io.github.inductiveautomation.kindling.utils.getLogger
@@ -74,6 +75,7 @@ import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.KeyStroke
 import javax.swing.SwingConstants.BOTTOM
 import javax.swing.SwingConstants.CENTER
@@ -193,6 +195,23 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                     JButton(openAction).apply {
                         hideActionText = true
                         icon = FlatSVGIcon("icons/bx-plus.svg")
+                        attachPopupMenu {
+                            JPopupMenu().apply {
+                                for (tool in Tool.sortedByTitle) {
+                                    add(
+                                        Action(
+                                            name = "Open ${tool.title}",
+                                            icon = tool.icon,
+                                        ) {
+                                            fileChooser.fileFilter = tool.filter
+                                            fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
+                                                openFiles(selectedFiles, tool)
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+                        }
                     },
                     BorderLayout.WEST,
                 )
