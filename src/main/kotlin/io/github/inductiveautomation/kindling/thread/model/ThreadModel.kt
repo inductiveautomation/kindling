@@ -157,7 +157,8 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
                 cellRenderer = DefaultTableRenderer(
                     object : LabelProvider() {
                         override fun format(context: CellContext) {
-                            @Suppress("UNCHECKED_CAST") val value = context.value as List<ThreadState?>
+                            @Suppress("UNCHECKED_CAST")
+                            val value = context.value as List<ThreadState?>
                             rendererComponent.text = value.joinToString("⇨") { state ->
                                 state?.name?.first()?.toString() ?: "X"
                             }
