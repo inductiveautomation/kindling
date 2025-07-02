@@ -8,6 +8,7 @@ import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
 import io.github.inductiveautomation.kindling.log.WrapperLogEvent.Companion.STDOUT
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
@@ -25,6 +26,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.time.temporal.TemporalAccessor
 import java.time.zone.ZoneRulesProvider
 import java.util.Vector
 import javax.swing.JComboBox
@@ -126,7 +128,6 @@ class WrapperLogPanel(
                 currentStack.clear()
                 partialEvent = null
             }
-
 
             for (line in lines) {
                 if (line.isBlank()) {
@@ -243,18 +244,21 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         },
     )
 
-    @Suppress("ktlint:standard:property-naming")
-    private lateinit var _formatter: DateTimeFormatter
-    val TimeStampFormatter: DateTimeFormatter
-        get() {
-            if (!this::_formatter.isInitialized) {
-                _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss:SSS").withZone(SelectedTimeZone.currentValue)
-            }
-            if (_formatter.zone != SelectedTimeZone.currentValue) {
-                _formatter = _formatter.withZone(SelectedTimeZone.currentValue)
-            }
-            return _formatter
+    private var formatter = createFormatter(SelectedTimeZone.currentValue)
+
+    init {
+        SelectedTimeZone.addChangeListener { newValue ->
+            formatter = createFormatter(newValue)
         }
+    }
+
+    private fun createFormatter(id: ZoneId): DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss:SSS")
+        .withZone(id)
+
+    /**
+     * Format [time] using an internal [DateTimeFormatter] that is in [SelectedTimeZone] automatically.
+     */
+    fun format(time: TemporalAccessor): String = formatter.format(time)
 
     override val displayName = "Log View"
 
