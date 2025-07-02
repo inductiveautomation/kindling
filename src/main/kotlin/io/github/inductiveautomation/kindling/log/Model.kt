@@ -27,7 +27,7 @@ data class MDC(
 data class WrapperLogEvent(
     override val timestamp: Instant,
     override val message: String,
-    override val logger: String = STDOUT,
+    override val logger: String,
     override val level: Level? = null,
     override val stacktrace: StackTrace = emptyList(),
     override var marked: Boolean = false,

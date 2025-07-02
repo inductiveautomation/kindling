@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.log
 
 import io.kotest.assertions.asClue
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -137,6 +138,87 @@ class WrapperLogParsingTests : FunSpec(
                     event.logger shouldBe WrapperLogEvent.STDOUT
                     event.message shouldBe "Standard output"
                     event.stacktrace.shouldBeEmpty()
+                }
+            }
+        }
+
+        test("Invalid parse on the first line should abort") {
+            shouldThrow<IllegalArgumentException> {
+                parse(
+                    """
+                INFO   | jvm 1    | 2025/04/27 19:15:17 STATUS | wrapper  | 2025/04/27 19:17:46 | --> Wrapper Started as Service
+                STATUS | wrapper  | 2025/04/27 19:17:46 | Java Service Wrapper Standard Edition 64-bit 3.5.42
+                STATUS | wrapper  | 2025/04/27 19:17:46 |   Copyright (C) 1999-2020 Tanuki Software, Ltd. All Rights Reserved.
+                STATUS | wrapper  | 2025/04/27 19:17:46 |     http://wrapper.tanukisoftware.com
+                STATUS | wrapper  | 2025/04/27 19:17:46 |   Licensed to Inductive Automation for Inductive Automation
+                STATUS | wrapper  | 2025/04/27 19:17:46 | 
+                STATUS | wrapper  | 2025/04/27 19:17:47 | Launching a JVM...
+                INFO   | jvm 1    | 2025/04/27 19:17:48 | WrapperManager: Initializing...
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.3.14
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.util.ContextInitializer@c932dae - No custom configurators were discovered as a service.
+                """,
+                )
+            }
+            shouldThrow<IllegalArgumentException> {
+                parse(
+                    """
+                    garbage
+                    STATUS | wrapper  | 2025/04/27 19:17:46 | Java Service Wrapper Standard Edition 64-bit 3.5.42
+                    STATUS | wrapper  | 2025/04/27 19:17:46 |   Copyright (C) 1999-2020 Tanuki Software, Ltd. All Rights Reserved.
+                    STATUS | wrapper  | 2025/04/27 19:17:46 |     http://wrapper.tanukisoftware.com
+                    STATUS | wrapper  | 2025/04/27 19:17:46 |   Licensed to Inductive Automation for Inductive Automation
+                    STATUS | wrapper  | 2025/04/27 19:17:46 | 
+                    STATUS | wrapper  | 2025/04/27 19:17:47 | Launching a JVM...
+                    INFO   | jvm 1    | 2025/04/27 19:17:48 | WrapperManager: Initializing...
+                    INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.3.14
+                    INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.util.ContextInitializer@c932dae - No custom configurators were discovered as a service.
+                    """,
+                )
+            }
+        }
+
+        test("Invalid parse after the first line should skip") {
+            parse(
+                """
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.3.14
+                INFO   | jvm 1    | 2025/04/27 19:15:17 STATUS | wrapper  | 2025/04/27 19:17:46 | --> Wrapper Started as Service
+                STATUS | wrapper  | 2025/04/27 19:17:46 | Java Service Wrapper Standard Edition 64-bit 3.5.42
+                STATUS | wrapper  | 2025/04/27 19:17:46 |   Copyright (C) 1999-2020 Tanuki Software, Ltd. All Rights Reserved.
+                STATUS | wrapper  | 2025/04/27 19:17:46 |     http://wrapper.tanukisoftware.com
+                STATUS | wrapper  | 2025/04/27 19:17:46 |   Licensed to Inductive Automation for Inductive Automation
+                STATUS | wrapper  | 2025/04/27 19:17:46 | 
+                STATUS | wrapper  | 2025/04/27 19:17:47 | Launching a JVM...
+                INFO   | jvm 1    | 2025/04/27 19:17:48 | WrapperManager: Initializing...
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.3.14
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.util.ContextInitializer@c932dae - No custom configurators were discovered as a service.
+                """,
+            ).let { events ->
+                events.size shouldBe 10
+                events[1].asClue { event ->
+                    event.message.shouldBe("Java Service Wrapper Standard Edition 64-bit 3.5.42")
+                    event.logger shouldBe "wrapper"
+                }
+            }
+
+            parse(
+                """
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.3.14
+                garbage
+                STATUS | wrapper  | 2025/04/27 19:17:46 | Java Service Wrapper Standard Edition 64-bit 3.5.42
+                STATUS | wrapper  | 2025/04/27 19:17:46 |   Copyright (C) 1999-2020 Tanuki Software, Ltd. All Rights Reserved.
+                STATUS | wrapper  | 2025/04/27 19:17:46 |     http://wrapper.tanukisoftware.com
+                STATUS | wrapper  | 2025/04/27 19:17:46 |   Licensed to Inductive Automation for Inductive Automation
+                STATUS | wrapper  | 2025/04/27 19:17:46 | 
+                STATUS | wrapper  | 2025/04/27 19:17:47 | Launching a JVM...
+                INFO   | jvm 1    | 2025/04/27 19:17:48 | WrapperManager: Initializing...
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.3.14
+                INFO   | jvm 1    | 2025/04/27 19:17:49 | 19:17:49,084 |-INFO in ch.qos.logback.classic.util.ContextInitializer@c932dae - No custom configurators were discovered as a service.
+                """,
+            ).let { events ->
+                events.size shouldBe 10
+                events[1].asClue { event ->
+                    event.message.shouldBe("Java Service Wrapper Standard Edition 64-bit 3.5.42")
+                    event.logger shouldBe "wrapper"
                 }
             }
         }

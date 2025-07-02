@@ -5,7 +5,6 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
-import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
@@ -132,7 +131,7 @@ internal class TimePanel<T : LogEvent>(
     private fun selectTime(timeToSelect: Instant) {
         val table = containingLogPanel?.table ?: return
 
-        val modelIndex = (table.model as LogsModel<*>).data
+        val modelIndex = table.model.data
             .indexOfFirst { it.timestamp.truncatedTo(ChronoUnit.MINUTES) == timeToSelect }
         if (modelIndex == -1) return
 
@@ -264,12 +263,12 @@ internal class TimePanel<T : LogEvent>(
     ) {
         if (column == WrapperLogColumns.Timestamp || column == SystemLogColumns.Timestamp) {
             menu.add(
-                Action("Show only events after ${TimeStampFormatter.format(event.timestamp)}") {
+                Action("Show only events after ${LogViewer.format(event.timestamp)}") {
                     startSelector.time = event.timestamp
                 },
             )
             menu.add(
-                Action("Show only events before ${TimeStampFormatter.format(event.timestamp)}") {
+                Action("Show only events before ${LogViewer.format(event.timestamp)}") {
                     endSelector.time = event.timestamp
                 },
             )
