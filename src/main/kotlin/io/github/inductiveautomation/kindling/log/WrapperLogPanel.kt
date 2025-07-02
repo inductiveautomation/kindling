@@ -8,6 +8,7 @@ import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.log.WrapperLogEvent.Companion.STDOUT
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
 import io.github.inductiveautomation.kindling.utils.TabStrip
@@ -23,6 +24,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.zone.ZoneRulesProvider
 import java.util.Vector
 import javax.swing.JComboBox
@@ -107,10 +109,10 @@ class WrapperLogPanel(
     }
 
     companion object {
-        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss[ 'STATUS']")
+        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
             .withZone(ZoneId.systemDefault())
         private val DEFAULT_WRAPPER_MESSAGE_FORMAT =
-            "^[^|]+\\|(?<jvm>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))\$".toRegex()
+            "^[^|]+\\|(?<prefix>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))$".toRegex()
 
         fun parseLogs(lines: Sequence<String>): List<WrapperLogEvent> {
             val events = mutableListOf<WrapperLogEvent>()
@@ -118,16 +120,15 @@ class WrapperLogPanel(
             var partialEvent: WrapperLogEvent? = null
             var lastEventTimestamp: Instant? = null
 
-            fun WrapperLogEvent?.flush() {
-                if (this != null) {
-                    // flush our previously built event
-                    events += this.copy(stacktrace = currentStack.toList())
-                    currentStack.clear()
-                    partialEvent = null
-                }
+            fun WrapperLogEvent.flush() {
+                // flush our previously built event
+                events += this.copy(stacktrace = currentStack.toList())
+                currentStack.clear()
+                partialEvent = null
             }
 
-            for ((index, line) in lines.withIndex()) {
+
+            for (line in lines) {
                 if (line.isBlank()) {
                     continue
                 }
@@ -135,11 +136,18 @@ class WrapperLogPanel(
                 val match = DEFAULT_WRAPPER_MESSAGE_FORMAT.matchEntire(line)
                 if (match != null) {
                     val timestamp by match.groups
-                    val time = DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(timestamp.value.trim(), Instant::from)
+                    val time = try {
+                        DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(timestamp.value.trim(), Instant::from)
+                    } catch (_: DateTimeParseException) {
+                        if (events.isEmpty()) {
+                            throw IllegalArgumentException("Error parsing wrapper log file; unexpected content format on first line:\n$line")
+                        }
+                        continue
+                    }
 
                     // we hit an actual logged event
                     if (match.groups["level"] != null) {
-                        partialEvent.flush()
+                        partialEvent?.flush()
 
                         // now build up a new partial (the next line(s) may have stacktrace)
                         val level by match.groups
@@ -159,20 +167,24 @@ class WrapperLogPanel(
                             // same timestamp - must be attached stacktrace
                             currentStack += stack.value
                         } else {
-                            partialEvent.flush()
+                            partialEvent?.flush()
                             // different timestamp, but doesn't match our regex - just try to display it in a useful way
                             events += WrapperLogEvent(
                                 timestamp = time,
                                 message = stack.value,
+                                logger = match.groups["prefix"]?.value?.trim()?.takeIf { it == "wrapper" } ?: STDOUT,
                                 level = Level.INFO,
                             )
                         }
                     }
                 } else {
-                    throw IllegalArgumentException("Error parsing line $index, unparseable value: $line")
+                    if (events.isEmpty()) {
+                        throw IllegalArgumentException("Error parsing wrapper log file; unexpected content format on first line:\n$line")
+                    }
+                    continue
                 }
             }
-            partialEvent.flush()
+            partialEvent?.flush()
             return events
         }
     }
