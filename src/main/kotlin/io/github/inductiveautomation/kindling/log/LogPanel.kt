@@ -234,9 +234,11 @@ sealed class LogPanel<T : LogEvent>(
                             add(
                                 Action("Mark all with same message") {
                                     model.markRows { row ->
-                                        // Only modify unmarked rows
-                                        if (row.marked) return null
-                                        return row.message == event.message
+                                        if (row.marked) {
+                                            null // Leave existing marked messages marked
+                                        } else {
+                                            row.message == event.message
+                                        }
                                     }
                                 },
                             )
