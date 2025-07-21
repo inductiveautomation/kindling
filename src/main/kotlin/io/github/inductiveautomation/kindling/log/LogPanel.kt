@@ -10,7 +10,6 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.
 import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.log.LogViewer.TimeStampFormatter
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.ColorHighlighter
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
@@ -331,8 +330,8 @@ sealed class LogPanel<T : LogEvent>(
                 .map { event ->
                     DetailEvent(
                         title = when (event) {
-                            is SystemLogEvent -> "${TimeStampFormatter.format(event.timestamp)} ${event.thread}"
-                            else -> TimeStampFormatter.format(event.timestamp)
+                            is SystemLogEvent -> "${LogViewer.format(event.timestamp)} ${event.thread}"
+                            else -> LogViewer.format(event.timestamp)
                         },
                         message = event.message,
                         body = event.stacktrace.map { element ->
