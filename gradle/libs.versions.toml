@@ -1,6 +1,6 @@
 [versions]
 java = "21"
-kotlin = "2.1.21"
+kotlin = "2.2.0"
 coroutines = "1.10.2"
 flatlaf = "3.6.1"
 kotest = "5.9.1"
@@ -18,7 +18,7 @@ dokka = { id = "org.jetbrains.dokka", version = "2.0.0" }
 # core functionality
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.8.1" }
+serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.9.0" }
 xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.50.3.0" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.5.18" }
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.4" }
