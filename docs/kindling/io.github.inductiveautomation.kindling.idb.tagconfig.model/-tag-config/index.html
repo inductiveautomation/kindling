@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>TagConfig</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    kindling
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+1.4.0        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":dokkaHtml/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":dokkaHtml/main"
+                                       data-filter=":dokkaHtml/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    kindling
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="kindling::io.github.inductiveautomation.kindling.idb.tagconfig.model/TagConfig///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">kindling</a><span class="delimiter">/</span><a href="../index.html">io.github.inductiveautomation.kindling.idb.tagconfig.model</a><span class="delimiter">/</span><span class="current">TagConfig</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Tag</span><wbr></wbr><span><span>Config</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">TagConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tagGroup<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>enabled<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tagType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>typeId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>valueSource<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dataType<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>opcServer<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>opcItemPath<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>sourceTagPath<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>executionMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>executionRate<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>expression<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>readExpression<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>writeExpression<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>query<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>queryType<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>datasource<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>deadband<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>deadbandMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>scaleMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rawLow<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rawHigh<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>scaledLow<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>scaledHigh<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>clampMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>scaleFactor<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>engUnit<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>engLow<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>engHigh<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>engLimitMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>formatString<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tooltip<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>documentation<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>typeColor<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonPrimitive///PointingToDeclaration/">JsonPrimitive</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>readPermissions<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>readOnly<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>writePermissions<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>eventScripts<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="../-script-config/index.html">ScriptConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>alarms<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonArray///PointingToDeclaration/">JsonArray</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>alarmEvalEnabled<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historyEnabled<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historyProvider<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historicalDeadbandStyle<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historicalDeadbandMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historicalDeadband<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>sampleMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historySampleRate<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historySampleRateUnits<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historyTagGroup<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historyTimeDeadband<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historyTimeDeadbandUnits<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historyMaxAge<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historyMaxAgeUnits<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tags<span class="token operator">: </span><a href="../-node-group/index.html">NodeGroup</a><span class="token operator"> = </span>NodeGroup()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>parameters<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>customProperties<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><p class="paragraph">All possible elements of a node (of any type) in the tag hierarchy. This is 'technically' future-proof in the sense that if more tag config entries are added to ignition, they will be bundled with the customProperties property instead of causing an error.</p><p class="paragraph">Values marked as JsonElement or any of its subclasses are marked as such for two reasons. Either:</p><ol><li><p class="paragraph">We don't care about their data types, and the serializers will represent them correctly for display/export purposes.</p></li><li><p class="paragraph">The value can be multiple types, depending on the export. For example, a tag's value can be either a Json Primitive or an Object,     if the tag's value is bound.</p></li></ol></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="245700322%2FConstructors%2F769193423" anchor-label="TagConfig" id="245700322%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-tag-config.html"><span>Tag</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="245700322%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">tagGroup<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">enabled<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">tagType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">typeId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">valueSource<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">dataType<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">opcServer<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">opcItemPath<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">sourceTagPath<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">executionMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">executionRate<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">expression<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">readExpression<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">writeExpression<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">query<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">queryType<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">datasource<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">deadband<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">deadbandMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">scaleMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">rawLow<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">rawHigh<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">scaledLow<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">scaledHigh<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">clampMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">scaleFactor<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">engUnit<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">engLow<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">engHigh<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">engLimitMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">formatString<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">tooltip<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">documentation<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">typeColor<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonPrimitive///PointingToDeclaration/">JsonPrimitive</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">readPermissions<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">readOnly<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">writePermissions<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">eventScripts<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="../-script-config/index.html">ScriptConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">alarms<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonArray///PointingToDeclaration/">JsonArray</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">alarmEvalEnabled<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historyEnabled<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historyProvider<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historicalDeadbandStyle<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historicalDeadbandMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historicalDeadband<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">sampleMode<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historySampleRate<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historySampleRateUnits<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historyTagGroup<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historyTimeDeadband<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historyTimeDeadbandUnits<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historyMaxAge<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historyMaxAgeUnits<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">tags<span class="token operator">: </span><a href="../-node-group/index.html">NodeGroup</a><span class="token operator"> = </span>NodeGroup()<span class="token punctuation">, </span></span><span class="parameter ">parameters<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">customProperties<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1367129380%2FProperties%2F769193423" anchor-label="alarmEvalEnabled" id="-1367129380%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="alarm-eval-enabled.html"><span>alarm</span><wbr></wbr><span>Eval</span><wbr></wbr><span><span>Enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1367129380%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="alarm-eval-enabled.html">alarmEvalEnabled</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1255497230%2FProperties%2F769193423" anchor-label="alarms" id="1255497230%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="alarms.html"><span><span>alarms</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1255497230%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="alarms.html">alarms</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonArray///PointingToDeclaration/">JsonArray</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1263844172%2FProperties%2F769193423" anchor-label="clampMode" id="1263844172%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clamp-mode.html"><span>clamp</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1263844172%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="clamp-mode.html">clampMode</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1300703924%2FProperties%2F769193423" anchor-label="customProperties" id="-1300703924%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="custom-properties.html"><span>custom</span><wbr></wbr><span><span>Properties</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1300703924%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="custom-properties.html">customProperties</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="608916971%2FProperties%2F769193423" anchor-label="datasource" id="608916971%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="datasource.html"><span><span>datasource</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="608916971%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="datasource.html">datasource</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1914571316%2FProperties%2F769193423" anchor-label="dataType" id="-1914571316%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="data-type.html"><span>data</span><wbr></wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1914571316%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="data-type.html">dataType</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1571583191%2FProperties%2F769193423" anchor-label="deadband" id="1571583191%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="deadband.html"><span><span>deadband</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1571583191%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="deadband.html">deadband</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-866346124%2FProperties%2F769193423" anchor-label="deadbandMode" id="-866346124%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="deadband-mode.html"><span>deadband</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-866346124%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="deadband-mode.html">deadbandMode</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1213879952%2FProperties%2F769193423" anchor-label="documentation" id="1213879952%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="documentation.html"><span><span>documentation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1213879952%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="documentation.html">documentation</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-204865111%2FProperties%2F769193423" anchor-label="enabled" id="-204865111%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="enabled.html"><span><span>enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-204865111%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="enabled.html">enabled</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1833773610%2FProperties%2F769193423" anchor-label="engHigh" id="1833773610%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="eng-high.html"><span>eng</span><wbr></wbr><span><span>High</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1833773610%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="eng-high.html">engHigh</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="431978768%2FProperties%2F769193423" anchor-label="engLimitMode" id="431978768%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="eng-limit-mode.html"><span>eng</span><wbr></wbr><span>Limit</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="431978768%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="eng-limit-mode.html">engLimitMode</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1387366202%2FProperties%2F769193423" anchor-label="engLow" id="1387366202%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="eng-low.html"><span>eng</span><wbr></wbr><span><span>Low</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1387366202%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="eng-low.html">engLow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1019023224%2FProperties%2F769193423" anchor-label="engUnit" id="-1019023224%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="eng-unit.html"><span>eng</span><wbr></wbr><span><span>Unit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1019023224%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="eng-unit.html">engUnit</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1162998914%2FProperties%2F769193423" anchor-label="eventScripts" id="1162998914%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="event-scripts.html"><span>event</span><wbr></wbr><span><span>Scripts</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1162998914%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="event-scripts.html">eventScripts</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="../-script-config/index.html">ScriptConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="442024847%2FProperties%2F769193423" anchor-label="executionMode" id="442024847%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="execution-mode.html"><span>execution</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="442024847%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="execution-mode.html">executionMode</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1384832754%2FProperties%2F769193423" anchor-label="executionRate" id="1384832754%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="execution-rate.html"><span>execution</span><wbr></wbr><span><span>Rate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1384832754%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="execution-rate.html">executionRate</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-247240968%2FProperties%2F769193423" anchor-label="expression" id="-247240968%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="expression.html"><span><span>expression</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-247240968%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="expression.html">expression</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2128290840%2FProperties%2F769193423" anchor-label="formatString" id="-2128290840%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="format-string.html"><span>format</span><wbr></wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2128290840%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="format-string.html">formatString</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-644022931%2FProperties%2F769193423" anchor-label="historicalDeadband" id="-644022931%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="historical-deadband.html"><span>historical</span><wbr></wbr><span><span>Deadband</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-644022931%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="historical-deadband.html">historicalDeadband</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1426778378%2FProperties%2F769193423" anchor-label="historicalDeadbandMode" id="1426778378%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="historical-deadband-mode.html"><span>historical</span><wbr></wbr><span>Deadband</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1426778378%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="historical-deadband-mode.html">historicalDeadbandMode</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1262264420%2FProperties%2F769193423" anchor-label="historicalDeadbandStyle" id="-1262264420%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="historical-deadband-style.html"><span>historical</span><wbr></wbr><span>Deadband</span><wbr></wbr><span><span>Style</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1262264420%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="historical-deadband-style.html">historicalDeadbandStyle</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="35603875%2FProperties%2F769193423" anchor-label="historyEnabled" id="35603875%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-enabled.html"><span>history</span><wbr></wbr><span><span>Enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="35603875%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-enabled.html">historyEnabled</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-418716613%2FProperties%2F769193423" anchor-label="historyMaxAge" id="-418716613%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-max-age.html"><span>history</span><wbr></wbr><span>Max</span><wbr></wbr><span><span>Age</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-418716613%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-max-age.html">historyMaxAge</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1099947632%2FProperties%2F769193423" anchor-label="historyMaxAgeUnits" id="-1099947632%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-max-age-units.html"><span>history</span><wbr></wbr><span>Max</span><wbr></wbr><span>Age</span><wbr></wbr><span><span>Units</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1099947632%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-max-age-units.html">historyMaxAgeUnits</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="622464453%2FProperties%2F769193423" anchor-label="historyProvider" id="622464453%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-provider.html"><span>history</span><wbr></wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="622464453%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-provider.html">historyProvider</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="987095532%2FProperties%2F769193423" anchor-label="historySampleRate" id="987095532%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-sample-rate.html"><span>history</span><wbr></wbr><span>Sample</span><wbr></wbr><span><span>Rate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="987095532%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-sample-rate.html">historySampleRate</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="553978495%2FProperties%2F769193423" anchor-label="historySampleRateUnits" id="553978495%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-sample-rate-units.html"><span>history</span><wbr></wbr><span>Sample</span><wbr></wbr><span>Rate</span><wbr></wbr><span><span>Units</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="553978495%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-sample-rate-units.html">historySampleRateUnits</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1468810447%2FProperties%2F769193423" anchor-label="historyTagGroup" id="-1468810447%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-tag-group.html"><span>history</span><wbr></wbr><span>Tag</span><wbr></wbr><span><span>Group</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1468810447%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-tag-group.html">historyTagGroup</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1246697040%2FProperties%2F769193423" anchor-label="historyTimeDeadband" id="1246697040%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-time-deadband.html"><span>history</span><wbr></wbr><span>Time</span><wbr></wbr><span><span>Deadband</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1246697040%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-time-deadband.html">historyTimeDeadband</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1003549851%2FProperties%2F769193423" anchor-label="historyTimeDeadbandUnits" id="1003549851%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="history-time-deadband-units.html"><span>history</span><wbr></wbr><span>Time</span><wbr></wbr><span>Deadband</span><wbr></wbr><span><span>Units</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1003549851%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="history-time-deadband-units.html">historyTimeDeadbandUnits</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2088460123%2FProperties%2F769193423" anchor-label="name" id="-2088460123%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="name.html"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2088460123%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="name.html">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2022858256%2FProperties%2F769193423" anchor-label="opcItemPath" id="-2022858256%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="opc-item-path.html"><span>opc</span><wbr></wbr><span>Item</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2022858256%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="opc-item-path.html">opcItemPath</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-383833691%2FProperties%2F769193423" anchor-label="opcServer" id="-383833691%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="opc-server.html"><span>opc</span><wbr></wbr><span><span>Server</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-383833691%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="opc-server.html">opcServer</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2008631322%2FProperties%2F769193423" anchor-label="parameters" id="-2008631322%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="parameters.html"><span><span>parameters</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2008631322%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="parameters.html">parameters</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-195294910%2FProperties%2F769193423" anchor-label="query" id="-195294910%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="query.html"><span><span>query</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-195294910%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="query.html">query</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-668183384%2FProperties%2F769193423" anchor-label="queryType" id="-668183384%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="query-type.html"><span>query</span><wbr></wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-668183384%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="query-type.html">queryType</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1387853600%2FProperties%2F769193423" anchor-label="rawHigh" id="1387853600%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="raw-high.html"><span>raw</span><wbr></wbr><span><span>High</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1387853600%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="raw-high.html">rawHigh</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-289586300%2FProperties%2F769193423" anchor-label="rawLow" id="-289586300%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="raw-low.html"><span>raw</span><wbr></wbr><span><span>Low</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-289586300%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="raw-low.html">rawLow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1336597506%2FProperties%2F769193423" anchor-label="readExpression" id="1336597506%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-expression.html"><span>read</span><wbr></wbr><span><span>Expression</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1336597506%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;deriveExpressionGetter&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="read-expression.html">readExpression</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="492427054%2FProperties%2F769193423" anchor-label="readOnly" id="492427054%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-only.html"><span>read</span><wbr></wbr><span><span>Only</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="492427054%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="read-only.html">readOnly</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2055809156%2FProperties%2F769193423" anchor-label="readPermissions" id="-2055809156%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-permissions.html"><span>read</span><wbr></wbr><span><span>Permissions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2055809156%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="read-permissions.html">readPermissions</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="238175427%2FProperties%2F769193423" anchor-label="sampleMode" id="238175427%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="sample-mode.html"><span>sample</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="238175427%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="sample-mode.html">sampleMode</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="747856116%2FProperties%2F769193423" anchor-label="scaledHigh" id="747856116%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="scaled-high.html"><span>scaled</span><wbr></wbr><span><span>High</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="747856116%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="scaled-high.html">scaledHigh</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-171684048%2FProperties%2F769193423" anchor-label="scaledLow" id="-171684048%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="scaled-low.html"><span>scaled</span><wbr></wbr><span><span>Low</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-171684048%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="scaled-low.html">scaledLow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="853890609%2FProperties%2F769193423" anchor-label="scaleFactor" id="853890609%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="scale-factor.html"><span>scale</span><wbr></wbr><span><span>Factor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="853890609%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="scale-factor.html">scaleFactor</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1805174499%2FProperties%2F769193423" anchor-label="scaleMode" id="-1805174499%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="scale-mode.html"><span>scale</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1805174499%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="scale-mode.html">scaleMode</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-260881850%2FProperties%2F769193423" anchor-label="sourceTagPath" id="-260881850%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="source-tag-path.html"><span>source</span><wbr></wbr><span>Tag</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-260881850%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="source-tag-path.html">sourceTagPath</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-333414421%2FProperties%2F769193423" anchor-label="tagGroup" id="-333414421%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tag-group.html"><span>tag</span><wbr></wbr><span><span>Group</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-333414421%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="tag-group.html">tagGroup</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1029710551%2FProperties%2F769193423" anchor-label="tags" id="1029710551%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tags.html"><span><span>tags</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1029710551%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="tags.html">tags</a><span class="token operator">: </span><a href="../-node-group/index.html">NodeGroup</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1399555670%2FProperties%2F769193423" anchor-label="tagType" id="1399555670%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tag-type.html"><span>tag</span><wbr></wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1399555670%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="tag-type.html">tagType</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="739457831%2FProperties%2F769193423" anchor-label="tooltip" id="739457831%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tooltip.html"><span><span>tooltip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="739457831%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="tooltip.html">tooltip</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="742838881%2FProperties%2F769193423" anchor-label="typeColor" id="742838881%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="type-color.html"><span>type</span><wbr></wbr><span><span>Color</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="742838881%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="type-color.html">typeColor</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonPrimitive///PointingToDeclaration/">JsonPrimitive</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-422593605%2FProperties%2F769193423" anchor-label="typeId" id="-422593605%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="type-id.html"><span>type</span><wbr></wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-422593605%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="type-id.html">typeId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-634556231%2FProperties%2F769193423" anchor-label="value" id="-634556231%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="value.html"><span><span>value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-634556231%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="value.html">value</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="642652126%2FProperties%2F769193423" anchor-label="valueSource" id="642652126%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="value-source.html"><span>value</span><wbr></wbr><span><span>Source</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="642652126%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="value-source.html">valueSource</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="382413011%2FProperties%2F769193423" anchor-label="writeExpression" id="382413011%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-expression.html"><span>write</span><wbr></wbr><span><span>Expression</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="382413011%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;deriveExpressionSetter&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="write-expression.html">writeExpression</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonElement///PointingToDeclaration/">JsonElement</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1570757429%2FProperties%2F769193423" anchor-label="writePermissions" id="-1570757429%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-permissions.html"><span>write</span><wbr></wbr><span><span>Permissions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1570757429%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="write-permissions.html">writePermissions</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

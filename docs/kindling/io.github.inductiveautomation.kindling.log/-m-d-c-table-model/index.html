@@ -26,39 +26,82 @@
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
 <link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
 <script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
 <script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
     <div class="root">
-<nav class="navigation" id="navigation-wrapper">
-    <div class="navigation--inner">
-        <div class="navigation-title">
-            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
-            <div class="library-name">
-                    <a class="library-name--link" href="../../../index.html">
-                            kindling
-                    </a>
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    kindling
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+1.4.0        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":dokkaHtml/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":dokkaHtml/main"
+                                       data-filter=":dokkaHtml/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div class="library-version">
-1.3.0            </div>
         </div>
-        <div class="filter-section" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
         </div>
-    </div>
-    <div class="navigation-controls">
-        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
-        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
-    </div>
-</nav>
+    </nav>
         <div id="container">
             <div class="sidebar" id="leftColumn">
-                <div class="sidebar--inner" id="sideMenu"></div>
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    kindling
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
             </div>
             <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="kindling::io.github.inductiveautomation.kindling.log/MDCTableModel///PointingToDeclaration//769193423">
@@ -120,7 +163,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/TableModel.html">TableModel</a><span class="token punctuation">.</span><a href="../../io.github.inductiveautomation.kindling.utils/column-indices.html">columnIndices</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-int-range/index.html">IntRange</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/TableModel.html">TableModel</a><span class="token punctuation">.</span><a href="../../io.github.inductiveautomation.kindling.utils/column-indices.html">columnIndices</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -135,7 +178,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="data.html">data</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-m-d-c-table-row/index.html">MDCTableRow</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="data.html">data</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-m-d-c-table-row/index.html">MDCTableRow</a><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -150,7 +193,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/TableModel.html">TableModel</a><span class="token punctuation">.</span><a href="../../io.github.inductiveautomation.kindling.utils/row-indices.html">rowIndices</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-int-range/index.html">IntRange</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/TableModel.html">TableModel</a><span class="token punctuation">.</span><a href="../../io.github.inductiveautomation.kindling.utils/row-indices.html">rowIndices</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -169,7 +212,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="add.html"><span class="token function">add</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">inclusive<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="add.html"><span class="token function">add</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">inclusive<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -229,7 +272,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/TableModel.html">TableModel</a><span class="token punctuation">.</span><a href="../../io.github.inductiveautomation.kindling.utils/export-to-x-l-s-x.html"><span class="token function">exportToXLSX</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/TableModel.html">TableModel</a><span class="token punctuation">.</span><a href="../../io.github.inductiveautomation.kindling.utils/export-to-x-l-s-x.html"><span class="token function">exportToXLSX</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -244,7 +287,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="filter.html"><span class="token function">filter</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">item<span class="token operator">: </span><a href="../-log-event/index.html">LogEvent</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Return true if this filter should display this item.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="filter.html"><span class="token function">filter</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">item<span class="token operator">: </span><a href="../-log-event/index.html">LogEvent</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Return true if this filter should display this item.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -259,7 +302,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#1721069951%2FFunctions%2F769193423"><span class="token function">findColumn</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#1721069951%2FFunctions%2F769193423"><span class="token function">findColumn</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -274,7 +317,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#269473772%2FFunctions%2F769193423"><span class="token function">fireTableCellUpdated</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#269473772%2FFunctions%2F769193423"><span class="token function">fireTableCellUpdated</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -290,6 +333,21 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#-308031769%2FFunctions%2F769193423"><span class="token function">fireTableChanged</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/TableModelEvent.html">TableModelEvent</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="568530734%2FFunctions%2F769193423" anchor-label="fireTableColumnDataChanged" id="568530734%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../io.github.inductiveautomation.kindling.utils/fire-table-column-data-changed.html"><span>fire</span><wbr></wbr><span>Table</span><wbr></wbr><span>Column</span><wbr></wbr><span>Data</span><wbr></wbr><span><span>Changed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="568530734%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/AbstractTableModel.html">AbstractTableModel</a><span class="token punctuation">.</span><a href="../../io.github.inductiveautomation.kindling.utils/fire-table-column-data-changed.html"><span class="token function">fireTableColumnDataChanged</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">column<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">A custom <a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/TableModelEvent.html">TableModelEvent</a> which is fired when an unspecified number of row data has changed for a single column.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -319,7 +377,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#1460065971%2FFunctions%2F769193423"><span class="token function">fireTableRowsDeleted</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#1460065971%2FFunctions%2F769193423"><span class="token function">fireTableRowsDeleted</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -334,7 +392,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#-152223102%2FFunctions%2F769193423"><span class="token function">fireTableRowsInserted</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#-152223102%2FFunctions%2F769193423"><span class="token function">fireTableRowsInserted</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -349,7 +407,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#-851723307%2FFunctions%2F769193423"><span class="token function">fireTableRowsUpdated</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#-851723307%2FFunctions%2F769193423"><span class="token function">fireTableRowsUpdated</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -379,7 +437,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">operator </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="get.html">T</a><span class="token operator">&gt; </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">column<span class="token operator">: </span><a href="../../io.github.inductiveautomation.kindling.utils/-column/index.html">Column</a><span class="token operator">&lt;</span><a href="../-m-d-c-table-row/index.html">MDCTableRow</a><span class="token punctuation">, </span><a href="get.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="get.html">T</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">operator </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="get.html">T</a><span class="token operator">&gt; </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">column<span class="token operator">: </span><a href="../../io.github.inductiveautomation.kindling.utils/-column/index.html">Column</a><span class="token operator">&lt;</span><a href="../-m-d-c-table-row/index.html">MDCTableRow</a><span class="token punctuation">, </span><a href="get.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="get.html">T</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -394,7 +452,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-column-class.html"><span class="token function">getColumnClass</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-column-class.html"><span class="token function">getColumnClass</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -409,7 +467,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-column-count.html"><span class="token function">getColumnCount</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-column-count.html"><span class="token function">getColumnCount</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -424,7 +482,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-column-name.html"><span class="token function">getColumnName</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">column<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-column-name.html"><span class="token function">getColumnName</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">column<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -439,7 +497,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423">T</a><span class="token operator"> : </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/EventListener.html">EventListener</a><span class="token operator">&gt; </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423"><span class="token function">getListeners</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423">T</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423">T</a><span class="token operator"> : </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/EventListener.html">EventListener</a><span class="token operator">&gt; </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423"><span class="token function">getListeners</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#963043241%2FFunctions%2F769193423">T</a><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -454,7 +512,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-row-count.html"><span class="token function">getRowCount</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-row-count.html"><span class="token function">getRowCount</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -469,7 +527,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#2074726182%2FFunctions%2F769193423"><span class="token function">getTableModelListeners</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/TableModelListener.html">TableModelListener</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../io.github.inductiveautomation.kindling.utils/-reified-list-table-model/index.html#2074726182%2FFunctions%2F769193423"><span class="token function">getTableModelListeners</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/TableModelListener.html">TableModelListener</a><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -484,7 +542,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-value-at.html"><span class="token function">getValueAt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rowIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-value-at.html"><span class="token function">getValueAt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rowIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -499,7 +557,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-cell-editable.html"><span class="token function">isCellEditable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rowIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-cell-editable.html"><span class="token function">isCellEditable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rowIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -514,7 +572,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="remove-at.html"><span class="token function">removeAt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="remove-at.html"><span class="token function">removeAt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -544,7 +602,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-value-at.html"><span class="token function">setValueAt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">aValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">rowIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-value-at.html"><span class="token function">setValueAt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">aValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">rowIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">columnIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -569,11 +627,16 @@
     </div>
   </div>
 </div>
-      <div class="footer">
-        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
-                class="pull-right"><span>Generated by </span><a
-                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
-      </div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
             </div>
         </div>
     </div>

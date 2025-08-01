@@ -26,46 +26,89 @@
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
 <link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
 <script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
 <script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
     <div class="root">
-<nav class="navigation" id="navigation-wrapper">
-    <div class="navigation--inner">
-        <div class="navigation-title">
-            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
-            <div class="library-name">
-                    <a class="library-name--link" href="../../../index.html">
-                            kindling
-                    </a>
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    kindling
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+1.4.0        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":dokkaHtml/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":dokkaHtml/main"
+                                       data-filter=":dokkaHtml/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div class="library-version">
-1.3.0            </div>
         </div>
-        <div class="filter-section" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
         </div>
-    </div>
-    <div class="navigation-controls">
-        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
-        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
-    </div>
-</nav>
+    </nav>
         <div id="container">
             <div class="sidebar" id="leftColumn">
-                <div class="sidebar--inner" id="sideMenu"></div>
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    kindling
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
             </div>
             <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="kindling::io.github.inductiveautomation.kindling.utils/NoSelectionModel///PointingToDeclaration//769193423">
   <div class="breadcrumbs"><a href="../../../index.html">kindling</a><span class="delimiter">/</span><a href="../index.html">io.github.inductiveautomation.kindling.utils</a><span class="delimiter">/</span><span class="current">NoSelectionModel</span></div>
   <div class="cover ">
     <h1 class="cover"><span>No</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Model</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">NoSelectionModel</a> : <a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/DefaultListSelectionModel.html">DefaultListSelectionModel</a></div><p class="paragraph">A simple <a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html">ListSelectionModel</a> implementation that never allows selecting any elements.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">NoSelectionModel</a> : <a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html">ListSelectionModel</a>, <a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreeSelectionModel.html">TreeSelectionModel</a></div><p class="paragraph">A simple <a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html">ListSelectionModel</a>/<a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreeSelectionModel.html">TreeSelectionModel</a> implementation that never allows selecting any elements.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
@@ -89,19 +132,34 @@
           </div>
         </div>
       </div>
-      <div data-togglable="PROPERTY">
+      <div data-togglable="EXTENSION_PROPERTY">
         <h2 class="">Properties</h2>
-        <div class="table"><a data-name="-99085110%2FProperties%2F769193423" anchor-label="selectionMode" id="-99085110%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table"><a data-name="-275761801%2FProperties%2F769193423" anchor-label="maxSelectedIndex" id="-275761801%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-99085110%2FProperties%2F769193423"><span>selection</span><wbr></wbr><span><span>Mode</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-99085110%2FProperties%2F769193423"></span>
+                  <div><a href="../max-selected-index.html"><span>max</span><wbr></wbr><span>Selected</span><wbr></wbr><span><span>Index</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-275761801%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">var </span><a href="index.html#-99085110%2FProperties%2F769193423">selectionMode</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html">ListSelectionModel</a><span class="token punctuation">.</span><a href="../max-selected-index.html">maxSelectedIndex</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1231265637%2FProperties%2F769193423" anchor-label="minSelectedIndex" id="1231265637%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../min-selected-index.html"><span>min</span><wbr></wbr><span>Selected</span><wbr></wbr><span><span>Index</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1231265637%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html">ListSelectionModel</a><span class="token punctuation">.</span><a href="../min-selected-index.html">minSelectedIndex</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -110,17 +168,32 @@
       </div>
       <div data-togglable="FUNCTION">
         <h2 class="">Functions</h2>
-        <div class="table"><a data-name="1979411260%2FFunctions%2F769193423" anchor-label="addListSelectionListener" id="1979411260%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table"><a data-name="-1658089973%2FFunctions%2F769193423" anchor-label="addListSelectionListener" id="-1658089973%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1979411260%2FFunctions%2F769193423"><span>add</span><wbr></wbr><span>List</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Listener</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1979411260%2FFunctions%2F769193423"></span>
+                  <div><a href="index.html#-1658089973%2FFunctions%2F769193423"><span>add</span><wbr></wbr><span>List</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1658089973%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1979411260%2FFunctions%2F769193423"><span class="token function">addListSelectionListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/ListSelectionListener.html">ListSelectionListener</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1658089973%2FFunctions%2F769193423"><span class="token function">addListSelectionListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/ListSelectionListener.html">ListSelectionListener</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-387318524%2FFunctions%2F769193423" anchor-label="addPropertyChangeListener" id="-387318524%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-387318524%2FFunctions%2F769193423"><span>add</span><wbr></wbr><span>Property</span><wbr></wbr><span>Change</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-387318524%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-387318524%2FFunctions%2F769193423"><span class="token function">addPropertyChangeListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/beans/PropertyChangeListener.html">PropertyChangeListener</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -135,7 +208,52 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="add-selection-interval.html"><span class="token function">addSelectionInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="add-selection-interval.html"><span class="token function">addSelectionInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1750243061%2FFunctions%2F769193423" anchor-label="addSelectionPath" id="1750243061%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1750243061%2FFunctions%2F769193423"><span>add</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1750243061%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1750243061%2FFunctions%2F769193423"><span class="token function">addSelectionPath</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="223732636%2FFunctions%2F769193423" anchor-label="addSelectionPaths" id="223732636%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#223732636%2FFunctions%2F769193423"><span>add</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Paths</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="223732636%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#223732636%2FFunctions%2F769193423"><span class="token function">addSelectionPaths</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="303313995%2FFunctions%2F769193423" anchor-label="addTreeSelectionListener" id="303313995%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#303313995%2FFunctions%2F769193423"><span>add</span><wbr></wbr><span>Tree</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="303313995%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#303313995%2FFunctions%2F769193423"><span class="token function">addTreeSelectionListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/TreeSelectionListener.html">TreeSelectionListener</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -155,21 +273,6 @@
               </div>
             </div>
           </div>
-<a data-name="-1394083716%2FFunctions%2F769193423" anchor-label="clone" id="-1394083716%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1394083716%2FFunctions%2F769193423"><span><span>clone</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1394083716%2FFunctions%2F769193423"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1394083716%2FFunctions%2F769193423"><span class="token function">clone</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
 <a data-name="1811290564%2FFunctions%2F769193423" anchor-label="getAnchorSelectionIndex" id="1811290564%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
@@ -180,7 +283,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-anchor-selection-index.html"><span class="token function">getAnchorSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-anchor-selection-index.html"><span class="token function">getAnchorSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -195,37 +298,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-lead-selection-index.html"><span class="token function">getLeadSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-lead-selection-index.html"><span class="token function">getLeadSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1513662090%2FFunctions%2F769193423" anchor-label="getListeners" id="-1513662090%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-267146541%2FFunctions%2F769193423" anchor-label="getLeadSelectionPath" id="-267146541%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1513662090%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span><span>Listeners</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1513662090%2FFunctions%2F769193423"></span>
+                  <div><a href="index.html#-267146541%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span>Lead</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-267146541%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#-1513662090%2FFunctions%2F769193423">T</a><span class="token operator"> : </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/EventListener.html">EventListener</a><span class="token operator">&gt; </span><a href="index.html#-1513662090%2FFunctions%2F769193423"><span class="token function">getListeners</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="index.html#-1513662090%2FFunctions%2F769193423">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="index.html#-1513662090%2FFunctions%2F769193423">T</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-267146541%2FFunctions%2F769193423"><span class="token function">getLeadSelectionPath</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1440253138%2FFunctions%2F769193423" anchor-label="getListSelectionListeners" id="1440253138%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-2041629643%2FFunctions%2F769193423" anchor-label="getLeadSelectionRow" id="-2041629643%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1440253138%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span>List</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Listeners</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1440253138%2FFunctions%2F769193423"></span>
+                  <div><a href="get-lead-selection-row.html"><span>get</span><wbr></wbr><span>Lead</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Row</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2041629643%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1440253138%2FFunctions%2F769193423"><span class="token function">getListSelectionListeners</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/ListSelectionListener.html">ListSelectionListener</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-lead-selection-row.html"><span class="token function">getLeadSelectionRow</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -240,7 +343,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-max-selection-index.html"><span class="token function">getMaxSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-max-selection-index.html"><span class="token function">getMaxSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-868530135%2FFunctions%2F769193423" anchor-label="getMaxSelectionRow" id="-868530135%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-selection-row.html"><span>get</span><wbr></wbr><span>Max</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Row</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-868530135%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-max-selection-row.html"><span class="token function">getMaxSelectionRow</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -255,7 +373,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-min-selection-index.html"><span class="token function">getMinSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-min-selection-index.html"><span class="token function">getMinSelectionIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1191764987%2FFunctions%2F769193423" anchor-label="getMinSelectionRow" id="1191764987%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-min-selection-row.html"><span>get</span><wbr></wbr><span>Min</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Row</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1191764987%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-min-selection-row.html"><span class="token function">getMinSelectionRow</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1104050771%2FFunctions%2F769193423" anchor-label="getRowMapper" id="-1104050771%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1104050771%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span>Row</span><wbr></wbr><span><span>Mapper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1104050771%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1104050771%2FFunctions%2F769193423"><span class="token function">getRowMapper</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/RowMapper.html">RowMapper</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -270,7 +418,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-1554986756%2FFunctions%2F769193423"><span class="token function">getSelectedIndices</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-1554986756%2FFunctions%2F769193423"><span class="token function">getSelectedIndices</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int-array/index.html">IntArray</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -285,22 +433,97 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-1187399512%2FFunctions%2F769193423"><span class="token function">getSelectedItemsCount</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-1187399512%2FFunctions%2F769193423"><span class="token function">getSelectedItemsCount</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1491130165%2FFunctions%2F769193423" anchor-label="getValueIsAdjusting" id="-1491130165%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-158052836%2FFunctions%2F769193423" anchor-label="getSelectionCount" id="-158052836%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1491130165%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span>Value</span><wbr></wbr><span>Is</span><wbr></wbr><span><span>Adjusting</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1491130165%2FFunctions%2F769193423"></span>
+                  <div><a href="get-selection-count.html"><span>get</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Count</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-158052836%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1491130165%2FFunctions%2F769193423"><span class="token function">getValueIsAdjusting</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-selection-count.html"><span class="token function">getSelectionCount</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1577930452%2FFunctions%2F769193423" anchor-label="getSelectionMode" id="-1577930452%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-selection-mode.html"><span>get</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1577930452%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-selection-mode.html"><span class="token function">getSelectionMode</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1928266518%2FFunctions%2F769193423" anchor-label="getSelectionPath" id="-1928266518%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-selection-path.html"><span>get</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1928266518%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-selection-path.html"><span class="token function">getSelectionPath</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-745078832%2FFunctions%2F769193423" anchor-label="getSelectionPaths" id="-745078832%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-745078832%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Paths</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-745078832%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-745078832%2FFunctions%2F769193423"><span class="token function">getSelectionPaths</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1109939875%2FFunctions%2F769193423" anchor-label="getSelectionRows" id="1109939875%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1109939875%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Rows</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1109939875%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1109939875%2FFunctions%2F769193423"><span class="token function">getSelectionRows</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int-array/index.html">IntArray</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1139459610%2FFunctions%2F769193423" anchor-label="getValueIsAdjusting" id="1139459610%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1139459610%2FFunctions%2F769193423"><span>get</span><wbr></wbr><span>Value</span><wbr></wbr><span>Is</span><wbr></wbr><span><span>Adjusting</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1139459610%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1139459610%2FFunctions%2F769193423"><span class="token function">getValueIsAdjusting</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -315,22 +538,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="insert-index-interval.html"><span class="token function">insertIndexInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">before<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="insert-index-interval.html"><span class="token function">insertIndexInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">before<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1394986686%2FFunctions%2F769193423" anchor-label="isLeadAnchorNotificationEnabled" id="1394986686%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="2044701244%2FFunctions%2F769193423" anchor-label="isPathSelected" id="2044701244%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1394986686%2FFunctions%2F769193423"><span>is</span><wbr></wbr><span>Lead</span><wbr></wbr><span>Anchor</span><wbr></wbr><span>Notification</span><wbr></wbr><span><span>Enabled</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1394986686%2FFunctions%2F769193423"></span>
+                  <div><a href="is-path-selected.html"><span>is</span><wbr></wbr><span>Path</span><wbr></wbr><span><span>Selected</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2044701244%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1394986686%2FFunctions%2F769193423"><span class="token function">isLeadAnchorNotificationEnabled</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-path-selected.html"><span class="token function">isPathSelected</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1555667896%2FFunctions%2F769193423" anchor-label="isRowSelected" id="-1555667896%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-row-selected.html"><span>is</span><wbr></wbr><span>Row</span><wbr></wbr><span><span>Selected</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1555667896%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-row-selected.html"><span class="token function">isRowSelected</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -345,7 +583,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-selected-index.html"><span class="token function">isSelectedIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-selected-index.html"><span class="token function">isSelectedIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -360,22 +598,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-selection-empty.html"><span class="token function">isSelectionEmpty</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1210703764%2FFunctions%2F769193423" anchor-label="moveLeadSelectionIndex" id="-1210703764%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1210703764%2FFunctions%2F769193423"><span>move</span><wbr></wbr><span>Lead</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Index</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1210703764%2FFunctions%2F769193423"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-1210703764%2FFunctions%2F769193423"><span class="token function">moveLeadSelectionIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="is-selection-empty.html"><span class="token function">isSelectionEmpty</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -390,22 +613,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="remove-index-interval.html"><span class="token function">removeIndexInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="remove-index-interval.html"><span class="token function">removeIndexInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1052990271%2FFunctions%2F769193423" anchor-label="removeListSelectionListener" id="-1052990271%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="467622802%2FFunctions%2F769193423" anchor-label="removeListSelectionListener" id="467622802%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1052990271%2FFunctions%2F769193423"><span>remove</span><wbr></wbr><span>List</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Listener</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1052990271%2FFunctions%2F769193423"></span>
+                  <div><a href="index.html#467622802%2FFunctions%2F769193423"><span>remove</span><wbr></wbr><span>List</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="467622802%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1052990271%2FFunctions%2F769193423"><span class="token function">removeListSelectionListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/ListSelectionListener.html">ListSelectionListener</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#467622802%2FFunctions%2F769193423"><span class="token function">removeListSelectionListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/ListSelectionListener.html">ListSelectionListener</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-319710307%2FFunctions%2F769193423" anchor-label="removePropertyChangeListener" id="-319710307%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-319710307%2FFunctions%2F769193423"><span>remove</span><wbr></wbr><span>Property</span><wbr></wbr><span>Change</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-319710307%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-319710307%2FFunctions%2F769193423"><span class="token function">removePropertyChangeListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/beans/PropertyChangeListener.html">PropertyChangeListener</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -420,7 +658,67 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="remove-selection-interval.html"><span class="token function">removeSelectionInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="remove-selection-interval.html"><span class="token function">removeSelectionInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-267145412%2FFunctions%2F769193423" anchor-label="removeSelectionPath" id="-267145412%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-267145412%2FFunctions%2F769193423"><span>remove</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-267145412%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-267145412%2FFunctions%2F769193423"><span class="token function">removeSelectionPath</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="666260597%2FFunctions%2F769193423" anchor-label="removeSelectionPaths" id="666260597%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#666260597%2FFunctions%2F769193423"><span>remove</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Paths</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="666260597%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#666260597%2FFunctions%2F769193423"><span class="token function">removeSelectionPaths</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="489999698%2FFunctions%2F769193423" anchor-label="removeTreeSelectionListener" id="489999698%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#489999698%2FFunctions%2F769193423"><span>remove</span><wbr></wbr><span>Tree</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="489999698%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#489999698%2FFunctions%2F769193423"><span class="token function">removeTreeSelectionListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/event/TreeSelectionListener.html">TreeSelectionListener</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1469829095%2FFunctions%2F769193423" anchor-label="resetRowSelection" id="1469829095%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1469829095%2FFunctions%2F769193423"><span>reset</span><wbr></wbr><span>Row</span><wbr></wbr><span><span>Selection</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1469829095%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1469829095%2FFunctions%2F769193423"><span class="token function">resetRowSelection</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -435,22 +733,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-anchor-selection-index.html"><span class="token function">setAnchorSelectionIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1500664509%2FFunctions%2F769193423" anchor-label="setLeadAnchorNotificationEnabled" id="-1500664509%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1500664509%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Lead</span><wbr></wbr><span>Anchor</span><wbr></wbr><span>Notification</span><wbr></wbr><span><span>Enabled</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1500664509%2FFunctions%2F769193423"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-1500664509%2FFunctions%2F769193423"><span class="token function">setLeadAnchorNotificationEnabled</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-anchor-selection-index.html"><span class="token function">setAnchorSelectionIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -465,7 +748,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-lead-selection-index.html"><span class="token function">setLeadSelectionIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-lead-selection-index.html"><span class="token function">setLeadSelectionIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="547974342%2FFunctions%2F769193423" anchor-label="setRowMapper" id="547974342%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#547974342%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Row</span><wbr></wbr><span><span>Mapper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="547974342%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#547974342%2FFunctions%2F769193423"><span class="token function">setRowMapper</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/RowMapper.html">RowMapper</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -480,52 +778,67 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-selection-interval.html"><span class="token function">setSelectionInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-selection-interval.html"><span class="token function">setSelectionInterval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">index1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="226453060%2FFunctions%2F769193423" anchor-label="setValueIsAdjusting" id="226453060%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-66877226%2FFunctions%2F769193423" anchor-label="setSelectionMode" id="-66877226%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#226453060%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Value</span><wbr></wbr><span>Is</span><wbr></wbr><span><span>Adjusting</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="226453060%2FFunctions%2F769193423"></span>
+                  <div><a href="set-selection-mode.html"><span>set</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-66877226%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#226453060%2FFunctions%2F769193423"><span class="token function">setValueIsAdjusting</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-selection-mode.html"><span class="token function">setSelectionMode</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">selectionMode<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="839478102%2FFunctions%2F769193423" anchor-label="toDetail" id="839478102%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="../to-detail.html"><span>to</span><wbr></wbr><span><span>Detail</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="839478102%2FFunctions%2F769193423"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html">Serializable</a><span class="token punctuation">.</span><a href="../to-detail.html"><span class="token function">toDetail</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.github.inductiveautomation.kindling.core/-detail/index.html">Detail</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1881652779%2FFunctions%2F769193423" anchor-label="toString" id="-1881652779%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="326754068%2FFunctions%2F769193423" anchor-label="setSelectionPath" id="326754068%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1881652779%2FFunctions%2F769193423"><span>to</span><wbr></wbr><span><span>String</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1881652779%2FFunctions%2F769193423"></span>
+                  <div><a href="index.html#326754068%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="326754068%2FFunctions%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1881652779%2FFunctions%2F769193423"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#326754068%2FFunctions%2F769193423"><span class="token function">setSelectionPath</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="643791261%2FFunctions%2F769193423" anchor-label="setSelectionPaths" id="643791261%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#643791261%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Selection</span><wbr></wbr><span><span>Paths</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="643791261%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#643791261%2FFunctions%2F769193423"><span class="token function">setSelectionPaths</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/tree/TreePath.html">TreePath</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="904531283%2FFunctions%2F769193423" anchor-label="setValueIsAdjusting" id="904531283%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#904531283%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Value</span><wbr></wbr><span>Is</span><wbr></wbr><span><span>Adjusting</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="904531283%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#904531283%2FFunctions%2F769193423"><span class="token function">setValueIsAdjusting</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -535,11 +848,16 @@
     </div>
   </div>
 </div>
-      <div class="footer">
-        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
-                class="pull-right"><span>Generated by </span><a
-                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
-      </div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
             </div>
         </div>
     </div>
