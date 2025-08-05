@@ -129,7 +129,7 @@ class ReifiedJXTable<T : TableModel>(
  */
 inline fun <reified T : TableModel> ReifiedJXTable(
     model: T,
-    columns: ColumnList<*>? = null,
+    columns: ColumnList<*>? = (model as? ReifiedTableModel<*>)?.columns,
 ): ReifiedJXTable<T> {
-    return ReifiedJXTable(model, T::class.java, columns ?: (model as? ReifiedTableModel<*>)?.columns)
+    return ReifiedJXTable(model, T::class.java, columns)
 }

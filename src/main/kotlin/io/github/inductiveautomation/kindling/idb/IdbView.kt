@@ -14,6 +14,7 @@ import io.github.inductiveautomation.kindling.log.SystemLogPanel.Companion.parse
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
+import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
 import java.nio.file.Path
@@ -60,7 +61,7 @@ class IdbView(paths: List<Path>) : ToolPanel() {
     }
 }
 
-private class IdbConnection(
+class IdbConnection(
     val path: Path,
 ) : AutoCloseable {
     val connection = SQLiteConnection(path)
@@ -68,6 +69,11 @@ private class IdbConnection(
     val tables = connection.metaData
         .getTables("", "", "", null)
         .toList<String> { rs -> rs["TABLE_NAME"] }
+
+    @Suppress("SqlResolve")
+    val systemName: String? by lazy {
+        connection.executeQuery("SELECT systemname FROM sysprops").toList { rs -> rs.get<String>(1) }.first()
+    }
 
     override fun close() {
         connection.close()
@@ -99,7 +105,7 @@ private enum class IdbTool {
             return connections.singleOrNull { "IMAGES" in it.tables } != null
         }
         override fun open(connections: List<IdbConnection>): ToolPanel {
-            return ImagesPanel(connections.single().connection)
+            return ImagesPanel(connections.single())
         }
     },
     TagConfig {
@@ -120,7 +126,7 @@ private enum class IdbTool {
         override fun open(connections: List<IdbConnection>): ToolPanel {
             val paths = connections.map { it.path }
 
-            val logFiles = connections.map { it ->
+            val logFiles = connections.map {
                 LogFile(it.connection.parseLogs())
             }
 
