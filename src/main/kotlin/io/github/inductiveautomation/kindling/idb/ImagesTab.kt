@@ -4,9 +4,13 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.github.weisj.jsvg.parser.LoaderContext
 import com.github.weisj.jsvg.parser.SVGLoader
 import com.inductiveautomation.ignition.gateway.images.ImageFormat
+import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.core.ToolPanel.Companion.exportFileChooser
 import io.github.inductiveautomation.kindling.utils.AbstractTreeNode
 import io.github.inductiveautomation.kindling.utils.Action
+import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
+import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
@@ -16,17 +20,24 @@ import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.render
 import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
 import io.github.inductiveautomation.kindling.utils.toList
+import io.github.inductiveautomation.kindling.utils.transferTo
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.miginfocom.swing.MigLayout
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.io.File
+import java.io.InputStream
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.sql.Connection
 import javax.imageio.ImageIO
 import javax.swing.Icon
 import javax.swing.ImageIcon
+import javax.swing.JButton
 import javax.swing.JFileChooser
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -35,17 +46,17 @@ import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeSelectionModel
 import kotlin.io.path.createDirectories
-import kotlin.io.path.writeBytes
+import kotlin.io.path.outputStream
 
-class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
+class ImagesPanel(connection: IdbConnection) : ToolPanel("ins 0, fill, hidemode 3") {
     override val icon: Icon? = null
 
-    private val tree = JTree(DefaultTreeModel(RootImageNode(connection))).apply {
+    private val tree = JTree(DefaultTreeModel(RootImageNode(connection.connection))).apply {
         isRootVisible = false
         showsRootHandles = true
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
 
-        cellRenderer = treeCellRenderer { _, value, selected, _, _, _, _ ->
+        cellRenderer = treeCellRenderer { _, value, _, _, _, _, _ ->
             when (value) {
                 is ImageNode -> {
                     text = value.userObject.path.substringAfterLast('/')
@@ -71,15 +82,7 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                 is ImageFolderNode -> {
                     JPopupMenu().apply {
                         add(
-                            Action("Save Folder") {
-                                exportFileChooser.apply {
-                                    resetChoosableFileFilters()
-                                    selectedFile = File(node.userObject.replace('/', '_') + ".zip")
-                                    if (showSaveDialog(this@ImagesPanel) == JFileChooser.APPROVE_OPTION) {
-                                        node.toZipFile(selectedFile.toPath())
-                                    }
-                                }
-                            },
+                            saveFolderAction(node),
                         )
                     }
                 }
@@ -89,25 +92,23 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
         }
     }
 
-    private fun ImageFolderNode.toZipFile(destination: Path) {
-        FileSystems.newFileSystem(destination, mapOf("create" to "true")).use { zipFile ->
-            val root = zipFile.getPath("/")
-            fun addChildren(node: ImageFolderNode, parent: Path = root) {
-                val newParentPath = parent.resolve(node.userObject.substringAfterLast('/'))
-                newParentPath.createDirectories()
-                for (child in node.children) {
-                    when (child) {
-                        is ImageNode -> newParentPath.resolve(child.userObject.path.substringAfterLast('/')).writeBytes(child.userObject.data)
-                        is ImageFolderNode -> addChildren(child, newParentPath)
-                    }
-                }
-            }
-            addChildren(this)
-        }
-    }
-
     private val imageDisplay = JLabel()
     private val imageInfo = JLabel()
+
+    private val exportPrefix = connection.systemName?.plus("_").orEmpty()
+
+    private val exportAllAction = Action(
+        name = "Save All Images",
+        icon = FlatActionIcon("icons/bx-download.svg"),
+    ) {
+        showSaveDialog(
+            "ZIP files",
+            "zip",
+            "${exportPrefix}images.zip",
+        ) { destination ->
+            (tree.model.root as RootImageNode).exportToZip(destination)
+        }
+    }
 
     private val header = JPanel(MigLayout("ins 0")).apply {
         add(imageInfo, "pushx, growx")
@@ -116,7 +117,10 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
     init {
         add(
             HorizontalSplitPane(
-                FlatScrollPane(tree),
+                JPanel(MigLayout("ins 0, fill")).apply {
+                    add(FlatScrollPane(tree), "push, grow, wrap")
+                    add(JButton(exportAllAction))
+                },
                 JPanel(MigLayout("ins 0, fill")).apply {
                     add(header, "pushx, growx, wrap, gapleft 6")
                     add(FlatScrollPane(imageDisplay), "push, grow")
@@ -129,15 +133,26 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
         tree.addTreeSelectionListener { event ->
             when (val node = event.newLeadSelectionPath?.lastPathComponent) {
                 is ImageNode -> {
-                    val imageRow = node.userObject
-                    imageDisplay.icon = imageRow.image?.let(::ImageIcon)
+                    EDT_SCOPE.launch {
+                        val imageRow = node.userObject
 
-                    imageInfo.text = buildString {
-                        append(imageRow.path)
-                        if (imageRow.description != null) {
-                            append(" (").append(imageRow.description).append(")")
+                        imageDisplay.icon = throbber
+                        imageInfo.text = "${imageRow.path} [...]"
+
+                        val icon = withContext(Dispatchers.IO) {
+                            imageRow.image?.let(::ImageIcon)
                         }
-                        append(" [").append(imageRow.data.size.toLong().toFileSizeLabel()).append("]")
+
+                        val fileSize = withContext(Dispatchers.IO) {
+                            imageRow.data.size.toLong().toFileSizeLabel()
+                        }
+
+                        imageDisplay.icon = icon
+                        imageInfo.text = buildString {
+                            append(imageRow.path)
+                            imageRow.description?.let { append(" ($it)") }
+                            append(" [").append(fileSize).append("]")
+                        }
                     }
                 }
 
@@ -150,38 +165,38 @@ class ImagesPanel(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                 }
             }
         }
-
-        tree.attachPopupMenu { event ->
-            val path = getClosestPathForLocation(event.x, event.y)
-            when (val node = path?.lastPathComponent) {
-                is ImageNode -> {
-                    JPopupMenu().apply {
-                        add(saveAction(node.userObject))
-                    }
-                }
-
-                is ImageFolderNode -> {
-                    // show prompt to save the entire folder as a zip file
-                    null
-                }
-
-                else -> null
-            }
-        }
     }
 
     private fun saveAction(image: ImageRow) = Action(
         name = "Save",
         description = "Save to File",
-        icon = FlatSVGIcon("icons/bx-save.svg"),
+        icon = FlatActionIcon("icons/bx-save.svg"),
     ) {
-        exportFileChooser.apply {
-            resetChoosableFileFilters()
-            selectedFile = File(image.path.substringAfterLast('/'))
-            if (showSaveDialog(this@ImagesPanel) == JFileChooser.APPROVE_OPTION) {
-                selectedFile.writeBytes(image.data)
+        val imageName = image.path.substringAfterLast('/')
+        val extension = imageName.substringAfterLast('.')
+
+        showSaveDialog(
+            "$extension images",
+            extension,
+            "$exportPrefix$imageName",
+        ) { destination ->
+            image.inputStream() transferTo destination.outputStream()
+        }
+    }
+
+    private fun saveFolderAction(node: ImageFolderNode): Action =
+        Action("Save Folder", icon = FlatActionIcon("icons/bx-download.svg")) {
+            showSaveDialog(
+                "ZIP files",
+                "zip",
+                "$exportPrefix${node.userObject.replace('/', '_')}.zip",
+            ) { destination ->
+                node.exportToZip(destination)
             }
         }
+
+    companion object {
+        private val throbber = FlatSVGIcon("icons/bx-loader-circle.svg").derive(50, 50)
     }
 }
 
@@ -197,15 +212,17 @@ private class ImageRow(
         return "ImageRow(path='$path', type=$type, description=$description)"
     }
 
+    fun inputStream(): InputStream = connection.prepareStatement(
+        "SELECT data FROM images WHERE path = ?",
+    ).apply {
+        setString(1, path)
+    }.executeQuery().use { rs ->
+        rs.next()
+        rs.getBinaryStream("data")
+    }
+
     val data: ByteArray by lazy {
-        connection.prepareStatement(
-            "SELECT data FROM images WHERE path = ?",
-        ).apply {
-            setString(1, path)
-        }.executeQuery().use { rs ->
-            rs.next()
-            rs.getBytes("data")
-        }
+        inputStream().use { it.readBytes() }
     }
 
     val image: BufferedImage? by lazy {
@@ -248,25 +265,70 @@ class RootImageNode(connection: Connection) : AbstractTreeNode() {
                     connection,
                 )
             }
-        }
+        }.sortedWith(compareBy(AlphanumComparator(false)) { it.path })
 
-        val seen = mutableMapOf<List<String>, AbstractTreeNode>()
+        val seenFolders = mutableMapOf<String, AbstractTreeNode>()
+
         for (row in images) {
-            var lastSeen: AbstractTreeNode = this
-            val currentLeadingPath = mutableListOf<String>()
-            for (pathPart in row.path.split('/')) {
-                currentLeadingPath.add(pathPart)
-                val next = seen.getOrPut(currentLeadingPath.toList()) {
-                    val newChild = if (pathPart.contains('.')) {
-                        ImageNode(row)
-                    } else {
-                        ImageFolderNode(currentLeadingPath.joinToString("/"))
-                    }
-                    lastSeen.children.add(newChild)
-                    newChild
+            val pathParts = row.path.split('/')
+            var currentPath = ""
+            var parentNode: AbstractTreeNode = this
+
+            for (i in 0 until pathParts.size - 1) {
+                val part = pathParts[i]
+                currentPath = if (currentPath.isEmpty()) part else "$currentPath/$part"
+                parentNode = seenFolders.getOrPut(currentPath) {
+                    val folderNode = ImageFolderNode(currentPath)
+                    parentNode.children.add(folderNode)
+                    folderNode
                 }
-                lastSeen = next
             }
+            parentNode.children.add(ImageNode(row))
+        }
+    }
+}
+
+private fun AbstractTreeNode.exportToZip(destination: Path) {
+    val basePath = (this as? ImageFolderNode)?.userObject?.let { "$it/" }.orEmpty()
+
+    FileSystems.newFileSystem(
+        destination,
+        mapOf("create" to "true"),
+    ).use { zipFs ->
+        val rootInZip = zipFs.getPath("/")
+
+        val imageNodes = depthFirstChildren().filterIsInstance<ImageNode>()
+
+        for (imageNode in imageNodes) {
+            val imageRow = imageNode.userObject
+            val relativePath = imageRow.path.removePrefix(basePath)
+            val pathInZip = rootInZip.resolve(relativePath)
+
+            pathInZip.parent?.createDirectories()
+
+            imageRow.inputStream() transferTo pathInZip.outputStream()
+        }
+    }
+}
+
+private val BACKGROUND = CoroutineScope(Dispatchers.Default)
+
+private fun ToolPanel.showSaveDialog(
+    description: String,
+    extension: String,
+    suggestedName: String,
+    handler: suspend (Path) -> Unit,
+) {
+    val chooser = exportFileChooser.apply {
+        resetChoosableFileFilters()
+        fileFilter = FileFilter(description, extension)
+        selectedFile = File(suggestedName)
+    }
+
+    if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+        val selectedPath = chooser.selectedFile.toPath()
+        BACKGROUND.launch {
+            handler(selectedPath)
         }
     }
 }
