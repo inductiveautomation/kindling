@@ -31,6 +31,15 @@ abstract class AbstractTreeNode : TreeNode {
             yieldAll(child.depthFirstChildren())
         }
     }
+
+    fun sortWith(comparator: Comparator<in TreeNode>, recursive: Boolean = false) {
+        children.sortWith(comparator)
+        if (recursive) {
+            for (child in children) {
+                (child as? AbstractTreeNode)?.sortWith(comparator, recursive = true)
+            }
+        }
+    }
 }
 
 abstract class TypedTreeNode<T> : AbstractTreeNode() {

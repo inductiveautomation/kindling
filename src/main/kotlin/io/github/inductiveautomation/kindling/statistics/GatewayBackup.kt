@@ -26,6 +26,8 @@ class GatewayBackup(path: Path) {
 
     val projectsDirectory: Path = root.resolve(PROJECTS)
 
+    val configDirectory: Path = root.resolve(CONFIG)
+
     private val tempFile: Path = createTempFile("gwbk-stats", "idb")
 
     // eagerly copy out the IDB, since we're always building the statistics view anyways
@@ -55,5 +57,6 @@ class GatewayBackup(path: Path) {
         private const val REDUNDANCY = "redundancy.xml"
         private const val IGNITION_CONF = "ignition.conf"
         private const val PROJECTS = "projects"
+        private const val CONFIG = "config"
     }
 }
