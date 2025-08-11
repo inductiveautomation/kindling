@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.zip.views.gwbk
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import io.github.inductiveautomation.kindling.MainPanel
 import io.github.inductiveautomation.kindling.statistics.GatewayBackup
 import io.github.inductiveautomation.kindling.statistics.Statistic
 import io.github.inductiveautomation.kindling.statistics.StatisticCalculator
@@ -27,6 +28,7 @@ import javax.swing.JPopupMenu
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
+import kotlin.io.path.exists
 import kotlin.io.path.extension
 
 class GwbkStatsView(
@@ -42,6 +44,9 @@ class GwbkStatsView(
     private val gatewayBackup = GatewayBackup(path)
 
     init {
+        if (gatewayBackup.configDirectory.exists()) {
+            add(eightThreeWarning(), "wrap")
+        }
         add(MetaStatistics.Calculator renderedWith MetaStatisticsRenderer(), "growx, wrap")
         add(ProjectStatistics.Calculator renderedWith ProjectStatisticsRenderer(), "growx, sg")
         add(DatabaseStatistics.Calculator renderedWith DatabaseStatisticsRenderer(), "growx, sg")
@@ -64,7 +69,12 @@ class GwbkStatsView(
             add(throbber, "push, grow, span")
 
             BACKGROUND.launch {
-                val statistic = calculate(gatewayBackup)
+                val statistic: T? = try {
+                    calculate(gatewayBackup)
+                } catch (e: Exception) {
+                    MainPanel.LOGGER.error("Error calculating statistic", e)
+                    null
+                }
                 EDT_SCOPE.launch {
                     if (statistic == null) {
                         this@GwbkStatsView.remove(this@apply)
@@ -82,6 +92,14 @@ class GwbkStatsView(
                 }
             }
         }
+    }
+
+    private fun eightThreeWarning(): JLabel = JLabel(
+        "8.3 Backups are not yet processed correctly",
+        FlatSVGIcon("icons/bx-error.svg"),
+        SwingConstants.CENTER,
+    ).apply {
+        putClientProperty("FlatLaf.styleClass", "h2")
     }
 
     companion object {
