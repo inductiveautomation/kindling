@@ -5,7 +5,9 @@ import com.github.weisj.jsvg.SVGDocument
 import com.github.weisj.jsvg.view.ViewBox
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.swing.Swing
 import org.jdesktop.swingx.decorator.AbstractHighlighter
 import org.jdesktop.swingx.decorator.ColorHighlighter
@@ -44,7 +46,7 @@ import javax.swing.text.Document
 /**
  * A common CoroutineScope bound to the event dispatch thread (see [Dispatchers.Swing]).
  */
-val EDT_SCOPE by lazy { CoroutineScope(Dispatchers.Swing) }
+val EDT_SCOPE: CoroutineScope = CoroutineScope(Dispatchers.Swing) + SupervisorJob()
 
 val menuShortcutKeyMaskEx = Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx
 

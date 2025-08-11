@@ -24,6 +24,7 @@ import io.github.inductiveautomation.kindling.utils.transferTo
 import io.github.inductiveautomation.kindling.utils.treeCellRenderer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.miginfocom.swing.MigLayout
@@ -133,7 +134,7 @@ class ImagesPanel(connection: IdbConnection) : ToolPanel("ins 0, fill, hidemode 
         tree.addTreeSelectionListener { event ->
             when (val node = event.newLeadSelectionPath?.lastPathComponent) {
                 is ImageNode -> {
-                    EDT_SCOPE.launch {
+                    EDT_SCOPE.async {
                         val imageRow = node.userObject
 
                         imageDisplay.icon = throbber
@@ -152,6 +153,12 @@ class ImagesPanel(connection: IdbConnection) : ToolPanel("ins 0, fill, hidemode 
                             append(imageRow.path)
                             imageRow.description?.let { append(" ($it)") }
                             append(" [").append(fileSize).append("]")
+                        }
+                    }.invokeOnCompletion {
+                        if (it != null) {
+                            imageDisplay.icon = null
+                            imageInfo.text = "Error loading image: ${it.message}"
+                            it.printStackTrace(System.err)
                         }
                     }
                 }
