@@ -1,11 +1,13 @@
 # Kindling
 
-<img src="src/main/resources/logo.svg" width="250" alt="Kindling Logo">
-
 A standalone desktop application targeted to advanced [Ignition](https://inductiveautomation.com/) users.
 Features various tools to read and access Ignition's myriad data export formats.
 
-<img width="1013" height="838" alt="Kindling UI Screenshot" src="https://github.com/user-attachments/assets/cc756296-31b9-4e68-b984-b959d6185742" />
+<picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/e1e54b7d-c535-4023-9fac-4796885262e9">
+   <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/ae3c591a-b06e-4c5d-a121-f23f92aa6870">
+   <img width="800" height="592" alt="Kindling UI (Light Theme)" src="https://github.com/user-attachments/assets/ae3c591a-b06e-4c5d-a121-f23f92aa6870" />
+</picture>
 
 ## Tools
 
