@@ -699,6 +699,13 @@ $dokka.location:io.github.inductiveautomation.kindling.idb.tagconfig/TagConfigVi
 $dokka.location:io.github.inductiveautomation.kindling.idb.tagconfig/TagConfigView/TagConfigView/#java.sql.Connection/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb.tagconfig/-tag-config-view/-tag-config-view.html
 $dokka.location:io.github.inductiveautomation.kindling.idb.tagconfig/TagConfigView/icon/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb.tagconfig/-tag-config-view/icon.html
 $dokka.location:io.github.inductiveautomation.kindling.idb////PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/index.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/IdbConnection///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-connection/index.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/IdbConnection/IdbConnection/#java.nio.file.Path/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-connection/-idb-connection.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/IdbConnection/close/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-connection/close.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/IdbConnection/connection/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-connection/connection.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/IdbConnection/path/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-connection/path.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/IdbConnection/systemName/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-connection/system-name.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/IdbConnection/tables/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-connection/tables.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/IdbView///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-view/index.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/IdbView/IdbView/#kotlin.collections.List[java.nio.file.Path]/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-view/-idb-view.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/IdbView/icon/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-view/icon.html
@@ -711,8 +718,9 @@ $dokka.location:io.github.inductiveautomation.kindling.idb/IdbViewer/open/#java.
 $dokka.location:io.github.inductiveautomation.kindling.idb/IdbViewer/open/#kotlin.collections.List[java.nio.file.Path]/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-viewer/open.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/IdbViewer/serialKey/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-viewer/serial-key.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/IdbViewer/title/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-idb-viewer/title.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/ImagesPanel.Companion///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-images-panel/-companion/index.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/ImagesPanel///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-images-panel/index.html
-$dokka.location:io.github.inductiveautomation.kindling.idb/ImagesPanel/ImagesPanel/#java.sql.Connection/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-images-panel/-images-panel.html
+$dokka.location:io.github.inductiveautomation.kindling.idb/ImagesPanel/ImagesPanel/#io.github.inductiveautomation.kindling.idb.IdbConnection/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-images-panel/-images-panel.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/ImagesPanel/icon/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-images-panel/icon.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/RootImageNode///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-root-image-node/index.html
 $dokka.location:io.github.inductiveautomation.kindling.idb/RootImageNode/RootImageNode/#java.sql.Connection/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.idb/-root-image-node/-root-image-node.html
@@ -1027,6 +1035,7 @@ $dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup.
 $dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.statistics/-gateway-backup/index.html
 $dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup/GatewayBackup/#java.nio.file.Path/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.statistics/-gateway-backup/-gateway-backup.html
 $dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup/configDb/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.statistics/-gateway-backup/config-db.html
+$dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup/configDirectory/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.statistics/-gateway-backup/config-directory.html
 $dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup/ignitionConf/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.statistics/-gateway-backup/ignition-conf.html
 $dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup/info/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.statistics/-gateway-backup/info.html
 $dokka.location:io.github.inductiveautomation.kindling.statistics/GatewayBackup/projectsDirectory/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.statistics/-gateway-backup/projects-directory.html
@@ -1308,6 +1317,7 @@ $dokka.location:io.github.inductiveautomation.kindling.utils/AbstractTreeNode/ge
 $dokka.location:io.github.inductiveautomation.kindling.utils/AbstractTreeNode/getParent/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-abstract-tree-node/get-parent.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/AbstractTreeNode/isLeaf/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-abstract-tree-node/is-leaf.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/AbstractTreeNode/parent/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-abstract-tree-node/parent.html
+$dokka.location:io.github.inductiveautomation.kindling.utils/AbstractTreeNode/sortWith/#[Error type: Unresolved type for Comparator<in TreeNode>][javax.swing.tree.TreeNode]#kotlin.Boolean/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-abstract-tree-node/sort-with.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/Action///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-action/index.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/Action/Action/#kotlin.String?#kotlin.String?#javax.swing.Icon?#javax.swing.KeyStroke?#kotlin.Boolean#kotlin.Function2[io.github.inductiveautomation.kindling.utils.Action,java.awt.event.ActionEvent,kotlin.Unit]/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-action/-action.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/Action/accelerator/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-action/accelerator.html
@@ -1465,7 +1475,7 @@ $dokka.location:io.github.inductiveautomation.kindling.utils/NumericEntryField//
 $dokka.location:io.github.inductiveautomation.kindling.utils/NumericEntryField/NumericEntryField/#kotlin.Long?/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-numeric-entry-field/-numeric-entry-field.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/PathNode///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-path-node/index.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/PathNode/PathNode/#java.nio.file.Path/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-path-node/-path-node.html
-$dokka.location:io.github.inductiveautomation.kindling.utils/PathNode/toString/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-path-node/to-string.html
+$dokka.location:io.github.inductiveautomation.kindling.utils/PathNode/isLeaf/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-path-node/is-leaf.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/PathNode/userObject/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-path-node/user-object.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/PathSerializer///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-path-serializer/index.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/PathSerializer/descriptor/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-path-serializer/descriptor.html
@@ -1507,6 +1517,7 @@ $dokka.location:io.github.inductiveautomation.kindling.utils/ReifiedTableModel/c
 $dokka.location:io.github.inductiveautomation.kindling.utils/RendererBase///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-renderer-base/index.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/RendererBase/focused/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-renderer-base/focused.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/RendererBase/selected/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-renderer-base/selected.html
+$dokka.location:io.github.inductiveautomation.kindling.utils/RootNode.Companion///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-root-node/-companion/index.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/RootNode///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-root-node/index.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/RootNode/RootNode/#java.nio.file.FileSystem/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-root-node/-root-node.html
 $dokka.location:io.github.inductiveautomation.kindling.utils/StackElement///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.utils/-stack-element/index.html
@@ -1714,11 +1725,6 @@ $dokka.location:io.github.inductiveautomation.kindling.zip.views/FileView///Poin
 $dokka.location:io.github.inductiveautomation.kindling.zip.views/FileView/FileView/#java.nio.file.spi.FileSystemProvider#java.nio.file.Path/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-file-view/-file-view.html
 $dokka.location:io.github.inductiveautomation.kindling.zip.views/FileView/icon/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-file-view/icon.html
 $dokka.location:io.github.inductiveautomation.kindling.zip.views/FileView/provider/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-file-view/provider.html
-$dokka.location:io.github.inductiveautomation.kindling.zip.views/GenericFileView.Companion///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-generic-file-view/-companion/index.html
-$dokka.location:io.github.inductiveautomation.kindling.zip.views/GenericFileView///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-generic-file-view/index.html
-$dokka.location:io.github.inductiveautomation.kindling.zip.views/GenericFileView/GenericFileView/#java.nio.file.spi.FileSystemProvider#java.nio.file.Path/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-generic-file-view/-generic-file-view.html
-$dokka.location:io.github.inductiveautomation.kindling.zip.views/GenericFileView/icon/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-generic-file-view/icon.html
-$dokka.location:io.github.inductiveautomation.kindling.zip.views/GenericFileView/provider/#/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-generic-file-view/provider.html
 $dokka.location:io.github.inductiveautomation.kindling.zip.views/ImageView.Companion///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-image-view/-companion/index.html
 $dokka.location:io.github.inductiveautomation.kindling.zip.views/ImageView.Companion/isImageFile/#java.nio.file.Path/PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-image-view/-companion/is-image-file.html
 $dokka.location:io.github.inductiveautomation.kindling.zip.views/ImageView///PointingToDeclaration/kindling/io.github.inductiveautomation.kindling.zip.views/-image-view/index.html
