@@ -1,6 +1,6 @@
 [versions]
 java = "21"
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 coroutines = "1.10.2"
 flatlaf = "3.6.1"
 kotest = "5.9.1"
