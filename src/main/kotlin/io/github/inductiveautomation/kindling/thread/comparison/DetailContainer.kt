@@ -9,7 +9,9 @@ import io.github.inductiveautomation.kindling.utils.scrollToTop
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import java.awt.Dimension
+import java.awt.Font
 import javax.swing.JButton
+import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextPane
 import javax.swing.UIManager
@@ -23,7 +25,9 @@ internal class DetailContainer(
         set(value) {
             field = value
             scrollPane.isVisible = !value
-            headerButton.icon = if (value) expandIcon else collapseIcon
+
+            headerButton.expandLabel.isVisible = value
+            headerButton.collapseLabel.isVisible = !value
 
             // Preferred size needs to be recalculated or something like that
             EDT_SCOPE.launch {
@@ -34,7 +38,7 @@ internal class DetailContainer(
 
     var itemCount = 0
         set(value) {
-            headerButton.text = "$prefix: $value"
+            headerButton.textLabel.text = "$prefix: $value"
             field = value
         }
 
@@ -48,20 +52,7 @@ internal class DetailContainer(
             }
         }
 
-    private val headerButton = object : JButton(prefix, if (collapsed) expandIcon else collapseIcon) {
-        init {
-            horizontalTextPosition = LEFT
-            horizontalAlignment = LEFT
-
-            addActionListener { isCollapsed = !isCollapsed }
-        }
-
-        // This effectively right-aligns the icon
-        override fun getIconTextGap(): Int {
-            val fm = getFontMetrics(font)
-            return size.width - insets.left - insets.right - icon.iconWidth - fm.stringWidth(text)
-        }
-    }
+    private val headerButton = HeaderButton()
 
     private val textArea = JTextPane().apply {
         isEditable = false
@@ -89,12 +80,35 @@ internal class DetailContainer(
         }
 
     init {
-        add(headerButton, "growx, top, wmax 100%")
-        add(scrollPane, "push, grow, top, wmax 100%")
+        add(headerButton, "growx, top")
+        add(scrollPane, "push, grow, top")
     }
 
     companion object {
         private val collapseIcon = FlatSVGIcon("icons/bx-chevrons-up.svg")
         private val expandIcon = FlatSVGIcon("icons/bx-chevrons-down.svg")
+    }
+
+    inner class HeaderButton : JButton() {
+        val expandLabel = JLabel(expandIcon).apply { isVisible = isCollapsed }
+        val collapseLabel = JLabel(collapseIcon).apply { isVisible = !isCollapsed }
+        val textLabel = JLabel(prefix).apply {
+            font = font.deriveFont(Font.BOLD)
+        }
+
+        init {
+            val t = insets.top
+            val b = insets.bottom
+
+            layout = MigLayout("fill, ins $t 0 $b 0, hidemode 3")
+
+            add(textLabel, "push, grow")
+            add(expandLabel)
+            add(collapseLabel)
+
+            addActionListener {
+                isCollapsed = !isCollapsed
+            }
+        }
     }
 }

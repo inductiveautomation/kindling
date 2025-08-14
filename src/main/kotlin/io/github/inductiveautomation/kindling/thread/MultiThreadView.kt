@@ -383,6 +383,8 @@ class MultiThreadView(
             "push, grow, span, wmax 100%",
         )
 
+        comparison.threads = mainTable.model.threadData.first()
+
         sidebar.selectedIndex = 0
     }
 

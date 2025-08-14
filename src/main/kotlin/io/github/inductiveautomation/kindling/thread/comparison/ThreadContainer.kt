@@ -78,13 +78,13 @@ internal class ThreadContainer(
                 add(diffCheckBox)
                 add(blockerButton, "gapleft 8")
             },
-            "wmax 100%, top, growx",
+            "top, growx",
         )
 
         // Ensure that the top two don't get pushed below their preferred size.
-        add(monitors, "grow, h pref:pref:300, top, wmax 100%")
-        add(synchronizers, "grow, h pref:pref:300, top, wmax 100%")
-        add(stacktrace, "push, grow, top, wmax 100%")
+        add(monitors, "grow, h pref:pref:300, top")
+        add(synchronizers, "grow, h pref:pref:300, top")
+        add(stacktrace, "push, grow, top")
     }
 
     fun updateThreadInfo() {
