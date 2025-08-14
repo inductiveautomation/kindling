@@ -36,7 +36,7 @@ class ThreadComparisonPane(
     }
 
     private val header = HeaderPanel()
-    private val body = JPanel((MigLayout("fill, ins 0, hidemode 3")))
+    private val body = JPanel((MigLayout("fill, ins 3, gap 3, hidemode 3")))
     private val footer = if (totalThreadDumps > 3) FooterPanel() else null
 
     private val threadContainers: List<ThreadContainer> = List(totalThreadDumps) { i ->
@@ -104,12 +104,12 @@ class ThreadComparisonPane(
         add(
             body.apply {
                 for ((index, container) in threadContainers.withIndex()) {
-                    add(container, "grow, sizegroup, w 33%!")
+                    add(container, "grow, sg")
 
                     if (index > 2) container.isVisible = false
                 }
             },
-            "pushy, grow,  spanx, w 100%!",
+            "pushy, grow,  spanx",
         )
 
         if (footer != null) {
@@ -151,18 +151,7 @@ class ThreadComparisonPane(
             container.thread = thread
         }
 
-        footer?.reset() ?: recalculateConstraints()
-    }
-
-    /* Need to calculate the width of the containers after threads have changed. */
-    private fun recalculateConstraints() {
-        val containerSize = 100 / threadContainers.count { it.isViewable && it.isSelected }
-        for (container in threadContainers) {
-            (body.layout as MigLayout).setComponentConstraints(
-                container,
-                "grow, sizegroup, w $containerSize%!",
-            )
-        }
+        footer?.reset()
     }
 
     fun addBlockerSelectedListener(listener: BlockerSelectedEventListener) {
@@ -257,8 +246,6 @@ class ThreadComparisonPane(
                 threadContainers.forEachIndexed { index, threadContainer ->
                     threadContainer.isSelected = index in value
                 }
-
-                recalculateConstraints()
             }
 
         private val canSelectNext: Boolean
