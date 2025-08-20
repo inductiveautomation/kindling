@@ -7,6 +7,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldBeEmpty
 import kotlin.io.path.Path
 import kotlin.io.path.name
 
@@ -242,70 +243,172 @@ class WrapperLogParsingTests : FunSpec(
             }
         }
 
-        test("Container init + wrapper/jvm stdout lines from docker are parsed and mapped") {
+        context("Container log tests") {
             parse(
                 """
-        init     | 2025/06/27 01:39:44 | Parsed systemName argument; new value: docker-test
-        init     | 2025/06/27 01:39:44 | Parsed httpAddress argument; new value: localhost
-        init     | 2025/06/27 01:39:44 | Parsed httpPort argument; new value: 9088
-        init     | 2025/06/27 01:39:44 | Parsed httpsPort argument; new value: 9043
-        init     | 2025/06/27 01:39:44 | Creating init.properties file
-        init     | 2025/06/27 01:39:44 | Adding SystemName=docker-test to init.properties
-        init     | 2025/06/27 01:39:44 | Creating gateway.xml
-        init     | 2025/06/27 01:39:44 | Writing Container Init File to /usr/local/bin/ignition/data/.container-init.conf
-        init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.autoDetect=false in gateway.xml
-        init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.httpPort=9088 in gateway.xml
-        init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.httpsPort=9043 in gateway.xml
-        init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.address=localhost in gateway.xml
-        init     | 2025/06/27 01:39:44 | Starting Ignition gateway
-        wrapper  | 2025/06/27 01:39:44 | --> Wrapper Started as Console
-        wrapper  | 2025/06/27 01:39:44 | Java Service Wrapper Standard Edition 64-bit 3.5.42
-        wrapper  | 2025/06/27 01:39:44 |   Copyright (C) 1999-2020 Tanuki Software, Ltd. All Rights Reserved.
-        wrapper  | 2025/06/27 01:39:44 |     http://wrapper.tanukisoftware.com
-        wrapper  | 2025/06/27 01:39:44 |   Licensed to Inductive Automation for Inductive Automation
-        wrapper  | 2025/06/27 01:39:44 | 
-        wrapper  | 2025/06/27 01:39:45 | Launching a JVM...
-        jvm 1    | 2025/06/27 01:39:45 | WrapperManager: Initializing...
-        jvm 1    | 2025/06/27 01:39:45 | I [g.CompositeClassRejectListFilter] [01:39:45.566]: Initialization performed successfully 
-        jvm 1    | 2025/06/27 01:39:45 | I [g.CompositeClassRejectListFilter] [01:39:45.567]: JVM-wide ObjectInputFilter set up successfully 
-        jvm 1    | 2025/06/27 01:39:45 | I [g.CompositeClassRejectListFilter] [01:39:45.567]: Platform serialFilter has 88 pattern(s) 
+                init     | 2025/06/27 01:39:44 | Parsed systemName argument; new value: docker-test
+                init     | 2025/06/27 01:39:44 | Parsed httpAddress argument; new value: localhost
+                init     | 2025/06/27 01:39:44 | Parsed httpPort argument; new value: 9088
+                init     | 2025/06/27 01:39:44 | Parsed httpsPort argument; new value: 9043
+                init     | 2025/06/27 01:39:44 | Creating init.properties file
+                init     | 2025/06/27 01:39:44 | Adding SystemName=docker-test to init.properties
+                init     | 2025/06/27 01:39:44 | Creating gateway.xml
+                init     | 2025/06/27 01:39:44 | Writing Container Init File to /usr/local/bin/ignition/data/.container-init.conf
+                init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.autoDetect=false in gateway.xml
+                init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.httpPort=9088 in gateway.xml
+                init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.httpsPort=9043 in gateway.xml
+                init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.address=localhost in gateway.xml
+                init     | 2025/06/27 01:39:44 | Starting Ignition gateway
+                wrapper  | 2025/06/27 01:39:44 | --> Wrapper Started as Console
+                wrapper  | 2025/06/27 01:39:44 | Java Service Wrapper Standard Edition 64-bit 3.5.42
+                wrapper  | 2025/06/27 01:39:44 |   Copyright (C) 1999-2020 Tanuki Software, Ltd. All Rights Reserved.
+                wrapper  | 2025/06/27 01:39:44 |     http://wrapper.tanukisoftware.com
+                wrapper  | 2025/06/27 01:39:44 |   Licensed to Inductive Automation for Inductive Automation
+                wrapper  | 2025/06/27 01:39:44 | 
+                wrapper  | 2025/06/27 01:39:45 | Launching a JVM...
+                jvm 1    | 2025/06/27 01:39:45 | WrapperManager: Initializing...
+                jvm 1    | 2025/06/27 01:39:45 | I [g.CompositeClassRejectListFilter] [01:39:45.566]: Initialization performed successfully 
+                jvm 1    | 2025/06/27 01:39:45 | W [g.CompositeClassRejectListFilter] [01:39:45.567]: JVM-wide ObjectInputFilter set up successfully 
+                jvm 1    | 2025/06/27 01:39:45 | E [g.CompositeClassRejectListFilter] [01:39:45.567]: Platform serialFilter has 88 pattern(s) 
                 """.trimIndent(),
             ).let { events ->
                 events.size shouldBe 24
 
-                events.find { it.message == "Parsed systemName argument; new value: docker-test" }.shouldNotBeNull().asClue { e ->
-                    e.level shouldBe Level.INFO
-                    e.logger shouldBe WrapperLogEvent.STDOUT
-                    e.stacktrace.shouldBeEmpty()
-                }
-
-                events.find { it.message.contains("Java Service Wrapper Standard Edition 64-bit 3.5.42") }.shouldNotBeNull().asClue { e ->
-                    e.logger shouldBe "wrapper"
-                    e.level shouldBe Level.INFO
-                }
-
-                events.any { it.logger == "wrapper" && it.message.isEmpty() } shouldBe true
-
-                events.find { it.message == "Launching a JVM..." }.shouldNotBeNull().asClue { e ->
-                    e.logger shouldBe "wrapper"
-                }
-
-                events.find { it.message == "WrapperManager: Initializing..." }.shouldNotBeNull().asClue { e ->
-                    e.logger shouldBe WrapperLogEvent.STDOUT
-                    e.stacktrace.shouldBeEmpty()
-                }
-
-                events.filter { it.logger == "g.CompositeClassRejectListFilter" }.asClue { gs ->
-                    gs.shouldHaveSize(3)
-                    gs.forEach { e ->
+                test("First event should be container init") {
+                    events[0].asClue { e ->
                         e.level shouldBe Level.INFO
-                        e.stacktrace.shouldBeEmpty()
+                        e.logger shouldBe WrapperLogEvent.STDOUT
+                        e.message shouldBe "Parsed systemName argument; new value: docker-test"
                     }
-                    gs.map { it.message } shouldBe listOf(
-                        "Initialization performed successfully",
-                        "JVM-wide ObjectInputFilter set up successfully",
-                        "Platform serialFilter has 88 pattern(s)",
-                    )
+                }
+
+                test("Wrapper events should be parsed") {
+                    events[14].shouldNotBeNull().asClue { e ->
+                        e.logger shouldBe "wrapper"
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "Java Service Wrapper Standard Edition 64-bit 3.5.42"
+                    }
+
+                    events[18].shouldNotBeNull().asClue { e ->
+                        e.logger shouldBe "wrapper"
+                        e.level shouldBe Level.INFO
+                        e.message.shouldBeEmpty()
+                    }
+
+                    events[19].asClue { e ->
+                        e.logger shouldBe "wrapper"
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "Launching a JVM..."
+                    }
+                }
+
+                test("JVM events after wrapper events should be parsed") {
+                    events[20].asClue { e ->
+                        e.logger shouldBe WrapperLogEvent.STDOUT
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "WrapperManager: Initializing..."
+                    }
+                }
+
+                test("JVM events should have accurate level and info") {
+                    events[21].asClue { e ->
+                        e.logger shouldBe "g.CompositeClassRejectListFilter"
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "Initialization performed successfully"
+                    }
+                }
+
+                test("Trailing events should be parsed") {
+                    events[23].asClue { e ->
+                        e.logger shouldBe "g.CompositeClassRejectListFilter"
+                        e.level shouldBe Level.ERROR
+                        e.message shouldBe "Platform serialFilter has 88 pattern(s)"
+                    }
+                }
+            }
+        }
+
+        context("Docker desktop copy output tests") {
+            parse(
+                """
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Parsed systemName argument; new value: docker-test
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Parsed httpAddress argument; new value: localhost
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Parsed httpPort argument; new value: 9088
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Parsed httpsPort argument; new value: 9043
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Creating init.properties file
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Adding SystemName=docker-test to init.properties
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Creating gateway.xml
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Writing Container Init File to /usr/local/bin/ignition/data/.container-init.conf
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.autoDetect=false in gateway.xml
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.httpPort=9088 in gateway.xml
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.httpsPort=9043 in gateway.xml
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Setting gateway.publicAddress.address=localhost in gateway.xml
+                2025-08-18 15:57:02.647 | init     | 2025/06/27 01:39:44 | Starting Ignition gateway
+                2025-08-18 15:57:02.647 | wrapper  | 2025/06/27 01:39:44 | --> Wrapper Started as Console
+                2025-08-18 15:57:02.647 | wrapper  | 2025/06/27 01:39:44 | Java Service Wrapper Standard Edition 64-bit 3.5.42
+                2025-08-18 15:57:02.647 | wrapper  | 2025/06/27 01:39:44 |   Copyright (C) 1999-2020 Tanuki Software, Ltd. All Rights Reserved.
+                2025-08-18 15:57:02.647 | wrapper  | 2025/06/27 01:39:44 |     http://wrapper.tanukisoftware.com
+                2025-08-18 15:57:02.647 | wrapper  | 2025/06/27 01:39:44 |   Licensed to Inductive Automation for Inductive Automation
+                2025-08-18 15:57:02.647 | wrapper  | 2025/06/27 01:39:44 | 
+                2025-08-18 15:57:02.647 | wrapper  | 2025/06/27 01:39:45 | Launching a JVM...
+                2025-08-18 15:57:02.647 | jvm 1    | 2025/06/27 01:39:45 | WrapperManager: Initializing...
+                2025-08-18 15:57:02.647 | jvm 1    | 2025/06/27 01:39:45 | I [g.CompositeClassRejectListFilter] [01:39:45.566]: Initialization performed successfully 
+                2025-08-18 15:57:02.647 | jvm 1    | 2025/06/27 01:39:45 | W [g.CompositeClassRejectListFilter] [01:39:45.567]: JVM-wide ObjectInputFilter set up successfully 
+                2025-08-18 15:57:02.647 | jvm 1    | 2025/06/27 01:39:45 | E [g.CompositeClassRejectListFilter] [01:39:45.567]: Platform serialFilter has 88 pattern(s) 
+                """.trimIndent(),
+            ).let { events ->
+                events.size shouldBe 24
+
+                test("First event should be container init") {
+                    events[0].asClue { e ->
+                        e.level shouldBe Level.INFO
+                        e.logger shouldBe WrapperLogEvent.STDOUT
+                        e.message shouldBe "Parsed systemName argument; new value: docker-test"
+                    }
+                }
+
+                test("Wrapper events should be parsed") {
+                    events[14].shouldNotBeNull().asClue { e ->
+                        e.logger shouldBe "wrapper"
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "Java Service Wrapper Standard Edition 64-bit 3.5.42"
+                    }
+
+                    events[18].shouldNotBeNull().asClue { e ->
+                        e.logger shouldBe "wrapper"
+                        e.level shouldBe Level.INFO
+                        e.message.shouldBeEmpty()
+                    }
+
+                    events[19].asClue { e ->
+                        e.logger shouldBe "wrapper"
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "Launching a JVM..."
+                    }
+                }
+
+                test("JVM events after wrapper events should be parsed") {
+                    events[20].asClue { e ->
+                        e.logger shouldBe WrapperLogEvent.STDOUT
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "WrapperManager: Initializing..."
+                    }
+                }
+
+                test("JVM events should have accurate level and info") {
+                    events[21].asClue { e ->
+                        e.logger shouldBe "g.CompositeClassRejectListFilter"
+                        e.level shouldBe Level.INFO
+                        e.message shouldBe "Initialization performed successfully"
+                    }
+                }
+
+                test("Trailing events should be parsed") {
+                    events[23].asClue { e ->
+                        e.logger shouldBe "g.CompositeClassRejectListFilter"
+                        e.level shouldBe Level.ERROR
+                        e.message shouldBe "Platform serialFilter has 88 pattern(s)"
+                    }
                 }
             }
         }
