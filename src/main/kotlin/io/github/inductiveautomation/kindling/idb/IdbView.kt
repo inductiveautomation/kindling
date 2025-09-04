@@ -7,10 +7,10 @@ import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
 import io.github.inductiveautomation.kindling.idb.metrics.MetricsView
-import io.github.inductiveautomation.kindling.idb.tagconfig.TagConfigView
 import io.github.inductiveautomation.kindling.log.LogFile
 import io.github.inductiveautomation.kindling.log.SystemLogPanel
 import io.github.inductiveautomation.kindling.log.SystemLogPanel.Companion.parseLogs
+import io.github.inductiveautomation.kindling.tagconfig.TagConfigView
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
@@ -113,7 +113,7 @@ private enum class IdbTool {
             return connections.singleOrNull { "TAGCONFIG" in it.tables } != null
         }
         override fun open(connections: List<IdbConnection>): ToolPanel {
-            return TagConfigView(connections.single().connection)
+            return TagConfigView.fromIdb(connections.single().connection)
         }
 
         override val tabName: String = "Tag Config"

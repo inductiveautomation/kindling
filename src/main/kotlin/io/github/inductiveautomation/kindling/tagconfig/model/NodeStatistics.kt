@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.idb.tagconfig.model
+package io.github.inductiveautomation.kindling.tagconfig.model
 
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -30,7 +30,7 @@ class NodeStatistics(private val node: Node) {
         val name = it.jsonObject["name"]?.jsonPrimitive?.content
         val enabled = try {
             it.jsonObject["enabled"]?.jsonPrimitive?.boolean ?: true
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             true
         }
 
@@ -58,7 +58,7 @@ class NodeStatistics(private val node: Node) {
     // Other Tag Properties:
     var historyEnabled: Boolean? = try {
         node.config.historyEnabled?.jsonPrimitive?.boolean // JsonNull cannot be cast to boolean
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         true
     }
 
@@ -69,7 +69,7 @@ class NodeStatistics(private val node: Node) {
         null -> null
     }
 
-    var dataSource: String? = node.config.valueSource
+    var dataSource: ValueSource? = node.config.valueSource
 
     var isReadOnly: Boolean? = node.config.readOnly
 
@@ -86,8 +86,8 @@ class NodeStatistics(private val node: Node) {
 
     fun copyToNewNode(newNodeStatistics: NodeStatistics) {
         newNodeStatistics.historyEnabled = historyEnabled
-        newNodeStatistics.dataType = node.statistics.dataType
-        newNodeStatistics.dataSource = node.statistics.dataSource
+        newNodeStatistics.dataType = dataType
+        newNodeStatistics.dataSource = dataSource
         newNodeStatistics.scriptStates.addAll(scriptStates)
         newNodeStatistics.alarmStates.addAll(alarmStates)
         newNodeStatistics.isReadOnly = isReadOnly

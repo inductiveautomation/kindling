@@ -7,6 +7,7 @@ import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.tagconfig.TagConfigView
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -37,6 +38,8 @@ import java.nio.file.spi.FileSystemProvider
 import javax.swing.Icon
 import javax.swing.JFileChooser
 import javax.swing.tree.TreeSelectionModel.CONTIGUOUS_TREE_SELECTION
+import kotlin.io.path.div
+import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
@@ -140,19 +143,24 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
 
         if (path.extension.lowercase() == "gwbk") {
             maybeAddNewTab(path)
+
+            val configPath = zipFile.rootDirectories.first() / "config"
+            if (configPath.exists()) {
+                maybeAddNewTab(configPath, select = false)
+            }
         }
     }
 
     override val icon: Icon = ZipViewer.icon
 
-    private fun maybeAddNewTab(vararg paths: Path) {
+    private fun maybeAddNewTab(vararg paths: Path, select: Boolean = true) {
         val pathList = paths.toList()
         val existingTab = tabStrip.tabs.find { tab -> tab.paths == pathList }
         if (existingTab == null) {
             val pathView = createView(provider, *paths)
             if (pathView != null) {
                 pathView.putClientProperty(TABBED_PANE_TAB_CLOSABLE, pathView.closable)
-                tabStrip.addTab(component = pathView, select = true)
+                tabStrip.addTab(component = pathView, select = select)
             }
         } else {
             tabStrip.selectedComponent = existingTab
@@ -178,6 +186,7 @@ object ZipViewer : Tool {
         put(ImageView::isImageFile, ::ImageView)
         put(ProjectView::isProjectDirectory, ::ProjectView)
         put(Path::isRegularFile, ::FileView)
+        put(TagConfigView::isConfigDirectory, TagConfigView::fromZip)
     }
 
     fun createView(

@@ -1,9 +1,11 @@
-package io.github.inductiveautomation.kindling.idb.tagconfig
+package io.github.inductiveautomation.kindling.tagconfig
 
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.idb.tagconfig.TagBrowseTree.Companion.toTagPath
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.Node
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
+import io.github.inductiveautomation.kindling.core.ToolPanel.Companion.exportFileChooser
+import io.github.inductiveautomation.kindling.tagconfig.model.AbstractTagProvider
+import io.github.inductiveautomation.kindling.tagconfig.model.LegacyTagProvider
+import io.github.inductiveautomation.kindling.tagconfig.model.Node
+import io.github.inductiveautomation.kindling.tagconfig.model.TagProvider
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.TabStrip
@@ -11,17 +13,24 @@ import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
+import io.github.inductiveautomation.kindling.zip.views.PathView
+import io.github.inductiveautomation.kindling.zip.views.SinglePathView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import kotlinx.serialization.json.jsonPrimitive
 import net.miginfocom.swing.MigLayout
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.spi.FileSystemProvider
 import java.sql.Connection
 import javax.swing.JButton
 import javax.swing.JComboBox
@@ -33,13 +42,18 @@ import javax.swing.JScrollPane
 import javax.swing.JSplitPane
 import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
+import kotlin.io.path.div
+import kotlin.io.path.inputStream
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
+import kotlin.use
 
 @OptIn(ExperimentalSerializationApi::class)
-class TagConfigView(connection: Connection) : ToolPanel() {
-    private val tagProviderData: List<TagProviderRecord> = TagProviderRecord.getProvidersFromDB(connection)
-
-    override val icon = null
-
+class TagConfigView(
+    private val systemName: String,
+    tagProviderData: List<AbstractTagProvider>,
+) : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
     private val exportButton = JButton("Export Tags").apply {
         isEnabled = false
 
@@ -47,11 +61,8 @@ class TagConfigView(connection: Connection) : ToolPanel() {
             exportFileChooser.apply {
                 resetChoosableFileFilters()
                 fileFilter = FileNameExtensionFilter("JSON Files", "json")
-                val provider = providerDropdown.selectedItem as TagProviderRecord
-                connection.executeQuery("SELECT systemname FROM sysprops").use { rs ->
-                    rs.next()
-                    selectedFile = File("${rs.get<String>("systemname")}_${provider.name}_tags.json")
-                }
+                val provider = providerDropdown.selectedItem as AbstractTagProvider
+                selectedFile = File("${this@TagConfigView.systemName}_${provider.name}_tags.json")
 
                 if (showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
                     // if they hit the 'export tags' button too fast, we'll just quietly do nothing
@@ -85,10 +96,9 @@ class TagConfigView(connection: Connection) : ToolPanel() {
                 override fun mousePressed(e: MouseEvent?) {
                     if (e?.clickCount == 2) {
                         selectionPath?.let {
-                            if ((it.lastPathComponent as TreeNode).childCount == 0) {
-                                if (it.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
-                                    tabs.addTab(NodeConfigPanel(it))
-                                }
+                            val node = it.lastPathComponent as TreeNode
+                            if (node.isLeaf) {
+                                addOrFocusTab(node as Node)
                             }
                         }
                     }
@@ -99,10 +109,7 @@ class TagConfigView(connection: Connection) : ToolPanel() {
         attachPopupMenu { mouseEvent ->
             val configAction = Action("Open Config") {
                 val pathAtPoint = getClosestPathForLocation(mouseEvent.x, mouseEvent.y)
-
-                if (pathAtPoint.toTagPath() !in tabs.indices.map(tabs::getToolTipTextAt)) {
-                    tabs.addTab(NodeConfigPanel(pathAtPoint))
-                }
+                addOrFocusTab(pathAtPoint.lastPathComponent as Node)
             }
 
             val exportAction = Action("Export Selection") {
@@ -163,7 +170,7 @@ class TagConfigView(connection: Connection) : ToolPanel() {
         providerDropdown.addItemListener { itemEvent ->
             if (itemEvent.stateChange != ItemEvent.SELECTED) return@addItemListener
 
-            val selectedTagProvider = itemEvent.item as TagProviderRecord
+            val selectedTagProvider = itemEvent.item as AbstractTagProvider
 
             tabs.setTitleAt(0, selectedTagProvider.name)
             providerTab.provider = selectedTagProvider
@@ -187,10 +194,88 @@ class TagConfigView(connection: Connection) : ToolPanel() {
         )
     }
 
+    private fun TagBrowseTree.addOrFocusTab(node: Node) {
+        val tips = tabs.indices.map(tabs::getToolTipTextAt)
+
+        provider?.run {
+            val tPath = node.tagPath
+            val index = tips.indexOf(tPath)
+            if (index == -1) {
+                tabs.addTab(
+                    NodeConfigPanel(node, null, node.name, tPath).apply {
+                        if (node.inferred) {
+                            addNodeSelectListener {
+                                val nodes = mutableListOf<Node>()
+                                var currNode: Node? = it
+
+                                while (currNode != null) {
+                                    nodes.add(0, currNode)
+                                    currNode = currNode.parent
+                                }
+
+                                selectionPath = TreePath(nodes.toTypedArray())
+                            }
+                        }
+                    },
+                )
+            } else {
+                tabs.selectedIndex = index
+            }
+        }
+    }
+
     companion object {
         internal val TagExportJson = Json {
             prettyPrint = true
             prettyPrintIndent = "  "
+        }
+
+        fun fromZip(provider: FileSystemProvider, configDir: Path): PathView {
+            val tagProviderData = TagProvider.loadProviders(configDir)
+            val systemPropsPath = configDir / "resources/core/ignition/system-properties/config.json"
+
+            val systemName = systemPropsPath.inputStream().use {
+                val json = Json.decodeFromStream<JsonObject>(it)
+                json["systemName"]?.jsonPrimitive?.content ?: "Gateway"
+            }
+
+            val view = TagConfigView(systemName, tagProviderData)
+
+            return object : SinglePathView("fill, ins 0") {
+                override val path: Path = configDir
+                override val provider: FileSystemProvider = provider
+                override val icon = null
+                override val closable = false
+                override val tabName = "Tag Config"
+
+                init {
+                    add(view, "push, grow")
+                }
+            }
+        }
+
+        fun fromIdb(connection: Connection): ToolPanel {
+            val systemName = connection.executeQuery("SELECT systemname FROM sysprops").use { rs ->
+                rs.next()
+                rs.get<String>("systemname")
+            }
+
+            val tagProviderData = LegacyTagProvider.loadProviders(connection)
+
+            val view = TagConfigView(systemName, tagProviderData)
+
+            return object : ToolPanel("ins 0, fill") {
+                override val icon = null
+
+                init {
+                    name = "Tag Config"
+                    add(view, "push, grow")
+                }
+            }
+        }
+
+        fun isConfigDirectory(dir: Path): Boolean {
+            return dir.isDirectory() && dir.name == "config"
         }
     }
 }
