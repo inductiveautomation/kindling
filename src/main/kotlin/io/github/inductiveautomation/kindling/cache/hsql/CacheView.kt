@@ -1,16 +1,15 @@
-package io.github.inductiveautomation.kindling.cache
+package io.github.inductiveautomation.kindling.cache.hsql
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatPopupMenu
 import com.jidesoft.swing.JideButton
+import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.DetailsPane
-import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
-import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
@@ -296,7 +295,7 @@ class CacheView(path: Path) : ToolPanel() {
                             try {
                                 val deserialized = bytes.deserializeStoreAndForward()
                                 deserialized.toDetail()
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 // It's not serialized with a class in the public API, or some other problem;
                                 // give up, and try to just dump the serialized data in a friendlier format
                                 val serializationDumper = deser.SerializationDumper(bytes)
@@ -337,13 +336,3 @@ class CacheView(path: Path) : ToolPanel() {
     }
 }
 
-data object CacheViewer : Tool {
-    override val serialKey = "sf-cache"
-    override val title = "Store & Forward Cache"
-    override val description = "S&F Cache (.data, .script, .zip)"
-    override val icon = FlatSVGIcon("icons/bx-data.svg")
-    internal val extensions = arrayOf("data", "script", "zip")
-    override val filter = FileFilter(description, *extensions)
-
-    override fun open(path: Path): ToolPanel = CacheView(path)
-}
