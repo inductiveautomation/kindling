@@ -295,7 +295,8 @@ class CacheView(path: Path) : ToolPanel() {
                             try {
                                 val deserialized = bytes.deserializeStoreAndForward()
                                 deserialized.toDetail()
-                            } catch (_: Exception) {
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                                 // It's not serialized with a class in the public API, or some other problem;
                                 // give up, and try to just dump the serialized data in a friendlier format
                                 val serializationDumper = deser.SerializationDumper(bytes)

@@ -1,13 +1,16 @@
+@file:Suppress("DEPRECATION")
+
 package io.github.inductiveautomation.kindling.utils
 
-import com.inductiveautomation.ignition.gateway.history.BasicHistoricalRecord
-import com.inductiveautomation.ignition.gateway.history.ScanclassHistorySet
+import com.inductiveautomation.ignition.gateway.storeforward.deprecated.BasicHistoricalRecord
+import com.inductiveautomation.ignition.gateway.storeforward.deprecated.ScanclassHistorySet
 import io.github.inductiveautomation.kindling.cache.AliasingObjectInputStream
 import io.github.inductiveautomation.kindling.cache.model.AbstractDataset
 import io.github.inductiveautomation.kindling.cache.model.AlarmJournalData
 import io.github.inductiveautomation.kindling.cache.model.AlarmJournalSFGroup
 import io.github.inductiveautomation.kindling.cache.model.AuditProfileData
 import io.github.inductiveautomation.kindling.cache.model.BasicDataset
+import io.github.inductiveautomation.kindling.cache.model.DefaultAuditRecord
 import io.github.inductiveautomation.kindling.cache.model.RemoteEvent
 import io.github.inductiveautomation.kindling.cache.model.ScriptedSFData
 import io.github.inductiveautomation.kindling.core.Detail
@@ -59,6 +62,18 @@ fun ByteArray.deserializeStoreAndForward(): Serializable {
         put("com.inductiveautomation.ignition.gateway.alarming.journal.remote.RemoteEvent", RemoteEvent::class.java)
         put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFData", AlarmJournalData::class.java)
         put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFGroup", AlarmJournalSFGroup::class.java)
+        put(
+            "com.inductiveautomation.ignition.gateway.history.PackedHistoricalQualifiedValue",
+            com.inductiveautomation.ignition.gateway.storeforward.deprecated.PackedHistoricalQualifiedValue::class.java,
+        )
+        put(
+            "com.inductiveautomation.ignition.gateway.sqltags.model.BasicScanclassHistorySet",
+            com.inductiveautomation.ignition.gateway.storeforward.deprecated.BasicScanclassHistorySet::class.java,
+        )
+        put(
+            "com.inductiveautomation.ignition.gateway.audit.DefaultAuditRecord",
+            DefaultAuditRecord::class.java,
+        )
     }.readObject() as Serializable
 }
 

@@ -1,12 +1,12 @@
 package io.github.inductiveautomation.kindling.cache.model
 
-import com.inductiveautomation.ignition.gateway.audit.AuditRecord
 import io.github.inductiveautomation.kindling.core.Detail
 import java.io.Serializable
+import java.util.Date
 
 @Suppress("unused")
 class AuditProfileData(
-    private val auditRecord: AuditRecord,
+    private val auditRecord: DefaultAuditRecord,
     private val insertQuery: String,
     private val parentLog: String,
 ) : Serializable {
@@ -35,5 +35,23 @@ class AuditProfileData(
     companion object {
         @JvmStatic
         private val serialVersionUID = 3037488986978918285L
+    }
+}
+
+@Suppress("unused")
+class DefaultAuditRecord(
+    val originatingContext: Int,
+    val statusCode: Int,
+    val action: String,
+    val actionTarget: String?,
+    val actionValue: String,
+    val actor: String,
+    val actorHost: String,
+    val originatingSystem: String,
+    val timestamp: Date,
+) : Serializable {
+    companion object {
+        @JvmStatic
+        private val serialVersionUID = 0x21d9a89f09913781
     }
 }
