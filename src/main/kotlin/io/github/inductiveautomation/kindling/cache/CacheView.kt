@@ -277,7 +277,6 @@ class CacheView(path: Path) : ToolPanel() {
 
         add(JLabel("${data.size} ${if (data.size == 1) "entry" else "entries"}"))
         add(settings, "right, wrap")
-
         add(mainSplitPane, "push, grow, span")
 
         schemaList.selectionModel.addListSelectionListener {
