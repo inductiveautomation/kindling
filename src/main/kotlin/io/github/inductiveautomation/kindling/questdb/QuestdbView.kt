@@ -23,11 +23,7 @@ import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.toList
 import io.questdb.ServerMain
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXTable
 import java.awt.Component
-import java.io.File
-import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -35,9 +31,6 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
-import java.sql.DriverManager
-import java.util.Locale
-import java.util.Properties
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JLabel
@@ -47,63 +40,98 @@ import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableModel
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.copyToRecursively
+import kotlin.io.path.createDirectory
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.walk
+import kotlin.io.path.writeText
+import net.miginfocom.swing.MigLayout
+import org.jdesktop.swingx.JXTable
+import org.postgresql.ds.PGSimpleDataSource
 
 @OptIn(ExperimentalPathApi::class)
 class QuestdbView(path: Path) : ToolPanel() {
     override val icon: Icon = QuestdbViewer.icon
 
-    // constants
-    companion object {
-        private val LOGGER = getLogger<QuestdbView>()
-        private const val PG_HOST = "localhost"
-        private const val PG_USER = "admin"
-        private const val PG_PASS = "quest"
-        private const val RESULTS_PER_PAGE = 50
+    // Copy the zip data over to the temp directory
+    // temp dir
+    private val tempDirectory: Path = Files.createTempDirectory(path.nameWithoutExtension).apply {
+        if (path.extension.lowercase() == "zip") {
+            LOGGER.debug("Exploding zip to {}", this)
+            FileSystems.newFileSystem(path).use { zip ->
+                zip.rootDirectories.first().copyToRecursively(
+                    target = this,
+                    followLinks = false,
+                )
+            }
+        } else {
+            throw ToolOpeningException(".${path.extension} files not supported. Please provide a .zip file.")
+        }
     }
 
-    // server
-    private val server: ServerMain
-    private val pgPort: Int
-    private val pgUrl: String
-    private var connection: Connection
-
-    // pagination
-    private var selectedTable: String = ""
-    private var currentPage: Int = 1
-    private var maxPages: Int = 0
-    private var pageLabel: JLabel
-
-    // temp dir
-    private val tempDirectory: Path = Files.createTempDirectory(path.nameWithoutExtension)
     private val dbRootPath: Path = run {
-        when (path.extension.lowercase(Locale.ROOT)) {
-            "zip" -> {
-                LOGGER.debug("Exploding zip to {}", tempDirectory)
-                FileSystems.newFileSystem(path).use { zip ->
-                    for (directory in zip.rootDirectories) {
-                        directory.copyToRecursively(
-                            target = tempDirectory,
-                            followLinks = false,
-                        )
-                    }
-                }
-            }
-            else -> throw ToolOpeningException(".${path.extension} files not supported. Please provide a .zip file.")
-        }
-        val foundDbPath = findDbRoot(tempDirectory)
+        val foundDbPath = tempDirectory.walk().filter { p: Path ->
+            p.fileName.toString() == "_tab_index.d"
+        }.firstOrNull()?.parent
             ?: throw ToolOpeningException("Unable to find a valid QuestDB root (_tab_index.d) inside the zip file.")
+
         LOGGER.debug(foundDbPath.toString())
+
         if (foundDbPath == tempDirectory) {
             throw ToolOpeningException(
                 "Unsupported Zip Structure: The zip file must contain a parent folder for the database files. " +
                         "Please zip the folder that contains the 'db' directory.",
             )
         }
+
+        LOGGER.debug("dbRoot found at: {}", foundDbPath)
+
         foundDbPath
-    }.also { LOGGER.debug("dbRoot found at: {}", it) }
+    }
+
+    // Set up the server
+    private val pgPort: Int = ServerSocket(0).use { it.localPort }.also {
+        LOGGER.debug("Acquired port {} for QuestDB instance", it)
+    }
+
+    init {
+        // Create conf file
+        val confDir = dbRootPath.parent / "conf"
+        confDir.createDirectory()
+        val confFile = confDir / "server.conf"
+
+        val httpPort = ServerSocket(0).use { it.localPort } // web console port
+        val config = """
+            pg.net.bind.to=0.0.0.0:$pgPort
+            http.net.bind.to=0.0.0.0:$httpPort
+        """.trimIndent()
+
+        confFile.writeText(config)
+    }
+
+    private val server: ServerMain = ServerMain.create(dbRootPath.parent.toString()).apply {
+        start()
+        Socket().use { it.connect(InetSocketAddress(PG_HOST, pgPort), 15000) }
+    }
+
+    // Create a connection to the server
+    private var connection: Connection = PGSimpleDataSource().run {
+        databaseName = "qdb"
+        user = PG_USER
+        password = PG_PASS
+        portNumbers = intArrayOf(pgPort)
+
+        connection
+    }
+
+    // pagination
+    private var selectedTable: String = ""
+    private var currentPage: Int = 1
+    private var maxPages: Int = 0
+    private val pageLabel: JLabel
 
     // data
     private lateinit var tables: List<QuestdbTableEntry>
@@ -116,36 +144,6 @@ class QuestdbView(path: Path) : ToolPanel() {
     init {
         name = path.name
         toolTipText = path.toString()
-
-        pgPort = findAvailablePort() // db connection port
-        pgUrl = "jdbc:postgresql://$PG_HOST:$pgPort/qdb"
-        LOGGER.debug("Acquired port {} for QuestDB instance", pgPort)
-
-        val serverRoot = dbRootPath.parent
-
-        val confDir = serverRoot.resolve("conf")
-        Files.createDirectories(confDir)
-        val confFile = confDir.resolve("server.conf")
-
-        val httpPort = findAvailablePort() // web console port
-        val config = """
-            pg.net.bind.to=0.0.0.0:$pgPort
-            http.net.bind.to=0.0.0.0:$httpPort
-            """.trimIndent()
-        Files.writeString(confFile, config)
-
-        server = ServerMain.create(serverRoot.toString()).apply {
-            start()
-            waitForPort(PG_HOST, pgPort)
-        }
-
-        connection = DriverManager.getConnection(
-            pgUrl,
-            Properties().apply {
-                setProperty("user", PG_USER)
-                setProperty("password", PG_PASS)
-            },
-        )
 
         // get tables and store in class tables
         getQuestDBTables()
@@ -192,26 +190,6 @@ class QuestdbView(path: Path) : ToolPanel() {
         LOGGER.debug(tables.toString())
     }
 
-    // port management
-    private fun findAvailablePort(): Int {
-        return ServerSocket(0).use { it.localPort }
-    }
-
-    private fun waitForPort(host: String, port: Int, timeoutMs: Long = 15_000) {
-        val start = System.currentTimeMillis()
-        while (true) {
-            try {
-                Socket().use { it.connect(InetSocketAddress(host, port), 250) }
-                return
-            } catch (_: Exception) {
-                if (System.currentTimeMillis() - start > timeoutMs) {
-                    throw ToolOpeningException("Connection to $host:$port refused. Verify QuestDB PG wire is up.")
-                }
-                Thread.sleep(120)
-            }
-        }
-    }
-
     // quest queries
     private fun getQuestDBTables() {
         try {
@@ -228,7 +206,7 @@ class QuestdbView(path: Path) : ToolPanel() {
         setPageLabelText()
         try {
             val data = connection.executeQuery(
-                """SELECT * FROM ${tableName}
+                """SELECT * FROM $tableName
                   LIMIT ${(currentPage - 1) * RESULTS_PER_PAGE},${currentPage * RESULTS_PER_PAGE}
                   """
             )
@@ -271,7 +249,7 @@ class QuestdbView(path: Path) : ToolPanel() {
     // pagination
     private fun getMaxPages(tableName: String): Int {
         try {
-            val rs = connection.executeQuery("SELECT COUNT(*) FROM ${tableName}")
+            val rs = connection.executeQuery("SELECT COUNT(*) FROM $tableName")
             if (rs.next()) {
                 val count = rs.getInt(1)
                 val maxPages = (count + RESULTS_PER_PAGE - 1) / RESULTS_PER_PAGE
@@ -301,29 +279,6 @@ class QuestdbView(path: Path) : ToolPanel() {
         pageLabel.text = "${currentPage}/${maxPages}"
     }
 
-    // temp dir
-    private fun findDbRoot(startPath: Path): Path? {
-        return Files.walk(startPath).use { stream ->
-            stream
-                .filter { p: Path -> p.fileName.toString() == "_tab_index.d" }
-                .findFirst()
-                .map { it.parent }
-                .orElse(null)
-        }
-    }
-
-    private fun deleteDirectory(directory: File) {
-        try {
-            Files.walk(directory.toPath())
-                .sorted(Comparator.reverseOrder())
-                .map { it.toFile() }
-                .forEach(File::delete)
-            LOGGER.debug("Successfully deleted temp directory {}", directory)
-        } catch (e: IOException) {
-            LOGGER.error("Failed to delete temporary directory: {}", directory, e)
-        }
-    }
-
     // query table component
     private fun setQueryTableVisibility(visibility: Boolean) {
         queryDisplayTable.isVisible = visibility
@@ -350,7 +305,16 @@ class QuestdbView(path: Path) : ToolPanel() {
             LOGGER.error("Failed to close QuestDB server", e)
         }
 
-        deleteDirectory(tempDirectory.toFile())
+        tempDirectory.deleteRecursively()
+    }
+
+    // constants
+    companion object {
+        private val LOGGER = getLogger<QuestdbView>()
+        private const val PG_HOST = "localhost"
+        private const val PG_USER = "admin"
+        private const val PG_PASS = "quest"
+        private const val RESULTS_PER_PAGE = 50
     }
 }
 
