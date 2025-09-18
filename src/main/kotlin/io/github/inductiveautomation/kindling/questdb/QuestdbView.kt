@@ -1,29 +1,37 @@
 package io.github.inductiveautomation.kindling.questdb
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.extras.components.FlatSplitPane
+import com.formdev.flatlaf.util.SystemInfo
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.MultiTool
+import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbAnnotationsColumns
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbAnnotationsEntry
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbDatapointsColumns
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbDatapointsEntry
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbDefinitionsColumns
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbDefinitionsEntry
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbMetadataColumns
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbMetadataEntry
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbTableColumns
-import io.github.inductiveautomation.kindling.questdb.model.QuestdbTableEntry
+import io.github.inductiveautomation.kindling.idb.generic.Column
+import io.github.inductiveautomation.kindling.idb.generic.QueryResult
+import io.github.inductiveautomation.kindling.idb.generic.ResultsPanel
+import io.github.inductiveautomation.kindling.idb.generic.SortableTree
+import io.github.inductiveautomation.kindling.idb.generic.Table
+import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
-import io.github.inductiveautomation.kindling.utils.FlatScrollPane
-import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
-import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
+import io.github.inductiveautomation.kindling.utils.FlatActionIcon
+import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
+import io.github.inductiveautomation.kindling.utils.attachPopupMenu
+import io.github.inductiveautomation.kindling.utils.containsInOrder
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.getLogger
+import io.github.inductiveautomation.kindling.utils.javaType
+import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import io.questdb.ServerMain
-import java.awt.Component
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
+import org.postgresql.ds.PGSimpleDataSource
+import java.awt.event.KeyEvent
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -31,13 +39,15 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
+import java.sql.Date
+import java.sql.JDBCType
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JLabel
+import javax.swing.JMenuItem
 import javax.swing.JPanel
-import javax.swing.ListSelectionModel
-import javax.swing.table.DefaultTableModel
-import javax.swing.table.TableModel
+import javax.swing.JPopupMenu
+import javax.swing.KeyStroke
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectory
@@ -48,16 +58,11 @@ import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.walk
 import kotlin.io.path.writeText
-import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXTable
-import org.postgresql.ds.PGSimpleDataSource
 
 @OptIn(ExperimentalPathApi::class)
 class QuestdbView(path: Path) : ToolPanel() {
     override val icon: Icon = QuestdbViewer.icon
 
-    // Copy the zip data over to the temp directory
-    // temp dir
     private val tempDirectory: Path = Files.createTempDirectory(path.nameWithoutExtension).apply {
         if (path.extension.lowercase() == "zip") {
             LOGGER.debug("Exploding zip to {}", this)
@@ -83,7 +88,7 @@ class QuestdbView(path: Path) : ToolPanel() {
         if (foundDbPath == tempDirectory) {
             throw ToolOpeningException(
                 "Unsupported Zip Structure: The zip file must contain a parent folder for the database files. " +
-                        "Please zip the folder that contains the 'db' directory.",
+                    "Please zip the folder that contains the 'db' directory.",
             )
         }
 
@@ -107,6 +112,7 @@ class QuestdbView(path: Path) : ToolPanel() {
         val config = """
             pg.net.bind.to=0.0.0.0:$pgPort
             http.net.bind.to=0.0.0.0:$httpPort
+            pg.net.connection.timeout=0
         """.trimIndent()
 
         confFile.writeText(config)
@@ -127,167 +133,163 @@ class QuestdbView(path: Path) : ToolPanel() {
         connection
     }
 
-    // pagination
-    private var selectedTable: String = ""
-    private var currentPage: Int = 1
-    private var maxPages: Int = 0
     private val pageLabel: JLabel
 
-    // data
-    private lateinit var tables: List<QuestdbTableEntry>
+    @Suppress("SqlResolve")
+    val tables: List<Table> = connection
+        .executeQuery("""SELECT table_name FROM tables();""")
+        .toList { resultSet ->
+            resultSet.getString("table_name")
+        }.mapNotNull { tableName ->
+            try {
+                val columns = connection
+                    .executeQuery("""SHOW COLUMNS FROM "$tableName";""")
+                    .toList { rs ->
+                        Column(
+                            name = rs.getString("column"),
+                            type = rs.getString("type"),
+                            notNull = false,
+                            defaultValue = null,
+                            primaryKey = rs.getBoolean("upsertKey"),
+                            hidden = false,
+                            _parent = { sortableTree.root },
+                        )
+                    }
+                val size: Long
+                connection.executeQuery("""SELECT diskSize FROM table_storage() WHERE tableName = '$tableName'""").use { rs ->
+                    // Move the cursor to the first row. If there's no row, default to 0.
+                    size = if (rs.next()) rs.getLong("diskSize") else 0L
+                }
+                Table(
+                    name = tableName,
+                    _parent = { sortableTree.root },
+                    columns = columns,
+                    size = size,
+                )
+            } catch (e: Exception) {
+                println("Warning: Could not process table '$tableName'. Error: ${e.message}")
+                null
+            }
+        }
 
-    private var tableModel: ReifiedListTableModel<QuestdbTableEntry>
-    private var tableSelectionTable: ReifiedJXTable<ReifiedListTableModel<QuestdbTableEntry>>
-    private val queryDisplayTable = JXTable()
-    private var verticalSplitPane: Component
+    private val sortableTree = SortableTree(tables)
+    private val query = RSyntaxTextArea().apply {
+        syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_SQL
+
+        theme = Theme.currentValue
+
+        Theme.addChangeListener { newTheme ->
+            theme = newTheme
+        }
+    }
+
+    private val execute = Action(
+        name = "Execute",
+        description = "Execute (${if (SystemInfo.isMacOS) "⌘" else "Ctrl"} + Enter)",
+        icon = FlatActionIcon("icons/bx-subdirectory-left.svg"),
+        accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx),
+    ) {
+        results.result = if (!query.text.isNullOrEmpty()) {
+            try {
+                connection.executeQuery(query.text)
+                    .use { resultSet ->
+                        val columnCount = resultSet.metaData.columnCount
+                        val names = List(columnCount) { i ->
+                            resultSet.metaData.getColumnName(i + 1)
+                        }
+                        val types = List(columnCount) { i ->
+                            val isTimestamp = names[i].containsInOrder("tsmp", true)
+                            if (isTimestamp) {
+                                Date::class.java
+                            } else {
+                                val sqlType = resultSet.metaData.getColumnType(i + 1)
+                                val jdbcType = JDBCType.valueOf(sqlType)
+                                jdbcType.javaType
+                            }
+                        }
+
+                        val data = resultSet.toList {
+                            List(columnCount) { i ->
+                                val value = resultSet.getObject(i + 1)
+                                when {
+                                    types[i] == Boolean::class.javaObjectType -> value == 1
+                                    types[i] == Date::class.java && value is Number -> Date(value.toLong())
+                                    else -> value
+                                }
+                            }
+                        }
+
+                        QueryResult.Success(names, types, data)
+                    }
+            } catch (e: Exception) {
+                QueryResult.Error(e.message ?: "Error")
+            }
+        } else {
+            QueryResult.Error("Enter a query in the text field above")
+        }
+    }
+
+    private val results = ResultsPanel()
+    private val queryPanel = JPanel(MigLayout("ins 0, fill")).apply {
+        add(RTextScrollPane(query), "push, grow, wrap")
+        add(JButton(execute), "ax right, wrap")
+    }
 
     init {
         name = path.name
         toolTipText = path.toString()
 
-        // get tables and store in class tables
-        getQuestDBTables()
-
-        tableModel = ReifiedListTableModel(tables, QuestdbTableColumns)
-
-        tableSelectionTable = ReifiedJXTable(tableModel).apply {
-            selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
-            selectionModel.addListSelectionListener {
-                val selection = tableSelectionTable.selectionModel.selectedIndices.firstOrNull() ?: return@addListSelectionListener
-                val tableName = tableSelectionTable.model[selection].tableName
-                selectedTable = tableName
-                currentPage = 1
-                setQueryTableModel(selectedTable)
-                if (!queryDisplayTable.isVisible) setQueryTableVisibility(true)
-            }
-        }
-
-        setQueryTableVisibility(false)
+        val ctrlEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx)
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
+        query.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "execute")
+        actionMap.put("execute", execute)
+        query.actionMap.put("execute", execute)
 
         pageLabel = JLabel("")
 
-        val bottomPanel = JPanel(MigLayout("insets 0", "[left][center, grow][right]")).apply {
-            add(FlatScrollPane(queryDisplayTable), "wrap, span, push, grow")
+        sortableTree.tree.attachPopupMenu { event ->
+            val path = getClosestPathForLocation(event.x, event.y)
+            when (val node = path?.lastPathComponent) {
+                is Table -> JPopupMenu().apply {
+                    add(
+                        JMenuItem(
+                            Action("SELECT * FROM ${node.name}") {
+                                query.text = "SELECT * FROM ${node.name};"
+                            },
+                        ),
+                    )
+                }
 
-            add(JButton("Previous").apply {
-                addActionListener { prevPage() }
-            })
+                is Column -> JPopupMenu().apply {
+                    val table = path.parentPath.lastPathComponent as Table
+                    add(
+                        JMenuItem(
+                            Action("SELECT ${node.name} FROM ${table.name}") {
+                                query.text = "SELECT ${node.name} FROM ${table.name}"
+                            },
+                        ),
+                    )
+                }
 
-            add(pageLabel, "pushx, align center")
-
-            add(JButton("Next").apply {
-                addActionListener { nextPage() }
-            })
+                else -> null
+            }
         }
 
-        verticalSplitPane = VerticalSplitPane(
-            FlatScrollPane(tableSelectionTable),
-            bottomPanel,
+        add(
+            HorizontalSplitPane(
+                sortableTree.component,
+                VerticalSplitPane(
+                    queryPanel,
+                    results,
+                    resizeWeight = 0.2,
+                    expandableSide = FlatSplitPane.ExpandableSide.both,
+                ),
+                resizeWeight = 0.1,
+            ),
+            "push, grow",
         )
 
-        add(verticalSplitPane, "push, grow")
-
         LOGGER.debug(tables.toString())
-    }
-
-    // quest queries
-    private fun getQuestDBTables() {
-        try {
-            @Suppress("SqlResolve")
-            tables = connection.executeQuery("SELECT * FROM tables()")
-                .toList { rs -> QuestdbTableEntry(rs) }
-        } catch (e: Exception) {
-            LOGGER.error("Failed to getQuestDBTables(): $e")
-        }
-    }
-
-    private fun queryQuestDB(tableName: String): TableModel {
-        maxPages = getMaxPages(tableName)
-        setPageLabelText()
-        try {
-            val data = connection.executeQuery(
-                """SELECT * FROM $tableName
-                  LIMIT ${(currentPage - 1) * RESULTS_PER_PAGE},${currentPage * RESULTS_PER_PAGE}
-                  """
-            )
-            if (tableName.contains("datapoints")) {
-                return ReifiedListTableModel(
-                    data.toList { rs ->
-                        QuestdbDatapointsEntry(rs)
-                    },
-                    QuestdbDatapointsColumns,
-                )
-            } else if (tableName.contains("annotations")) {
-                return ReifiedListTableModel(
-                    data.toList { rs ->
-                        QuestdbAnnotationsEntry(rs)
-                    },
-                    QuestdbAnnotationsColumns,
-                )
-
-            } else if (tableName.contains("definitions")) {
-                return ReifiedListTableModel(
-                    data.toList { rs ->
-                        QuestdbDefinitionsEntry(rs)
-                    },
-                    QuestdbDefinitionsColumns,
-                )
-            } else if (tableName.contains("metadata")) {
-                return ReifiedListTableModel(
-                    data.toList { rs ->
-                        QuestdbMetadataEntry(rs)
-                    },
-                    QuestdbMetadataColumns,
-                )
-            }
-        } catch (e: Exception) {
-            LOGGER.error("Failed to queryQuestDB(): $e")
-        }
-        return DefaultTableModel()
-    }
-
-    // pagination
-    private fun getMaxPages(tableName: String): Int {
-        try {
-            val rs = connection.executeQuery("SELECT COUNT(*) FROM $tableName")
-            if (rs.next()) {
-                val count = rs.getInt(1)
-                val maxPages = (count + RESULTS_PER_PAGE - 1) / RESULTS_PER_PAGE
-                return if (maxPages > 0) maxPages else 1
-            }
-        } catch (e: Exception) {
-            LOGGER.error("Failed to getMaxPages(): $e")
-        }
-        return 1
-    }
-
-    private fun nextPage() {
-        if (currentPage < maxPages) {
-            currentPage++
-        }
-        setQueryTableModel(selectedTable)
-    }
-
-    private fun prevPage() {
-        if (currentPage > 1) {
-            currentPage--
-        }
-        setQueryTableModel(selectedTable)
-    }
-
-    private fun setPageLabelText() {
-        pageLabel.text = "${currentPage}/${maxPages}"
-    }
-
-    // query table component
-    private fun setQueryTableVisibility(visibility: Boolean) {
-        queryDisplayTable.isVisible = visibility
-        queryDisplayTable.tableHeader.isVisible = visibility
-    }
-
-    private fun setQueryTableModel(tableName: String) {
-        val tableModel = queryQuestDB(tableName)
-        queryDisplayTable.model = tableModel
     }
 
     override fun removeNotify() {
@@ -314,7 +316,6 @@ class QuestdbView(path: Path) : ToolPanel() {
         private const val PG_HOST = "localhost"
         private const val PG_USER = "admin"
         private const val PG_PASS = "quest"
-        private const val RESULTS_PER_PAGE = 50
     }
 }
 
