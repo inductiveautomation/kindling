@@ -68,7 +68,7 @@ class NodeConfigPanel(
         description = "Jump to the tag from which this tag gets its config.",
         action = {
             fireNodeSelectEvent(node.inferredFrom!!)
-        }
+        },
     )
 
     init {
