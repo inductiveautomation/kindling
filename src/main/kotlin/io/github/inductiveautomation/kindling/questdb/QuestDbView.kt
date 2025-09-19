@@ -8,11 +8,11 @@ import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.idb.generic.Column
-import io.github.inductiveautomation.kindling.idb.generic.QueryResult
-import io.github.inductiveautomation.kindling.idb.generic.ResultsPanel
-import io.github.inductiveautomation.kindling.idb.generic.SortableTree
-import io.github.inductiveautomation.kindling.idb.generic.Table
+import io.github.inductiveautomation.kindling.core.db.Column
+import io.github.inductiveautomation.kindling.core.db.QueryResult
+import io.github.inductiveautomation.kindling.core.db.ResultsPanel
+import io.github.inductiveautomation.kindling.core.db.SortableTree
+import io.github.inductiveautomation.kindling.core.db.Table
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
@@ -26,11 +26,6 @@ import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import io.questdb.ServerMain
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants
-import org.fife.ui.rtextarea.RTextScrollPane
-import org.postgresql.ds.PGSimpleDataSource
 import java.awt.event.KeyEvent
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -58,10 +53,15 @@ import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.walk
 import kotlin.io.path.writeText
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
+import org.postgresql.ds.PGSimpleDataSource
 
 @OptIn(ExperimentalPathApi::class)
-class QuestdbView(path: Path) : ToolPanel() {
-    override val icon: Icon = QuestdbViewer.icon
+class QuestDbView(path: Path) : ToolPanel() {
+    override val icon: Icon = QuestDbViewer.icon
 
     private val tempDirectory: Path = Files.createTempDirectory(path.nameWithoutExtension).apply {
         if (path.extension.lowercase() == "zip") {
@@ -296,15 +296,14 @@ class QuestdbView(path: Path) : ToolPanel() {
         super.removeNotify()
         LOGGER.debug("Closing resources for {}", tempDirectory)
 
-        try {
+        val ex = runCatching {
             connection.close()
-        } catch (_: Exception) {}
-
-        try {
             LOGGER.debug("Shutting down QuestDB server on port {}", pgPort)
             server.close()
-        } catch (e: Exception) {
-            LOGGER.error("Failed to close QuestDB server", e)
+        }.exceptionOrNull()
+
+        if (ex != null) {
+            LOGGER.error("Failed to release resource", ex)
         }
 
         tempDirectory.deleteRecursively()
@@ -312,19 +311,19 @@ class QuestdbView(path: Path) : ToolPanel() {
 
     // constants
     companion object {
-        private val LOGGER = getLogger<QuestdbView>()
+        private val LOGGER = getLogger<QuestDbView>()
         private const val PG_HOST = "localhost"
         private const val PG_USER = "admin"
         private const val PG_PASS = "quest"
     }
 }
 
-data object QuestdbViewer : MultiTool {
+data object QuestDbViewer : MultiTool {
     override val serialKey = "questdb-viewer"
     override val title = "QuestDB Viewer"
     override val description = "QuestDB Export (.zip)"
     override val icon = FlatSVGIcon("icons/bx-hdd.svg")
     override val filter = FileFilter(description, "zip")
-    override fun open(path: Path): ToolPanel = QuestdbView(path)
+    override fun open(path: Path): ToolPanel = QuestDbView(path)
     override fun open(paths: List<Path>): ToolPanel = open(paths.first())
 }
