@@ -1,8 +1,8 @@
-package io.github.inductiveautomation.kindling.idb.tagconfig
+package io.github.inductiveautomation.kindling.tagconfig
 
 import com.jidesoft.swing.TreeSearchable
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.Node
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
+import io.github.inductiveautomation.kindling.tagconfig.model.AbstractTagProvider
+import io.github.inductiveautomation.kindling.tagconfig.model.Node
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.tag
@@ -17,7 +17,7 @@ import javax.swing.tree.TreePath
 import kotlin.properties.Delegates
 
 class TagBrowseTree : JTree(NO_SELECTION) {
-    var provider: TagProviderRecord? by Delegates.observable(null) { _, _, newValue ->
+    var provider: AbstractTagProvider? by Delegates.observable(null) { _, _, newValue ->
         if (newValue == null) {
             model = NO_SELECTION
         } else {
@@ -36,19 +36,19 @@ class TagBrowseTree : JTree(NO_SELECTION) {
         setShowsRootHandles(true)
 
         setCellRenderer(
-            treeCellRenderer { _, value, selected, expanded, _, _, _ ->
+            treeCellRenderer { _, value, _, _, _, _, _ ->
                 val actualValue = value as? Node
 
-                text = if (actualValue?.inferredNode == true) {
+                text = if (actualValue?.inferred == true) {
                     buildString {
                         tag("html") {
                             tag("i") {
-                                append("${actualValue.actualName}*")
+                                append("${actualValue.name}*")
                             }
                         }
                     }
                 } else {
-                    actualValue?.actualName
+                    actualValue?.name
                 }
 
                 when (actualValue?.config?.tagType) {
@@ -74,7 +74,7 @@ class TagBrowseTree : JTree(NO_SELECTION) {
             override fun convertElementToString(element: Any?): String {
                 val path = (element as? TreePath)?.path ?: return ""
                 return (1..path.lastIndex).joinToString("/") {
-                    (path[it] as Node).actualName
+                    (path[it] as Node).name
                 }
             }
         }
@@ -82,13 +82,5 @@ class TagBrowseTree : JTree(NO_SELECTION) {
 
     companion object {
         private val NO_SELECTION = DefaultTreeModel(DefaultMutableTreeNode("Select a Tag Provider to Browse"))
-
-        fun TreePath.toTagPath(): String {
-            val provider = "[${(path.first() as Node).name}]"
-            val tagPath = (1 until path.size).joinToString("/") {
-                (path[it] as Node).actualName
-            }
-            return "$provider$tagPath"
-        }
     }
 }

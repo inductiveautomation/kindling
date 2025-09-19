@@ -1,10 +1,10 @@
-package io.github.inductiveautomation.kindling.idb.tagconfig
+package io.github.inductiveautomation.kindling.tagconfig
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.MappedStatistic
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.ProviderStatistic
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.TagProviderRecord
+import io.github.inductiveautomation.kindling.tagconfig.model.AbstractTagProvider
+import io.github.inductiveautomation.kindling.tagconfig.model.ProviderStatistics
+import io.github.inductiveautomation.kindling.tagconfig.model.ProviderStatistics.MappedStatistic
+import io.github.inductiveautomation.kindling.tagconfig.model.ProviderStatistics.ProviderStatistic
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
@@ -25,7 +25,7 @@ import javax.swing.table.AbstractTableModel
 class ProviderStatisticsPanel :
     JPanel(MigLayout("fillx, ins 3 0 0 0, gap 10, wrap 2, hidemode 3")),
     PopupMenuCustomizer {
-    var provider: TagProviderRecord? = null
+    var provider: AbstractTagProvider? = null
         set(newProvider) {
             field = newProvider
 
@@ -110,7 +110,7 @@ class ProviderStatisticsPanel :
 
 @Suppress("unused")
 object IndividualStatColumns : ColumnList<ProviderStatistic<Int>>() {
-    val stat by column("Stat") { it.name }
+    val stat by column("Stat") { it.humanReadableName }
 
     val value by column("Value") { it.value }
 }

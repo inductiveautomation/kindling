@@ -1,8 +1,12 @@
-package io.github.inductiveautomation.kindling.idb.tagconfig.model
+@file:OptIn(ExperimentalSerializationApi::class)
+
+package io.github.inductiveautomation.kindling.tagconfig.model
 
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.elementNames
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -21,7 +25,8 @@ import kotlinx.serialization.json.jsonObject
  * 2. The value can be multiple types, depending on the export. For example, a tag's value can be either a Json Primitive or an Object,
  *      if the tag's value is bound.
  */
-@Serializable
+@Serializable(with = TagConfigSerializer::class)
+@KeepGeneratedSerializer
 data class TagConfig(
     // Basic Properties:
     val name: String? = null,
@@ -31,9 +36,11 @@ data class TagConfig(
     // Value Properties:
     val tagType: String? = null, // Unlisted
     val typeId: String? = null, // Unlisted
-    val valueSource: String? = null,
+    val valueSource: ValueSource? = null,
     val dataType: JsonElement? = null, // String
-    val value: JsonElement? = null, // JsonPrimitive
+    var value: JsonElement? = null, // JsonPrimitive
+    val defaultValue: JsonElement? = null, // memory
+    val valuePersistence: ValuePersistence = ValuePersistence.INHERITED, // memory
     val opcServer: JsonElement? = null, // OPC, String
     val opcItemPath: JsonElement? = null, // OPC // JsonElement
     val sourceTagPath: JsonElement? = null, // Derived, Reference, String
@@ -94,7 +101,7 @@ data class TagConfig(
     val historyTimeDeadbandUnits: JsonElement? = null, // String
     val historyMaxAge: JsonElement? = null, // Int
     val historyMaxAgeUnits: JsonElement? = null, // String
-    val tags: NodeGroup = NodeGroup(),
+    val tags: MutableList<Node> = mutableListOf(),
 
     // UDT
     val parameters: JsonObject? = null,
@@ -116,16 +123,54 @@ data class AlarmState(
     var enabled: Boolean?,
 )
 
+@Suppress("unused")
+@Serializable
+enum class ValuePersistence {
+    @SerialName("None")
+    NONE,
+
+    @SerialName("Inherited")
+    INHERITED,
+
+    @SerialName("Database")
+    DATABASE,
+
+    @SerialName("Configuration")
+    CONFIGURATION,
+}
+
+@Suppress("unused")
+@Serializable
+enum class ValueSource {
+    @SerialName("derived")
+    DERIVED,
+
+    @SerialName("expr")
+    EXPRESSION,
+
+    @SerialName("memory")
+    MEMORY,
+
+    @SerialName("opc")
+    OPC,
+
+    @SerialName("db")
+    DATABASE,
+
+    @SerialName("reference")
+    REFERENCE,
+}
+
 /**
  * Deserialize the json into a TagConfig object,
  * grouping all custom properties into a separate `customProperties` property.
  */
-object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.serializer()) {
+object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.generatedSerializer()) {
     @OptIn(ExperimentalSerializationApi::class)
     override fun transformDeserialize(element: JsonElement): JsonElement {
-        val elementNames = List(TagConfig.serializer().descriptor.elementsCount) {
-            TagConfig.serializer().descriptor.getElementName(it)
-        }.filter { it != "customProperties" }
+        val elementNames = TagConfig.generatedSerializer().descriptor.elementNames.filterNot {
+            it == "customProperties"
+        }
 
         val elementMap = element.jsonObject.toMutableMap()
 
@@ -169,7 +214,7 @@ object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.ser
  * Serialize a node without recursively serializing the tags within it.
  * This is used to display a single nodes config when browsing from the Tree in the UI.
  */
-object MinimalTagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.serializer()) {
+object MinimalTagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.generatedSerializer()) {
     override fun transformDeserialize(element: JsonElement): JsonElement {
         throw UnsupportedOperationException("This serializer is for serialization only. Use TagConfigSerializer instead.")
     }
