@@ -27,8 +27,7 @@ enum class ValueStoreDataType(val dbValue: Int) {
     ;
 
     companion object {
-        fun fromDbValue(dbValue: Int): ValueStoreDataType? {
-            return entries.find { it.dbValue == dbValue }
-        }
+        private val entriesById = ValueStoreDataType.entries.associateBy { it.dbValue }
+        fun fromDbValue(dbValue: Int) = entriesById[dbValue]
     }
 }
