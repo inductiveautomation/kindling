@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.tagconfig
 import io.github.inductiveautomation.kindling.tagconfig.model.IdbNode
 import io.github.inductiveautomation.kindling.tagconfig.model.MinimalTagConfigSerializer
 import io.github.inductiveautomation.kindling.tagconfig.model.Node
+import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FloatableComponent
 import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
 import io.github.inductiveautomation.kindling.utils.add
@@ -62,8 +63,19 @@ class NodeConfigPanel(
 
     override fun customizePopupMenu(menu: JPopupMenu) = Unit
 
+    private val jumpToDefinition = Action(
+        name = "Jump to definition",
+        description = "Jump to the tag from which this tag gets its config.",
+        action = {
+            fireNodeSelectEvent(node.inferredFrom!!)
+        }
+    )
+
     init {
-        if (idbInfo != null) add(idbInfo, "north")
+        if (idbInfo != null) {
+            add(idbInfo, "north")
+        }
+
         if (node.inferred) {
             add(
                 JLabel().apply {
@@ -73,15 +85,7 @@ class NodeConfigPanel(
                 },
                 "pushx, growx, gapbottom 6, gaptop 6",
             )
-            add(
-                JButton("Jump to definition").apply {
-                    toolTipText = "Jump to the tag from which this tag gets its config."
-                    addActionListener {
-                        fireNodeSelectEvent(node.inferredFrom!!)
-                    }
-                },
-                "gaptop 6, gapbottom 6, wrap",
-            )
+            add(JButton(jumpToDefinition), "gaptop 6, gapbottom 6, wrap")
         }
         add(JScrollPane(textArea), "push, grow, span")
     }

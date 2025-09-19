@@ -6,6 +6,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.elementNames
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -167,9 +168,9 @@ enum class ValueSource {
 object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.generatedSerializer()) {
     @OptIn(ExperimentalSerializationApi::class)
     override fun transformDeserialize(element: JsonElement): JsonElement {
-        val elementNames = List(TagConfig.generatedSerializer().descriptor.elementsCount) {
-            TagConfig.generatedSerializer().descriptor.getElementName(it)
-        }.filter { it != "customProperties" }
+        val elementNames = TagConfig.generatedSerializer().descriptor.elementNames.filterNot {
+            it == "customProperties"
+        }
 
         val elementMap = element.jsonObject.toMutableMap()
 

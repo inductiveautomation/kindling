@@ -185,8 +185,8 @@ object ZipViewer : Tool {
         put(ToolView::maybeToolPath, ToolView::safelyCreate)
         put(ImageView::isImageFile, ::ImageView)
         put(ProjectView::isProjectDirectory, ::ProjectView)
-        put(Path::isRegularFile, ::FileView)
         put(TagConfigView::isConfigDirectory, TagConfigView::fromZip)
+        put(Path::isRegularFile, ::FileView)
     }
 
     fun createView(
