@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.idb
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
+import io.github.inductiveautomation.kindling.cache.sqlite.CacheView
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
@@ -133,6 +134,15 @@ private enum class IdbTool {
             return SystemLogPanel(paths, logFiles)
         }
     },
+    Cache {
+        override fun supports(connections: List<IdbConnection>): Boolean {
+            return connections.all { "persistent_data" in it.tables }
+        }
+
+        override fun open(connections: List<IdbConnection>): ToolPanel {
+            return CacheView.fromConnection(connections.single().connection)
+        }
+    }
     ;
 
     open val tabName: String = name

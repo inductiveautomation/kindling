@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
 import com.jidesoft.swing.CheckBoxListSelectionModel
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Properties
+import java.util.zip.GZIPInputStream
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.reflect.KProperty
@@ -188,4 +190,22 @@ fun String.containsInOrder(pattern: String, ignoreCase: Boolean): Boolean {
         }
     }
     return patternIndex == pattern.length
+}
+
+fun ByteArray.unzip(): ByteArray {
+    if (size <= 2) return this
+
+    val firstByte = this[0].toInt()
+    val secondByte = this[1].toInt()
+
+    val header = (firstByte and 0xFF) or ((secondByte and 0xFF) shl 8)
+
+    if (header != GZIPInputStream.GZIP_MAGIC) {
+        return this
+    }
+
+    val byteOutput = ByteArrayOutputStream()
+    GZIPInputStream(inputStream()) transferTo byteOutput
+
+    return byteOutput.toByteArray()
 }

@@ -82,11 +82,12 @@ inline fun <reified T> sqliteCoercion(raw: Any?): T {
 fun SQLiteConnection(
     path: Path,
     readOnly: Boolean = true,
+    journalEnabled: Boolean = false
 ): SQLiteConnection {
     return SQLiteDataSource().apply {
         url = "jdbc:sqlite:file:$path"
         setReadOnly(readOnly)
-        setJournalMode("OFF")
+        if (!journalEnabled) setJournalMode("OFF")
         setSynchronous("OFF")
     }.connection as SQLiteConnection
 }

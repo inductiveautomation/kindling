@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.cache
+package io.github.inductiveautomation.kindling.cache.hsql
 
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import org.jdesktop.swingx.renderer.DefaultTableRenderer

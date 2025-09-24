@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.cache
+package io.github.inductiveautomation.kindling.cache.hsql
 
 import java.sql.Timestamp
 

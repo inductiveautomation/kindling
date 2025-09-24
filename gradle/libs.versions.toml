@@ -4,7 +4,7 @@ kotlin = "2.2.10"
 coroutines = "1.10.2"
 flatlaf = "3.6.1"
 kotest = "5.9.1"
-ignition = "8.1.20"
+ignition = "8.3.0"
 jackson = "2.19.2"
 
 [plugins]
@@ -46,8 +46,8 @@ rsyntaxtextarea = { group = "com.fifesoft", name = "rsyntaxtextarea", version = 
 jfreechart = { group = "org.jfree", name = "jfreechart", version = "1.5.6" }
 
 # Ignition
-ignition-common = { group = "com.inductiveautomation.ignition", name = "common", version.ref = "ignition" }
-ignition-gateway = { group = "com.inductiveautomation.ignition", name = "gateway-api", version.ref = "ignition" }
+ignition-common = { group = "com.inductiveautomation.ignitionsdk", name = "ignition-common", version.ref = "ignition" }
+ignition-gateway = { group = "com.inductiveautomation.ignitionsdk", name = "gateway-api", version.ref = "ignition" }
 # Ignition core types use classes from these libs (e.g. StringUtils, ImmutableMap), so we're forced to include these
 apache-commons = { group = "org.apache.commons", name = "commons-lang3", version = "3.8.1" }
 # This leads to a warning at runtime about multiple logging providers on the classpath, but is unavoidable

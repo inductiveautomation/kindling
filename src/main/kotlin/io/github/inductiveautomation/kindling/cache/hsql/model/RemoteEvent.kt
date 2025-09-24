@@ -1,4 +1,6 @@
-package io.github.inductiveautomation.kindling.cache.model
+@file:Suppress("DEPRECATION")
+
+package io.github.inductiveautomation.kindling.cache.hsql.model
 
 import com.inductiveautomation.ignition.common.alarming.AlarmPriority
 import com.inductiveautomation.ignition.common.alarming.AlarmStateTransition
@@ -9,9 +11,9 @@ import com.inductiveautomation.ignition.gateway.alarming.journal.EventFlags.IS_C
 import com.inductiveautomation.ignition.gateway.alarming.journal.EventFlags.SHELVED_EVENT_FLAG
 import com.inductiveautomation.ignition.gateway.alarming.journal.EventFlags.SYSTEM_ACK_FLAG
 import com.inductiveautomation.ignition.gateway.alarming.journal.EventFlags.SYSTEM_EVENT_FLAG
-import com.inductiveautomation.ignition.gateway.history.DatasourceData
-import com.inductiveautomation.ignition.gateway.history.HistoricalData
-import com.inductiveautomation.ignition.gateway.history.HistoryFlavor
+import com.inductiveautomation.ignition.gateway.storeforward.data.PersistentData
+import com.inductiveautomation.ignition.gateway.storeforward.deprecated.HistoricalData
+import com.inductiveautomation.ignition.gateway.storeforward.deprecated.HistoryFlavor
 import io.github.inductiveautomation.kindling.core.Detail
 import java.io.Serial
 
@@ -25,10 +27,11 @@ class RemoteEvent(
     val eventFlags: Int = 0,
     val data: EventData? = null,
 ) : HistoricalData {
-    override fun getFlavor(): HistoryFlavor = DatasourceData.FLAVOR
+    override fun getFlavor(): HistoryFlavor = HistoryFlavor("__datasourcedata__")
     override fun getSignature(): String = "Remote Alarm Journal Event"
     override fun getDataCount(): Int = 1
     override fun getLoggerName(): String? = null
+    override fun upgrade(p0: String?): PersistentData? = null
 
     fun toDetail(): Detail {
         val details = mapOf(

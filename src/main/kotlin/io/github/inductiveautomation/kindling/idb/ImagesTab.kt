@@ -3,7 +3,7 @@ package io.github.inductiveautomation.kindling.idb
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.github.weisj.jsvg.parser.LoaderContext
 import com.github.weisj.jsvg.parser.SVGLoader
-import com.inductiveautomation.ignition.gateway.images.ImageFormat
+import com.inductiveautomation.ignition.common.images.ImageFormat
 import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.ToolPanel.Companion.exportFileChooser
