@@ -21,15 +21,16 @@ import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
 import io.github.inductiveautomation.kindling.utils.toHumanReadableBinary
 import io.github.inductiveautomation.kindling.utils.toList
 import io.github.inductiveautomation.kindling.utils.transferTo
+import io.github.inductiveautomation.kindling.utils.unzip
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
+import javax.swing.ListSelectionModel
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.io.path.walk
-import org.sqlite.SQLiteConnection
 
 class CacheView private constructor(connections: List<Connection>) : ToolPanel() {
     private val cacheData = connections.flatMap { conn ->
@@ -62,6 +63,8 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
     private val cacheTable = ReifiedJXTable(
         ReifiedListTableModel(cacheData, IdbCacheColumns),
     ).apply {
+        selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
+
         setDefaultRenderer<ByteArray>(
             getText = {
                 if (it != null) {
@@ -76,7 +79,7 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
 
     private val details = DetailsPane()
 
-    val dataFlavorFilterList = FilterList().apply {
+    private val dataFlavorFilterList = FilterList().apply {
         setModel(
             FilterModel(
                 cacheData.groupingBy(IdbCacheEntry::flavorName).eachCount(),
@@ -103,27 +106,28 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
 
         cacheTable.selectionModel.addListSelectionListener { event ->
             if (!event.valueIsAdjusting) {
-                details.events = cacheTable.selectedRowIndices().map { index ->
+                details.events = cacheTable.selectedRowIndices().first().let { index ->
                     val modelIndex = cacheTable.convertRowIndexToModel(index)
                     val entry = cacheTable.model[modelIndex]
 
                     try {
-                        val deserialized = entry.data.deserializeStoreAndForward()
-                        deserialized.toDetail()
-                    } catch (_: Exception) {
-                        // It's not serialized with a class in the public API, or some other problem;
-                        // give up, and try to just dump the serialized data in a friendlier format
-                        val serializationDumper = deser.SerializationDumper(entry.data)
+                        val results = entry.data.deserializeStoreAndForward(entry.flavorName)
 
-                        Detail(
-                            title = "Serialization dump of ${entry.data.size} bytes:",
-                            body = try {
-                                serializationDumper.parseStream().lines()
-                            } catch (_: Exception) {
-                                entry.data.inputStream().use {
-                                    it.toHumanReadableBinary().split("\n")
-                                }
-                            },
+                        results.map { it.toDetail() }
+                    } catch (_: Exception) {
+                        val serializationDumper = deser.SerializationDumper(entry.data.unzip())
+
+                        listOf(
+                            Detail(
+                                title = "Serialization dump of ${entry.data.size} bytes:",
+                                body = try {
+                                    serializationDumper.parseStream().lines()
+                                } catch (_: Exception) {
+                                    entry.data.inputStream().use {
+                                        it.toHumanReadableBinary().split("\n")
+                                    }
+                                },
+                            )
                         )
                     }
                 }

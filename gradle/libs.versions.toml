@@ -4,7 +4,7 @@ kotlin = "2.2.10"
 coroutines = "1.10.2"
 flatlaf = "3.6.1"
 kotest = "5.9.1"
-ignition = "8.3.0-rc1"
+ignition = "8.3.0"
 jackson = "2.19.2"
 
 [plugins]

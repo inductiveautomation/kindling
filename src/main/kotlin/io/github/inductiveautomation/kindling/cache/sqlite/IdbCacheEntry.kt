@@ -14,7 +14,6 @@ data class IdbCacheEntry(
     val getData: () -> ByteArray,
 ) {
     val data by lazy {
-        println("Getting data")
         getData()
     }
 }
