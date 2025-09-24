@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package io.github.inductiveautomation.kindling.cache.model
+package io.github.inductiveautomation.kindling.cache.hsql.model
 
 import com.inductiveautomation.ignition.common.alarming.AlarmPriority
 import com.inductiveautomation.ignition.common.alarming.AlarmStateTransition
