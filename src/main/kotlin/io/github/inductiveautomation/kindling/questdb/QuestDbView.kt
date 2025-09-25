@@ -19,13 +19,17 @@ import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
-import io.github.inductiveautomation.kindling.utils.containsInOrder
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import io.questdb.ServerMain
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
+import org.postgresql.ds.PGSimpleDataSource
 import java.awt.event.KeyEvent
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -34,7 +38,6 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
-import java.sql.Date
 import java.sql.JDBCType
 import javax.swing.Icon
 import javax.swing.JButton
@@ -53,11 +56,6 @@ import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.walk
 import kotlin.io.path.writeText
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants
-import org.fife.ui.rtextarea.RTextScrollPane
-import org.postgresql.ds.PGSimpleDataSource
 
 @OptIn(ExperimentalPathApi::class)
 class QuestDbView(path: Path) : ToolPanel() {
@@ -108,10 +106,8 @@ class QuestDbView(path: Path) : ToolPanel() {
         confDir.createDirectory()
         val confFile = confDir / "server.conf"
 
-        val httpPort = ServerSocket(0).use { it.localPort } // web console port
         val config = """
-            pg.net.bind.to=0.0.0.0:$pgPort
-            http.net.bind.to=0.0.0.0:$httpPort
+            pg.net.bind.to=127.0.0.1:$pgPort
             pg.net.connection.timeout=0
         """.trimIndent()
 
@@ -137,7 +133,7 @@ class QuestDbView(path: Path) : ToolPanel() {
 
     @Suppress("SqlResolve")
     val tables: List<Table> = connection
-        .executeQuery("""SELECT table_name FROM tables();""")
+        .executeQuery("SELECT table_name FROM tables();")
         .toList { resultSet ->
             resultSet.getString("table_name")
         }.mapNotNull { tableName ->
@@ -155,10 +151,8 @@ class QuestDbView(path: Path) : ToolPanel() {
                             _parent = { sortableTree.root },
                         )
                     }
-                val size: Long
-                connection.executeQuery("""SELECT diskSize FROM table_storage() WHERE tableName = '$tableName'""").use { rs ->
-                    // Move the cursor to the first row. If there's no row, default to 0.
-                    size = if (rs.next()) rs.getLong("diskSize") else 0L
+                val size: Long = connection.executeQuery("SELECT diskSize FROM table_storage() WHERE tableName = '$tableName'").use { rs ->
+                    if (rs.next()) rs.getLong("diskSize") else 0L
                 }
                 Table(
                     name = tableName,
@@ -167,7 +161,7 @@ class QuestDbView(path: Path) : ToolPanel() {
                     size = size,
                 )
             } catch (e: Exception) {
-                println("Warning: Could not process table '$tableName'. Error: ${e.message}")
+                LOGGER.error("Warning: Could not process table '$tableName'. Error: ${e.message}")
                 null
             }
         }
@@ -198,27 +192,16 @@ class QuestDbView(path: Path) : ToolPanel() {
                             resultSet.metaData.getColumnName(i + 1)
                         }
                         val types = List(columnCount) { i ->
-                            val isTimestamp = names[i].containsInOrder("tsmp", true)
-                            if (isTimestamp) {
-                                Date::class.java
-                            } else {
-                                val sqlType = resultSet.metaData.getColumnType(i + 1)
-                                val jdbcType = JDBCType.valueOf(sqlType)
-                                jdbcType.javaType
-                            }
+                            val sqlType = resultSet.metaData.getColumnType(i + 1)
+                            val jdbcType = JDBCType.valueOf(sqlType)
+                            jdbcType.javaType
                         }
 
                         val data = resultSet.toList {
                             List(columnCount) { i ->
-                                val value = resultSet.getObject(i + 1)
-                                when {
-                                    types[i] == Boolean::class.javaObjectType -> value == 1
-                                    types[i] == Date::class.java && value is Number -> Date(value.toLong())
-                                    else -> value
-                                }
+                                resultSet.getObject(i + 1)
                             }
                         }
-
                         QueryResult.Success(names, types, data)
                     }
             } catch (e: Exception) {
