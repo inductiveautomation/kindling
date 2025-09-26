@@ -19,26 +19,17 @@ import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
-import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.getLogger
-import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
-import io.github.inductiveautomation.kindling.utils.toList
-import io.questdb.ServerMain
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants
-import org.fife.ui.rtextarea.RTextScrollPane
-import org.postgresql.ds.PGSimpleDataSource
+import io.questdb.cairo.CairoEngine
+import io.questdb.cairo.DefaultCairoConfiguration
+import io.questdb.cairo.security.AllowAllSecurityContext
+import io.questdb.griffin.SqlExecutionContext
+import io.questdb.griffin.SqlExecutionContextImpl
 import java.awt.event.KeyEvent
-import java.net.InetSocketAddress
-import java.net.ServerSocket
-import java.net.Socket
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
-import java.sql.Connection
-import java.sql.JDBCType
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JLabel
@@ -47,15 +38,17 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.KeyStroke
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyToRecursively
-import kotlin.io.path.createDirectory
 import kotlin.io.path.deleteRecursively
-import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.walk
-import kotlin.io.path.writeText
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
 
 @OptIn(ExperimentalPathApi::class)
 class QuestDbView(path: Path) : ToolPanel() {
@@ -95,76 +88,45 @@ class QuestDbView(path: Path) : ToolPanel() {
         foundDbPath
     }
 
-    // Set up the server
-    private val pgPort: Int = ServerSocket(0).use { it.localPort }.also {
-        LOGGER.debug("Acquired port {} for QuestDB instance", it)
+    private val engine = CairoEngine(DefaultCairoConfiguration(dbRootPath.absolutePathString())).apply {
+        metadataCache.onStartupAsyncHydrator()
     }
 
-    init {
-        // Create conf file
-        val confDir = dbRootPath.parent / "conf"
-        confDir.createDirectory()
-        val confFile = confDir / "server.conf"
-
-        val config = """
-            pg.net.bind.to=127.0.0.1:$pgPort
-            pg.net.connection.timeout=0
-        """.trimIndent()
-
-        confFile.writeText(config)
-    }
-
-    private val server: ServerMain = ServerMain.create(dbRootPath.parent.toString()).apply {
-        start()
-        Socket().use { it.connect(InetSocketAddress(PG_HOST, pgPort), 15000) }
-    }
-
-    // Create a connection to the server
-    private var connection: Connection = PGSimpleDataSource().run {
-        databaseName = "qdb"
-        user = PG_USER
-        password = PG_PASS
-        portNumbers = intArrayOf(pgPort)
-
-        connection
-    }
+    private val sqlContext: SqlExecutionContext = SqlExecutionContextImpl(engine, 1).with(AllowAllSecurityContext.INSTANCE, null)
 
     private val pageLabel: JLabel
 
     @Suppress("SqlResolve")
-    val tables: List<Table> = connection
-        .executeQuery("SELECT table_name FROM tables();")
-        .toList { resultSet ->
-            resultSet.getString("table_name")
-        }.mapNotNull { tableName ->
-            try {
-                val columns = connection
-                    .executeQuery("""SHOW COLUMNS FROM "$tableName";""")
-                    .toList { rs ->
-                        Column(
-                            name = rs.getString("column"),
-                            type = rs.getString("type"),
-                            notNull = false,
-                            defaultValue = null,
-                            primaryKey = rs.getBoolean("upsertKey"),
-                            hidden = false,
-                            _parent = { sortableTree.root },
-                        )
-                    }
-                val size: Long = connection.executeQuery("SELECT diskSize FROM table_storage() WHERE tableName = '$tableName'").use { rs ->
-                    if (rs.next()) rs.getLong("diskSize") else 0L
-                }
-                Table(
-                    name = tableName,
-                    _parent = { sortableTree.root },
-                    columns = columns,
-                    size = size,
+    val tables: List<Table> = context(sqlContext) {
+        engine.select("SELECT table_name FROM tables();") { tableRec ->
+            val name = tableRec.get<String>(0)!!
+
+            val size = engine.select(
+                "SELECT diskSize FROM table_storage() WHERE tableName = '$name';",
+            ) {storageRec ->
+                storageRec.get<Long>(0)
+            }.singleOrNull() ?: 0L
+
+            val cols = engine.select("SHOW COLUMNS FROM \"$name\";") { rec ->
+                Column(
+                    name = rec["column"]!!,
+                    type = rec["type"]!!,
+                    notNull = false,
+                    defaultValue = null,
+                    primaryKey = rec["upsertKey"]!!,
+                    hidden = false,
+                    _parent = { sortableTree.root }
                 )
-            } catch (e: Exception) {
-                LOGGER.error("Warning: Could not process table '$tableName'. Error: ${e.message}")
-                null
             }
+
+            Table(
+                name = name,
+                columns = cols,
+                _parent = { sortableTree.root },
+                size = size,
+            )
         }
+    }
 
     private val sortableTree = SortableTree(tables)
     private val query = RSyntaxTextArea().apply {
@@ -185,25 +147,29 @@ class QuestDbView(path: Path) : ToolPanel() {
     ) {
         results.result = if (!query.text.isNullOrEmpty()) {
             try {
-                connection.executeQuery(query.text)
-                    .use { resultSet ->
-                        val columnCount = resultSet.metaData.columnCount
-                        val names = List(columnCount) { i ->
-                            resultSet.metaData.getColumnName(i + 1)
-                        }
-                        val types = List(columnCount) { i ->
-                            val sqlType = resultSet.metaData.getColumnType(i + 1)
-                            val jdbcType = JDBCType.valueOf(sqlType)
-                            jdbcType.javaType
-                        }
+                val fact = engine.select(query.text, sqlContext)
+                val cur = fact.getCursor(sqlContext)
 
-                        val data = resultSet.toList {
-                            List(columnCount) { i ->
-                                resultSet.getObject(i + 1)
-                            }
+                val names = List(fact.metadata.columnCount) {
+                    fact.metadata.getColumnName(it)
+                }
+
+                val types = List(fact.metadata.columnCount) {
+                    fact.metadata.getColumnClass(it)
+                }.filterNotNull()
+
+                val data: List<List<*>> = buildList {
+                    context(fact.metadata) {
+                        val rec = cur.record
+                        while (cur.hasNext()) {
+                            add(
+                                List(names.size) { rec.get<Any?>(it) }
+                            )
                         }
-                        QueryResult.Success(names, types, data)
                     }
+                }
+
+                QueryResult.Success(names, types.map { it.javaObjectType }, data)
             } catch (e: Exception) {
                 QueryResult.Error(e.message ?: "Error")
             }
@@ -279,15 +245,7 @@ class QuestDbView(path: Path) : ToolPanel() {
         super.removeNotify()
         LOGGER.debug("Closing resources for {}", tempDirectory)
 
-        val ex = runCatching {
-            connection.close()
-            LOGGER.debug("Shutting down QuestDB server on port {}", pgPort)
-            server.close()
-        }.exceptionOrNull()
-
-        if (ex != null) {
-            LOGGER.error("Failed to release resource", ex)
-        }
+        engine.close()
 
         tempDirectory.deleteRecursively()
     }
@@ -295,9 +253,6 @@ class QuestDbView(path: Path) : ToolPanel() {
     // constants
     companion object {
         private val LOGGER = getLogger<QuestDbView>()
-        private const val PG_HOST = "localhost"
-        private const val PG_USER = "admin"
-        private const val PG_PASS = "quest"
     }
 }
 
