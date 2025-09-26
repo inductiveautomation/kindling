@@ -169,6 +169,9 @@ class QuestDbView(path: Path) : ToolPanel() {
                     }
                 }
 
+                cur.close()
+                fact.close()
+
                 QueryResult.Success(names, types.map { it.javaObjectType }, data)
             } catch (e: Exception) {
                 QueryResult.Error(e.message ?: "Error")
