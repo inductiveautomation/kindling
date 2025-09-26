@@ -33,9 +33,9 @@ dependencies {
         isTransitive = false
     }
     api(libs.jfreechart)
+    api(libs.questdb)
     api(libs.rsyntaxtextarea)
     api(libs.bundles.jackson)
-    api(libs.bundles.questdb)
     runtimeOnly(libs.bundles.ia.transitive)
     testImplementation(libs.bundles.kotest)
 }
@@ -102,6 +102,9 @@ kotlin {
         main {
             resources.srcDir(javadocDirectory)
         }
+    }
+    compilerOptions {
+        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
     }
 }
 
