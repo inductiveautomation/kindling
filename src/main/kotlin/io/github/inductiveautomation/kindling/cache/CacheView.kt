@@ -340,7 +340,7 @@ data object CacheViewer : Tool {
     override val serialKey = "sf-cache"
     override val title = "Store & Forward Cache"
     override val description = "S&F Cache (.data, .script, .zip)"
-    override val icon = FlatSVGIcon("icons/bx-data.svg")
+    override val icon = FlatSVGIcon("icons/bx-hdd.svg")
     internal val extensions = arrayOf("data", "script", "zip")
     override val filter = FileFilter(description, *extensions)
 
