@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.idb.generic
+package io.github.inductiveautomation.kindling.core.db
 
 import javax.swing.table.AbstractTableModel
 
