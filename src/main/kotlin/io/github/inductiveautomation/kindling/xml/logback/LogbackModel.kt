@@ -34,11 +34,11 @@ data class LogbackConfigData(
     val logHomeDir: LogHomeDirectory? = null,
     @field:JacksonXmlProperty(localName = "root")
     val root: Root = Root("INFO"),
-    @JacksonXmlProperty(localName = "appender")
-    @JacksonXmlElementWrapper(useWrapping = false)
+    @field:JacksonXmlProperty(localName = "appender")
+    @field:JacksonXmlElementWrapper(useWrapping = false)
     val appender: List<Appender>? = emptyList(),
-    @JacksonXmlProperty(localName = "logger")
-    @JacksonXmlElementWrapper(useWrapping = false)
+    @field:JacksonXmlProperty(localName = "logger")
+    @field:JacksonXmlElementWrapper(useWrapping = false)
     val logger: List<Logger>? = emptyList(),
 ) {
     companion object Serializer {
@@ -141,7 +141,7 @@ data class Root(
     @field:JacksonXmlProperty(isAttribute = true, localName = "level")
     val level: String? = null,
     @field:JacksonXmlProperty(localName = "appender-ref")
-    @JacksonXmlElementWrapper(localName = "appender-ref", useWrapping = false)
+    @field:JacksonXmlElementWrapper(localName = "appender-ref", useWrapping = false)
     val appenderRef: List<AppenderRef>? = listOf(
         AppenderRef("SysoutAsync"),
         AppenderRef("DBAsync"),
@@ -168,16 +168,16 @@ data class Appender(
     val discardingThreshold: String? = null,
     @field:JacksonXmlProperty(localName = "rollingPolicy")
     val rollingPolicy: RollingPolicy? = null,
-    @JacksonXmlProperty(localName = "encoder")
-    @JacksonXmlElementWrapper(useWrapping = false)
+    @field:JacksonXmlProperty(localName = "encoder")
+    @field:JacksonXmlElementWrapper(useWrapping = false)
     val encoder: List<Encoder>? = emptyList(),
-    @JacksonXmlProperty(localName = "filter")
-    @JacksonXmlElementWrapper(useWrapping = false)
+    @field:JacksonXmlProperty(localName = "filter")
+    @field:JacksonXmlElementWrapper(useWrapping = false)
     val levelFilter: LevelFilter? = null,
     @field:JacksonXmlProperty(localName = "dir")
     val dir: String? = null,
     @field:JacksonXmlProperty(localName = "appender-ref")
-    @JacksonXmlElementWrapper(useWrapping = false)
+    @field:JacksonXmlElementWrapper(useWrapping = false)
     val appenderRef: List<AppenderRef>? = emptyList(),
 )
 
@@ -201,14 +201,14 @@ data class Encoder(
  */
 @JacksonXmlRootElement(localName = "logger")
 data class Logger(
-    @JacksonXmlProperty(isAttribute = true, localName = "name")
+    @field:JacksonXmlProperty(isAttribute = true, localName = "name")
     val name: String,
-    @JacksonXmlProperty(isAttribute = true, localName = "level")
+    @field:JacksonXmlProperty(isAttribute = true, localName = "level")
     val level: String? = null,
-    @JacksonXmlProperty(isAttribute = true, localName = "additivity")
+    @field:JacksonXmlProperty(isAttribute = true, localName = "additivity")
     val additivity: Boolean? = null,
     @field:JacksonXmlProperty(localName = "appender-ref")
-    @JacksonXmlElementWrapper(useWrapping = false)
+    @field:JacksonXmlElementWrapper(useWrapping = false)
     val appenderRef: List<AppenderRef>? = emptyList(),
 )
 
