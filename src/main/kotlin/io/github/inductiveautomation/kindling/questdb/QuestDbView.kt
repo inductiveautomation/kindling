@@ -263,7 +263,7 @@ data object QuestDbViewer : MultiTool {
     override val serialKey = "questdb-viewer"
     override val title = "QuestDB Viewer"
     override val description = "QuestDB Export (.zip)"
-    override val icon = FlatSVGIcon("icons/bx-hdd.svg")
+    override val icon = FlatSVGIcon("icons/Questdb-logo.svg").derive(24, 24)
     override val filter = FileFilter(description, "zip")
     override fun open(path: Path): ToolPanel = QuestDbView(path)
     override fun open(paths: List<Path>): ToolPanel = open(paths.first())

@@ -117,6 +117,7 @@ Contributions of any kind (additional tools, polish to existing tools, test file
 - [SerializationDumper](https://github.com/NickstaDB/SerializationDumper)
 - [Hydraulic Conveyor](https://www.hydraulic.software/)
 - [Terai Atsuhiro](https://java-swing-tips.blogspot.com/)
+- "[Quest DB Logo](https://en.wikipedia.org/wiki/File:Questdb-logo.svg)", by [Bsmith](https://bsky.app/profile/bsmth.de), used under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en) / Greyed-out version of original
 
 > [!WARNING]
 > Kindling is **not** an official Inductive Automation product and is provided as-is with no warranty. 
