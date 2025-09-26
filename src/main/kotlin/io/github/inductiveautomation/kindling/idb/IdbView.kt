@@ -82,46 +82,28 @@ class IdbConnection(
 
 private enum class IdbTool {
     Generic {
-        override fun supports(connections: List<IdbConnection>): Boolean {
-            return connections.size == 1
-        }
+        override fun supports(connections: List<IdbConnection>): Boolean = connections.size == 1
 
-        override fun open(connections: List<IdbConnection>): ToolPanel {
-            return GenericView(connections.single().connection)
-        }
+        override fun open(connections: List<IdbConnection>): ToolPanel = GenericView(connections.single().connection)
 
         override val tabName: String = "Tables"
     },
     Metrics {
-        override fun supports(connections: List<IdbConnection>): Boolean {
-            return connections.singleOrNull { "SYSTEM_METRICS" in it.tables } != null
-        }
-        override fun open(connections: List<IdbConnection>): ToolPanel {
-            return MetricsView(connections.single().connection)
-        }
+        override fun supports(connections: List<IdbConnection>): Boolean = connections.singleOrNull { "SYSTEM_METRICS" in it.tables } != null
+        override fun open(connections: List<IdbConnection>): ToolPanel = MetricsView(connections.single().connection)
     },
     Images {
-        override fun supports(connections: List<IdbConnection>): Boolean {
-            return connections.singleOrNull { "IMAGES" in it.tables } != null
-        }
-        override fun open(connections: List<IdbConnection>): ToolPanel {
-            return ImagesPanel(connections.single())
-        }
+        override fun supports(connections: List<IdbConnection>): Boolean = connections.singleOrNull { "IMAGES" in it.tables } != null
+        override fun open(connections: List<IdbConnection>): ToolPanel = ImagesPanel(connections.single())
     },
     TagConfig {
-        override fun supports(connections: List<IdbConnection>): Boolean {
-            return connections.singleOrNull { "TAGCONFIG" in it.tables } != null
-        }
-        override fun open(connections: List<IdbConnection>): ToolPanel {
-            return TagConfigView.fromIdb(connections.single().connection)
-        }
+        override fun supports(connections: List<IdbConnection>): Boolean = connections.singleOrNull { "TAGCONFIG" in it.tables } != null
+        override fun open(connections: List<IdbConnection>): ToolPanel = TagConfigView.fromIdb(connections.single().connection)
 
         override val tabName: String = "Tag Config"
     },
     Logs {
-        override fun supports(connections: List<IdbConnection>): Boolean {
-            return connections.all { conn -> "logging_event" in conn.tables }
-        }
+        override fun supports(connections: List<IdbConnection>): Boolean = connections.all { conn -> "logging_event" in conn.tables }
 
         override fun open(connections: List<IdbConnection>): ToolPanel {
             val paths = connections.map { it.path }

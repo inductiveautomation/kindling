@@ -25,11 +25,9 @@ import javax.swing.border.EmptyBorder
 inline fun FlatScrollPane(
     component: Component,
     block: FlatScrollPane.() -> Unit = {},
-): FlatScrollPane {
-    return FlatScrollPane().apply {
-        setViewportView(component)
-        block(this)
-    }
+): FlatScrollPane = FlatScrollPane().apply {
+    setViewportView(component)
+    block(this)
 }
 
 /**
@@ -62,9 +60,7 @@ inline fun jFrame(
     isVisible = initiallyVisible
 }
 
-inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel {
-    return StyledLabelBuilder().apply(block).createLabel()
-}
+inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel = StyledLabelBuilder().apply(block).createLabel()
 
 inline fun StyledLabel.style(block: StyledLabelBuilder.() -> Unit) {
     StyledLabelBuilder().apply {
@@ -100,24 +96,22 @@ private fun createSplitPane(
     resizeWeight: Double,
     expandableSide: ExpandableSide,
     block: JSplitPane.() -> Unit,
-): FlatSplitPane {
-    return FlatSplitPane().apply {
-        this.orientation = orientation
-        this.leftComponent = left
-        this.rightComponent = right
-        this.isOneTouchExpandable = true
-        this.expandableSide = expandableSide
-        this.resizeWeight = resizeWeight
-        addComponentListener(
-            object : ComponentAdapter() {
-                override fun componentShown(e: ComponentEvent?) {
-                    setDividerLocation(resizeWeight)
-                }
-            },
-        )
+): FlatSplitPane = FlatSplitPane().apply {
+    this.orientation = orientation
+    this.leftComponent = left
+    this.rightComponent = right
+    this.isOneTouchExpandable = true
+    this.expandableSide = expandableSide
+    this.resizeWeight = resizeWeight
+    addComponentListener(
+        object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                setDividerLocation(resizeWeight)
+            }
+        },
+    )
 
-        block()
-    }
+    block()
 }
 
 /**

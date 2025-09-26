@@ -175,13 +175,11 @@ class LegacyTagProvider(
         )
     }
 
-    private fun IdbNode.getFullUdtDefinitionPath(): String {
-        return if (folderId == "_types_") {
-            name
-        } else {
-            val parentName = nodeGroups[folderId!!]?.first()?.getFullUdtDefinitionPath()
-            "$parentName/$name"
-        }
+    private fun IdbNode.getFullUdtDefinitionPath(): String = if (folderId == "_types_") {
+        name
+    } else {
+        val parentName = nodeGroups[folderId!!]?.first()?.getFullUdtDefinitionPath()
+        "$parentName/$name"
     }
 
     override fun Node.resolveInheritance() {

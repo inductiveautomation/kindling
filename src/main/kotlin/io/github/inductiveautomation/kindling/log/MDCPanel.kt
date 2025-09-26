@@ -35,7 +35,8 @@ import kotlin.properties.Delegates
 
 internal class MDCPanel(
     events: List<SystemLogEvent>,
-) : FilterPanel<SystemLogEvent>(), FileFilterResponsive<SystemLogEvent> {
+) : FilterPanel<SystemLogEvent>(),
+    FileFilterResponsive<SystemLogEvent> {
     override val icon = FlatSVGIcon("icons/bx-key.svg")
 
     private var allMDCs by Delegates.observable(events.flatMap(SystemLogEvent::mdc)) { _, _, new ->
@@ -319,7 +320,9 @@ data class MDCTableRow(
     }
 }
 
-class MDCTableModel : AbstractTableModel(), LogFilter {
+class MDCTableModel :
+    AbstractTableModel(),
+    LogFilter {
     private val _data: MutableList<MDCTableRow> = mutableListOf()
     val data: List<MDCTableRow> = _data
 
@@ -340,9 +343,7 @@ class MDCTableModel : AbstractTableModel(), LogFilter {
     override fun isCellEditable(
         rowIndex: Int,
         columnIndex: Int,
-    ): Boolean {
-        return columnIndex == MDCColumns[Inclusive]
-    }
+    ): Boolean = columnIndex == MDCColumns[Inclusive]
 
     override fun setValueAt(
         aValue: Any?,
@@ -361,21 +362,17 @@ class MDCTableModel : AbstractTableModel(), LogFilter {
     operator fun <T> get(
         row: Int,
         column: Column<MDCTableRow, T>,
-    ): T {
-        return _data[row].let { info ->
-            column.getValue(info)
-        }
+    ): T = _data[row].let { info ->
+        column.getValue(info)
     }
 
-    override fun filter(item: LogEvent): Boolean {
-        return when (item) {
-            is WrapperLogEvent -> true
-            is SystemLogEvent ->
-                _data.isEmpty() ||
-                    _data.any { row ->
-                        row.filter(item)
-                    }
-        }
+    override fun filter(item: LogEvent): Boolean = when (item) {
+        is WrapperLogEvent -> true
+        is SystemLogEvent ->
+            _data.isEmpty() ||
+                _data.any { row ->
+                    row.filter(item)
+                }
     }
 
     fun removeAt(index: Int) {

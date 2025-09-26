@@ -12,22 +12,21 @@ import javax.swing.UIManager
 
 open class FilterSidebar<T>(
     private val filterPanels: List<FilterPanel<T>>,
-) : FlatTabbedPane(), List<FilterPanel<T>> by filterPanels {
+) : FlatTabbedPane(),
+    List<FilterPanel<T>> by filterPanels {
 
     override fun createToolTip(): JToolTip = JToolTip().apply {
         font = UIManager.getFont("h3.regular.font")
         minimumSize = Dimension(1, tabHeight)
     }
 
-    override fun getToolTipLocation(event: MouseEvent): Point? {
-        return if (event.x <= tabHeight && event.y <= tabHeight * tabCount) {
-            Point(
-                event.x.coerceAtLeast(tabHeight),
-                event.y.floorDiv(tabHeight) * tabHeight,
-            )
-        } else {
-            null
-        }
+    override fun getToolTipLocation(event: MouseEvent): Point? = if (event.x <= tabHeight && event.y <= tabHeight * tabCount) {
+        Point(
+            event.x.coerceAtLeast(tabHeight),
+            event.y.floorDiv(tabHeight) * tabHeight,
+        )
+    } else {
+        null
     }
 
     init {

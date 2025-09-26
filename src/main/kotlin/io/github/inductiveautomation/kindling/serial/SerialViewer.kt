@@ -53,9 +53,7 @@ class SerialViewPanel(private val path: Path) : ToolPanel() {
 
     override val icon: Icon = SerialViewer.icon
 
-    override fun getToolTipText(): String? {
-        return path.toString()
-    }
+    override fun getToolTipText(): String? = path.toString()
 }
 
 data object SerialViewer : Tool {

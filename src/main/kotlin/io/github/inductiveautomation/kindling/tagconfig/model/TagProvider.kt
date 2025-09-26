@@ -73,24 +73,22 @@ class TagProvider private constructor(
             return this@TagProvider["_types_/${config.typeId}"]
         }
 
-    fun getValueStoreEntry(node: Node): ValueStoreEntry? {
-        return valueStore.prepareStatement(VALUE_STORE_QUERY).run {
-            setString(1, name.lowercase())
-            setString(2, node.tagPath.substringAfter("]").lowercase())
-            executeQuery().toList { rs ->
-                ValueStoreEntry(
-                    rs["provider"],
-                    rs["path"],
-                    rs["dataType"],
-                    rs.getBytes("textValue")?.decodeToString(),
-                    rs["numericValue"],
-                    rs["nullValue"],
-                    rs["quality"],
-                    rs["t_stamp"],
-                    rs["updatedAt"],
-                )
-            }.singleOrNull()
-        }
+    fun getValueStoreEntry(node: Node): ValueStoreEntry? = valueStore.prepareStatement(VALUE_STORE_QUERY).run {
+        setString(1, name.lowercase())
+        setString(2, node.tagPath.substringAfter("]").lowercase())
+        executeQuery().toList { rs ->
+            ValueStoreEntry(
+                rs["provider"],
+                rs["path"],
+                rs["dataType"],
+                rs.getBytes("textValue")?.decodeToString(),
+                rs["numericValue"],
+                rs["nullValue"],
+                rs["quality"],
+                rs["t_stamp"],
+                rs["updatedAt"],
+            )
+        }.singleOrNull()
     }
 
     operator fun get(tagPath: String): Node? {

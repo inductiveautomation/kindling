@@ -10,7 +10,8 @@ import javax.swing.JPopupMenu
 
 internal class ThreadPanel(
     events: List<SystemLogEvent>,
-) : FilterListPanel<SystemLogEvent>("Threads"), FileFilterResponsive<SystemLogEvent> {
+) : FilterListPanel<SystemLogEvent>("Threads"),
+    FileFilterResponsive<SystemLogEvent> {
     override val icon = FlatSVGIcon("icons/bx-chip.svg")
 
     init {

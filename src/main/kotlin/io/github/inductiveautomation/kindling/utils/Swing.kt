@@ -103,12 +103,10 @@ const val ACTION_ICON_SCALE_FACTOR = 0.75F
 @Suppress("FunctionName")
 fun FlatActionIcon(path: String): FlatSVGIcon = FlatSVGIcon(path, ACTION_ICON_SCALE_FACTOR)
 
-fun JFileChooser.chooseFiles(parent: JComponent?): List<File>? {
-    return if (showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-        selectedFiles.toList()
-    } else {
-        null
-    }
+fun JFileChooser.chooseFiles(parent: JComponent?): List<File>? = if (showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+    selectedFiles.toList()
+} else {
+    null
 }
 
 inline fun <reified T : EventListener> EventListenerList.add(listener: T) {
@@ -119,9 +117,7 @@ inline fun <reified T : EventListener> EventListenerList.remove(listener: T) {
     remove(T::class.java, listener)
 }
 
-inline fun <reified T : EventListener> EventListenerList.getAll(): Array<T> {
-    return getListeners(T::class.java)
-}
+inline fun <reified T : EventListener> EventListenerList.getAll(): Array<T> = getListeners(T::class.java)
 
 fun Component.traverseChildren(): Sequence<Component> = sequence {
     if (this@traverseChildren is Container) {
@@ -133,18 +129,14 @@ fun Component.traverseChildren(): Sequence<Component> = sequence {
     }
 }
 
-fun SVGDocument.render(width: Int, height: Int, x: Int = 0, y: Int = 0): BufferedImage {
-    return BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB).apply {
-        val g = createGraphics()
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        render(null as Component?, g, ViewBox(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat()))
-        g.dispose()
-    }
+fun SVGDocument.render(width: Int, height: Int, x: Int = 0, y: Int = 0): BufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB).apply {
+    val g = createGraphics()
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    render(null as Component?, g, ViewBox(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat()))
+    g.dispose()
 }
 
-inline fun <reified C> Component.getAncestorOfClass(): C? {
-    return SwingUtilities.getAncestorOfClass(C::class.java, this) as? C
-}
+inline fun <reified C> Component.getAncestorOfClass(): C? = SwingUtilities.getAncestorOfClass(C::class.java, this) as? C
 
 var JTextField.leftBuddy: JComponent?
     get() {
@@ -181,9 +173,7 @@ data class ColorPalette(
 ) {
     fun toHighLighter(
         predicate: HighlightPredicateKt = { _, _ -> true },
-    ): ColorHighlighter {
-        return ColorHighlighter(predicate, background, foreground)
-    }
+    ): ColorHighlighter = ColorHighlighter(predicate, background, foreground)
 }
 
 fun ColorHighlighter(
@@ -201,11 +191,9 @@ fun ColorHighlighter(
     override fun doHighlight(
         target: Component,
         adapter: ComponentAdapter,
-    ): Component {
-        return target.apply {
-            fgSupplier?.invoke()?.let { foreground = it }
-            bgSupplier?.invoke()?.let { background = it }
-        }
+    ): Component = target.apply {
+        fgSupplier?.invoke()?.let { foreground = it }
+        bgSupplier?.invoke()?.let { background = it }
     }
 }
 

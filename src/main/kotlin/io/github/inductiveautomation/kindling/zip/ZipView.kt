@@ -192,24 +192,23 @@ object ZipViewer : Tool {
     fun createView(
         filesystem: FileSystemProvider,
         vararg paths: Path,
-    ): PathView? =
-        runCatching {
-            if (paths.size > 1) {
-                MultiToolView(filesystem, paths.toList())
-            } else {
-                val path = paths.single()
-                handlers.firstNotNullOfOrNull { (predicate, provider) ->
-                    try {
-                        provider.takeIf { predicate(path) }?.invoke(filesystem, path)
-                    } catch (_: ToolOpeningException) {
-                        null
-                    }
+    ): PathView? = runCatching {
+        if (paths.size > 1) {
+            MultiToolView(filesystem, paths.toList())
+        } else {
+            val path = paths.single()
+            handlers.firstNotNullOfOrNull { (predicate, provider) ->
+                try {
+                    provider.takeIf { predicate(path) }?.invoke(filesystem, path)
+                } catch (_: ToolOpeningException) {
+                    null
                 }
             }
-        }.getOrElse { ex ->
-            logger.error("Failed to open ${paths.contentToString()}", ex)
-            null
         }
+    }.getOrElse { ex ->
+        logger.error("Failed to open ${paths.contentToString()}", ex)
+        null
+    }
 
     private val logger = getLogger<ZipViewer>()
 }

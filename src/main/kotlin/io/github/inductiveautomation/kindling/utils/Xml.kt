@@ -13,6 +13,4 @@ val XML_FACTORY: DocumentBuilderFactory =
         setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "")
     }
 
-fun DocumentBuilderFactory.parse(inputStream: InputStream): Document {
-    return newDocumentBuilder().parse(inputStream).also(Document::normalizeDocument)
-}
+fun DocumentBuilderFactory.parse(inputStream: InputStream): Document = newDocumentBuilder().parse(inputStream).also(Document::normalizeDocument)

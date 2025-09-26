@@ -19,36 +19,37 @@ import javax.swing.table.TableModel
 
 abstract class ToolPanel(
     layoutConstraints: String = "ins 6, fill, hidemode 3",
-) : JPanel(MigLayout(layoutConstraints)), FloatableComponent, PopupMenuCustomizer {
+) : JPanel(MigLayout(layoutConstraints)),
+    FloatableComponent,
+    PopupMenuCustomizer {
     abstract override val icon: Icon?
     override val tabName: String get() = name ?: this.paramString()
     override val tabTooltip: String? get() = toolTipText
 
     override fun customizePopupMenu(menu: JPopupMenu) = Unit
 
-    protected fun exportMenu(defaultFileName: String = "", modelSupplier: () -> TableModel): JMenu =
-        JMenu("Export").apply {
-            for (format in ExportFormat.entries) {
-                add(
-                    Action("Export as ${format.extension.uppercase()}") {
-                        exportFileChooser.apply {
-                            selectedFile = File(defaultFileName)
-                            resetChoosableFileFilters()
-                            fileFilter = format.fileFilter
-                            if (showSaveDialog(this@ToolPanel) == JFileChooser.APPROVE_OPTION) {
-                                val selectedFile =
-                                    if (selectedFile.absolutePath.endsWith(format.extension)) {
-                                        selectedFile
-                                    } else {
-                                        File(selectedFile.absolutePath + ".${format.extension}")
-                                    }
-                                format.action.invoke(modelSupplier(), selectedFile)
-                            }
+    protected fun exportMenu(defaultFileName: String = "", modelSupplier: () -> TableModel): JMenu = JMenu("Export").apply {
+        for (format in ExportFormat.entries) {
+            add(
+                Action("Export as ${format.extension.uppercase()}") {
+                    exportFileChooser.apply {
+                        selectedFile = File(defaultFileName)
+                        resetChoosableFileFilters()
+                        fileFilter = format.fileFilter
+                        if (showSaveDialog(this@ToolPanel) == JFileChooser.APPROVE_OPTION) {
+                            val selectedFile =
+                                if (selectedFile.absolutePath.endsWith(format.extension)) {
+                                    selectedFile
+                                } else {
+                                    File(selectedFile.absolutePath + ".${format.extension}")
+                                }
+                            format.action.invoke(modelSupplier(), selectedFile)
                         }
-                    },
-                )
-            }
+                    }
+                },
+            )
         }
+    }
 
     companion object {
         val exportFileChooser = JFileChooser(HomeLocation.currentValue.toFile()).apply {

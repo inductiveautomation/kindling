@@ -48,7 +48,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class FileFilterSidebar<T> private constructor(
     initialPanels: List<FilterPanel<T>?>,
     initialFileData: Map<Path, FileFilterableCollection<T>>,
-) : FilterSidebar<T>(initialPanels.filterNotNull()), TableModelListener {
+) : FilterSidebar<T>(initialPanels.filterNotNull()),
+    TableModelListener {
     private val filePanel = FileFilterPanel(initialFileData)
 
     private lateinit var fileChooser: JFileChooser
@@ -433,9 +434,7 @@ class FileFilterSidebar<T> private constructor(
         operator fun <S, T> invoke(
             panels: List<S>,
             fileData: Map<Path, FileFilterableCollection<T>>,
-        ): FileFilterSidebar<T> where S : FilterPanel<T>, S : FileFilterResponsive<T> {
-            return FileFilterSidebar(panels.toList(), fileData)
-        }
+        ): FileFilterSidebar<T> where S : FilterPanel<T>, S : FileFilterResponsive<T> = FileFilterSidebar(panels.toList(), fileData)
 
         // Can be adjusted for better colors. Default background for first 5 files opened.
         // https://youtrack.jetbrains.com/issue/KT-2780

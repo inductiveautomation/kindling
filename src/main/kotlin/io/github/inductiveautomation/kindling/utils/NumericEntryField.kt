@@ -16,10 +16,8 @@ class NumericEntryField(inputValue: Long?) : JFormattedTextField(inputValue) {
         horizontalAlignment = SwingConstants.CENTER
         inputVerifier =
             object : InputVerifier() {
-                override fun verify(input: JComponent): Boolean {
-                    return (input as JFormattedTextField).text.let { text ->
-                        text.all { it.isDigit() } && text.length < 19
-                    }
+                override fun verify(input: JComponent): Boolean = (input as JFormattedTextField).text.let { text ->
+                    text.all { it.isDigit() } && text.length < 19
                 }
             }
     }

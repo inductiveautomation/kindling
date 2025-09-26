@@ -215,9 +215,7 @@ object TagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.gen
  * This is used to display a single nodes config when browsing from the Tree in the UI.
  */
 object MinimalTagConfigSerializer : JsonTransformingSerializer<TagConfig>(TagConfig.generatedSerializer()) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        throw UnsupportedOperationException("This serializer is for serialization only. Use TagConfigSerializer instead.")
-    }
+    override fun transformDeserialize(element: JsonElement): JsonElement = throw UnsupportedOperationException("This serializer is for serialization only. Use TagConfigSerializer instead.")
 
     override fun transformSerialize(element: JsonElement): JsonElement {
         val tagConfig = element.jsonObject.toMutableMap()

@@ -71,12 +71,10 @@ class Preference<T : Any>(
 
     companion object {
         @Suppress("FunctionName")
-        fun Preference<Boolean>.PreferenceCheckbox(description: String): JCheckBox {
-            return JCheckBox(description).apply {
-                isSelected = currentValue
-                addItemListener { e ->
-                    currentValue = e.stateChange == ItemEvent.SELECTED
-                }
+        fun Preference<Boolean>.PreferenceCheckbox(description: String): JCheckBox = JCheckBox(description).apply {
+            isSelected = currentValue
+            addItemListener { e ->
+                currentValue = e.stateChange == ItemEvent.SELECTED
             }
         }
 

@@ -55,12 +55,10 @@ data class LogbackConfigData(
             }
         }
 
-        fun fromXml(file: List<String>): LogbackConfigData {
-            return try {
-                deserializationMapper.readValue(file.joinToString("\n"), LogbackConfigData::class.java)
-            } catch (e: Exception) {
-                throw ToolOpeningException("An error occurred: ${e.message}")
-            }
+        fun fromXml(file: List<String>): LogbackConfigData = try {
+            deserializationMapper.readValue(file.joinToString("\n"), LogbackConfigData::class.java)
+        } catch (e: Exception) {
+            throw ToolOpeningException("An error occurred: ${e.message}")
         }
 
         private val serializationMapper: XmlMapper = XmlMapper.builder()
@@ -105,9 +103,7 @@ data class LogbackConfigData(
             )
     }
 
-    fun toXml(): String {
-        return serializationMapper.writeValueAsString(this)
-    }
+    fun toXml(): String = serializationMapper.writeValueAsString(this)
 
     /**
      * Write the configuration to the provided output stream, closing the stream.

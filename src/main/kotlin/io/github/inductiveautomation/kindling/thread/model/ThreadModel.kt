@@ -118,19 +118,13 @@ class ThreadModel(val threadData: List<ThreadLifespan>) : AbstractTableModel() {
     override fun getColumnCount(): Int = columns.size
     override fun getValueAt(row: Int, column: Int): Any? = get(row, columns[column])
     override fun getColumnClass(column: Int): Class<*> = columns[column].clazz
-    operator fun get(row: Int): ThreadLifespan {
-        return threadData[row]
+    operator fun get(row: Int): ThreadLifespan = threadData[row]
+
+    operator fun <T> get(row: Int, column: Column<ThreadLifespan, T>): T = get(row).let { info ->
+        column.getValue(info)
     }
 
-    operator fun <T> get(row: Int, column: Column<ThreadLifespan, T>): T {
-        return get(row).let { info ->
-            column.getValue(info)
-        }
-    }
-
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        return columnIndex == columns[columns.mark]
-    }
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex == columns[columns.mark]
 
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
         require(isCellEditable(rowIndex, columnIndex))

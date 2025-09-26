@@ -17,9 +17,7 @@ class LogsModel<T : LogEvent>(
     override val columns: LogColumnList<T>,
 ) : ReifiedListTableModel<T>(data, columns) {
 
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        return columnIndex == markIndex
-    }
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex == markIndex
 
     val markIndex = columns[
         when (columns) {

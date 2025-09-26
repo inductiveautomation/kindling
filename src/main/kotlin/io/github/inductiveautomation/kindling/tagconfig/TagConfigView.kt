@@ -274,8 +274,6 @@ class TagConfigView(
             }
         }
 
-        fun isConfigDirectory(dir: Path): Boolean {
-            return dir.isDirectory() && dir.name == "config"
-        }
+        fun isConfigDirectory(dir: Path): Boolean = dir.isDirectory() && dir.name == "config"
     }
 }
