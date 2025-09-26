@@ -19,17 +19,15 @@ abstract class ColumnList<R> private constructor(
         name: String? = null,
         noinline column: (TableColumnExt.(model: TableModel) -> Unit)? = null,
         noinline value: (R) -> T,
-    ): PropertyDelegateProvider<ColumnList<R>, ReadOnlyProperty<ColumnList<R>, Column<R, T>>> {
-        return PropertyDelegateProvider { thisRef, prop ->
-            val actual = Column(
-                header = name ?: prop.name,
-                getValue = value,
-                columnCustomization = column,
-                clazz = T::class.java,
-            )
-            thisRef.add(actual)
-            ReadOnlyProperty { _, _ -> actual }
-        }
+    ): PropertyDelegateProvider<ColumnList<R>, ReadOnlyProperty<ColumnList<R>, Column<R, T>>> = PropertyDelegateProvider { thisRef, prop ->
+        val actual = Column(
+            header = name ?: prop.name,
+            getValue = value,
+            columnCustomization = column,
+            clazz = T::class.java,
+        )
+        thisRef.add(actual)
+        ReadOnlyProperty { _, _ -> actual }
     }
 
     fun add(column: Column<R, *>) {

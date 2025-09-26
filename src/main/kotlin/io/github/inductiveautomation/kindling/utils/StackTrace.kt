@@ -10,30 +10,28 @@ typealias StackTrace = List<StackElement>
 
 private val classnameRegex = """(.*/)?(?<path>[^\s\d$]*)[.$].*\(((?<file>.*\..*):(?<line>\d+)|.*)\)""".toRegex()
 
-fun StackElement.toBodyLine(version: String): BodyLine {
-    return MajorVersion.lookup(version)?.let {
-        val escapedLine = this.escapeHtml()
-        val matchResult = classnameRegex.find(this)
+fun StackElement.toBodyLine(version: String): BodyLine = MajorVersion.lookup(version)?.let {
+    val escapedLine = this.escapeHtml()
+    val matchResult = classnameRegex.find(this)
 
-        if (matchResult != null) {
-            val path by matchResult.groups
-            if (HyperlinkStrategy.currentValue == OpenInIde) {
-                val file = matchResult.groups["file"]?.value
-                val line = matchResult.groups["line"]?.value?.toIntOrNull()
-                if (file != null && line != null) {
-                    BodyLine(escapedLine, "http://localhost/file?file=$file&line=$line")
-                } else {
-                    BodyLine(escapedLine)
-                }
+    if (matchResult != null) {
+        val path by matchResult.groups
+        if (HyperlinkStrategy.currentValue == OpenInIde) {
+            val file = matchResult.groups["file"]?.value
+            val line = matchResult.groups["line"]?.value?.toIntOrNull()
+            if (file != null && line != null) {
+                BodyLine(escapedLine, "http://localhost/file?file=$file&line=$line")
             } else {
-                val url = it.classMap?.get(path.value) as String?
-                BodyLine(escapedLine, url)
+                BodyLine(escapedLine)
             }
         } else {
-            BodyLine(escapedLine)
+            val url = it.classMap?.get(path.value) as String?
+            BodyLine(escapedLine, url)
         }
-    } ?: BodyLine(this)
-}
+    } else {
+        BodyLine(escapedLine)
+    }
+} ?: BodyLine(this)
 
 @Suppress("ktlint:standard:trailing-comma-on-declaration-site")
 enum class MajorVersion(val version: String) {
@@ -61,11 +59,9 @@ enum class MajorVersion(val version: String) {
             }
         }
 
-        fun lookup(version: String): MajorVersion? {
-            return versionCache.getOrPut(version) {
-                entries.firstOrNull { majorVersion ->
-                    version.startsWith(majorVersion.version)
-                }
+        fun lookup(version: String): MajorVersion? = versionCache.getOrPut(version) {
+            entries.firstOrNull { majorVersion ->
+                version.startsWith(majorVersion.version)
             }
         }
     }

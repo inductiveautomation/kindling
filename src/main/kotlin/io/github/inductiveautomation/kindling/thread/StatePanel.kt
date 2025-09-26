@@ -12,7 +12,9 @@ import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.getAll
 import javax.swing.JPopupMenu
 
-class StatePanel : FilterPanel<Thread?>(), FileFilterResponsive<Thread?> {
+class StatePanel :
+    FilterPanel<Thread?>(),
+    FileFilterResponsive<Thread?> {
     override val icon = FlatSVGIcon("icons/bx-check-circle.svg")
 
     val stateList = FilterList()

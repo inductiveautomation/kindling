@@ -24,7 +24,8 @@ import kotlin.random.Random
  */
 class TableColorCellEditor(
     private val showHex: Boolean = true, // Whether to show the hex code in the table cell
-) : AbstractCellEditor(), TableCellEditor {
+) : AbstractCellEditor(),
+    TableCellEditor {
     private val label = JLabel()
     private val colorChooser = JColorChooser()
 
@@ -45,9 +46,7 @@ class TableColorCellEditor(
 
     override fun getCellEditorValue(): Color = colorChooser.color
 
-    override fun isCellEditable(e: EventObject?): Boolean {
-        return e is MouseEvent && e.clickCount == 1
-    }
+    override fun isCellEditable(e: EventObject?): Boolean = e is MouseEvent && e.clickCount == 1
 
     override fun getTableCellEditorComponent(
         table: JTable?,
@@ -119,11 +118,7 @@ class RandomColorPanel : AbstractColorChooserPanel() {
 
     override fun getDisplayName(): String = "Random Color"
 
-    override fun getSmallDisplayIcon(): Icon {
-        return IconsFactory.EMPTY_ICON
-    }
+    override fun getSmallDisplayIcon(): Icon = IconsFactory.EMPTY_ICON
 
-    override fun getLargeDisplayIcon(): Icon {
-        return IconsFactory.EMPTY_ICON
-    }
+    override fun getLargeDisplayIcon(): Icon = IconsFactory.EMPTY_ICON
 }

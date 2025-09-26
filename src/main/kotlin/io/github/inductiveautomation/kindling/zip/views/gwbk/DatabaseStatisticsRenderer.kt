@@ -23,21 +23,17 @@ class DatabaseStatisticsRenderer : StatisticRenderer<DatabaseStatistics> {
     override val title: String = "Databases"
     override val icon: Icon = FlatActionIcon("icons/bx-data.svg")
 
-    override fun DatabaseStatistics.subtitle(): String {
-        return "$enabled enabled, ${connections.size} total"
-    }
+    override fun DatabaseStatistics.subtitle(): String = "$enabled enabled, ${connections.size} total"
 
-    override fun DatabaseStatistics.render(): JComponent {
-        return FlatScrollPane(
-            ReifiedJXTable(ReifiedListTableModel(connections, ConnectionColumns)).apply {
-                setDefaultRenderer<DatabaseStatistics.Connection>(
-                    getText = { it?.name },
-                    getTooltip = { it?.description },
-                )
-                setSortOrder(Name, SortOrder.ASCENDING)
-            },
-        )
-    }
+    override fun DatabaseStatistics.render(): JComponent = FlatScrollPane(
+        ReifiedJXTable(ReifiedListTableModel(connections, ConnectionColumns)).apply {
+            setDefaultRenderer<DatabaseStatistics.Connection>(
+                getText = { it?.name },
+                getTooltip = { it?.description },
+            )
+            setSortOrder(Name, SortOrder.ASCENDING)
+        },
+    )
 
     @Suppress("unused")
     companion object ConnectionColumns : ColumnList<DatabaseStatistics.Connection>() {

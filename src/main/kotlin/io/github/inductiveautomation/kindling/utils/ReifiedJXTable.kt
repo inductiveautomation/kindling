@@ -57,24 +57,18 @@ class ReifiedJXTable<T : TableModel>(
         actionMap.remove("find")
     }
 
-    override fun createDefaultTableHeader(): JTableHeader? {
-        return object : JXTableHeader(columnModel) {
-            override fun getToolTipText(event: MouseEvent): String? {
-                return super.getToolTipText(event) ?: run {
-                    val columnIndex = columnAtPoint(event.point)
-                    if (columnIndex != -1) {
-                        columnModel.getColumn(columnIndex).headerValue.toString()
-                    } else {
-                        null
-                    }
-                }
+    override fun createDefaultTableHeader(): JTableHeader? = object : JXTableHeader(columnModel) {
+        override fun getToolTipText(event: MouseEvent): String? = super.getToolTipText(event) ?: run {
+            val columnIndex = columnAtPoint(event.point)
+            if (columnIndex != -1) {
+                columnModel.getColumn(columnIndex).headerValue.toString()
+            } else {
+                null
             }
         }
     }
 
-    override fun createDefaultColumnControl(): JComponent {
-        return ColumnControlButton(this, FlatSVGIcon("icons/bx-column.svg").derive(0.8F))
-    }
+    override fun createDefaultColumnControl(): JComponent = ColumnControlButton(this, FlatSVGIcon("icons/bx-column.svg").derive(0.8F))
 
     override fun createDefaultRenderers() {
         super.createDefaultRenderers()
@@ -130,6 +124,4 @@ class ReifiedJXTable<T : TableModel>(
 inline fun <reified T : TableModel> ReifiedJXTable(
     model: T,
     columns: ColumnList<*>? = (model as? ReifiedTableModel<*>)?.columns,
-): ReifiedJXTable<T> {
-    return ReifiedJXTable(model, T::class.java, columns)
-}
+): ReifiedJXTable<T> = ReifiedJXTable(model, T::class.java, columns)

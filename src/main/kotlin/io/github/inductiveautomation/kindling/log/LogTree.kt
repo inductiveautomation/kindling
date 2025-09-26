@@ -111,11 +111,9 @@ class LogTree(logEvents: List<SystemLogEvent>) : CheckBoxTree(DefaultTreeModel(R
                 isRepeats = true
             }
 
-            override fun convertElementToString(element: Any?): String {
-                return when (val node = (element as? TreePath)?.lastPathComponent) {
-                    is LogEventNode -> node.name
-                    else -> ""
-                }
+            override fun convertElementToString(element: Any?): String = when (val node = (element as? TreePath)?.lastPathComponent) {
+                is LogEventNode -> node.name
+                else -> ""
             }
         }
     }

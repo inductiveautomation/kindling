@@ -55,7 +55,8 @@ import kotlin.math.absoluteValue
 
 internal class TimePanel<T : LogEvent>(
     data: List<T>,
-) : FilterPanel<T>(), FileFilterResponsive<T> {
+) : FilterPanel<T>(),
+    FileFilterResponsive<T> {
     override val icon = FlatSVGIcon("icons/bx-time-five.svg")
 
     private var lowerBound: Instant = data.first().timestamp

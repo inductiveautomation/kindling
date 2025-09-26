@@ -19,9 +19,7 @@ import kotlin.io.path.name
 import kotlin.io.path.walk
 
 data class PathNode(override val userObject: Path) : TypedTreeNode<Path>() {
-    override fun isLeaf(): Boolean {
-        return super.isLeaf() || !userObject.isDirectory()
-    }
+    override fun isLeaf(): Boolean = super.isLeaf() || !userObject.isDirectory()
 }
 
 @OptIn(ExperimentalPathApi::class)
@@ -89,11 +87,9 @@ class ZipFileTree(fileSystem: FileSystem) : JTree(ZipFileModel(fileSystem)) {
                 isRepeats = true
             }
 
-            override fun convertElementToString(element: Any?): String {
-                return when (val node = (element as? TreePath)?.lastPathComponent) {
-                    is PathNode -> node.userObject.name
-                    else -> ""
-                }
+            override fun convertElementToString(element: Any?): String = when (val node = (element as? TreePath)?.lastPathComponent) {
+                is PathNode -> node.userObject.name
+                else -> ""
             }
         }
     }

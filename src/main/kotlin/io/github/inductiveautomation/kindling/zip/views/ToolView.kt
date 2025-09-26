@@ -41,8 +41,6 @@ class ToolView(
     companion object {
         fun maybeToolPath(path: Path): Boolean = Tool.find(path) != null
 
-        fun safelyCreate(provider: FileSystemProvider, path: Path): ToolView? {
-            return runCatching { ToolView(provider, path) }.getOrNull()
-        }
+        fun safelyCreate(provider: FileSystemProvider, path: Path): ToolView? = runCatching { ToolView(provider, path) }.getOrNull()
     }
 }

@@ -9,7 +9,10 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import kotlin.io.path.name
 
-sealed class PathView(constraints: String) : JPanel(MigLayout(constraints)), FloatableComponent, PopupMenuCustomizer {
+sealed class PathView(constraints: String) :
+    JPanel(MigLayout(constraints)),
+    FloatableComponent,
+    PopupMenuCustomizer {
     abstract val paths: List<Path>
     abstract val provider: FileSystemProvider
     open val closable: Boolean = true

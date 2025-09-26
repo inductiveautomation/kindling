@@ -260,10 +260,8 @@ data object Kindling {
             mutableMapOf()
         }
 
-        operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? {
-            return internalState.getOrPut(category.serialKey) { mutableMapOf() }[preference.serialKey]?.let { currentValue ->
-                preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
-            }
+        operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? = internalState.getOrPut(category.serialKey) { mutableMapOf() }[preference.serialKey]?.let { currentValue ->
+            preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
         }
 
         operator fun <T : Any> set(category: PreferenceCategory, preference: Preference<T>, value: T) {

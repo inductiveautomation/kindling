@@ -152,25 +152,23 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
         }
     }
 
-    private fun toolTile(tool: Tool): JButton {
-        return JButton(tool.title, tool.icon.derive(2F)).apply {
-            putClientProperty("FlatLaf.styleClass", "h2.regular")
-            iconTextGap = 20
-            verticalTextPosition = BOTTOM
-            horizontalTextPosition = CENTER
+    private fun toolTile(tool: Tool): JButton = JButton(tool.title, tool.icon.derive(2F)).apply {
+        putClientProperty("FlatLaf.styleClass", "h2.regular")
+        iconTextGap = 20
+        verticalTextPosition = BOTTOM
+        horizontalTextPosition = CENTER
 
-            addActionListener {
-                fileChooser.fileFilter = tool.filter
-                fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
-                    openFiles(selectedFiles, tool)
-                }
+        addActionListener {
+            fileChooser.fileFilter = tool.filter
+            fileChooser.chooseFiles(this@MainPanel)?.let { selectedFiles ->
+                openFiles(selectedFiles, tool)
             }
-
-            transferHandler = FileTransferHandler(
-                predicate = { tool.filter.accept(it) },
-                callback = { openFiles(it, tool) },
-            )
         }
+
+        transferHandler = FileTransferHandler(
+            predicate = { tool.filter.accept(it) },
+            callback = { openFiles(it, tool) },
+        )
     }
 
     private val landingScrollpane = FlatScrollPane(landingPanel) {
@@ -539,16 +537,12 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
     }
 }
 
-private fun JMenu.toAwtMenu(): Menu {
-    return Menu(text).apply {
-        for (menuComponent in menuComponents) {
-            (menuComponent as? JMenuItem)?.toAwtMenuItem()?.let(::add)
-        }
+private fun JMenu.toAwtMenu(): Menu = Menu(text).apply {
+    for (menuComponent in menuComponents) {
+        (menuComponent as? JMenuItem)?.toAwtMenuItem()?.let(::add)
     }
 }
 
-private fun JMenuItem.toAwtMenuItem(): MenuItem {
-    return MenuItem(text).apply {
-        addActionListener(action)
-    }
+private fun JMenuItem.toAwtMenuItem(): MenuItem = MenuItem(text).apply {
+    addActionListener(action)
 }

@@ -13,7 +13,10 @@ import javax.swing.table.TableCellRenderer
 
 class TableHeaderCheckbox(
     selected: Boolean = true,
-) : JCheckBox(), TableCellRenderer, MouseListener, TableModelListener {
+) : JCheckBox(),
+    TableCellRenderer,
+    MouseListener,
+    TableModelListener {
     private lateinit var table: JTable
     private var targetColumn: Int? = null
     private var valueIsAdjusting = false

@@ -24,28 +24,26 @@ internal data class SelectedLogger(
     val maxDaysHistory: Long = 5,
 )
 
-internal fun LogbackConfigData.toSelectedLoggers(): List<SelectedLogger> {
-    return buildList {
-        logger?.forEach { logger ->
-            appender?.forEach { appender ->
-                if (logger.name == appender.name) {
-                    // If there is a separate output appender, it is guaranteed to have a rolling policy
-                    val rollingPolicy = appender.rollingPolicy!!
-                    val pathSplit = rollingPolicy.fileNamePattern.split("\\").filter { it.isNotBlank() }
+internal fun LogbackConfigData.toSelectedLoggers(): List<SelectedLogger> = buildList {
+    logger?.forEach { logger ->
+        appender?.forEach { appender ->
+            if (logger.name == appender.name) {
+                // If there is a separate output appender, it is guaranteed to have a rolling policy
+                val rollingPolicy = appender.rollingPolicy!!
+                val pathSplit = rollingPolicy.fileNamePattern.split("\\").filter { it.isNotBlank() }
 
-                    add(
-                        SelectedLogger(
-                            name = logger.name,
-                            level = logger.level ?: "INFO",
-                            separateOutput = true,
-                            outputFolder = pathSplit.minus(pathSplit.last()).joinToString(separator = "\\\\") + "\\\\",
-                            filenamePattern = pathSplit.last().toString(),
-                            maxFileSize = rollingPolicy.maxFileSize.filter(Char::isDigit).toLong(),
-                            totalSizeCap = rollingPolicy.totalSizeCap.filter(Char::isDigit).toLong(),
-                            maxDaysHistory = rollingPolicy.maxHistory.filter(Char::isDigit).toLong(),
-                        ),
-                    )
-                }
+                add(
+                    SelectedLogger(
+                        name = logger.name,
+                        level = logger.level ?: "INFO",
+                        separateOutput = true,
+                        outputFolder = pathSplit.minus(pathSplit.last()).joinToString(separator = "\\\\") + "\\\\",
+                        filenamePattern = pathSplit.last().toString(),
+                        maxFileSize = rollingPolicy.maxFileSize.filter(Char::isDigit).toLong(),
+                        totalSizeCap = rollingPolicy.totalSizeCap.filter(Char::isDigit).toLong(),
+                        maxDaysHistory = rollingPolicy.maxHistory.filter(Char::isDigit).toLong(),
+                    ),
+                )
             }
         }
     }

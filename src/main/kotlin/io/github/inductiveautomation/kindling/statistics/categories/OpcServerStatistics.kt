@@ -91,22 +91,20 @@ data class OpcServerStatistics(
             @Language("sql")
             query: String,
             enabled: (ResultSet) -> Boolean?,
-        ): List<OpcServer> {
-            return try {
-                backup.configDb
-                    .executeQuery(query)
-                    .toList { rs ->
-                        OpcServer(
-                            name = rs[1],
-                            type = rs[2],
-                            description = rs[3],
-                            readOnly = rs[4],
-                            enabled = enabled(rs),
-                        )
-                    }
-            } catch (e: SQLException) {
-                emptyList()
-            }
+        ): List<OpcServer> = try {
+            backup.configDb
+                .executeQuery(query)
+                .toList { rs ->
+                    OpcServer(
+                        name = rs[1],
+                        type = rs[2],
+                        description = rs[3],
+                        readOnly = rs[4],
+                        enabled = enabled(rs),
+                    )
+                }
+        } catch (e: SQLException) {
+            emptyList()
         }
     }
 }

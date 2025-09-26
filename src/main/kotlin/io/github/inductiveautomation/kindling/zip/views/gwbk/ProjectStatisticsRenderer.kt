@@ -24,47 +24,43 @@ class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
     override val title: String = "Projects"
     override val icon: Icon = FlatActionIcon("icons/bx-folder-open.svg")
 
-    override fun ProjectStatistics.subtitle(): String {
-        return sequence {
-            if (perspectiveProjects > 0) {
-                this.yield("$perspectiveProjects Perspective")
-            }
-            if (visionProjects > 0) {
-                this.yield("$visionProjects Vision")
-            }
-            this.yield("${projects.size} total")
-        }.joinToString()
-    }
+    override fun ProjectStatistics.subtitle(): String = sequence {
+        if (perspectiveProjects > 0) {
+            this.yield("$perspectiveProjects Perspective")
+        }
+        if (visionProjects > 0) {
+            this.yield("$visionProjects Vision")
+        }
+        this.yield("${projects.size} total")
+    }.joinToString()
 
-    override fun ProjectStatistics.render(): JComponent {
-        return FlatTabbedPane().apply {
-            tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
-            tabType = TabType.underlined
+    override fun ProjectStatistics.render(): JComponent = FlatTabbedPane().apply {
+        tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
+        tabType = TabType.underlined
 
-            for (project in projects.sortedByDescending { it.resources.size }) {
-                val icon = if (project.hasVisionResources || project.hasPerspectiveResources) {
-                    FlatActionIcon("icons/bx-show.svg")
-                } else {
-                    null
+        for (project in projects.sortedByDescending { it.resources.size }) {
+            val icon = if (project.hasVisionResources || project.hasPerspectiveResources) {
+                FlatActionIcon("icons/bx-show.svg")
+            } else {
+                null
+            }
+
+            val tooltip = buildString {
+                append(project.title ?: project.name)
+                if (project.description != null) {
+                    append(": ")
+                    append(project.description)
                 }
-
-                val tooltip = buildString {
-                    append(project.title ?: project.name)
-                    if (project.description != null) {
-                        append(": ")
-                        append(project.description)
-                    }
-                    if (project.hasVisionResources) {
-                        appendLine()
-                        append("Contains Vision Resources")
-                    }
-                    if (project.hasPerspectiveResources) {
-                        appendLine()
-                        append("Contains Perspective Resources")
-                    }
+                if (project.hasVisionResources) {
+                    appendLine()
+                    append("Contains Vision Resources")
                 }
-                addTab(project.name, icon, FlatScrollPane(createProjectTable(project)), tooltip)
+                if (project.hasPerspectiveResources) {
+                    appendLine()
+                    append("Contains Perspective Resources")
+                }
             }
+            addTab(project.name, icon, FlatScrollPane(createProjectTable(project)), tooltip)
         }
     }
 

@@ -100,9 +100,7 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
 
         private val mbFormatter = DecimalFormat("0.0 'mB'")
         private val heapFormatter = object : NumberFormat() {
-            override fun format(number: Double, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer {
-                return mbFormatter.format(number / 1_000_000, toAppendTo, pos)
-            }
+            override fun format(number: Double, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer = mbFormatter.format(number / 1_000_000, toAppendTo, pos)
 
             override fun format(number: Long, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer = mbFormatter.format(number, toAppendTo, pos)
             override fun parse(source: String, parsePosition: ParsePosition): Number = mbFormatter.parse(source, parsePosition)

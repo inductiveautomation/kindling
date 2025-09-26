@@ -7,19 +7,15 @@ import javax.swing.event.TableModelEvent
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.TableModel
 
-fun JTable.selectedRowIndices(): IntArray {
-    return selectionModel.selectedIndices
-        .filter { isRowSelected(it) }
-        .map { convertRowIndexToModel(it) }
-        .toIntArray()
-}
+fun JTable.selectedRowIndices(): IntArray = selectionModel.selectedIndices
+    .filter { isRowSelected(it) }
+    .map { convertRowIndexToModel(it) }
+    .toIntArray()
 
-fun JTable.selectedOrAllRowIndices(): IntArray {
-    return if (selectionModel.isSelectionEmpty) {
-        IntArray(model.rowCount) { it }
-    } else {
-        selectedRowIndices()
-    }
+fun JTable.selectedOrAllRowIndices(): IntArray = if (selectionModel.isSelectionEmpty) {
+    IntArray(model.rowCount) { it }
+} else {
+    selectedRowIndices()
 }
 
 val TableModel.rowIndices get() = 0 until rowCount
@@ -55,7 +51,8 @@ fun TableModel.exportToCSV(file: File) {
 
 fun TableModel.exportToXLSX(file: File) = file.outputStream().use { fos ->
     workbook {
-        sheet("Sheet 1") { // TODO: Some way to pipe in a more useful sheet name (or multiple sheets?)
+        sheet("Sheet 1") {
+            // TODO: Some way to pipe in a more useful sheet name (or multiple sheets?)
             row {
                 for (col in columnIndices) {
                     cell(getColumnName(col))

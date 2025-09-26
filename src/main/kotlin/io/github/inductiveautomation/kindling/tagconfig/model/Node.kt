@@ -48,9 +48,7 @@ open class Node(
         config.tags.sortWith(nodeChildComparator)
     }
 
-    operator fun div(childName: String): Node? {
-        return config.tags.find { it.name == childName }
-    }
+    operator fun div(childName: String): Node? = config.tags.find { it.name == childName }
 
     override fun getChildAt(childIndex: Int) = config.tags[childIndex]
     override fun getChildCount() = config.tags.size

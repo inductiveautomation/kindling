@@ -63,13 +63,11 @@ class LogbackEditor(file: List<String>) : JPanel(MigLayout("ins 6, fill, hidemod
         setPrototypeDisplayValue("X".repeat(50))
     }
 
-    private fun SelectedLoggerCard(selectedLogger: SelectedLogger): SelectedLoggerCard {
-        return SelectedLoggerCard(selectedLogger, ::updateData).apply {
-            closeButton.addActionListener {
-                selectedLoggersPanel.remove(this)
-                updateData()
-                selectedLoggersPanel.revalidate()
-            }
+    private fun SelectedLoggerCard(selectedLogger: SelectedLogger): SelectedLoggerCard = SelectedLoggerCard(selectedLogger, ::updateData).apply {
+        closeButton.addActionListener {
+            selectedLoggersPanel.remove(this)
+            updateData()
+            selectedLoggersPanel.revalidate()
         }
     }
 
