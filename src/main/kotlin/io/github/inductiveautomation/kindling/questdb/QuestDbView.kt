@@ -32,7 +32,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.Icon
 import javax.swing.JButton
-import javax.swing.JLabel
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
@@ -93,8 +92,6 @@ class QuestDbView(path: Path) : ToolPanel() {
     }
 
     private val sqlContext: SqlExecutionContext = SqlExecutionContextImpl(engine, 1).with(AllowAllSecurityContext.INSTANCE, null)
-
-    private val pageLabel: JLabel
 
     @Suppress("SqlResolve")
     val tables: List<Table> = context(sqlContext) {
@@ -197,8 +194,6 @@ class QuestDbView(path: Path) : ToolPanel() {
         actionMap.put("execute", execute)
         query.actionMap.put("execute", execute)
 
-        pageLabel = JLabel("")
-
         sortableTree.tree.attachPopupMenu { event ->
             val path = getClosestPathForLocation(event.x, event.y)
             when (val node = path?.lastPathComponent) {
@@ -263,7 +258,7 @@ data object QuestDbViewer : MultiTool {
     override val serialKey = "questdb-viewer"
     override val title = "QuestDB Viewer"
     override val description = "QuestDB Export (.zip)"
-    override val icon = FlatSVGIcon("icons/Questdb-logo.svg").derive(24, 24)
+    override val icon: FlatSVGIcon = FlatSVGIcon("icons/Questdb-logo.svg").derive(24, 24)
     override val filter = FileFilter(description, "zip")
     override fun open(path: Path): ToolPanel = QuestDbView(path)
     override fun open(paths: List<Path>): ToolPanel = open(paths.first())
