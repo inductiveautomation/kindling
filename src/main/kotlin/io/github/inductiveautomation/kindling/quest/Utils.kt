@@ -25,9 +25,7 @@ internal fun <T> CairoEngine.select(
 }
 
 context(meta: RecordMetadata)
-internal inline operator fun <reified T> Record.get(name: String): T? {
-    return get(meta.getColumnIndex(name))
-}
+internal inline operator fun <reified T> Record.get(name: String): T? = get(meta.getColumnIndex(name))
 
 @OptIn(ExperimentalUuidApi::class)
 context(meta: RecordMetadata)
