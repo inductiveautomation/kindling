@@ -9,6 +9,7 @@ import io.github.inductiveautomation.kindling.thread.MultiThreadViewer.DiffViewP
 import io.github.inductiveautomation.kindling.thread.model.Thread
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
+import io.github.inductiveautomation.kindling.utils.RSyntaxTextArea
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.clipboardString
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
@@ -118,10 +119,9 @@ private class UnifiedView(
     difference: List<Diff<String>>,
     columnCount: Int,
 ) : JPanel(MigLayout("fill, ins 0")) {
-    private val textArea = RSyntaxTextArea().apply {
+    private val textArea = RSyntaxTextArea {
         highlightCurrentLine = false
         isEditable = false
-        theme = Theme.currentValue
         font = monospaced
 
         fun highlight() {
@@ -135,8 +135,7 @@ private class UnifiedView(
             }
         }
 
-        Theme.addChangeListener { newTheme ->
-            theme = newTheme
+        Theme.addChangeListener { _ ->
             highlight()
         }
 

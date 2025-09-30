@@ -104,7 +104,9 @@ kotlin {
         }
     }
     compilerOptions {
-        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
+        freeCompilerArgs.addAll(
+            "-Xcontext-parameters",
+        )
     }
 }
 

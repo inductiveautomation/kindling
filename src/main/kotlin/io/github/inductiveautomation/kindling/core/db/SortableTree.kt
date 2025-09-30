@@ -69,15 +69,16 @@ class SortableTree(val tables: List<Table>) {
         SortAction(tableComparator)
     }
 
-    inner class SortAction(comparator: TableComparator) : Action(
-        description = comparator.tooltip,
-        icon = comparator.icon,
-        selected = this@SortableTree.comparator == comparator,
-        action = {
-            this@SortableTree.comparator = comparator
-            selected = true
-        },
-    ) {
+    inner class SortAction(comparator: TableComparator) :
+        Action(
+            description = comparator.tooltip,
+            icon = comparator.icon,
+            selected = this@SortableTree.comparator == comparator,
+            action = {
+                this@SortableTree.comparator = comparator
+                selected = true
+            },
+        ) {
         var comparator: TableComparator by actionValue("tableComparator", comparator)
     }
 

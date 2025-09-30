@@ -7,7 +7,8 @@ sealed interface QueryResult {
         val columnNames: List<String>,
         private val columnTypes: List<Class<*>>,
         val data: List<List<*>>,
-    ) : QueryResult, AbstractTableModel() {
+    ) : AbstractTableModel(),
+        QueryResult {
         constructor() : this(emptyList(), emptyList(), emptyList())
 
         init {

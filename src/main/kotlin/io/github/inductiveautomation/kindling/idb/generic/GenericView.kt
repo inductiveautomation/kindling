@@ -13,6 +13,7 @@ import io.github.inductiveautomation.kindling.core.db.Table
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
+import io.github.inductiveautomation.kindling.utils.RSyntaxTextArea
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.containsInOrder
@@ -21,6 +22,10 @@ import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.Date
@@ -31,10 +36,6 @@ import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.KeyStroke
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants
-import org.fife.ui.rtextarea.RTextScrollPane
 
 class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
     @Suppress("SqlResolve")
@@ -66,14 +67,8 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
 
     private val sortableTree = SortableTree(tables)
 
-    private val query = RSyntaxTextArea().apply {
+    private val query = RSyntaxTextArea {
         syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_SQL
-
-        theme = Theme.currentValue
-
-        Theme.addChangeListener { newTheme ->
-            theme = newTheme
-        }
     }
 
     private val execute = Action(

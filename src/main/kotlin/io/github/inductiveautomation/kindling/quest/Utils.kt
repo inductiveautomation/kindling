@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.questdb
+package io.github.inductiveautomation.kindling.quest
 
 import io.questdb.cairo.CairoEngine
 import io.questdb.cairo.ColumnType
@@ -10,12 +10,11 @@ import kotlin.reflect.KClass
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-
 context(sqlExec: SqlExecutionContext)
-fun <T> CairoEngine.select(
+internal fun <T> CairoEngine.select(
     query: String,
     transform: context(RecordMetadata) (Record) -> T,
-) = buildList {
+): List<T> = buildList {
     select(query, sqlExec).use { stmt ->
         stmt.getCursor(sqlExec).use { cursor ->
             while (cursor.hasNext()) {
@@ -26,19 +25,19 @@ fun <T> CairoEngine.select(
 }
 
 context(meta: RecordMetadata)
-inline operator fun <reified T> Record.get(name: String): T? {
+internal inline operator fun <reified T> Record.get(name: String): T? {
     return get(meta.getColumnIndex(name))
 }
 
 @OptIn(ExperimentalUuidApi::class)
 context(meta: RecordMetadata)
-inline operator fun <reified T> Record.get(index: Int): T? {
+internal inline operator fun <reified T> Record.get(index: Int): T? {
     val type = meta.getColumnType(index)
     val clazz = meta.getColumnClass(index)
 
     if (T::class != Any::class && T::class != clazz) return null
 
-    return when(type.toShort()) {
+    return when (type.toShort()) {
         ColumnType.SYMBOL -> getSymA(index)?.toString()
         ColumnType.STRING -> getStrA(index)?.toString()
         ColumnType.VARCHAR -> getVarcharA(index)?.toString()
@@ -59,17 +58,20 @@ inline operator fun <reified T> Record.get(index: Int): T? {
                 seq.byteAt(i.toLong())
             }
         }
+
         else -> error("Unable to parse column type: ${ColumnType.nameOf(type)}")
     } as T
 }
 
 @OptIn(ExperimentalUuidApi::class)
-fun RecordMetadata.getColumnClass(index: Int): KClass<*>? {
+internal fun RecordMetadata.getColumnClass(index: Int): KClass<*>? {
     val type = getColumnType(index)
     return when (type.toShort()) {
         ColumnType.SYMBOL,
         ColumnType.STRING,
-        ColumnType.VARCHAR -> String::class
+        ColumnType.VARCHAR,
+        -> String::class
+
         ColumnType.BYTE -> Byte::class
         ColumnType.SHORT -> Short::class
         ColumnType.INT -> Int::class

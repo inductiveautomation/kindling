@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.questdb
+package io.github.inductiveautomation.kindling.quest
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatSplitPane
@@ -17,6 +17,7 @@ import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
+import io.github.inductiveautomation.kindling.utils.RSyntaxTextArea
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.getLogger
@@ -26,9 +27,12 @@ import io.questdb.cairo.DefaultCairoConfiguration
 import io.questdb.cairo.security.AllowAllSecurityContext
 import io.questdb.griffin.SqlExecutionContext
 import io.questdb.griffin.SqlExecutionContextImpl
+import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants
+import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
 import java.nio.file.FileSystems
-import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.Icon
 import javax.swing.JButton
@@ -39,21 +43,19 @@ import javax.swing.KeyStroke
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyToRecursively
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.walk
-import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants
-import org.fife.ui.rtextarea.RTextScrollPane
+import kotlin.reflect.KClass
 
 @OptIn(ExperimentalPathApi::class)
 class QuestDbView(path: Path) : ToolPanel() {
     override val icon: Icon = QuestDbViewer.icon
 
-    private val tempDirectory: Path = Files.createTempDirectory(path.nameWithoutExtension).apply {
+    private val tempDirectory: Path = createTempDirectory(path.nameWithoutExtension).apply {
         if (path.extension.lowercase() == "zip") {
             LOGGER.debug("Exploding zip to {}", this)
             FileSystems.newFileSystem(path).use { zip ->
@@ -91,7 +93,8 @@ class QuestDbView(path: Path) : ToolPanel() {
         metadataCache.onStartupAsyncHydrator()
     }
 
-    private val sqlContext: SqlExecutionContext = SqlExecutionContextImpl(engine, 1).with(AllowAllSecurityContext.INSTANCE, null)
+    private val sqlContext: SqlExecutionContext = SqlExecutionContextImpl(engine, 1)
+        .with(AllowAllSecurityContext.INSTANCE, null)
 
     @Suppress("SqlResolve")
     val tables: List<Table> = context(sqlContext) {
@@ -100,7 +103,7 @@ class QuestDbView(path: Path) : ToolPanel() {
 
             val size = engine.select(
                 "SELECT diskSize FROM table_storage() WHERE tableName = '$name';",
-            ) {storageRec ->
+            ) { storageRec ->
                 storageRec.get<Long>(0)
             }.singleOrNull() ?: 0L
 
@@ -112,7 +115,7 @@ class QuestDbView(path: Path) : ToolPanel() {
                     defaultValue = null,
                     primaryKey = rec["upsertKey"]!!,
                     hidden = false,
-                    _parent = { sortableTree.root }
+                    _parent = { sortableTree.root },
                 )
             }
 
@@ -126,14 +129,8 @@ class QuestDbView(path: Path) : ToolPanel() {
     }
 
     private val sortableTree = SortableTree(tables)
-    private val query = RSyntaxTextArea().apply {
+    private val query = RSyntaxTextArea {
         syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_SQL
-
-        theme = Theme.currentValue
-
-        Theme.addChangeListener { newTheme ->
-            theme = newTheme
-        }
     }
 
     private val execute = Action(
@@ -141,40 +138,46 @@ class QuestDbView(path: Path) : ToolPanel() {
         description = "Execute (${if (SystemInfo.isMacOS) "⌘" else "Ctrl"} + Enter)",
         icon = FlatActionIcon("icons/bx-subdirectory-left.svg"),
         accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMaskEx),
-    ) {
+    ) { _ ->
         results.result = if (!query.text.isNullOrEmpty()) {
-            try {
-                val fact = engine.select(query.text, sqlContext)
-                val cur = fact.getCursor(sqlContext)
-
-                val names = List(fact.metadata.columnCount) {
-                    fact.metadata.getColumnName(it)
-                }
-
-                val types = List(fact.metadata.columnCount) {
-                    fact.metadata.getColumnClass(it)
-                }.filterNotNull()
-
-                val data: List<List<*>> = buildList {
-                    context(fact.metadata) {
-                        val rec = cur.record
-                        while (cur.hasNext()) {
-                            add(
-                                List(names.size) { rec.get<Any?>(it) }
-                            )
-                        }
-                    }
-                }
-
-                cur.close()
-                fact.close()
-
-                QueryResult.Success(names, types.map { it.javaObjectType }, data)
-            } catch (e: Exception) {
-                QueryResult.Error(e.message ?: "Error")
-            }
+            executeQuery(query.text)
         } else {
             QueryResult.Error("Enter a query in the text field above")
+        }
+    }
+
+    private fun executeQuery(query: String): QueryResult {
+        try {
+            engine.select(query, sqlContext).use { factory ->
+                factory.getCursor(sqlContext).use { cursor ->
+                    val names: List<String> = List(factory.metadata.columnCount) {
+                        factory.metadata.getColumnName(it)
+                    }
+
+                    val types: List<KClass<*>> = List(factory.metadata.columnCount) {
+                        factory.metadata.getColumnClass(it)
+                    }.filterNotNull()
+
+                    val data: List<List<*>> = buildList {
+                        context(factory.metadata) {
+                            val rec = cursor.record
+                            while (cursor.hasNext()) {
+                                add(
+                                    List(names.size) { rec.get<Any?>(it) },
+                                )
+                            }
+                        }
+                    }
+
+                    return QueryResult.Success(
+                        names,
+                        types.map { it.javaObjectType },
+                        data,
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            return QueryResult.Error(e.message ?: "Error")
         }
     }
 
@@ -248,7 +251,6 @@ class QuestDbView(path: Path) : ToolPanel() {
         tempDirectory.deleteRecursively()
     }
 
-    // constants
     companion object {
         private val LOGGER = getLogger<QuestDbView>()
     }
@@ -258,7 +260,7 @@ data object QuestDbViewer : MultiTool {
     override val serialKey = "questdb-viewer"
     override val title = "QuestDB Viewer"
     override val description = "QuestDB Export (.zip)"
-    override val icon: FlatSVGIcon = FlatSVGIcon("icons/Questdb-logo.svg").derive(24, 24)
+    override val icon: FlatSVGIcon = FlatSVGIcon("icons/Questdb-logo.svg")
     override val filter = FileFilter(description, "zip")
     override fun open(path: Path): ToolPanel = QuestDbView(path)
     override fun open(paths: List<Path>): ToolPanel = open(paths.first())
