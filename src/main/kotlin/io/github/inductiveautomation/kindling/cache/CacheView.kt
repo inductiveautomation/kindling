@@ -277,7 +277,6 @@ class CacheView(path: Path) : ToolPanel() {
 
         add(JLabel("${data.size} ${if (data.size == 1) "entry" else "entries"}"))
         add(settings, "right, wrap")
-
         add(mainSplitPane, "push, grow, span")
 
         schemaList.selectionModel.addListSelectionListener {
@@ -341,7 +340,7 @@ data object CacheViewer : Tool {
     override val serialKey = "sf-cache"
     override val title = "Store & Forward Cache"
     override val description = "S&F Cache (.data, .script, .zip)"
-    override val icon = FlatSVGIcon("icons/bx-data.svg")
+    override val icon = FlatSVGIcon("icons/bx-hdd.svg")
     internal val extensions = arrayOf("data", "script", "zip")
     override val filter = FileFilter(description, *extensions)
 

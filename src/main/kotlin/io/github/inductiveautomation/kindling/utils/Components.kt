@@ -11,7 +11,10 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
 import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
+import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import java.awt.Component
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -126,3 +129,16 @@ fun ButtonPanel(buttonList: List<AbstractButton>) = JPanel(MigLayout("ins 3 0, f
 }
 
 fun ButtonPanel(group: ButtonGroup) = ButtonPanel(group.elements.toList())
+
+/**
+ * Initializes an RSyntaxTextArea bound to the current theme.
+ */
+fun RSyntaxTextArea(block: RSyntaxTextArea.() -> Unit) = RSyntaxTextArea().apply {
+    theme = Theme.currentValue
+
+    Theme.addChangeListener { newTheme ->
+        theme = newTheme
+    }
+
+    block()
+}

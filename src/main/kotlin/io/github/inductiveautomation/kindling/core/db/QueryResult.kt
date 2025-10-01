@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.idb.generic
+package io.github.inductiveautomation.kindling.core.db
 
 import javax.swing.table.AbstractTableModel
 
@@ -7,7 +7,8 @@ sealed interface QueryResult {
         val columnNames: List<String>,
         private val columnTypes: List<Class<*>>,
         val data: List<List<*>>,
-    ) : QueryResult, AbstractTableModel() {
+    ) : AbstractTableModel(),
+        QueryResult {
         constructor() : this(emptyList(), emptyList(), emptyList())
 
         init {
