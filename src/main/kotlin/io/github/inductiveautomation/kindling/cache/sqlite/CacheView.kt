@@ -115,15 +115,16 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
 
                         results.map { it.toDetail() }
                     } catch (_: Exception) {
-                        val serializationDumper = deser.SerializationDumper(entry.data.unzip())
+                        val unzipped = entry.data.unzip()
 
                         listOf(
                             Detail(
                                 title = "Serialization dump of ${entry.data.size} bytes:",
                                 body = try {
+                                    val serializationDumper = deser.SerializationDumper(unzipped)
                                     serializationDumper.parseStream().lines()
                                 } catch (_: Exception) {
-                                    entry.data.inputStream().use {
+                                    unzipped.inputStream().use {
                                         it.toHumanReadableBinary().split("\n")
                                     }
                                 },

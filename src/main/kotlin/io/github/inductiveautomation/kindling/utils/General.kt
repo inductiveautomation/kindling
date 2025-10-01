@@ -177,6 +177,9 @@ fun String.containsInOrder(pattern: String, ignoreCase: Boolean): Boolean {
     return patternIndex == pattern.length
 }
 
+/**
+ * Unzips bytes if they are zipped with GZIP, otherwise returns the original ByteArray.
+ */
 fun ByteArray.unzip(): ByteArray {
     if (size <= 2) return this
 

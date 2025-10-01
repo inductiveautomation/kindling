@@ -18,7 +18,6 @@ import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
-import org.sqlite.SQLiteConnection
 import org.sqlite.SQLiteException
 import java.nio.file.Path
 import javax.swing.SwingConstants
