@@ -27,6 +27,10 @@ Has special handling for:
 - Images in the configuration DB
 - Tag configuration data
 
+### QuestDB Viewer
+
+Opens a QuestDB zip archive (such as a backup of the Core Historian's data) in a generic SQL exploration view.
+
 ### Log Viewer
 
 Open one (or multiple) wrapper.log files. If the output format is Ignition's default, they will be automatically parsed
@@ -117,6 +121,7 @@ Contributions of any kind (additional tools, polish to existing tools, test file
 - [SerializationDumper](https://github.com/NickstaDB/SerializationDumper)
 - [Hydraulic Conveyor](https://www.hydraulic.software/)
 - [Terai Atsuhiro](https://java-swing-tips.blogspot.com/)
+- [Bsmth](https://bsky.app/profile/bsmth.de) for their original [Quest DB Logo](https://en.wikipedia.org/wiki/File:Questdb-logo.svg)
 
 > [!WARNING]
 > Kindling is **not** an official Inductive Automation product and is provided as-is with no warranty. 

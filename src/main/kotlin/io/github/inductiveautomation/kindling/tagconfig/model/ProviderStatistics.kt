@@ -1,8 +1,8 @@
-package io.github.inductiveautomation.kindling.idb.tagconfig.model
+package io.github.inductiveautomation.kindling.tagconfig.model
 
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.DependentStatistic.Companion.dependentStatistic
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.MappedStatistic.Companion.mappedStatistic
-import io.github.inductiveautomation.kindling.idb.tagconfig.model.ProviderStatistics.QuantitativeStatistic.Companion.quantitativeStatistic
+import io.github.inductiveautomation.kindling.tagconfig.model.ProviderStatistics.DependentStatistic.Companion.dependentStatistic
+import io.github.inductiveautomation.kindling.tagconfig.model.ProviderStatistics.MappedStatistic.Companion.mappedStatistic
+import io.github.inductiveautomation.kindling.tagconfig.model.ProviderStatistics.QuantitativeStatistic.Companion.quantitativeStatistic
 import java.util.Locale
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -61,7 +61,7 @@ class ProviderStatistics private constructor(
 
     val valueSources by mappedStatistic {
         if (it.statistics.isAtomicTag) {
-            value.compute(it.statistics.dataSource ?: DEFAULT_VALUE_SOURCE) { _, v ->
+            value.compute(it.statistics.dataSource?.toString() ?: DEFAULT_VALUE_SOURCE) { _, v ->
                 if (v == null) 1 else v + 1
             }
         }

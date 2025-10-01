@@ -191,16 +191,15 @@ class ImagesPanel(connection: IdbConnection) : ToolPanel("ins 0, fill, hidemode 
         }
     }
 
-    private fun saveFolderAction(node: ImageFolderNode): Action =
-        Action("Save Folder", icon = FlatActionIcon("icons/bx-download.svg")) {
-            showSaveDialog(
-                "ZIP files",
-                "zip",
-                "$exportPrefix${node.userObject.replace('/', '_')}.zip",
-            ) { destination ->
-                node.exportToZip(destination)
-            }
+    private fun saveFolderAction(node: ImageFolderNode): Action = Action("Save Folder", icon = FlatActionIcon("icons/bx-download.svg")) {
+        showSaveDialog(
+            "ZIP files",
+            "zip",
+            "$exportPrefix${node.userObject.replace('/', '_')}.zip",
+        ) { destination ->
+            node.exportToZip(destination)
         }
+    }
 
     companion object {
         private val throbber = FlatSVGIcon("icons/bx-loader-circle.svg").derive(50, 50)
@@ -215,9 +214,7 @@ private class ImageRow(
     val description: String?,
     val connection: Connection,
 ) {
-    override fun toString(): String {
-        return "ImageRow(path='$path', type=$type, description=$description)"
-    }
+    override fun toString(): String = "ImageRow(path='$path', type=$type, description=$description)"
 
     fun inputStream(): InputStream = connection.prepareStatement(
         "SELECT data FROM images WHERE path = ?",

@@ -11,7 +11,7 @@ jackson = "2.19.2"
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 conveyor = { id = "dev.hydraulic.conveyor", version = "1.12" }
-spotless = { id = "com.diffplug.spotless", version = "6.25.0" }
+spotless = { id = "com.diffplug.spotless", version = "8.0.0" }
 dokka = { id = "org.jetbrains.dokka", version = "2.0.0" }
 
 [libraries]
@@ -59,6 +59,9 @@ ia-jython = { module = "org.python:jython-ia", version = "2.7.3.5" }
 # test framework
 kotest-junit = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
 kotest-assertions-core = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
+
+# questdb
+questdb = { module = "org.questdb:questdb", version = "9.0.3" }
 
 [bundles]
 coroutines = [

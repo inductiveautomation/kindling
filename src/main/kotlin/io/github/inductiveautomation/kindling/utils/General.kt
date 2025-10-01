@@ -18,13 +18,9 @@ import kotlin.reflect.KProperty
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-fun String.truncate(length: Int = 20): String {
-    return asIterable().joinToString(separator = "", limit = length)
-}
+fun String.truncate(length: Int = 20): String = asIterable().joinToString(separator = "", limit = length)
 
-inline fun <reified T> getLogger(): Logger {
-    return LoggerFactory.getLogger(T::class.java.name)
-}
+inline fun <reified T> getLogger(): Logger = LoggerFactory.getLogger(T::class.java.name)
 
 inline fun StringBuilder.tag(
     tag: String,
@@ -56,11 +52,9 @@ fun StringBuilder.tag(
  */
 fun <T> Grouping<T, Int>.mode(): Int? = eachCount().maxOfOrNull { it.key }
 
-fun <T, U : Comparable<U>> List<T>.isSortedBy(keyFn: (T) -> U): Boolean {
-    return asSequence().zipWithNext { a, b ->
-        keyFn(a) <= keyFn(b)
-    }.all { it }
-}
+fun <T, U : Comparable<U>> List<T>.isSortedBy(keyFn: (T) -> U): Boolean = asSequence().zipWithNext { a, b ->
+    keyFn(a) <= keyFn(b)
+}.all { it }
 
 /**
  * Creates and returns a new [Properties], loading keys from [inputStream] according to the loading strategy specified
@@ -74,31 +68,26 @@ fun Properties(
 
 private val prefix = arrayOf("", "k", "m", "g", "t", "p", "e", "z", "y")
 
-fun Long.toFileSizeLabel(): String =
-    when (this) {
-        0L -> "0B"
-        else -> {
-            val digits = log2(toDouble()).toInt() / 10
-            val precision = digits.coerceIn(0, 2)
-            "%,.${precision}f${prefix[digits]}b".format(toDouble() / 2.0.pow(digits * 10.0))
-        }
+fun Long.toFileSizeLabel(): String = when (this) {
+    0L -> "0B"
+    else -> {
+        val digits = log2(toDouble()).toInt() / 10
+        val precision = digits.coerceIn(0, 2)
+        "%,.${precision}f${prefix[digits]}b".format(toDouble() / 2.0.pow(digits * 10.0))
     }
+}
 
 operator fun MatchGroupCollection.getValue(
     thisRef: Any?,
     property: KProperty<*>,
-): MatchGroup {
-    return requireNotNull(get(property.name))
-}
+): MatchGroup = requireNotNull(get(property.name))
 
-fun String.escapeHtml(): String {
-    return buildString {
-        for (char in this@escapeHtml) {
-            when (char) {
-                '>' -> append("&gt;")
-                '<' -> append("&lt;")
-                else -> append(char)
-            }
+fun String.escapeHtml(): String = buildString {
+    for (char in this@escapeHtml) {
+        when (char) {
+            '>' -> append("&gt;")
+            '<' -> append("&lt;")
+            else -> append(char)
         }
     }
 }
@@ -156,18 +145,16 @@ fun InputStream.toHumanReadableBinary(): String {
     }
 }
 
-private fun decodeBytes(toRead: ByteArray): String {
-    return String(
-        CharArray(toRead.size) { i ->
-            val byte = toRead[i]
-            if (byte >= 0 && !Character.isISOControl(byte.toInt())) {
-                Char(byte.toUShort())
-            } else {
-                '.'
-            }
-        },
-    )
-}
+private fun decodeBytes(toRead: ByteArray): String = String(
+    CharArray(toRead.size) { i ->
+        val byte = toRead[i]
+        if (byte >= 0 && !Character.isISOControl(byte.toInt())) {
+            Char(byte.toUShort())
+        } else {
+            '.'
+        }
+    },
+)
 
 @OptIn(ExperimentalStdlibApi::class)
 private val HEX_FORMAT = HexFormat {
@@ -176,9 +163,7 @@ private val HEX_FORMAT = HexFormat {
     }
 }
 
-fun <T> Iterator<T>.nextOrNull(): T? {
-    return if (hasNext()) next() else null
-}
+fun <T> Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
 
 fun String.containsInOrder(pattern: String, ignoreCase: Boolean): Boolean {
     if (pattern.isEmpty()) return true // An empty pattern is always found

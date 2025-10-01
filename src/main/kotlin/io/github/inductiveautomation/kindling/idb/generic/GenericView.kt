@@ -1,17 +1,19 @@
 package io.github.inductiveautomation.kindling.idb.generic
 
-import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatSplitPane
 import com.formdev.flatlaf.util.SystemInfo
-import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolPanel
+import io.github.inductiveautomation.kindling.core.db.Column
+import io.github.inductiveautomation.kindling.core.db.QueryResult
+import io.github.inductiveautomation.kindling.core.db.ResultsPanel
+import io.github.inductiveautomation.kindling.core.db.SortableTree
+import io.github.inductiveautomation.kindling.core.db.Table
 import io.github.inductiveautomation.kindling.utils.Action
-import io.github.inductiveautomation.kindling.utils.ButtonPanel
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
-import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
+import io.github.inductiveautomation.kindling.utils.RSyntaxTextArea
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.containsInOrder
@@ -28,108 +30,12 @@ import java.awt.event.KeyEvent
 import java.sql.Connection
 import java.sql.Date
 import java.sql.JDBCType
-import java.util.Collections
-import java.util.Enumeration
-import javax.swing.ButtonGroup
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JToggleButton
 import javax.swing.KeyStroke
-import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreeNode
-
-enum class TableComparator(
-    val tooltip: String,
-    val icon: FlatSVGIcon,
-    val comparator: Comparator<Table>,
-) : Comparator<Table> by comparator {
-    ByNameAscending(
-        tooltip = "Sort A-Z",
-        icon = FlatActionIcon("icons/bx-sort-a-z.svg"),
-        comparator = compareBy(nullsFirst(AlphanumComparator(false))) { it.name },
-    ),
-    ByNameDescending(
-        tooltip = "Sort Z-A",
-        icon = FlatActionIcon("icons/bx-sort-z-a.svg"),
-        comparator = ByNameAscending.reversed(),
-    ),
-    BySizeAscending(
-        tooltip = "Sort by Size",
-        icon = FlatActionIcon("icons/bx-sort-up.svg"),
-        comparator = compareBy(Table::size),
-    ),
-    BySizeDescending(
-        tooltip = "Sort by Size (descending)",
-        icon = FlatActionIcon("icons/bx-sort-down.svg"),
-        comparator = BySizeAscending.reversed(),
-    ),
-}
-
-class SortableTree(val tables: List<Table>) {
-    var comparator = TableComparator.BySizeDescending
-        set(value) {
-            field = value
-            root = sortedTreeNode()
-            tree.model = DefaultTreeModel(root)
-        }
-
-    private fun sortedTreeNode() = object : TreeNode {
-        private val sortedTables = tables.sortedWith(comparator)
-
-        override fun getChildAt(childIndex: Int): TreeNode = sortedTables[childIndex]
-        override fun getChildCount(): Int = sortedTables.size
-        override fun getIndex(node: TreeNode): Int = sortedTables.indexOf(node)
-        override fun children(): Enumeration<out TreeNode> = Collections.enumeration(sortedTables)
-        override fun getParent(): TreeNode? = null
-        override fun getAllowsChildren(): Boolean = true
-        override fun isLeaf(): Boolean = false
-    }
-
-    var root: TreeNode = sortedTreeNode()
-
-    val tree = DBMetaDataTree(DefaultTreeModel(root))
-
-    private val sortActions: List<SortAction> = TableComparator.entries.map { tableComparator ->
-        SortAction(tableComparator)
-    }
-
-    inner class SortAction(comparator: TableComparator) : Action(
-        description = comparator.tooltip,
-        icon = comparator.icon,
-        selected = this@SortableTree.comparator == comparator,
-        action = {
-            this@SortableTree.comparator = comparator
-            selected = true
-        },
-    ) {
-        var comparator: TableComparator by actionValue("tableComparator", comparator)
-    }
-
-    private fun createSortButtons(): ButtonGroup = ButtonGroup().apply {
-        for (sortAction in sortActions) {
-            add(
-                JToggleButton(
-                    Action(
-                        description = sortAction.description,
-                        icon = sortAction.icon,
-                        selected = sortAction.selected,
-                    ) { e ->
-                        sortAction.actionPerformed(e)
-                    },
-                ),
-            )
-        }
-    }
-
-    private val sortButtons = createSortButtons()
-
-    val component = ButtonPanel(sortButtons).apply {
-        add(FlatScrollPane(tree), "newline, push, grow")
-    }
-}
 
 class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
     @Suppress("SqlResolve")
@@ -161,14 +67,8 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
 
     private val sortableTree = SortableTree(tables)
 
-    private val query = RSyntaxTextArea().apply {
+    private val query = RSyntaxTextArea {
         syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_SQL
-
-        theme = Theme.currentValue
-
-        Theme.addChangeListener { newTheme ->
-            theme = newTheme
-        }
     }
 
     private val execute = Action(

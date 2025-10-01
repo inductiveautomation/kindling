@@ -58,12 +58,10 @@ class FilterModel<T>(
     internal var values: List<*> = data.keys.toList()
 
     override fun getSize(): Int = values.size + 1
-    override fun getElementAt(index: Int): Any? {
-        return if (index == 0) {
-            CheckBoxList.ALL_ENTRY
-        } else {
-            values[index - 1]
-        }
+    override fun getElementAt(index: Int): Any? = if (index == 0) {
+        CheckBoxList.ALL_ENTRY
+    } else {
+        values[index - 1]
     }
 
     fun indexOf(value: Any?): Int {
@@ -196,15 +194,16 @@ class FilterList(
         SortAction(filterComparator)
     }
 
-    inner class SortAction(comparator: FilterComparator) : Action(
-        description = comparator.tooltip,
-        icon = comparator.icon,
-        selected = this@FilterList.comparator == comparator,
-        action = {
-            this@FilterList.comparator = comparator
-            selected = true
-        },
-    ) {
+    inner class SortAction(comparator: FilterComparator) :
+        Action(
+            description = comparator.tooltip,
+            icon = comparator.icon,
+            selected = this@FilterList.comparator == comparator,
+            action = {
+                this@FilterList.comparator = comparator
+                selected = true
+            },
+        ) {
         var comparator: FilterComparator by actionValue("filterComparator", comparator)
     }
 

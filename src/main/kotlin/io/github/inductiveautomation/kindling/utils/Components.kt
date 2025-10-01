@@ -11,7 +11,10 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.jidesoft.swing.StyledLabel
 import com.jidesoft.swing.StyledLabelBuilder
 import io.github.inductiveautomation.kindling.core.Kindling
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
+import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import net.miginfocom.swing.MigLayout
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import java.awt.Component
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -25,11 +28,9 @@ import javax.swing.border.EmptyBorder
 inline fun FlatScrollPane(
     component: Component,
     block: FlatScrollPane.() -> Unit = {},
-): FlatScrollPane {
-    return FlatScrollPane().apply {
-        setViewportView(component)
-        block(this)
-    }
+): FlatScrollPane = FlatScrollPane().apply {
+    setViewportView(component)
+    block(this)
 }
 
 /**
@@ -62,9 +63,7 @@ inline fun jFrame(
     isVisible = initiallyVisible
 }
 
-inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel {
-    return StyledLabelBuilder().apply(block).createLabel()
-}
+inline fun StyledLabel(block: StyledLabelBuilder.() -> Unit): StyledLabel = StyledLabelBuilder().apply(block).createLabel()
 
 inline fun StyledLabel.style(block: StyledLabelBuilder.() -> Unit) {
     StyledLabelBuilder().apply {
@@ -100,24 +99,22 @@ private fun createSplitPane(
     resizeWeight: Double,
     expandableSide: ExpandableSide,
     block: JSplitPane.() -> Unit,
-): FlatSplitPane {
-    return FlatSplitPane().apply {
-        this.orientation = orientation
-        this.leftComponent = left
-        this.rightComponent = right
-        this.isOneTouchExpandable = true
-        this.expandableSide = expandableSide
-        this.resizeWeight = resizeWeight
-        addComponentListener(
-            object : ComponentAdapter() {
-                override fun componentShown(e: ComponentEvent?) {
-                    setDividerLocation(resizeWeight)
-                }
-            },
-        )
+): FlatSplitPane = FlatSplitPane().apply {
+    this.orientation = orientation
+    this.leftComponent = left
+    this.rightComponent = right
+    this.isOneTouchExpandable = true
+    this.expandableSide = expandableSide
+    this.resizeWeight = resizeWeight
+    addComponentListener(
+        object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                setDividerLocation(resizeWeight)
+            }
+        },
+    )
 
-        block()
-    }
+    block()
 }
 
 /**
@@ -132,3 +129,16 @@ fun ButtonPanel(buttonList: List<AbstractButton>) = JPanel(MigLayout("ins 3 0, f
 }
 
 fun ButtonPanel(group: ButtonGroup) = ButtonPanel(group.elements.toList())
+
+/**
+ * Initializes an RSyntaxTextArea bound to the current theme.
+ */
+fun RSyntaxTextArea(block: RSyntaxTextArea.() -> Unit) = RSyntaxTextArea().apply {
+    theme = Theme.currentValue
+
+    Theme.addChangeListener { newTheme ->
+        theme = newTheme
+    }
+
+    block()
+}

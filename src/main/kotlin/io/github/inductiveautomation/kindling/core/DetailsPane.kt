@@ -90,46 +90,42 @@ class DetailsPane(initialEvents: List<Detail> = emptyList()) : JPanel(MigLayout(
         textPane.text = events.toDisplayFormat()
     }
 
-    private fun List<Detail>.toDisplayFormat(): String {
-        return joinToString(separator = "", prefix = "<html>") { event ->
-            buildString {
-                append("<b>").append(event.title)
-                if (event.details.isNotEmpty()) {
-                    append("&nbsp;<object ")
-                    event.details.entries.joinTo(buffer = this, separator = " ") { (key, value) ->
-                        "$DETAIL_PREFIX$key = \"$value\""
+    private fun List<Detail>.toDisplayFormat(): String = joinToString(separator = "", prefix = "<html>") { event ->
+        buildString {
+            append("<b>").append(event.title)
+            if (event.details.isNotEmpty()) {
+                append("&nbsp;<object ")
+                event.details.entries.joinTo(buffer = this, separator = " ") { (key, value) ->
+                    "$DETAIL_PREFIX$key = \"$value\""
+                }
+                append("/>")
+            }
+            append("</b>")
+            if (event.message != null) {
+                append("<br>")
+                append(event.message.escapeHtml())
+            }
+            if (event.body.isNotEmpty()) {
+                event.body.joinTo(buffer = this, separator = "\n", prefix = "<pre>", postfix = "</pre>") { (text, link) ->
+                    if (link != null) {
+                        """<a href="$link">$text</a>"""
+                    } else {
+                        text
                     }
-                    append("/>")
                 }
-                append("</b>")
-                if (event.message != null) {
-                    append("<br>")
-                    append(event.message.escapeHtml())
-                }
-                if (event.body.isNotEmpty()) {
-                    event.body.joinTo(buffer = this, separator = "\n", prefix = "<pre>", postfix = "</pre>") { (text, link) ->
-                        if (link != null) {
-                            """<a href="$link">$text</a>"""
-                        } else {
-                            text
-                        }
-                    }
-                } else {
-                    append("<br>")
-                }
+            } else {
+                append("<br>")
             }
         }
     }
 
-    private fun List<Detail>.toClipboardFormat(): String {
-        return joinToString(separator = "\n\n") { event ->
-            buildString {
-                appendLine(event.title)
-                if (event.message != null) {
-                    appendLine(event.message)
-                }
-                event.body.joinTo(buffer = this, separator = "\n") { "\t${it.text}" }
+    private fun List<Detail>.toClipboardFormat(): String = joinToString(separator = "\n\n") { event ->
+        buildString {
+            appendLine(event.title)
+            if (event.message != null) {
+                appendLine(event.message)
             }
+            event.body.joinTo(buffer = this, separator = "\n") { "\t${it.text}" }
         }
     }
 }

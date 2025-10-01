@@ -7,6 +7,7 @@ import io.github.inductiveautomation.kindling.gatewaynetwork.GatewayNetworkTool
 import io.github.inductiveautomation.kindling.idb.IdbViewer
 import io.github.inductiveautomation.kindling.localization.TranslationTool
 import io.github.inductiveautomation.kindling.log.LogViewer
+import io.github.inductiveautomation.kindling.quest.QuestDbViewer
 import io.github.inductiveautomation.kindling.serial.SerialViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.utils.FileFilter
@@ -53,16 +54,17 @@ interface Tool : KindlingSerializable {
     companion object {
         val tools: List<Tool> by lazy {
             listOf(
-                ZipViewer,
-                MultiThreadViewer,
-                LogViewer,
-                IdbViewer,
+                AlarmViewer,
                 CacheViewer,
                 GatewayNetworkTool,
-                AlarmViewer,
-                XmlTool,
+                IdbViewer,
+                LogViewer,
+                MultiThreadViewer,
+                QuestDbViewer,
                 SerialViewer,
                 TranslationTool,
+                XmlTool,
+                ZipViewer,
             )
         }
 

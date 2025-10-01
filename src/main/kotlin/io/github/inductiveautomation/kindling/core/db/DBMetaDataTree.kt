@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.idb.generic
+package io.github.inductiveautomation.kindling.core.db
 
 import com.formdev.flatlaf.extras.components.FlatTree
 import com.jidesoft.swing.TreeSearchable
@@ -46,12 +46,10 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
                 isRepeats = true
             }
 
-            override fun convertElementToString(element: Any?): String {
-                return when (val node = (element as? TreePath)?.lastPathComponent) {
-                    is Table -> node.name
-                    is Column -> node.name
-                    else -> ""
-                }
+            override fun convertElementToString(element: Any?): String = when (val node = (element as? TreePath)?.lastPathComponent) {
+                is Table -> node.name
+                is Column -> node.name
+                else -> ""
             }
         }
     }

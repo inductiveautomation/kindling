@@ -75,14 +75,12 @@ class AlarmCacheView(path: Path) : ToolPanel() {
 
     private val detailsPane = DetailsPane()
 
-    private fun EventData.asBodyLine(name: String): Sequence<Detail.BodyLine> {
-        return sequence {
-            yield(Detail.BodyLine("***$name***"))
-            values.forEach { pv ->
-                yield(Detail.BodyLine("${pv.property.name}: ${pv.value}"))
-            }
-            yield(Detail.EMPTY_LINE)
+    private fun EventData.asBodyLine(name: String): Sequence<Detail.BodyLine> = sequence {
+        yield(Detail.BodyLine("***$name***"))
+        values.forEach { pv ->
+            yield(Detail.BodyLine("${pv.property.name}: ${pv.value}"))
         }
+        yield(Detail.EMPTY_LINE)
     }
 
     private fun AlarmEvent.toDetail(): Detail = Detail(

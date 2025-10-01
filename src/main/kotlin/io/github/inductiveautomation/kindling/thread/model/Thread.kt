@@ -47,8 +47,6 @@ data class Thread(
     companion object {
         private val threadPoolRegex = "(?<pool>.+)-\\d+\$".toRegex()
 
-        internal fun extractPool(name: String): String? {
-            return threadPoolRegex.find(name)?.groups?.get("pool")?.value
-        }
+        internal fun extractPool(name: String): String? = threadPoolRegex.find(name)?.groups?.get("pool")?.value
     }
 }

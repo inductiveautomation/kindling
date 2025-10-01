@@ -10,7 +10,8 @@ import javax.swing.JPopupMenu
 
 internal class LevelPanel<T : LogEvent>(
     rawData: List<T>,
-) : FilterListPanel<T>("Levels"), FileFilterResponsive<T> {
+) : FilterListPanel<T>("Levels"),
+    FileFilterResponsive<T> {
     override val icon = FlatSVGIcon("icons/bx-bar-chart-alt.svg")
 
     override fun setModelData(data: List<T>) {

@@ -218,7 +218,9 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         override val icon: Icon?,
         override val tabTooltip: String?,
         supplier: () -> Component,
-    ) : JPanel(BorderLayout()), PopupMenuCustomizer, FloatableComponent {
+    ) : JPanel(BorderLayout()),
+        PopupMenuCustomizer,
+        FloatableComponent {
         val component = lazy(supplier)
 
         init {
@@ -241,27 +243,25 @@ open class TabStrip(val tabsEditable: Boolean = false) : DnDTabbedPane() {
         }
     }
 
-    private fun <T> createPopupFrame(tab: T): JFrame where T : Container, T : FloatableComponent {
-        return jFrame(tab.tabName, 1024, 768) {
-            contentPane = tab
+    private fun <T> createPopupFrame(tab: T): JFrame where T : Container, T : FloatableComponent = jFrame(tab.tabName, 1024, 768) {
+        contentPane = tab
 
-            jMenuBar = JMenuBar().apply {
-                add(
-                    JMenu("Actions").apply {
-                        add(
-                            Action(name = "Unfloat") {
-                                addTab(
-                                    tab.tabName,
-                                    tab.icon,
-                                    tab,
-                                    tab.tabTooltip,
-                                )
-                                dispose()
-                            },
-                        )
-                    },
-                )
-            }
+        jMenuBar = JMenuBar().apply {
+            add(
+                JMenu("Actions").apply {
+                    add(
+                        Action(name = "Unfloat") {
+                            addTab(
+                                tab.tabName,
+                                tab.icon,
+                                tab,
+                                tab.tabTooltip,
+                            )
+                            dispose()
+                        },
+                    )
+                },
+            )
         }
     }
 }

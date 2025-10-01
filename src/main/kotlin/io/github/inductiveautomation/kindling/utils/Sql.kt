@@ -15,12 +15,10 @@ import java.sql.Timestamp
 /**
  * Exhausts (and closes) a ResultSet into a list using [transform].
  */
-fun <T> ResultSet.toList(transform: (ResultSet) -> T): List<T> {
-    return use { rs ->
-        buildList {
-            while (rs.next()) {
-                add(transform(rs))
-            }
+fun <T> ResultSet.toList(transform: (ResultSet) -> T): List<T> = use { rs ->
+    buildList {
+        while (rs.next()) {
+            add(transform(rs))
         }
     }
 }
@@ -28,12 +26,10 @@ fun <T> ResultSet.toList(transform: (ResultSet) -> T): List<T> {
 /**
  * Exhausts (and closes) a ResultSet into a mutable mapping builder (via [rowConsumer]), returning an immutable map.
  */
-fun <K, V> ResultSet.toMap(rowConsumer: MutableMap<K, V>.(ResultSet) -> Unit): Map<K, V> {
-    return use { rs ->
-        buildMap {
-            while (rs.next()) {
-                rowConsumer(rs)
-            }
+fun <K, V> ResultSet.toMap(rowConsumer: MutableMap<K, V>.(ResultSet) -> Unit): Map<K, V> = use { rs ->
+    buildMap {
+        while (rs.next()) {
+            rowConsumer(rs)
         }
     }
 }
@@ -41,12 +37,10 @@ fun <K, V> ResultSet.toMap(rowConsumer: MutableMap<K, V>.(ResultSet) -> Unit): M
 /**
  * Closes a ResultSet, creating a map of each column to each value from the first returned row.
  */
-fun ResultSet.asScalarMap(): Map<String, Any?> {
-    return use { rs ->
-        buildMap {
-            repeat(rs.metaData.columnCount) { i ->
-                put(rs.metaData.getColumnName(i + 1), rs[i + 1])
-            }
+fun ResultSet.asScalarMap(): Map<String, Any?> = use { rs ->
+    buildMap {
+        repeat(rs.metaData.columnCount) { i ->
+            put(rs.metaData.getColumnName(i + 1), rs[i + 1])
         }
     }
 }
@@ -59,38 +53,30 @@ fun ResultSet.asScalarMap(): Map<String, Any?> {
  */
 fun Connection.executeQuery(
     @Language("sql") sql: String,
-): ResultSet {
-    return createStatement().executeQuery(sql)
-}
+): ResultSet = createStatement().executeQuery(sql)
 
-inline operator fun <reified T> ResultSet.get(column: Int): T {
-    return sqliteCoercion(getObject(column))
-}
+inline operator fun <reified T> ResultSet.get(column: Int): T = sqliteCoercion(getObject(column))
 
-inline operator fun <reified T> ResultSet.get(column: String): T {
-    return sqliteCoercion(getObject(column))
-}
+inline operator fun <reified T> ResultSet.get(column: String): T = sqliteCoercion(getObject(column))
 
-inline fun <reified T> sqliteCoercion(raw: Any?): T {
-    return when {
-        raw is Int && T::class == Long::class -> raw.toLong()
-        raw is Int && T::class == Boolean::class -> raw == 1
-        else -> raw
-    } as T
-}
+inline fun <reified T> sqliteCoercion(raw: Any?): T = when {
+    raw is Int && T::class == Long::class -> raw.toLong()
+    raw is Int && T::class == Boolean::class -> raw == 1
+    else -> raw
+} as T
 
 fun SQLiteConnection(
     path: Path,
     readOnly: Boolean = true,
     journalEnabled: Boolean = false
-): SQLiteConnection {
-    return SQLiteDataSource().apply {
-        url = "jdbc:sqlite:file:$path"
-        setReadOnly(readOnly)
-        if (!journalEnabled) setJournalMode("OFF")
-        setSynchronous("OFF")
-    }.connection as SQLiteConnection
-}
+): SQLiteConnection = SQLiteDataSource().apply {
+    url = "jdbc:sqlite:file:$path"
+    setReadOnly(readOnly)
+    if (!journalEnabled) {
+        setJournalMode("OFF")
+    }
+    setSynchronous("OFF")
+}.connection as SQLiteConnection
 
 val JDBCType.javaType: Class<*>
     get() =

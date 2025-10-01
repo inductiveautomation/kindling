@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
+import io.github.inductiveautomation.kindling.utils.RSyntaxTextArea
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.toHumanReadableBinary
 import io.github.inductiveautomation.kindling.zip.views.FileView.Companion.SyntaxStyle.JSON
@@ -11,7 +12,6 @@ import io.github.inductiveautomation.kindling.zip.views.FileView.Companion.Synta
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants.SYNTAX_STYLE_CSS
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants.SYNTAX_STYLE_CSV
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants.SYNTAX_STYLE_DOCKERFILE
@@ -70,11 +70,9 @@ class FileView(override val provider: FileSystemProvider, override val path: Pat
         }
     }
 
-    private val textArea = RSyntaxTextArea().apply {
+    private val textArea = RSyntaxTextArea {
         isEditable = false
         syntaxEditingStyle = (syntaxCombo.selectedItem as SyntaxStyle).style
-
-        theme = Theme.currentValue
     }
 
     override val icon: FlatSVGIcon = FlatActionIcon("icons/bx-file.svg")

@@ -67,9 +67,7 @@ class ReifiedLabelProvider<T : Any>(
             noinline getText: StringProvider<T>,
             noinline getIcon: IconProvider<T> = defaultIconFunction(),
             noinline getTooltip: StringProvider<T> = { null },
-        ): ReifiedLabelProvider<T> {
-            return ReifiedLabelProvider(T::class, getText, getIcon, getTooltip)
-        }
+        ): ReifiedLabelProvider<T> = ReifiedLabelProvider(T::class, getText, getIcon, getTooltip)
 
         inline fun <reified T : Any> JXTable.setDefaultRenderer(
             noinline getText: StringProvider<T>,

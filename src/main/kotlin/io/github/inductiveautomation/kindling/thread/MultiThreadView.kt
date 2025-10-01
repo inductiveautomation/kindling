@@ -465,9 +465,7 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
 
     override val respectsEncoding = true
     override fun open(path: Path) = open(listOf(path))
-    override fun open(paths: List<Path>): ToolPanel {
-        return MultiThreadView(paths.sortedWith(compareBy(AlphanumComparator(), Path::name)))
-    }
+    override fun open(paths: List<Path>): ToolPanel = MultiThreadView(paths.sortedWith(compareBy(AlphanumComparator(), Path::name)))
 
     override fun open(data: String): ToolPanel {
         val tempFile = createTempFile(prefix = "kindling", suffix = "cb")

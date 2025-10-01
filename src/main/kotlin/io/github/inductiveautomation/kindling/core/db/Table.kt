@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.idb.generic
+package io.github.inductiveautomation.kindling.core.db
 
 import java.util.Collections
 import java.util.Enumeration
@@ -18,7 +18,5 @@ data class Table(
     override fun isLeaf(): Boolean = false
     override fun children(): Enumeration<out TreeNode> = Collections.enumeration(columns)
 
-    override fun toString(): String {
-        return this.name
-    }
+    override fun toString(): String = this.name
 }

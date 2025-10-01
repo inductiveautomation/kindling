@@ -10,9 +10,7 @@ class FileTransferHandler(
     private val predicate: (File) -> Boolean = { true },
     private val callback: (List<File>) -> Unit,
 ) : TransferHandler() {
-    override fun canImport(support: TransferSupport): Boolean {
-        return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
-    }
+    override fun canImport(support: TransferSupport): Boolean = support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
 
     @Suppress("UNCHECKED_CAST")
     override fun importData(support: TransferSupport): Boolean {
