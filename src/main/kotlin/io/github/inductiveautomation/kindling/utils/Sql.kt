@@ -68,7 +68,7 @@ inline fun <reified T> sqliteCoercion(raw: Any?): T = when {
 fun SQLiteConnection(
     path: Path,
     readOnly: Boolean = true,
-    journalEnabled: Boolean = false
+    journalEnabled: Boolean = false,
 ): SQLiteConnection = SQLiteDataSource().apply {
     url = "jdbc:sqlite:file:$path"
     setReadOnly(readOnly)

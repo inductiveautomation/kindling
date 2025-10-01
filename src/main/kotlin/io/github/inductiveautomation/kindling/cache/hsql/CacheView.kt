@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.cache.hsql
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatPopupMenu
 import com.jidesoft.swing.JideButton
+import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.DetailsPane
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
@@ -22,6 +23,7 @@ import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.getValue
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
+import io.github.inductiveautomation.kindling.utils.toDetail
 import io.github.inductiveautomation.kindling.utils.toList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -332,4 +334,3 @@ class CacheView(path: Path) : ToolPanel() {
         val cacheFileExtensions = listOf("data", "script", "log", "backup", "properties")
     }
 }
-

@@ -58,29 +58,27 @@ fun Serializable.toDetail(): Detail = when (this) {
 /**
  * @throws ClassNotFoundException
  */
-fun ByteArray.deserializeStoreAndForward(): Serializable {
-    return AliasingObjectInputStream(inputStream()) {
-        put("com.inductiveautomation.ignition.gateway.audit.AuditProfileData", AuditProfileData::class.java)
-        put($$"com.inductiveautomation.ignition.gateway.script.ialabs.IALabsDatasourceFunctions$QuerySFData", ScriptedSFData::class.java)
-        put("com.inductiveautomation.ignition.common.AbstractDataset", AbstractDataset::class.java)
-        put("com.inductiveautomation.ignition.common.BasicDataset", BasicDataset::class.java)
-        put("com.inductiveautomation.ignition.gateway.alarming.journal.remote.RemoteEvent", RemoteEvent::class.java)
-        put($$"com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal$AlarmJournalSFData", AlarmJournalData::class.java)
-        put($$"com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal$AlarmJournalSFGroup", AlarmJournalSFGroup::class.java)
-        put(
-            "com.inductiveautomation.ignition.gateway.history.PackedHistoricalQualifiedValue",
-            com.inductiveautomation.ignition.gateway.storeforward.deprecated.PackedHistoricalQualifiedValue::class.java,
-        )
-        put(
-            "com.inductiveautomation.ignition.gateway.sqltags.model.BasicScanclassHistorySet",
-            com.inductiveautomation.ignition.gateway.storeforward.deprecated.BasicScanclassHistorySet::class.java,
-        )
-        put(
-            "com.inductiveautomation.ignition.gateway.audit.DefaultAuditRecord",
-            DefaultAuditRecord::class.java,
-        )
-    }.readObject() as Serializable
-}
+fun ByteArray.deserializeStoreAndForward(): Serializable = AliasingObjectInputStream(inputStream()) {
+    put("com.inductiveautomation.ignition.gateway.audit.AuditProfileData", AuditProfileData::class.java)
+    put($$"com.inductiveautomation.ignition.gateway.script.ialabs.IALabsDatasourceFunctions$QuerySFData", ScriptedSFData::class.java)
+    put("com.inductiveautomation.ignition.common.AbstractDataset", AbstractDataset::class.java)
+    put("com.inductiveautomation.ignition.common.BasicDataset", BasicDataset::class.java)
+    put("com.inductiveautomation.ignition.gateway.alarming.journal.remote.RemoteEvent", RemoteEvent::class.java)
+    put($$"com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal$AlarmJournalSFData", AlarmJournalData::class.java)
+    put($$"com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal$AlarmJournalSFGroup", AlarmJournalSFGroup::class.java)
+    put(
+        "com.inductiveautomation.ignition.gateway.history.PackedHistoricalQualifiedValue",
+        com.inductiveautomation.ignition.gateway.storeforward.deprecated.PackedHistoricalQualifiedValue::class.java,
+    )
+    put(
+        "com.inductiveautomation.ignition.gateway.sqltags.model.BasicScanclassHistorySet",
+        com.inductiveautomation.ignition.gateway.storeforward.deprecated.BasicScanclassHistorySet::class.java,
+    )
+    put(
+        "com.inductiveautomation.ignition.gateway.audit.DefaultAuditRecord",
+        DefaultAuditRecord::class.java,
+    )
+}.readObject() as Serializable
 
 fun ScanclassHistorySet.toDetail(): Detail = Detail(
     title = this::class.java.simpleName,
@@ -159,39 +157,33 @@ fun GeneratedMessageV3.toDetail() = when (this) {
     else -> error("Unknown class: ${this::class.java.name}")
 }
 
-fun HistoryDataProto.HistorySetPB.toDetail(): Detail {
-    return Detail(
-        title = "Tag History Set of $tagValuesCount tag values",
-        body = buildList<String> {
-            add("System: $systemName")
-            add("Provider: $providerName")
-            add("Tag Group: $tagGroupName")
-            add("Tag Values:")
-            addAll(
-                tagValuesList.map {
-                    "Path: ${it.tagPath}\n${it.value}"
-                }
-            )
-        }
-    )
-}
-
-fun AlarmJournalProto.JournalEventPB.toDetail(): Detail {
-    return Detail(
-        title = "Alarm Journal Event",
-        body = listOf(
-            "Source: $source",
-            "Display Path: $displayPath",
-            "UUID: $uuid",
-            "System Type: $systemType",
-            "Target Journal: $targetJournal",
+fun HistoryDataProto.HistorySetPB.toDetail(): Detail = Detail(
+    title = "Tag History Set of $tagValuesCount tag values",
+    body = buildList<String> {
+        add("System: $systemName")
+        add("Provider: $providerName")
+        add("Tag Group: $tagGroupName")
+        add("Tag Values:")
+        addAll(
+            tagValuesList.map {
+                "Path: ${it.tagPath}\n${it.value}"
+            },
         )
-    )
-}
+    },
+)
 
-fun GenericObjectProto.GenericObjectPB.toDetail(): Detail {
-    return Detail(
-        title = "Generic Protobuf Object",
-        body = listOf(this.toString()),
-    )
-}
+fun AlarmJournalProto.JournalEventPB.toDetail(): Detail = Detail(
+    title = "Alarm Journal Event",
+    body = listOf(
+        "Source: $source",
+        "Display Path: $displayPath",
+        "UUID: $uuid",
+        "System Type: $systemType",
+        "Target Journal: $targetJournal",
+    ),
+)
+
+fun GenericObjectProto.GenericObjectPB.toDetail(): Detail = Detail(
+    title = "Generic Protobuf Object",
+    body = listOf(this.toString()),
+)

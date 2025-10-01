@@ -16,23 +16,22 @@ data object CacheViewer : Tool {
     internal val extensions = arrayOf("data", "script", "zip", "idb")
     override val filter = FileFilter(description, *extensions)
 
-    override fun open(path: Path): ToolPanel {
-        return when (path.extension) {
-            "data",
-            "script" -> {
-                io.github.inductiveautomation.kindling.cache.hsql.CacheView(path)
-            }
-            "idb" -> {
-                io.github.inductiveautomation.kindling.cache.sqlite.CacheView.fromIdb(path)
-            }
-            "zip" -> {
-                try {
-                    io.github.inductiveautomation.kindling.cache.hsql.CacheView(path)
-                } catch(_: Exception) {
-                    io.github.inductiveautomation.kindling.cache.sqlite.CacheView.fromZip(path)
-                }
-            }
-            else -> throw ToolOpeningException("Invalid file extension; ${path.extension}")
+    override fun open(path: Path): ToolPanel = when (path.extension) {
+        "data",
+        "script",
+        -> {
+            io.github.inductiveautomation.kindling.cache.hsql.CacheView(path)
         }
+        "idb" -> {
+            io.github.inductiveautomation.kindling.cache.sqlite.CacheView.fromIdb(path)
+        }
+        "zip" -> {
+            try {
+                io.github.inductiveautomation.kindling.cache.hsql.CacheView(path)
+            } catch (_: Exception) {
+                io.github.inductiveautomation.kindling.cache.sqlite.CacheView.fromZip(path)
+            }
+        }
+        else -> throw ToolOpeningException("Invalid file extension; ${path.extension}")
     }
 }

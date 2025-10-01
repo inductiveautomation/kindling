@@ -22,15 +22,15 @@ object IdbCacheColumns : ColumnList<IdbCacheEntry>() {
                     isSelected: Boolean,
                     hasFocus: Boolean,
                     row: Int,
-                    column: Int
-                ): Component? {
+                    column: Int,
+                ): Component {
                     super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
                     text = (value as Long).toFileSizeLabel()
                     return this
                 }
             }
         },
-        value = IdbCacheEntry::dataSize
+        value = IdbCacheEntry::dataSize,
     )
     val Timestamp by column(
         column = {
@@ -54,7 +54,7 @@ object IdbCacheColumns : ColumnList<IdbCacheEntry>() {
         },
         value = {
             Instant.ofEpochMilli(it.timestamp)
-        }
+        },
     )
     val AttemptCount by column("Attempt Count") { it.attemptCount }
     val DataCount by column("Data Count") { it.dataCount }

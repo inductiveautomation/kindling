@@ -55,7 +55,7 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
                             dataResult.getBytes("data")
                         }.single()
                     }
-                }
+                },
             )
         }
     }
@@ -83,8 +83,8 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
         setModel(
             FilterModel(
                 cacheData.groupingBy(IdbCacheEntry::flavorName).eachCount(),
-                sortKey = { it }
-            )
+                sortKey = { it },
+            ),
         )
     }
 
@@ -99,7 +99,7 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
                     top = FlatScrollPane(cacheTable),
                     bottom = details,
                 ),
-                right = FlatScrollPane(dataFlavorFilterList)
+                right = FlatScrollPane(dataFlavorFilterList),
             ),
             "push, grow, span",
         )
@@ -127,7 +127,7 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
                                         it.toHumanReadableBinary().split("\n")
                                     }
                                 },
-                            )
+                            ),
                         )
                     }
                 }
@@ -156,7 +156,7 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
         private const val GET_DATA_QUERY = "SELECT data from persistent_data WHERE id = ?"
 
         fun fromZip(path: Path): CacheView {
-            val connections = FileSystems.newFileSystem(path).use {  fs ->
+            val connections = FileSystems.newFileSystem(path).use { fs ->
                 val tempDir = Files.createTempDirectory("kindling")
 
                 fs.rootDirectories.first().walk().mapNotNull {
@@ -173,9 +173,7 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
             return CacheView(connections)
         }
 
-        fun fromConnection(connection: Connection): CacheView {
-            return CacheView(listOf(connection))
-        }
+        fun fromConnection(connection: Connection): CacheView = CacheView(listOf(connection))
 
         fun fromIdb(idbPath: Path) = fromConnection(SQLiteConnection(idbPath, journalEnabled = true))
     }
