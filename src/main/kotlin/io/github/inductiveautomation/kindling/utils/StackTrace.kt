@@ -37,7 +37,8 @@ fun StackElement.toBodyLine(version: String): BodyLine = MajorVersion.lookup(ver
 enum class MajorVersion(val version: String) {
     SevenNine("7.9"),
     EightZero("8.0"),
-    EightOne("8.1");
+    EightOne("8.1"),
+    EightThree("8.3");
 
     val classMap: Properties? by lazy {
         Properties().also { properties ->
@@ -47,15 +48,18 @@ enum class MajorVersion(val version: String) {
 
     companion object {
         private val versionCache = LinkedHashMap<String, MajorVersion?>().apply {
-            put("dev", EightOne)
+            put("dev", EightThree)
             repeat(22) { patch ->
                 put("7.9.$patch", SevenNine)
             }
             repeat(18) { patch ->
                 put("8.0.$patch", EightZero)
             }
-            repeat(33) { patch ->
+            repeat(50) { patch ->
                 put("8.1.$patch", EightOne)
+            }
+            repeat(2) { patch ->
+                put("8.3.$patch", EightThree)
             }
         }
 
