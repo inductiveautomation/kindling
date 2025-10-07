@@ -7,9 +7,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Properties
+import java.util.zip.GZIPInputStream
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.reflect.KProperty
@@ -173,4 +175,25 @@ fun String.containsInOrder(pattern: String, ignoreCase: Boolean): Boolean {
         }
     }
     return patternIndex == pattern.length
+}
+
+/**
+ * Unzips bytes if they are zipped with GZIP, otherwise returns the original ByteArray.
+ */
+fun ByteArray.unzip(): ByteArray {
+    if (size <= 2) return this
+
+    val firstByte = this[0].toInt()
+    val secondByte = this[1].toInt()
+
+    val header = (firstByte and 0xFF) or ((secondByte and 0xFF) shl 8)
+
+    if (header != GZIPInputStream.GZIP_MAGIC) {
+        return this
+    }
+
+    val byteOutput = ByteArrayOutputStream()
+    GZIPInputStream(inputStream()) transferTo byteOutput
+
+    return byteOutput.toByteArray()
 }

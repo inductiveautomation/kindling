@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.cache
+package io.github.inductiveautomation.kindling.cache.hsql
 
 data class SchemaRecord(
     val id: Int,

@@ -1,16 +1,22 @@
 package io.github.inductiveautomation.kindling.utils
 
-import com.inductiveautomation.ignition.gateway.history.BasicHistoricalRecord
-import com.inductiveautomation.ignition.gateway.history.ScanclassHistorySet
+import com.google.protobuf.GeneratedMessageV3
+import com.inductiveautomation.ignition.gateway.alarming.journal.encoding.AlarmJournalProto
+import com.inductiveautomation.ignition.gateway.history.encoding.GenericObjectProto
+import com.inductiveautomation.ignition.gateway.history.encoding.HistoryDataProto
+import com.inductiveautomation.ignition.gateway.storeforward.deprecated.BasicHistoricalRecord
+import com.inductiveautomation.ignition.gateway.storeforward.deprecated.ScanclassHistorySet
 import io.github.inductiveautomation.kindling.cache.AliasingObjectInputStream
-import io.github.inductiveautomation.kindling.cache.model.AbstractDataset
-import io.github.inductiveautomation.kindling.cache.model.AlarmJournalData
-import io.github.inductiveautomation.kindling.cache.model.AlarmJournalSFGroup
-import io.github.inductiveautomation.kindling.cache.model.AuditProfileData
-import io.github.inductiveautomation.kindling.cache.model.BasicDataset
-import io.github.inductiveautomation.kindling.cache.model.RemoteEvent
-import io.github.inductiveautomation.kindling.cache.model.ScriptedSFData
+import io.github.inductiveautomation.kindling.cache.hsql.model.AbstractDataset
+import io.github.inductiveautomation.kindling.cache.hsql.model.AlarmJournalData
+import io.github.inductiveautomation.kindling.cache.hsql.model.AlarmJournalSFGroup
+import io.github.inductiveautomation.kindling.cache.hsql.model.AuditProfileData
+import io.github.inductiveautomation.kindling.cache.hsql.model.BasicDataset
+import io.github.inductiveautomation.kindling.cache.hsql.model.DefaultAuditRecord
+import io.github.inductiveautomation.kindling.cache.hsql.model.RemoteEvent
+import io.github.inductiveautomation.kindling.cache.hsql.model.ScriptedSFData
 import io.github.inductiveautomation.kindling.core.Detail
+import java.io.DataInputStream
 import java.io.Serializable
 
 const val TRANSACTION_GROUP_DATA = "Transaction Group Data"
@@ -50,14 +56,26 @@ fun Serializable.toDetail(): Detail = when (this) {
 /**
  * @throws ClassNotFoundException
  */
-fun ByteArray.deserializeStoreAndForward(): Serializable = AliasingObjectInputStream(inputStream()) {
+fun ByteArray.deserializeJavaSerialized(): Serializable = AliasingObjectInputStream(inputStream()) {
     put("com.inductiveautomation.ignition.gateway.audit.AuditProfileData", AuditProfileData::class.java)
-    put("com.inductiveautomation.ignition.gateway.script.ialabs.IALabsDatasourceFunctions\$QuerySFData", ScriptedSFData::class.java)
+    put($$"com.inductiveautomation.ignition.gateway.script.ialabs.IALabsDatasourceFunctions$QuerySFData", ScriptedSFData::class.java)
     put("com.inductiveautomation.ignition.common.AbstractDataset", AbstractDataset::class.java)
     put("com.inductiveautomation.ignition.common.BasicDataset", BasicDataset::class.java)
     put("com.inductiveautomation.ignition.gateway.alarming.journal.remote.RemoteEvent", RemoteEvent::class.java)
-    put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFData", AlarmJournalData::class.java)
-    put("com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal\$AlarmJournalSFGroup", AlarmJournalSFGroup::class.java)
+    put($$"com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal$AlarmJournalSFData", AlarmJournalData::class.java)
+    put($$"com.inductiveautomation.ignition.gateway.alarming.journal.DatabaseAlarmJournal$AlarmJournalSFGroup", AlarmJournalSFGroup::class.java)
+    put(
+        "com.inductiveautomation.ignition.gateway.history.PackedHistoricalQualifiedValue",
+        com.inductiveautomation.ignition.gateway.storeforward.deprecated.PackedHistoricalQualifiedValue::class.java,
+    )
+    put(
+        "com.inductiveautomation.ignition.gateway.sqltags.model.BasicScanclassHistorySet",
+        com.inductiveautomation.ignition.gateway.storeforward.deprecated.BasicScanclassHistorySet::class.java,
+    )
+    put(
+        "com.inductiveautomation.ignition.gateway.audit.DefaultAuditRecord",
+        DefaultAuditRecord::class.java,
+    )
 }.readObject() as Serializable
 
 fun ScanclassHistorySet.toDetail(): Detail = Detail(
@@ -98,4 +116,72 @@ fun BasicHistoricalRecord.toDetail(): Detail = Detail(
     details = mapOf(
         "quoteColumnNames" to quoteColumnNames().toString(),
     ),
+)
+
+// 8.3
+
+fun ByteArray.deserializeProto(flavor: String): List<GeneratedMessageV3> {
+    val parseFunction: (ByteArray) -> GeneratedMessageV3 = when (flavor) {
+        "history_set" -> {
+            HistoryDataProto.HistorySetPB::parseFrom
+        }
+        "alarm_journal_event" -> {
+            AlarmJournalProto.JournalEventPB::parseFrom
+        }
+        else -> {
+            GenericObjectProto.GenericObjectPB::parseFrom
+        }
+    }
+
+    return buildList {
+        DataInputStream(inputStream()).use { dis ->
+            while (dis.available() > 0) {
+                val length = dis.readInt()
+                val objectBytes = ByteArray(length)
+                dis.readFully(objectBytes)
+
+                val byteData = objectBytes.unzip()
+
+                add(parseFunction(byteData))
+            }
+        }
+    }
+}
+
+fun GeneratedMessageV3.toDetail() = when (this) {
+    is HistoryDataProto.HistorySetPB -> toDetail()
+    is AlarmJournalProto.JournalEventPB -> toDetail()
+    is GenericObjectProto.GenericObjectPB -> toDetail()
+    else -> error("Unknown class: ${this::class.java.name}")
+}
+
+fun HistoryDataProto.HistorySetPB.toDetail(): Detail = Detail(
+    title = "Tag History Set of $tagValuesCount tag values",
+    body = buildList<String> {
+        add("System: $systemName")
+        add("Provider: $providerName")
+        add("Tag Group: $tagGroupName")
+        add("Tag Values:")
+        addAll(
+            tagValuesList.map {
+                "Path: ${it.tagPath}\n${it.value}"
+            },
+        )
+    },
+)
+
+fun AlarmJournalProto.JournalEventPB.toDetail(): Detail = Detail(
+    title = "Alarm Journal Event",
+    body = listOf(
+        "Source: $source",
+        "Display Path: $displayPath",
+        "UUID: $uuid",
+        "System Type: $systemType",
+        "Target Journal: $targetJournal",
+    ),
+)
+
+fun GenericObjectProto.GenericObjectPB.toDetail(): Detail = Detail(
+    title = "Generic Protobuf Object",
+    body = listOf(this.toString()),
 )

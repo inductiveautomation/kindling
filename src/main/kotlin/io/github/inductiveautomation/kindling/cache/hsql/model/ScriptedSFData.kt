@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.cache.model
+package io.github.inductiveautomation.kindling.cache.hsql.model
 
 import io.github.inductiveautomation.kindling.core.Detail
 import java.io.Serializable

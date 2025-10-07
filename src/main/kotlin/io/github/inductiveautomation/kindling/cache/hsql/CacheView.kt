@@ -1,23 +1,22 @@
-package io.github.inductiveautomation.kindling.cache
+package io.github.inductiveautomation.kindling.cache.hsql
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatPopupMenu
 import com.jidesoft.swing.JideButton
+import io.github.inductiveautomation.kindling.cache.CacheViewer
 import io.github.inductiveautomation.kindling.core.Detail
 import io.github.inductiveautomation.kindling.core.DetailsPane
-import io.github.inductiveautomation.kindling.core.Tool
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
-import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.HorizontalSplitPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.TRANSACTION_GROUP_DATA
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
-import io.github.inductiveautomation.kindling.utils.deserializeStoreAndForward
+import io.github.inductiveautomation.kindling.utils.deserializeJavaSerialized
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.getLogger
@@ -245,7 +244,7 @@ class CacheView(path: Path) : ToolPanel() {
          * We need the ID to get the table data and the schemaName to get the table columns and table name
          */
         val id = table.model[table.selectedRow, CacheColumns.Id]
-        val raw = queryForData(id).deserializeStoreAndForward()
+        val raw = queryForData(id).deserializeJavaSerialized()
         val originalData = raw as Array<*>
         val cols = (originalData[0] as Array<*>).size
         val rows = originalData.size
@@ -293,9 +292,9 @@ class CacheView(path: Path) : ToolPanel() {
                         deserializedCache.getOrPut(id) {
                             val bytes = queryForData(id)
                             try {
-                                val deserialized = bytes.deserializeStoreAndForward()
+                                val deserialized = bytes.deserializeJavaSerialized()
                                 deserialized.toDetail()
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 // It's not serialized with a class in the public API, or some other problem;
                                 // give up, and try to just dump the serialized data in a friendlier format
                                 val serializationDumper = deser.SerializationDumper(bytes)
@@ -334,15 +333,4 @@ class CacheView(path: Path) : ToolPanel() {
         val LOGGER = getLogger<CacheView>()
         val cacheFileExtensions = listOf("data", "script", "log", "backup", "properties")
     }
-}
-
-data object CacheViewer : Tool {
-    override val serialKey = "sf-cache"
-    override val title = "Store & Forward Cache"
-    override val description = "S&F Cache (.data, .script, .zip)"
-    override val icon = FlatSVGIcon("icons/bx-hdd.svg")
-    internal val extensions = arrayOf("data", "script", "zip")
-    override val filter = FileFilter(description, *extensions)
-
-    override fun open(path: Path): ToolPanel = CacheView(path)
 }
