@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package io.github.inductiveautomation.kindling.utils
 
 import com.google.protobuf.GeneratedMessageV3
@@ -58,7 +56,7 @@ fun Serializable.toDetail(): Detail = when (this) {
 /**
  * @throws ClassNotFoundException
  */
-fun ByteArray.deserializeStoreAndForward(): Serializable = AliasingObjectInputStream(inputStream()) {
+fun ByteArray.deserializeJavaSerialized(): Serializable = AliasingObjectInputStream(inputStream()) {
     put("com.inductiveautomation.ignition.gateway.audit.AuditProfileData", AuditProfileData::class.java)
     put($$"com.inductiveautomation.ignition.gateway.script.ialabs.IALabsDatasourceFunctions$QuerySFData", ScriptedSFData::class.java)
     put("com.inductiveautomation.ignition.common.AbstractDataset", AbstractDataset::class.java)
@@ -122,7 +120,7 @@ fun BasicHistoricalRecord.toDetail(): Detail = Detail(
 
 // 8.3
 
-fun ByteArray.deserializeStoreAndForward(flavor: String): List<GeneratedMessageV3> {
+fun ByteArray.deserializeProto(flavor: String): List<GeneratedMessageV3> {
     val parseFunction: (ByteArray) -> GeneratedMessageV3 = when (flavor) {
         "history_set" -> {
             HistoryDataProto.HistorySetPB::parseFrom

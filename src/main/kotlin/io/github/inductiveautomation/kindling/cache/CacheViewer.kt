@@ -7,6 +7,8 @@ import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import java.nio.file.Path
 import kotlin.io.path.extension
+import io.github.inductiveautomation.kindling.cache.hsql.CacheView as HsqlCacheView
+import io.github.inductiveautomation.kindling.cache.sqlite.CacheView as IdbCacheView
 
 data object CacheViewer : Tool {
     override val serialKey = "sf-cache"
@@ -20,16 +22,16 @@ data object CacheViewer : Tool {
         "data",
         "script",
         -> {
-            io.github.inductiveautomation.kindling.cache.hsql.CacheView(path)
+            HsqlCacheView(path)
         }
         "idb" -> {
-            io.github.inductiveautomation.kindling.cache.sqlite.CacheView.fromIdb(path)
+            IdbCacheView.fromIdb(path)
         }
         "zip" -> {
             try {
-                io.github.inductiveautomation.kindling.cache.hsql.CacheView(path)
+                HsqlCacheView(path)
             } catch (_: Exception) {
-                io.github.inductiveautomation.kindling.cache.sqlite.CacheView.fromZip(path)
+                IdbCacheView.fromZip(path)
             }
         }
         else -> throw ToolOpeningException("Invalid file extension; ${path.extension}")

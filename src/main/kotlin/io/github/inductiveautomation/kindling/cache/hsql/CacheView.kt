@@ -16,7 +16,7 @@ import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.TRANSACTION_GROUP_DATA
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
-import io.github.inductiveautomation.kindling.utils.deserializeStoreAndForward
+import io.github.inductiveautomation.kindling.utils.deserializeJavaSerialized
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.getLogger
@@ -244,7 +244,7 @@ class CacheView(path: Path) : ToolPanel() {
          * We need the ID to get the table data and the schemaName to get the table columns and table name
          */
         val id = table.model[table.selectedRow, CacheColumns.Id]
-        val raw = queryForData(id).deserializeStoreAndForward()
+        val raw = queryForData(id).deserializeJavaSerialized()
         val originalData = raw as Array<*>
         val cols = (originalData[0] as Array<*>).size
         val rows = originalData.size
@@ -292,7 +292,7 @@ class CacheView(path: Path) : ToolPanel() {
                         deserializedCache.getOrPut(id) {
                             val bytes = queryForData(id)
                             try {
-                                val deserialized = bytes.deserializeStoreAndForward()
+                                val deserialized = bytes.deserializeJavaSerialized()
                                 deserialized.toDetail()
                             } catch (_: Exception) {
                                 // It's not serialized with a class in the public API, or some other problem;

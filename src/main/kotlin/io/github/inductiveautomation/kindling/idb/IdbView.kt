@@ -18,6 +18,7 @@ import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
+import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteException
 import java.nio.file.Path
 import javax.swing.SwingConstants
@@ -69,7 +70,7 @@ class IdbConnection(
     val connection = try {
         SQLiteConnection(path)
     } catch (_: SQLiteException) { // Most likely journal mode is required.
-        SQLiteConnection(path, journalEnabled = true)
+        SQLiteConnection(path, journalMode = SQLiteConfig.JournalMode.WAL)
     }
 
     val tables = connection.metaData

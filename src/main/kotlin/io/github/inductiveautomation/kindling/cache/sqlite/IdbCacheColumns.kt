@@ -2,54 +2,28 @@ package io.github.inductiveautomation.kindling.cache.sqlite
 
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.toFileSizeLabel
-import java.awt.Component
+import org.jdesktop.swingx.renderer.DefaultTableRenderer
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import javax.swing.JTable
-import javax.swing.table.DefaultTableCellRenderer
 
 @Suppress("unused")
 object IdbCacheColumns : ColumnList<IdbCacheEntry>() {
     val ID by column { it.id }
     val Data by column(
         column = {
-            cellRenderer = object : DefaultTableCellRenderer() {
-                override fun getTableCellRendererComponent(
-                    table: JTable?,
-                    value: Any?,
-                    isSelected: Boolean,
-                    hasFocus: Boolean,
-                    row: Int,
-                    column: Int,
-                ): Component {
-                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
-                    text = (value as Long).toFileSizeLabel()
-                    return this
-                }
+            cellRenderer = DefaultTableRenderer {
+                (it as Long).toFileSizeLabel()
             }
         },
         value = IdbCacheEntry::dataSize,
     )
     val Timestamp by column(
         column = {
-            cellRenderer = object : DefaultTableCellRenderer() {
-                override fun getTableCellRendererComponent(
-                    table: JTable?,
-                    value: Any?,
-                    isSelected: Boolean,
-                    hasFocus: Boolean,
-                    row: Int,
-                    column: Int,
-                ): Component {
-                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
-
-                    val datetime = ZonedDateTime.ofInstant(value as Instant, ZoneId.systemDefault())
-                    text = datetime.format(DateTimeFormatter.RFC_1123_DATE_TIME)
-
-                    return this
-                }
+            cellRenderer = DefaultTableRenderer {
+                val datetime = ZonedDateTime.ofInstant(it as Instant, ZoneId.systemDefault())
+                datetime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"))
             }
         },
         value = {

@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
 import org.intellij.lang.annotations.Language
+import org.sqlite.SQLiteConfig.JournalMode
 import org.sqlite.SQLiteConnection
 import org.sqlite.SQLiteDataSource
 import java.math.BigDecimal
@@ -59,22 +60,20 @@ inline operator fun <reified T> ResultSet.get(column: Int): T = sqliteCoercion(g
 
 inline operator fun <reified T> ResultSet.get(column: String): T = sqliteCoercion(getObject(column))
 
-inline fun <reified T> sqliteCoercion(raw: Any?): T = when {
-    raw is Int && T::class == Long::class -> raw.toLong()
-    raw is Int && T::class == Boolean::class -> raw == 1
+inline fun <reified T> sqliteCoercion(raw: Any?): T = when (raw) {
+    is Int if T::class == Long::class -> raw.toLong()
+    is Int if T::class == Boolean::class -> raw == 1
     else -> raw
 } as T
 
 fun SQLiteConnection(
     path: Path,
     readOnly: Boolean = true,
-    journalEnabled: Boolean = false,
+    journalMode: JournalMode = JournalMode.OFF,
 ): SQLiteConnection = SQLiteDataSource().apply {
     url = "jdbc:sqlite:file:$path"
     setReadOnly(readOnly)
-    if (!journalEnabled) {
-        setJournalMode("OFF")
-    }
+    setJournalMode(journalMode.value)
     setSynchronous("OFF")
 }.connection as SQLiteConnection
 

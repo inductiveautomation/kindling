@@ -12,7 +12,7 @@ import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Compani
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.VerticalSplitPane
-import io.github.inductiveautomation.kindling.utils.deserializeStoreAndForward
+import io.github.inductiveautomation.kindling.utils.deserializeProto
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.selectedRowIndices
@@ -22,11 +22,13 @@ import io.github.inductiveautomation.kindling.utils.toHumanReadableBinary
 import io.github.inductiveautomation.kindling.utils.toList
 import io.github.inductiveautomation.kindling.utils.transferTo
 import io.github.inductiveautomation.kindling.utils.unzip
+import org.sqlite.SQLiteConfig
 import java.nio.file.FileSystems
-import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
 import javax.swing.ListSelectionModel
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
@@ -111,7 +113,7 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
                     val entry = cacheTable.model[modelIndex]
 
                     try {
-                        val results = entry.data.deserializeStoreAndForward(entry.flavorName)
+                        val results = entry.data.deserializeProto(entry.flavorName)
 
                         results.map { it.toDetail() }
                     } catch (_: Exception) {
@@ -158,13 +160,13 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
 
         fun fromZip(path: Path): CacheView {
             val connections = FileSystems.newFileSystem(path).use { fs ->
-                val tempDir = Files.createTempDirectory("kindling")
+                val tempDir = createTempDirectory("kindling")
 
                 fs.rootDirectories.first().walk().mapNotNull {
                     if (it.extension == "idb") {
-                        val tempFile = Files.createTempFile(tempDir, "kindling", "cache")
+                        val tempFile = createTempFile(tempDir, "kindling", "cache")
                         it.inputStream() transferTo tempFile.outputStream()
-                        SQLiteConnection(tempFile, journalEnabled = true)
+                        SQLiteConnection(tempFile, journalMode = SQLiteConfig.JournalMode.WAL)
                     } else {
                         null
                     }
@@ -176,6 +178,6 @@ class CacheView private constructor(connections: List<Connection>) : ToolPanel()
 
         fun fromConnection(connection: Connection): CacheView = CacheView(listOf(connection))
 
-        fun fromIdb(idbPath: Path) = fromConnection(SQLiteConnection(idbPath, journalEnabled = true))
+        fun fromIdb(idbPath: Path) = fromConnection(SQLiteConnection(idbPath, journalMode = SQLiteConfig.JournalMode.WAL))
     }
 }
