@@ -6,6 +6,7 @@ import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.SelectedTimeZone
+import io.github.inductiveautomation.kindling.core.TimePreferences
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
@@ -265,12 +266,12 @@ internal class TimePanel<T : LogEvent>(
     ) {
         if (column == WrapperLogColumns.Timestamp || column == SystemLogColumns.Timestamp) {
             menu.add(
-                Action("Show only events after ${LogViewer.format(event.timestamp)}") {
+                Action("Show only events after ${TimePreferences.format(event.timestamp)}") {
                     startSelector.time = event.timestamp
                 },
             )
             menu.add(
-                Action("Show only events before ${LogViewer.format(event.timestamp)}") {
+                Action("Show only events before ${TimePreferences.format(event.timestamp)}") {
                     endSelector.time = event.timestamp
                 },
             )

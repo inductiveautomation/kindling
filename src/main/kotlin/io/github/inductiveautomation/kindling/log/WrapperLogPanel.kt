@@ -10,7 +10,7 @@ import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
 // DEV: remove this old import
 //import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.SelectedTimeZone
+import io.github.inductiveautomation.kindling.core.TimePreferences
 import io.github.inductiveautomation.kindling.log.WrapperLogEvent.Companion.STDOUT
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
@@ -231,39 +231,4 @@ data object LogViewer : MultiTool, ClipboardTool {
         return WrapperLogPanel(listOf(tempFile), listOf(fileData))
     }
 
-//     DEV: Remove this
-//    val SelectedTimeZone = preference(
-//        name = "Timezone",
-//        description = "Timezone to use when displaying logs",
-//        default = ZoneId.systemDefault(),
-//        serializer = ZoneIdSerializer,
-//        editor = {
-//            JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
-//                selectedItem = currentValue.id
-//                addActionListener {
-//                    currentValue = ZoneId.of(selectedItem as String)
-//                }
-//            }
-//        },
-//    )
-
-    private var formatter = createFormatter(SelectedTimeZone.currentValue)
-
-    init {
-        SelectedTimeZone.addChangeListener { newValue ->
-            formatter = createFormatter(newValue)
-        }
-    }
-
-    private fun createFormatter(id: ZoneId): DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss:SSS")
-        .withZone(id)
-
-    /**
-     * Format [time] using an internal [DateTimeFormatter] that is in [SelectedTimeZone] automatically.
-     */
-    fun format(time: TemporalAccessor): String = formatter.format(time)
-
-//    override val displayName = "Log View"
-//
-//    override val preferences = listOf(SelectedTimeZone)
 }

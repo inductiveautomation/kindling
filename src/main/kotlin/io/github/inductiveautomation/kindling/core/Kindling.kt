@@ -77,29 +77,27 @@ data object Kindling {
                 },
             )
 
-            val DefaultTool: Preference<Tool> by lazy {
-                preference(
-                    name = "Default Tool",
-                    description = "The default tool to use when invoking the file selector",
-                    default = Tool.tools.first(),
-                    serializer = ToolSerializer,
-                    editor = {
-                        JComboBox(Vector(Tool.sortedByTitle)).apply {
-                            selectedItem = currentValue
+            val DefaultTool: Preference<Tool> = preference(
+                name = "Default Tool",
+                description = "The default tool to use when invoking the file selector",
+                default = Tool.tools.first(),
+                serializer = ToolSerializer,
+                editor = {
+                    JComboBox(Vector(Tool.sortedByTitle)).apply {
+                        selectedItem = currentValue
 
-                            configureCellRenderer { _, value, _, selected, focused ->
-                                text = value?.title
-                                toolTipText = value?.description
-                                icon = value?.icon?.derive(ACTION_ICON_SCALE_FACTOR)
-                            }
-
-                            addActionListener {
-                                currentValue = selectedItem as Tool
-                            }
+                        configureCellRenderer { _, value, _, selected, focused ->
+                            text = value?.title
+                            toolTipText = value?.description
+                            icon = value?.icon?.derive(ACTION_ICON_SCALE_FACTOR)
                         }
-                    },
-                )
-            }
+
+                        addActionListener {
+                            currentValue = selectedItem as Tool
+                        }
+                    }
+                },
+            )
 
             val ChoosableEncodings = arrayOf(
                 Charsets.UTF_8,
