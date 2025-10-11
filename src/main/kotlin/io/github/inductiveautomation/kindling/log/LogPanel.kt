@@ -9,7 +9,7 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
 import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
 import io.github.inductiveautomation.kindling.core.TimePreferences.SelectedTimeZone
-import io.github.inductiveautomation.kindling.core.TimePreferences.format
+import io.github.inductiveautomation.kindling.core.TimePreferences
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
@@ -334,8 +334,8 @@ sealed class LogPanel<T : LogEvent>(
                 .map { event ->
                     DetailEvent(
                         title = when (event) {
-                            is SystemLogEvent -> "${format(event.timestamp)} ${event.thread}"
-                            else -> format(event.timestamp)
+                            is SystemLogEvent -> "${TimePreferences.format(event.timestamp)} ${event.thread}"
+                            else -> TimePreferences.format(event.timestamp)
                         },
                         message = event.message,
                         body = event.stacktrace.map { element ->
