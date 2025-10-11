@@ -5,6 +5,7 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.SelectedTimeZone
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
@@ -284,11 +285,11 @@ internal class TimePanel<T : LogEvent>(
 }
 
 private var JXDatePicker.localDate: LocalDate?
-    get() = date?.toInstant()?.let { LocalDate.ofInstant(it, LogViewer.SelectedTimeZone.currentValue) }
+    get() = date?.toInstant()?.let { LocalDate.ofInstant(it, SelectedTimeZone.currentValue) }
     set(value) {
         date =
             value?.atStartOfDay()
-                ?.atOffset(LogViewer.SelectedTimeZone.currentValue.rules.getOffset(value.atStartOfDay()))
+                ?.atOffset(SelectedTimeZone.currentValue.rules.getOffset(value.atStartOfDay()))
                 ?.toInstant()
                 .let(Date::from)
     }
@@ -307,7 +308,7 @@ class DateTimeSelector(
         }
 
     private val initialZonedTime: ZonedDateTime
-        get() = defaultValue.atZone(LogViewer.SelectedTimeZone.currentValue)
+        get() = defaultValue.atZone(SelectedTimeZone.currentValue)
 
     private val datePicker =
         JXDatePicker().apply {
@@ -347,12 +348,12 @@ class DateTimeSelector(
                 ZonedDateTime.of(
                     localDate,
                     timeSelector.localTime,
-                    LogViewer.SelectedTimeZone.currentValue,
+                    SelectedTimeZone.currentValue,
                 ).toInstant() ?: defaultValue
             }
         }
         set(value) {
-            val zonedDateTime = value.atZone(LogViewer.SelectedTimeZone.currentValue)
+            val zonedDateTime = value.atZone(SelectedTimeZone.currentValue)
             datePicker.localDate = zonedDateTime.toLocalDate()
             timeSelector.localTime = zonedDateTime.toLocalTime()
         }
@@ -511,10 +512,10 @@ private object DensityColumns : ColumnList<DenseTime>() {
         get() {
             if (!this::_formatter.isInitialized) {
                 _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm")
-                    .withZone(LogViewer.SelectedTimeZone.currentValue)
+                    .withZone(SelectedTimeZone.currentValue)
             }
-            if (_formatter.zone != LogViewer.SelectedTimeZone.currentValue) {
-                _formatter = _formatter.withZone(LogViewer.SelectedTimeZone.currentValue)
+            if (_formatter.zone != SelectedTimeZone.currentValue) {
+                _formatter = _formatter.withZone(SelectedTimeZone.currentValue)
             }
             return _formatter
         }

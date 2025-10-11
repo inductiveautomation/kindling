@@ -7,6 +7,7 @@ import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced.HyperlinkStrategy
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.SelectedTimeZone
 import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
@@ -313,7 +314,7 @@ sealed class LogPanel<T : LogEvent>(
             table.selectionModel.updateDetails()
         }
 
-        LogViewer.SelectedTimeZone.addChangeListener {
+        SelectedTimeZone.addChangeListener {
             table.model.fireTableDataChanged()
         }
     }

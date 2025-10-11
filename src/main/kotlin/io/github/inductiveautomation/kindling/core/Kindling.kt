@@ -6,6 +6,8 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
+// DEV: remove old import
+//import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
 import io.github.inductiveautomation.kindling.utils.ACTION_ICON_SCALE_FACTOR
 import io.github.inductiveautomation.kindling.utils.CharsetSerializer
 import io.github.inductiveautomation.kindling.utils.DocumentAdapter
@@ -13,6 +15,7 @@ import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
 import io.github.inductiveautomation.kindling.utils.ThemeSerializer
 import io.github.inductiveautomation.kindling.utils.ToolSerializer
+import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.render
@@ -28,6 +31,8 @@ import java.awt.Image
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
+import java.time.ZoneId
+import java.time.zone.ZoneRulesProvider
 import java.util.Vector
 import javax.swing.JComboBox
 import javax.swing.JSpinner
@@ -72,27 +77,29 @@ data object Kindling {
                 },
             )
 
-            val DefaultTool: Preference<Tool> = preference(
-                name = "Default Tool",
-                description = "The default tool to use when invoking the file selector",
-                default = Tool.tools.first(),
-                serializer = ToolSerializer,
-                editor = {
-                    JComboBox(Vector(Tool.sortedByTitle)).apply {
-                        selectedItem = currentValue
+            val DefaultTool: Preference<Tool> by lazy {
+                preference(
+                    name = "Default Tool",
+                    description = "The default tool to use when invoking the file selector",
+                    default = Tool.tools.first(),
+                    serializer = ToolSerializer,
+                    editor = {
+                        JComboBox(Vector(Tool.sortedByTitle)).apply {
+                            selectedItem = currentValue
 
-                        configureCellRenderer { _, value, _, selected, focused ->
-                            text = value?.title
-                            toolTipText = value?.description
-                            icon = value?.icon?.derive(ACTION_ICON_SCALE_FACTOR)
-                        }
+                            configureCellRenderer { _, value, _, selected, focused ->
+                                text = value?.title
+                                toolTipText = value?.description
+                                icon = value?.icon?.derive(ACTION_ICON_SCALE_FACTOR)
+                            }
 
-                        addActionListener {
-                            currentValue = selectedItem as Tool
+                            addActionListener {
+                                currentValue = selectedItem as Tool
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
 
             val ChoosableEncodings = arrayOf(
                 Charsets.UTF_8,
@@ -153,6 +160,21 @@ data object Kindling {
                 },
             )
 
+            val SelectedTimeZone = preference(
+                name = "Timezone",
+                description = "Timezone to use when displaying logs",
+                default = ZoneId.systemDefault(),
+                serializer = ZoneIdSerializer,
+                editor = {
+                    JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
+                        selectedItem = currentValue.id
+                        addActionListener {
+                            currentValue = ZoneId.of(selectedItem as String)
+                        }
+                    }
+                },
+            )
+
             override val displayName: String = "General"
             override val serialKey: String = "general"
             override val preferences: List<Preference<*>> = listOf(
@@ -162,6 +184,7 @@ data object Kindling {
                 ShowLogTree,
                 UseHyperlinks,
                 HighlightByDefault,
+                SelectedTimeZone,
             )
         }
 

@@ -8,7 +8,9 @@ import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
 import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
-import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
+// DEV: remove this old import
+//import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.SelectedTimeZone
 import io.github.inductiveautomation.kindling.log.WrapperLogEvent.Companion.STDOUT
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
@@ -191,7 +193,7 @@ class WrapperLogPanel(
     }
 }
 
-data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
+data object LogViewer : MultiTool, ClipboardTool {
     override val serialKey = "logview"
     override val title = "Wrapper Log"
     override val description = "Wrapper Log(s) (wrapper.log, wrapper.log.1, wrapper.log...)"
@@ -229,20 +231,21 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
         return WrapperLogPanel(listOf(tempFile), listOf(fileData))
     }
 
-    val SelectedTimeZone = preference(
-        name = "Timezone",
-        description = "Timezone to use when displaying logs",
-        default = ZoneId.systemDefault(),
-        serializer = ZoneIdSerializer,
-        editor = {
-            JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
-                selectedItem = currentValue.id
-                addActionListener {
-                    currentValue = ZoneId.of(selectedItem as String)
-                }
-            }
-        },
-    )
+//     DEV: Remove this
+//    val SelectedTimeZone = preference(
+//        name = "Timezone",
+//        description = "Timezone to use when displaying logs",
+//        default = ZoneId.systemDefault(),
+//        serializer = ZoneIdSerializer,
+//        editor = {
+//            JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
+//                selectedItem = currentValue.id
+//                addActionListener {
+//                    currentValue = ZoneId.of(selectedItem as String)
+//                }
+//            }
+//        },
+//    )
 
     private var formatter = createFormatter(SelectedTimeZone.currentValue)
 
@@ -260,7 +263,7 @@ data object LogViewer : MultiTool, ClipboardTool, PreferenceCategory {
      */
     fun format(time: TemporalAccessor): String = formatter.format(time)
 
-    override val displayName = "Log View"
-
-    override val preferences = listOf(SelectedTimeZone)
+//    override val displayName = "Log View"
+//
+//    override val preferences = listOf(SelectedTimeZone)
 }
