@@ -5,17 +5,11 @@ import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.ClipboardTool
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.MultiTool
-import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
-import io.github.inductiveautomation.kindling.core.PreferenceCategory
 import io.github.inductiveautomation.kindling.core.ToolPanel
-// DEV: remove this old import
-//import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
-import io.github.inductiveautomation.kindling.core.TimePreferences
 import io.github.inductiveautomation.kindling.log.WrapperLogEvent.Companion.STDOUT
 import io.github.inductiveautomation.kindling.utils.FileFilter
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
 import io.github.inductiveautomation.kindling.utils.TabStrip
-import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
 import io.github.inductiveautomation.kindling.utils.getValue
 import io.github.inductiveautomation.kindling.utils.transferTo
 import kotlinx.coroutines.Dispatchers
@@ -28,10 +22,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import java.time.temporal.TemporalAccessor
-import java.time.zone.ZoneRulesProvider
-import java.util.Vector
-import javax.swing.JComboBox
 import javax.swing.SwingUtilities
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
@@ -230,5 +220,4 @@ data object LogViewer : MultiTool, ClipboardTool {
         )
         return WrapperLogPanel(listOf(tempFile), listOf(fileData))
     }
-
 }

@@ -3,7 +3,6 @@ package io.github.inductiveautomation.kindling.log
 import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.TimePreferences
-import io.github.inductiveautomation.kindling.core.TimePreferences.format
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon

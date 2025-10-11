@@ -5,8 +5,8 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.SelectedTimeZone
 import io.github.inductiveautomation.kindling.core.TimePreferences
+import io.github.inductiveautomation.kindling.core.TimePreferences.SelectedTimeZone
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList

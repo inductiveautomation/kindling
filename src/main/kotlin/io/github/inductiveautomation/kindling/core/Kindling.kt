@@ -6,8 +6,6 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
-// DEV: remove old import
-//import io.github.inductiveautomation.kindling.log.LogViewer.SelectedTimeZone
 import io.github.inductiveautomation.kindling.utils.ACTION_ICON_SCALE_FACTOR
 import io.github.inductiveautomation.kindling.utils.CharsetSerializer
 import io.github.inductiveautomation.kindling.utils.DocumentAdapter
@@ -160,7 +158,7 @@ data object Kindling {
 
             val SelectedTimeZone = preference(
                 name = "Timezone",
-                description = "Timezone to use when displaying logs",
+                description = "Timezone to use when displaying timestamps",
                 default = ZoneId.systemDefault(),
                 serializer = ZoneIdSerializer,
                 editor = {
