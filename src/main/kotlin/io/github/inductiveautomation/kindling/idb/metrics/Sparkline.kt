@@ -13,59 +13,57 @@ import org.jfree.data.time.TimeSeriesCollection
 import java.text.NumberFormat
 import java.time.Instant
 
-fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart {
-    return ChartFactory.createTimeSeriesChart(
-        /* title = */
-        null,
-        /* timeAxisLabel = */
-        null,
-        /* valueAxisLabel = */
-        null,
-        /* dataset = */
-        TimeSeriesCollection(
-            TimeSeries("Series").apply {
-                for ((value, timestamp) in data) {
-                    add(FixedMillisecond(timestamp), value, false)
-                }
-            },
-        ),
-        /* legend = */
-        false,
-        /* tooltips = */
-        true,
-        /* urls = */
-        false,
-    ).apply {
-        xyPlot.apply {
-            domainAxis.isPositiveArrowVisible = true
-            rangeAxis.apply {
-                isPositiveArrowVisible = true
-                (this as NumberAxis).numberFormatOverride = formatter
+fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart = ChartFactory.createTimeSeriesChart(
+    /* title = */
+    null,
+    /* timeAxisLabel = */
+    null,
+    /* valueAxisLabel = */
+    null,
+    /* dataset = */
+    TimeSeriesCollection(
+        TimeSeries("Series").apply {
+            for ((value, timestamp) in data) {
+                add(FixedMillisecond(timestamp), value, false)
             }
-            val updateTooltipGenerator = {
-                renderer.setDefaultToolTipGenerator { dataset, series, item ->
-                    val time = Instant.ofEpochMilli(dataset.getXValue(series, item).toLong())
-                    "${TimePreferences.format(time)} - ${formatter.format(dataset.getYValue(series, item))}"
-                }
+        },
+    ),
+    /* legend = */
+    false,
+    /* tooltips = */
+    true,
+    /* urls = */
+    false,
+).apply {
+    xyPlot.apply {
+        domainAxis.isPositiveArrowVisible = true
+        rangeAxis.apply {
+            isPositiveArrowVisible = true
+            (this as NumberAxis).numberFormatOverride = formatter
+        }
+        val updateTooltipGenerator = {
+            renderer.setDefaultToolTipGenerator { dataset, series, item ->
+                val time = Instant.ofEpochMilli(dataset.getXValue(series, item).toLong())
+                "${TimePreferences.format(time)} - ${formatter.format(dataset.getYValue(series, item))}"
             }
+        }
 
+        updateTooltipGenerator()
+
+        TimePreferences.addChangeListener {
             updateTooltipGenerator()
-
-            TimePreferences.addChangeListener {
-                updateTooltipGenerator()
-            }
-
-            isDomainGridlinesVisible = false
-            isRangeGridlinesVisible = false
-            isOutlineVisible = false
         }
 
-        padding = RectangleInsets(10.0, 10.0, 10.0, 10.0)
-        isBorderVisible = false
+        isDomainGridlinesVisible = false
+        isRangeGridlinesVisible = false
+        isOutlineVisible = false
+    }
 
-        theme = Theme.currentValue
-        Theme.addChangeListener { newTheme ->
-            theme = newTheme
-        }
+    padding = RectangleInsets(10.0, 10.0, 10.0, 10.0)
+    isBorderVisible = false
+
+    theme = Theme.currentValue
+    Theme.addChangeListener { newTheme ->
+        theme = newTheme
     }
 }

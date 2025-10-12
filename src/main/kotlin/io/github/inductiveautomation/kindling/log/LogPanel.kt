@@ -8,8 +8,8 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.UseHyperlinks
 import io.github.inductiveautomation.kindling.core.LinkHandlingStrategy
-import io.github.inductiveautomation.kindling.core.TimePreferences.SelectedTimeZone
 import io.github.inductiveautomation.kindling.core.TimePreferences
+import io.github.inductiveautomation.kindling.core.TimePreferences.SelectedTimeZone
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.Action
