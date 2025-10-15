@@ -58,6 +58,11 @@ class ProviderStatisticsPanel :
                 }
 
                 loading = false
+
+                if (newProvider.providerStatistics.missingUdtDefinition.value.isEmpty()) {
+                    missingUdtsLabel.isVisible = false
+                    missingUdtsButton.isVisible = false
+                }
             }
         }
 
@@ -97,8 +102,11 @@ class ProviderStatisticsPanel :
                 it.isVisible = !value
             }
 
-            missingUdtsLabel.isVisible = !value
-            missingUdtsButton.isVisible = !value
+            val showMissingUdts =
+                provider?.providerStatistics?.missingUdtDefinition?.value?.isNotEmpty() == true || !value
+
+            missingUdtsLabel.isVisible = showMissingUdts
+            missingUdtsButton.isVisible = showMissingUdts
 
             throbber.isVisible = value
         }
