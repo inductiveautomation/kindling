@@ -13,11 +13,14 @@ import io.github.inductiveautomation.kindling.utils.PopupMenuCustomizer
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.ReifiedTableModel
+import io.github.inductiveautomation.kindling.utils.jFrame
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.miginfocom.swing.MigLayout
+import javax.swing.JButton
 import javax.swing.JLabel
+import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
@@ -77,6 +80,12 @@ class ProviderStatisticsPanel :
         putClientProperty("FlatLaf.styleClass", "h3")
     }
 
+    private val missingUdtsLabel = JLabel("⚠ Some UDT Definitions are missing.").apply {
+        putClientProperty("FlatLaf.styleClass", "h3")
+    }
+
+    private val missingUdtsButton = JButton("Click to view")
+
     private var loading: Boolean = false
         set(value) {
             field = value
@@ -88,11 +97,18 @@ class ProviderStatisticsPanel :
                 it.isVisible = !value
             }
 
+            missingUdtsLabel.isVisible = !value
+            missingUdtsButton.isVisible = !value
+
             throbber.isVisible = value
         }
 
     init {
         add(throbber, "push, grow, span")
+
+        add(missingUdtsLabel)
+        add(missingUdtsButton, "wrap")
+
         add(generalStatsLabel, "growx, span")
         add(generalStatsScrollPane, "growx, span, h 250!")
 
@@ -103,6 +119,14 @@ class ProviderStatisticsPanel :
 
         // Show nothing on startup
         components.forEach { it.isVisible = false }
+
+        missingUdtsButton.addActionListener {
+            jFrame("Missing UDT Definitions", 300, 600) {
+                contentPane.add(
+                    FlatScrollPane(JList<String>(provider!!.providerStatistics.missingUdtDefinition.value.toTypedArray())),
+                )
+            }
+        }
     }
 
     override fun customizePopupMenu(menu: JPopupMenu) = menu.removeAll()
@@ -125,7 +149,7 @@ class MappedStatModel(
             it.key
         }
 
-        val statValue by column("Value") {
+        val statValue by column("Count") {
             it.value
         }
     }

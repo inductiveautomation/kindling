@@ -340,10 +340,7 @@ class TagProvider private constructor(
 
                         lastSeen = folderConfig
                     } else {
-                        val tags: List<Node> = currentPath.inputStream().use {
-                            Json.decodeFromStream(it)
-                        }
-
+                        val tags: List<Node> = currentPath.inputStream().use(Json::decodeFromStream)
                         lastSeen.addChildTags(tags)
                     }
                 }

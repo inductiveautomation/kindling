@@ -13,7 +13,9 @@ class ProviderStatistics private constructor(
 ) : Map<String, ProviderStatistics.ProviderStatistic<*>> by statsMap {
     constructor() : this(mutableMapOf())
 
-    val orphanedTags = ListStatistic("orphanedTags", fun(_: ListStatistic<Node>, _: Node) = Unit)
+    val orphanedTags = ListStatistic<Node>("orphanedTags")
+
+    val missingUdtDefinition = ListStatistic<String>("missingUdtDefinitions")
 
     val totalAtomicTags by quantitativeStatistic {
         if (it.statistics.isAtomicTag) value++
@@ -77,7 +79,7 @@ class ProviderStatistics private constructor(
 
     companion object {
         private const val DEFAULT_DATA_TYPE = "Int4"
-        private const val DEFAULT_VALUE_SOURCE = "memory"
+        private const val DEFAULT_VALUE_SOURCE = "MEMORY"
     }
 
     sealed class ProviderStatistic<T>(val name: String) {
@@ -143,7 +145,7 @@ class ProviderStatistics private constructor(
 
     class ListStatistic<T>(
         name: String,
-        private val processNode: ListStatistic<T>.(node: Node) -> Unit,
+        private val processNode: ListStatistic<T>.(node: Node) -> Unit = {},
     ) : ProviderStatistic<MutableList<T>>(name) {
         override val value: MutableList<T> = mutableListOf()
         override fun processNode(node: Node) = processNode(this, node)
