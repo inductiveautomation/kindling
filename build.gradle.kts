@@ -23,10 +23,7 @@ dependencies {
     api(libs.jsvg)
     api(libs.bundles.coroutines)
     api(libs.bundles.flatlaf)
-    api(libs.bundles.ignition) {
-        // Exclude transitive IA dependencies - we only need core Ignition classes for cache deserialization
-        isTransitive = false
-    }
+    api(libs.bundles.ignition) // Gradle will not include these packages unless they are transitive
     api(libs.poi)
     api(libs.excelkt) {
         // bringing in POI manually, since this wrapper appears unmaintained

@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.cache
+package io.github.inductiveautomation.kindling.cache.hsql
 
 import com.jidesoft.swing.CheckBoxList
 import io.github.inductiveautomation.kindling.utils.listCellRenderer
@@ -11,16 +11,12 @@ class SchemaModel(data: List<SchemaRecord>) : AbstractListModel<Any>() {
     private val comparator: Comparator<SchemaRecord> = compareBy(nullsFirst()) { it.id }
     private val values = data.sortedWith(comparator)
 
-    override fun getSize(): Int {
-        return values.size + 1
-    }
+    override fun getSize(): Int = values.size + 1
 
-    override fun getElementAt(index: Int): Any {
-        return if (index == 0) {
-            CheckBoxList.ALL_ENTRY
-        } else {
-            values[index - 1]
-        }
+    override fun getElementAt(index: Int): Any = if (index == 0) {
+        CheckBoxList.ALL_ENTRY
+    } else {
+        values[index - 1]
     }
 }
 

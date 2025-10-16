@@ -1,4 +1,4 @@
-package io.github.inductiveautomation.kindling.cache.model
+package io.github.inductiveautomation.kindling.cache.hsql.model
 
 import com.inductiveautomation.ignition.common.Dataset
 import com.inductiveautomation.ignition.common.model.values.QualityCode

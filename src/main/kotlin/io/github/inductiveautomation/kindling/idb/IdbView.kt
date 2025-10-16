@@ -3,6 +3,7 @@ package io.github.inductiveautomation.kindling.idb
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
+import io.github.inductiveautomation.kindling.cache.sqlite.CacheView
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.idb.generic.GenericView
@@ -17,6 +18,8 @@ import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
+import org.sqlite.SQLiteConfig
+import org.sqlite.SQLiteException
 import java.nio.file.Path
 import javax.swing.SwingConstants
 import kotlin.io.path.name
@@ -64,7 +67,11 @@ class IdbView(paths: List<Path>) : ToolPanel() {
 class IdbConnection(
     val path: Path,
 ) : AutoCloseable {
-    val connection = SQLiteConnection(path)
+    val connection = try {
+        SQLiteConnection(path)
+    } catch (_: SQLiteException) { // Most likely journal mode is required.
+        SQLiteConnection(path, journalMode = SQLiteConfig.JournalMode.WAL)
+    }
 
     val tables = connection.metaData
         .getTables("", "", "", null)
@@ -115,7 +122,11 @@ private enum class IdbTool {
             return SystemLogPanel(paths, logFiles)
         }
     },
-    ;
+    Cache {
+        override fun supports(connections: List<IdbConnection>): Boolean = connections.all { "persistent_data" in it.tables }
+
+        override fun open(connections: List<IdbConnection>): ToolPanel = CacheView.fromConnection(connections.single().connection)
+    }, ;
 
     open val tabName: String = name
 
