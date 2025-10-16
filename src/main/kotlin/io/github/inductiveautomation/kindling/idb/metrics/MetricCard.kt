@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.idb.metrics
 
+import io.github.inductiveautomation.kindling.core.TimePreferences
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.MetricPresentation.Cpu
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.MetricPresentation.Default
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.MetricPresentation.Heap
@@ -17,7 +18,6 @@ import java.text.DecimalFormat
 import java.text.FieldPosition
 import java.text.NumberFormat
 import java.text.ParsePosition
-import java.text.SimpleDateFormat
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants.CENTER
@@ -90,13 +90,18 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
         }
 
         add(sparkLine, "span, w 300, h 170, pushx, growx")
-        add(JLabel("${DATE_FORMAT.format(minTimestamp)} - ${DATE_FORMAT.format(maxTimestamp)}", CENTER), "pushx, growx, span")
+
+        val timeLabel = JLabel("${TimePreferences.format(minTimestamp)} - ${TimePreferences.format(maxTimestamp)}", CENTER)
+        add(timeLabel, "pushx, growx, span")
+
+        TimePreferences.addChangeListener {
+            timeLabel.text = "${TimePreferences.format(minTimestamp)} - ${TimePreferences.format(maxTimestamp)}"
+        }
 
         border = LineBorder(UIManager.getColor("Component.borderColor"), 3, true)
     }
 
     companion object {
-        val DATE_FORMAT = SimpleDateFormat("MM/dd/yy HH:mm:ss")
 
         private val mbFormatter = DecimalFormat("0.0 'mB'")
         private val heapFormatter = object : NumberFormat() {
@@ -117,7 +122,7 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
                 },
                 true,
             ),
-            Default(NumberFormat.getInstance(), false)
+            Default(NumberFormat.getInstance(), false),
         }
 
         private val Metric.presentation: MetricPresentation

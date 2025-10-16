@@ -54,7 +54,7 @@ class MetricsView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                 }
                     .executeQuery()
                     .toList { rs ->
-                        MetricData(rs.getDouble(1), rs.getDate(2))
+                        MetricData(rs.getDouble(1), rs.getTimestamp(2))
                     }
 
             MetricCard(metric, metricData)
