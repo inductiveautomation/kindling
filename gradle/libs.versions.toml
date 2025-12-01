@@ -61,7 +61,7 @@ kotest-junit = { group = "io.kotest", name = "kotest-runner-junit5", version.ref
 kotest-assertions-core = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
 
 # questdb
-questdb = { module = "org.questdb:questdb", version = "9.0.3" }
+questdb = { module = "org.questdb:questdb", version = "9.2.2" }
 
 [bundles]
 coroutines = [
