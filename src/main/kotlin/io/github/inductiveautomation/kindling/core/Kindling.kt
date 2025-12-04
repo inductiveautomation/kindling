@@ -13,6 +13,7 @@ import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
 import io.github.inductiveautomation.kindling.utils.ThemeSerializer
 import io.github.inductiveautomation.kindling.utils.ToolSerializer
+import io.github.inductiveautomation.kindling.utils.ZoneIdSerializer
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.render
@@ -28,6 +29,8 @@ import java.awt.Image
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
+import java.time.ZoneId
+import java.time.zone.ZoneRulesProvider
 import java.util.Vector
 import javax.swing.JComboBox
 import javax.swing.JSpinner
@@ -153,6 +156,21 @@ data object Kindling {
                 },
             )
 
+            val SelectedTimeZone = preference(
+                name = "Timezone",
+                description = "Timezone to use when displaying timestamps",
+                default = ZoneId.systemDefault(),
+                serializer = ZoneIdSerializer,
+                editor = {
+                    JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
+                        selectedItem = currentValue.id
+                        addActionListener {
+                            currentValue = ZoneId.of(selectedItem as String)
+                        }
+                    }
+                },
+            )
+
             override val displayName: String = "General"
             override val serialKey: String = "general"
             override val preferences: List<Preference<*>> = listOf(
@@ -162,6 +180,7 @@ data object Kindling {
                 ShowLogTree,
                 UseHyperlinks,
                 HighlightByDefault,
+                SelectedTimeZone,
             )
         }
 
