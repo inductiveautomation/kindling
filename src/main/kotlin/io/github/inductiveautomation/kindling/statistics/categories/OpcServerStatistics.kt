@@ -1,11 +1,19 @@
 package io.github.inductiveautomation.kindling.statistics.categories
 
+import io.github.inductiveautomation.kindling.statistics.CalculatorSupport
 import io.github.inductiveautomation.kindling.statistics.GatewayBackup
 import io.github.inductiveautomation.kindling.statistics.Statistic
 import io.github.inductiveautomation.kindling.statistics.StatisticCalculator
+import io.github.inductiveautomation.kindling.statistics.config83.PlatformResourceCategory
+import io.github.inductiveautomation.kindling.utils.MajorVersion
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -24,11 +32,20 @@ data class OpcServerStatistics(
     val uaServers = servers.count { it.type == UA_SERVER_TYPE }
     val comServers = servers.count { it.type == COM_SERVER_TYPE }
 
-    @Suppress("SqlResolve")
-    companion object Calculator : StatisticCalculator<OpcServerStatistics> {
+    companion object Calculators : CalculatorSupport<OpcServerStatistics>(
+        mapOf(
+            MajorVersion.SevenNine to Calculator,
+            MajorVersion.EightZero to Calculator,
+            MajorVersion.EightOne to Calculator,
+            MajorVersion.EightThree to Calculator83,
+        ),
+    ) {
         const val UA_SERVER_TYPE = "com.inductiveautomation.OpcUaServerType"
         const val COM_SERVER_TYPE = "OPC_COM_ServerType"
+    }
 
+    @Suppress("SqlResolve")
+    object Calculator : StatisticCalculator<OpcServerStatistics> {
         private val UA_SERVER_QUERY =
             """
             SELECT
@@ -103,8 +120,28 @@ data class OpcServerStatistics(
                         enabled = enabled(rs),
                     )
                 }
-        } catch (e: SQLException) {
+        } catch (_: SQLException) {
             emptyList()
+        }
+    }
+
+    object Calculator83 : StatisticCalculator<OpcServerStatistics> {
+        override suspend fun calculate(backup: GatewayBackup): OpcServerStatistics = coroutineScope {
+            val opcServersCategory = backup.resources.getPlatformCategory(PlatformResourceCategory.OPC_CONNECTION)
+
+            val servers = opcServersCategory.resources.map {
+                async {
+                    OpcServer(
+                        name = it.name,
+                        type = it.config["profile"]!!.jsonObject["type"]!!.jsonPrimitive.content,
+                        description = it.data.description,
+                        readOnly = it.config["profile"]!!.jsonObject["type"]!!.jsonPrimitive.content.toBoolean(),
+                        enabled = it.data.attributes.enabled,
+                    )
+                }
+            }.toList().awaitAll()
+
+            OpcServerStatistics(servers)
         }
     }
 }

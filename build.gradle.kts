@@ -87,9 +87,18 @@ tasks {
         )
         baseOutputDirectory = javadocDirectory
     }
+    val download83 by registering(DownloadJavadocs::class) {
+        version = "8.3"
+        urls = listOf(
+            "https://files.inductiveautomation.com/sdk/javadoc/ignition83/8.3.0/allclasses-index.html",
+            "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
+            "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
+        )
+        baseOutputDirectory = javadocDirectory
+    }
     processResources {
         duplicatesStrategy = DuplicatesStrategy.WARN
-        dependsOn(download79, download80, download81)
+        dependsOn(download79, download80, download81, download83)
     }
 }
 

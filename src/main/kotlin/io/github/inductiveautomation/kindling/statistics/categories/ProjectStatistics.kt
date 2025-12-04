@@ -1,8 +1,15 @@
 package io.github.inductiveautomation.kindling.statistics.categories
 
+import io.github.inductiveautomation.kindling.statistics.CalculatorSupport
 import io.github.inductiveautomation.kindling.statistics.GatewayBackup
 import io.github.inductiveautomation.kindling.statistics.Statistic
 import io.github.inductiveautomation.kindling.statistics.StatisticCalculator
+import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.hasPerspectiveResources
+import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.hasVisionResources
+import io.github.inductiveautomation.kindling.utils.MajorVersion
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -53,7 +60,15 @@ data class ProjectStatistics(
         val typeId: String,
     )
 
-    companion object Calculator : StatisticCalculator<ProjectStatistics> {
+    companion object Calculators : CalculatorSupport<ProjectStatistics>(
+        mapOf( // 7.9 not supported
+            MajorVersion.EightZero to Calculator,
+            MajorVersion.EightOne to Calculator,
+            MajorVersion.EightThree to Calculator,
+        ),
+    )
+
+    object Calculator : StatisticCalculator<ProjectStatistics> {
         const val PERSPECTIVE_MODULE_ID = "com.inductiveautomation.perspective"
         const val VISION_MODULE_ID = "com.inductiveautomation.vision"
 
@@ -87,52 +102,56 @@ data class ProjectStatistics(
                 return null
             }
 
-            return ProjectStatistics(
-                projects.listDirectoryEntries().mapNotNull { projectPath ->
-                    if (!projectPath.isDirectory()) {
-                        return@mapNotNull null
-                    }
-                    val manifest = projectPath.resolve("project.json").inputStream().use { JSON.decodeFromStream<ProjectJson>(it) }
-                    val resources =
-                        buildList {
-                            projectPath.forEachDirectoryEntry { moduleId ->
-                                if (moduleId.isDirectory()) {
-                                    moduleId.forEachDirectoryEntry { typeId ->
-                                        if (typeId.isDirectory()) {
-                                            if (typeId.resolve("resource.json").exists()) {
-                                                // singleton
-                                                add(Resource(moduleId.name, typeId.name))
-                                            } else {
-                                                typeId.walk(PathWalkOption.INCLUDE_DIRECTORIES)
-                                                    .filter { it.name == "resource.json" }
-                                                    .forEach { path ->
-                                                        add(
-                                                            Resource(
-                                                                moduleId.name,
-                                                                typeId.name,
-                                                                path.parent.name,
-                                                                path.parent.parent.pathString,
-                                                            ),
-                                                        )
+            return coroutineScope {
+                ProjectStatistics(
+                    projects.listDirectoryEntries().map { projectPath ->
+                        async {
+                            if (!projectPath.isDirectory()) {
+                                return@async null
+                            }
+                            val manifest = projectPath.resolve("project.json").inputStream().use { JSON.decodeFromStream<ProjectJson>(it) }
+                            val resources =
+                                buildList {
+                                    projectPath.forEachDirectoryEntry { moduleId ->
+                                        if (moduleId.isDirectory()) {
+                                            moduleId.forEachDirectoryEntry { typeId ->
+                                                if (typeId.isDirectory()) {
+                                                    if (typeId.resolve("resource.json").exists()) {
+                                                        // singleton
+                                                        add(Resource(moduleId.name, typeId.name))
+                                                    } else {
+                                                        typeId.walk(PathWalkOption.INCLUDE_DIRECTORIES)
+                                                            .filter { it.name == "resource.json" }
+                                                            .forEach { path ->
+                                                                add(
+                                                                    Resource(
+                                                                        moduleId.name,
+                                                                        typeId.name,
+                                                                        path.parent.name,
+                                                                        path.parent.parent.pathString,
+                                                                    ),
+                                                                )
+                                                            }
                                                     }
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                        }
 
-                    Project(
-                        projectPath.name,
-                        manifest.title.takeUnless(String?::isNullOrEmpty),
-                        manifest.description.takeUnless(String?::isNullOrEmpty),
-                        manifest.enabled,
-                        manifest.parent,
-                        manifest.inheritable,
-                        resources,
-                    )
-                },
-            )
+                            Project(
+                                projectPath.name,
+                                manifest.title.takeUnless(String?::isNullOrEmpty),
+                                manifest.description.takeUnless(String?::isNullOrEmpty),
+                                manifest.enabled,
+                                manifest.parent,
+                                manifest.inheritable,
+                                resources,
+                            )
+                        }
+                    }.awaitAll().filterNotNull(),
+                )
+            }
         }
     }
 }
