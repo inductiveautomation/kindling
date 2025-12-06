@@ -89,13 +89,14 @@ internal class XmlToolPanel(name: String, tooltip: String, content: List<String>
     override val icon: Icon = XmlTool.icon
 }
 
-object XmlTool : ClipboardTool {
+data object XmlTool : ClipboardTool {
     override val serialKey = "xml-editor"
     override val title = "XML File"
     override val description = "Ignition XML (.xml)"
     override val icon = FlatSVGIcon("icons/bx-code.svg")
     override val respectsEncoding = true
-    override val filter = FileFilter(description, "xml")
+    override val extensions: Array<String> = arrayOf("xml")
+    override val filter = FileFilter(description, *extensions)
 
     internal val logger = getLogger<XmlTool>()
 

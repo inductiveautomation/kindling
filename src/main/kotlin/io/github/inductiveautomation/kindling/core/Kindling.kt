@@ -19,18 +19,28 @@ import io.github.inductiveautomation.kindling.utils.render
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTextField
 import java.awt.Image
+import java.awt.event.ItemEvent
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Vector
+import javax.swing.DefaultListModel
+import javax.swing.DefaultListSelectionModel
+import javax.swing.JButton
 import javax.swing.JComboBox
+import javax.swing.JList
+import javax.swing.JPanel
 import javax.swing.JSpinner
+import javax.swing.ListSelectionModel
 import javax.swing.SpinnerNumberModel
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
@@ -81,7 +91,7 @@ data object Kindling {
                     JComboBox(Vector(Tool.sortedByTitle)).apply {
                         selectedItem = currentValue
 
-                        configureCellRenderer { _, value, _, selected, focused ->
+                        configureCellRenderer { _, value, _, _, _ ->
                             text = value?.title
                             toolTipText = value?.description
                             icon = value?.icon?.derive(ACTION_ICON_SCALE_FACTOR)
@@ -153,6 +163,70 @@ data object Kindling {
                 },
             )
 
+            val DefaultTools = preference(
+                name = "Default Tools for Extensions",
+                description = "Configure which tool to prioritize when dragging a file of the given extension into Kindling.",
+                default = emptyMap(),
+                serializer = MapSerializer(String.serializer(), ToolSerializer),
+                editor = {
+                    val data = Tool.byExtension.filterValues { it.size > 1 }
+
+                    val clearButton = JButton("Clear")
+                    val extCombo = JComboBox(data.keys.toTypedArray()).apply {
+                        selectedIndex = -1
+
+                        configureCellRenderer { _, value, _, _, _ ->
+                            text = value ?: "Select an extension"
+                        }
+                    }
+
+                    val toolList = JList<Tool>().apply {
+                        visibleRowCount = 5
+                        selectionMode = ListSelectionModel.SINGLE_SELECTION
+                        addListSelectionListener {
+                            val list = it.source as JList<*>
+                            val index = list.selectedIndex
+
+                            val v = currentValue.toMutableMap()
+
+                            if (index >= 0) {
+                                val tool = list.model.getElementAt(index) as Tool
+                                v[extCombo.selectedItem as String] = tool
+                            } else {
+                                v.remove(extCombo.selectedItem as String)
+                            }
+
+                            currentValue = v
+                        }
+                    }
+
+                    extCombo.addItemListener {
+                        if (it.stateChange == ItemEvent.SELECTED) {
+                            val ext = extCombo.selectedItem as String
+                            val newModel = DefaultListModel<Tool>().apply {
+                                addAll(data[ext].orEmpty())
+                            }
+
+                            toolList.model = newModel
+
+                            toolList.selectedIndex = newModel.indexOf(currentValue[extCombo.selectedItem])
+                        }
+                    }
+
+                    clearButton.addActionListener {
+                        if (extCombo.selectedIndex > -1 && toolList.selectedIndex > -1) {
+                            (toolList.selectionModel as DefaultListSelectionModel).clearSelection()
+                        }
+                    }
+
+                    JPanel(MigLayout("fill, ins 0")).apply {
+                        add(extCombo, "pushx, growx")
+                        add(clearButton, "gapleft 5, wrap")
+                        add(toolList, "growx, gaptop 5")
+                    }
+                },
+            )
+
             override val displayName: String = "General"
             override val serialKey: String = "general"
             override val preferences: List<Preference<*>> = listOf(
@@ -162,6 +236,7 @@ data object Kindling {
                 ShowLogTree,
                 UseHyperlinks,
                 HighlightByDefault,
+                DefaultTools,
             )
         }
 
