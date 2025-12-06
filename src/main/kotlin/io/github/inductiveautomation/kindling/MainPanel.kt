@@ -67,6 +67,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.charset.Charset
 import java.util.function.BiFunction
+import javax.swing.DefaultComboBoxModel
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JCheckBox
@@ -351,6 +352,34 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
         }
     }
 
+    private val toolSelectionPrompt by lazy {
+        object : JPanel(MigLayout("fill, ins 0")) {
+            fun setExtension(value: String) {
+                label.text =
+                    "<html>.$value files are supported by multiple tools.<br>Please specify how you want to open the file.</html>"
+
+                combo.model = DefaultComboBoxModel(Tool.byExtension[value]!!.toTypedArray())
+                combo.selectedIndex = -1
+
+                setDefault.isSelected = false
+            }
+
+            val setDefault = JCheckBox("Set as default")
+            private val label = JLabel()
+            val combo = JComboBox<Tool>().apply {
+                configureCellRenderer { _, value, _, _, _ ->
+                    text = value?.title ?: "Select"
+                }
+            }
+
+            init {
+                add(label, "wrap, gapbottom 8")
+                add(combo, "wrap")
+                add(setDefault)
+            }
+        }
+    }
+
     /**
      * Opens a path in a tool (blocking). In the event of any error, opens an 'Error' tab instead.
      */
@@ -416,31 +445,18 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
     }
 
     private fun selectTool(extension: String): Tool? {
-        val label = JLabel("<html>.$extension files are supported by multiple tools.<br>Please specify how you want to open the file.</html>")
-        val setDefault = JCheckBox("Set as default")
-        val combo = JComboBox(Tool.byExtension[extension]!!.toTypedArray()).apply {
-            selectedIndex = -1
-            configureCellRenderer { _, value, _, _, _ ->
-                text = value?.title ?: "Select"
-            }
-        }
+        toolSelectionPrompt.setExtension(extension)
 
-        val panel = JPanel(MigLayout("fill, ins 0")).apply {
-            add(label, "wrap, gapbottom 8")
-            add(combo, "wrap")
-            add(setDefault)
-        }
-
-        val result = JOptionPane.showConfirmDialog(this, panel, "Select a tool", JOptionPane.OK_CANCEL_OPTION)
+        val result = JOptionPane.showConfirmDialog(this, toolSelectionPrompt, "Select a tool", JOptionPane.OK_CANCEL_OPTION)
 
         return if (result == JOptionPane.YES_OPTION) {
-            if (setDefault.isSelected) {
+            if (toolSelectionPrompt.setDefault.isSelected) {
                 val defaults = DefaultTools.currentValue.toMutableMap()
-                defaults[extension] = combo.selectedItem as Tool
+                defaults[extension] = toolSelectionPrompt.combo.selectedItem as Tool
                 DefaultTools.currentValue = defaults
             }
 
-            combo.selectedItem as Tool
+            toolSelectionPrompt.combo.selectedItem as Tool
         } else {
             null
         }
