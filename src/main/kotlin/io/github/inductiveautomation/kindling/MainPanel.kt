@@ -415,15 +415,19 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
         }
         else -> {
             val userDefaults: Map<String, Tool> = DefaultTools.currentValue
-            val filesByExtension = files.groupBy { it.extension }
+            val filesByExtension = files.groupBy { file ->
+                // Associate wrapper.log.n files to the log extension
+                if (file.extension.all(Char::isDigit)) "log" else file.extension
+            }
 
             for ((ext, files) in filesByExtension) {
                 var tool = specifiedTool ?: userDefaults[ext]
 
                 if (tool == null) {
                     val possibleTools = Tool.byExtension[ext] ?: run {
-                        LOGGER.error("No tool found for extension $ext")
-                        continue
+                        LOGGER.warn("No tool found for extension $ext")
+                        // This extension isn't registered by a tool. Try to validate it using the filters.
+                        listOf(Tool[files.first()])
                     }
 
                     tool = possibleTools.singleOrNull() ?: selectTool(ext) ?: continue
@@ -525,6 +529,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 put("Tree.showDefaultIcons", true)
             }
 
+            @Suppress("RemoveExplicitTypeArguments")
             FlatSVGIcon.ColorFilter.getInstance().mapperEx = BiFunction<Component, Color, Color> { component, color ->
                 if (component is RendererBase && component.selected && component.focused) {
                     UIManager.getColor("Tree.selectionForeground")
