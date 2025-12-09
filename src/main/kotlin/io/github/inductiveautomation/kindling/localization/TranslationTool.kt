@@ -421,7 +421,6 @@ data object TranslationTool : MultiTool, ClipboardTool {
     override val description: String = "Translation Bundle Files (\$locale.properties, \$locale.xml)"
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-globe.svg")
     override val extensions: Array<String> = arrayOf("properties", "xml")
-    override val filter: FileFilter = FileFilter(description, *extensions)
     override val serialKey: String = "bundle-view"
 
     internal val exportZipFileChooser by lazy {

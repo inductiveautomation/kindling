@@ -50,6 +50,7 @@ interface Tool : KindlingSerializable {
     fun open(path: Path): ToolPanel
 
     val filter: FileFilter
+        get() = FileFilter(description, *extensions)
 
     val extensions: Array<String>
 

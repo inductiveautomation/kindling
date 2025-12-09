@@ -177,7 +177,6 @@ data object ZipViewer : Tool {
     override val description = "ZIP Archive (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
     override val extensions: Array<String> = arrayOf("gwbk", "zip", "modl", "jar")
-    override val filter = FileFilter(description, *extensions)
 
     override fun open(path: Path): ToolPanel = ZipView(path)
 

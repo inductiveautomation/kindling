@@ -6,16 +6,24 @@ import com.formdev.flatlaf.util.SystemInfo
 import com.github.weisj.jsvg.parser.SVGLoader
 import io.github.inductiveautomation.kindling.core.Preference.Companion.PreferenceCheckbox
 import io.github.inductiveautomation.kindling.core.Preference.Companion.preference
+import io.github.inductiveautomation.kindling.idb.IdbViewer
+import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.utils.ACTION_ICON_SCALE_FACTOR
 import io.github.inductiveautomation.kindling.utils.CharsetSerializer
+import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.DocumentAdapter
+import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
+import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
+import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
+import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.ThemeSerializer
 import io.github.inductiveautomation.kindling.utils.ToolSerializer
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.render
+import io.github.inductiveautomation.kindling.zip.ZipViewer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -25,22 +33,20 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTextField
+import java.awt.Component
+import java.awt.Dimension
 import java.awt.Image
-import java.awt.event.ItemEvent
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Vector
-import javax.swing.DefaultListModel
-import javax.swing.DefaultListSelectionModel
-import javax.swing.JButton
+import javax.swing.DefaultCellEditor
+import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
-import javax.swing.JList
-import javax.swing.JPanel
+import javax.swing.JComponent
 import javax.swing.JSpinner
-import javax.swing.ListSelectionModel
+import javax.swing.JTable
 import javax.swing.SpinnerNumberModel
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
@@ -51,7 +57,8 @@ import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTh
 
 data object Kindling {
     val logo = SVGLoader().run {
-        val svgUrl = checkNotNull(Kindling::class.java.getResource("/logo.svg")) { "Unable to load logo SVG" }
+        val svgUrl =
+            checkNotNull(Kindling::class.java.getResource("/logo.svg")) { "Unable to load logo SVG" }
         checkNotNull(load(svgUrl)) { "Unable to load logo SVG" }
     }
 
@@ -66,7 +73,7 @@ data object Kindling {
         data object General : PreferenceCategory {
             val HomeLocation: Preference<Path> = preference(
                 name = "Browse Location",
-                description = "The default path to start looking for files.",
+                description = "The default path to start looking for files",
                 default = Path(System.getProperty("user.home"), "Downloads"),
                 serializer = PathSerializer,
                 editor = {
@@ -85,7 +92,7 @@ data object Kindling {
             val DefaultTool: Preference<Tool> = preference(
                 name = "Default Tool",
                 description = "The default tool to use when invoking the file selector",
-                default = Tool.tools.first(),
+                default = IdbViewer,
                 serializer = ToolSerializer,
                 editor = {
                     JComboBox(Vector(Tool.sortedByTitle)).apply {
@@ -101,6 +108,20 @@ data object Kindling {
                             currentValue = selectedItem as Tool
                         }
                     }
+                },
+            )
+
+            val DefaultsByExtension = preference(
+                name = "Default Tool By Extension",
+                serialKey = "defaultToolByExtension",
+                description = "Configure which tool to use when dragging a file with the given extension into Kindling",
+                default = mapOf(
+                    "zip" to ZipViewer,
+                    "json" to MultiThreadViewer,
+                ),
+                serializer = MapSerializer(String.serializer(), ToolSerializer),
+                editor = {
+                    createToolPreferenceTable()
                 },
             )
 
@@ -159,71 +180,7 @@ data object Kindling {
                 name = "Highlight",
                 default = true,
                 editor = {
-                    PreferenceCheckbox("Enable table highlighting by default for multiple log files.")
-                },
-            )
-
-            val DefaultTools = preference(
-                name = "Default Tools for Extensions",
-                description = "Configure which tool to prioritize when dragging a file of the given extension into Kindling.",
-                default = emptyMap(),
-                serializer = MapSerializer(String.serializer(), ToolSerializer),
-                editor = {
-                    val data = Tool.byExtension.filterValues { it.size > 1 }
-
-                    val clearButton = JButton("Clear")
-                    val extCombo = JComboBox(data.keys.toTypedArray()).apply {
-                        selectedIndex = -1
-
-                        configureCellRenderer { _, value, _, _, _ ->
-                            text = value ?: "Select an extension"
-                        }
-                    }
-
-                    val toolList = JList<Tool>().apply {
-                        visibleRowCount = 5
-                        selectionMode = ListSelectionModel.SINGLE_SELECTION
-                        addListSelectionListener {
-                            val list = it.source as JList<*>
-                            val index = list.selectedIndex
-
-                            val v = currentValue.toMutableMap()
-
-                            if (index >= 0) {
-                                val tool = list.model.getElementAt(index) as Tool
-                                v[extCombo.selectedItem as String] = tool
-                            } else {
-                                v.remove(extCombo.selectedItem as String)
-                            }
-
-                            currentValue = v
-                        }
-                    }
-
-                    extCombo.addItemListener {
-                        if (it.stateChange == ItemEvent.SELECTED) {
-                            val ext = extCombo.selectedItem as String
-                            val newModel = DefaultListModel<Tool>().apply {
-                                addAll(data[ext].orEmpty())
-                            }
-
-                            toolList.model = newModel
-
-                            toolList.selectedIndex = newModel.indexOf(currentValue[extCombo.selectedItem])
-                        }
-                    }
-
-                    clearButton.addActionListener {
-                        if (extCombo.selectedIndex > -1 && toolList.selectedIndex > -1) {
-                            (toolList.selectionModel as DefaultListSelectionModel).clearSelection()
-                        }
-                    }
-
-                    JPanel(MigLayout("fill, ins 0")).apply {
-                        add(extCombo, "pushx, growx")
-                        add(clearButton, "gapleft 5, wrap")
-                        add(toolList, "growx, gaptop 5")
-                    }
+                    PreferenceCheckbox("Enable table highlighting by default for multiple log files")
                 },
             )
 
@@ -232,11 +189,11 @@ data object Kindling {
             override val preferences: List<Preference<*>> = listOf(
                 HomeLocation,
                 DefaultTool,
+                DefaultsByExtension,
                 ShowFullLoggerNames,
                 ShowLogTree,
                 UseHyperlinks,
                 HighlightByDefault,
-                DefaultTools,
             )
         }
 
@@ -307,9 +264,10 @@ data object Kindling {
             override val preferences: List<Preference<*>> = listOf(Debug, HyperlinkStrategy)
         }
 
-        private val preferencesPath: Path = Path(System.getProperty("user.home"), ".kindling").also {
-            it.createDirectories()
-        }.resolve("preferences.json")
+        private val preferencesPath: Path =
+            Path(System.getProperty("user.home"), ".kindling").also {
+                it.createDirectories()
+            }.resolve("preferences.json")
 
         private val preferencesJson = Json {
             ignoreUnknownKeys = true
@@ -330,16 +288,23 @@ data object Kindling {
                 @OptIn(ExperimentalSerializationApi::class)
                 preferencesJson.decodeFromStream(inputStream)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Fallback to empty; defaults will be read and serialized if modified
             mutableMapOf()
         }
 
-        operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? = internalState.getOrPut(category.serialKey) { mutableMapOf() }[preference.serialKey]?.let { currentValue ->
-            preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
+        operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? {
+            val categoryData = internalState.getOrPut(category.serialKey) { mutableMapOf() }
+            return categoryData[preference.serialKey]?.let { currentValue ->
+                preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
+            }
         }
 
-        operator fun <T : Any> set(category: PreferenceCategory, preference: Preference<T>, value: T) {
+        operator fun <T : Any> set(
+            category: PreferenceCategory,
+            preference: Preference<T>,
+            value: T,
+        ) {
             internalState.getOrPut(category.serialKey) { mutableMapOf() }[preference.serialKey] =
                 preferencesJson.encodeToJsonElement(preference.serializer, value)
             syncToDisk()
@@ -364,4 +329,94 @@ data object Kindling {
             }
         }
     }
+}
+
+context(pref: Preference<Map<String, Tool>>)
+private fun createToolPreferenceTable(): JComponent {
+    val data = Tool.byExtension.filterValues { it.size > 1 }
+
+    data class Row(
+        val extension: String,
+        var tool: Tool?,
+    )
+
+    val rows = data.keys
+        .sorted()
+        .map { ext -> Row(ext, pref.currentValue[ext]) }
+
+    @Suppress("unused")
+    val columns = object : ColumnList<Row>() {
+        val Extension by column<String> { it.extension }
+        val Tool by column<Tool?> { it.tool }
+    }
+
+    val model = object : ReifiedListTableModel<Row>(rows, columns) {
+        override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex == columns[columns.Tool]
+
+        override fun setValueAt(value: Any?, rowIndex: Int, columnIndex: Int) {
+            if (columnIndex == columns[columns.Tool]) {
+                val ext = get(rowIndex).extension
+                rows[rowIndex].tool = value as Tool?
+                val updated = pref.currentValue.toMutableMap()
+                if (rows[rowIndex].tool == null) {
+                    updated.remove(ext)
+                } else {
+                    updated[ext] = get(rowIndex).tool as Tool
+                }
+                pref.currentValue = updated
+                fireTableCellUpdated(rowIndex, columnIndex)
+            }
+        }
+    }
+
+    val table = ReifiedJXTable(model, columns).apply {
+        tableHeader = null
+
+        setDefaultRenderer<Tool>(
+            getText = { it?.title },
+            getIcon = { it?.icon?.derive(ACTION_ICON_SCALE_FACTOR) },
+            getTooltip = { it?.description },
+        )
+
+        setDefaultEditor(
+            Tool::class.java,
+            object : DefaultCellEditor(JComboBox<Tool?>()) {
+                @Suppress("UNCHECKED_CAST")
+                private val combo: JComboBox<Tool?> = editorComponent as JComboBox<Tool?>
+
+                init {
+                    combo.isEditable = false
+                    combo.configureCellRenderer<Tool?> { _, value, _, _, _ ->
+                        text = value?.title ?: "None"
+                        icon = value?.icon?.derive(ACTION_ICON_SCALE_FACTOR)
+                        toolTipText = value?.description
+                    }
+                }
+
+                override fun getTableCellEditorComponent(
+                    table: JTable?,
+                    value: Any?,
+                    isSelected: Boolean,
+                    row: Int,
+                    column: Int,
+                ): Component {
+                    val ext = model[row].extension
+                    val options = buildList {
+                        add(null)
+                        addAll(data[ext].orEmpty())
+                    }
+                    combo.model = DefaultComboBoxModel(options.toTypedArray())
+                    combo.selectedItem = value as Tool?
+                    return combo
+                }
+
+                override fun getCellEditorValue(): Any? = combo.selectedItem
+            },
+        )
+    }
+
+    val visibleRows = 4
+    table.preferredScrollableViewportSize = Dimension(0, table.rowHeight * visibleRows)
+
+    return FlatScrollPane(table)
 }

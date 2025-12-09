@@ -139,7 +139,6 @@ data object GatewayNetworkTool : ClipboardTool {
     override val description = "GAN Diagram (.json, .txt)"
     override val icon = FlatSVGIcon("icons/bx-sitemap.svg")
     override val extensions: Array<String> = arrayOf("json", "txt")
-    override val filter = FileFilter(description, *extensions)
     override val respectsEncoding = true
 
     override fun open(data: String) = GatewayNetworkViewer(

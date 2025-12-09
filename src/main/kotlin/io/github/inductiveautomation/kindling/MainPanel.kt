@@ -16,7 +16,7 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ChoosableEncodings
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultTool
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultTools
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultsByExtension
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.ScaleFactor
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
@@ -414,7 +414,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
             }
         }
         else -> {
-            val userDefaults: Map<String, Tool> = DefaultTools.currentValue
+            val userDefaults: Map<String, Tool> = DefaultsByExtension.currentValue
             val filesByExtension = files.groupBy { file ->
                 // Associate wrapper.log.n files to the log extension
                 if (file.extension.all(Char::isDigit)) "log" else file.extension
@@ -455,9 +455,9 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
 
         return if (result == JOptionPane.YES_OPTION) {
             if (toolSelectionPrompt.setDefault.isSelected) {
-                val defaults = DefaultTools.currentValue.toMutableMap()
+                val defaults = DefaultsByExtension.currentValue.toMutableMap()
                 defaults[extension] = toolSelectionPrompt.combo.selectedItem as Tool
-                DefaultTools.currentValue = defaults
+                DefaultsByExtension.currentValue = defaults
             }
 
             toolSelectionPrompt.combo.selectedItem as Tool

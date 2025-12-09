@@ -96,7 +96,6 @@ data object XmlTool : ClipboardTool {
     override val icon = FlatSVGIcon("icons/bx-code.svg")
     override val respectsEncoding = true
     override val extensions: Array<String> = arrayOf("xml")
-    override val filter = FileFilter(description, *extensions)
 
     internal val logger = getLogger<XmlTool>()
 
