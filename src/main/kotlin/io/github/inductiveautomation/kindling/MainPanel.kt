@@ -16,6 +16,7 @@ import io.github.inductiveautomation.kindling.core.Kindling.Preferences.Advanced
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ChoosableEncodings
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultTool
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultsByExtension
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.ScaleFactor
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
@@ -34,6 +35,7 @@ import io.github.inductiveautomation.kindling.utils.TabStrip
 import io.github.inductiveautomation.kindling.utils.attachPopupMenu
 import io.github.inductiveautomation.kindling.utils.chooseFiles
 import io.github.inductiveautomation.kindling.utils.clipboardString
+import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.getLogger
 import io.github.inductiveautomation.kindling.utils.jFrame
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
@@ -65,8 +67,10 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.charset.Charset
 import java.util.function.BiFunction
+import javax.swing.DefaultComboBoxModel
 import javax.swing.Icon
 import javax.swing.JButton
+import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JFileChooser
 import javax.swing.JFrame
@@ -74,6 +78,7 @@ import javax.swing.JLabel
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.KeyStroke
@@ -347,6 +352,34 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
         }
     }
 
+    private val toolSelectionPrompt by lazy {
+        object : JPanel(MigLayout("fill, ins 0")) {
+            fun setExtension(value: String) {
+                label.text =
+                    "<html>.$value files are supported by multiple tools.<br>Please specify how you want to open the file.</html>"
+
+                combo.model = DefaultComboBoxModel(Tool.byExtension[value]!!.toTypedArray())
+                combo.selectedIndex = -1
+
+                setDefault.isSelected = false
+            }
+
+            val setDefault = JCheckBox("Set as default")
+            private val label = JLabel()
+            val combo = JComboBox<Tool>().apply {
+                configureCellRenderer { _, value, _, _, _ ->
+                    text = value?.title ?: "Select"
+                }
+            }
+
+            init {
+                add(label, "wrap, gapbottom 8")
+                add(combo, "wrap")
+                add(setDefault)
+            }
+        }
+    }
+
     /**
      * Opens a path in a tool (blocking). In the event of any error, opens an 'Error' tab instead.
      */
@@ -355,7 +388,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
             val toolPanel = openFunction()
             tabs.addTab(component = toolPanel, select = true)
         }.getOrElse { ex ->
-            LOGGER.error("Failed to open $description as a $title", ex)
+            LOGGER.error("Failed to open $description as a $title. You might need to specify the tool explicitly.", ex)
             tabs.addErrorTab(ex) { error ->
                 if (error is ToolOpeningException) {
                     error.message.orEmpty()
@@ -367,25 +400,69 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
         }
     }
 
-    fun openFiles(files: List<File>, tool: Tool? = null) {
-        if (tool is MultiTool) {
-            openOrError(tool.title, files.joinToString()) {
-                tool.open(files.map(File::toPath))
+    fun openFiles(files: List<File>, specifiedTool: Tool? = null) = when {
+        specifiedTool is MultiTool -> {
+            openOrError(specifiedTool.title, files.joinToString()) {
+                specifiedTool.open(files.map(File::toPath))
             }
-        } else {
-            files.groupBy { tool ?: Tool[it] }.forEach { (tool, filesByTool) ->
+        }
+        specifiedTool != null -> {
+            files.forEach { file ->
+                openOrError(specifiedTool.title, file.toString()) {
+                    specifiedTool.open(file.toPath())
+                }
+            }
+        }
+        else -> {
+            val userDefaults: Map<String, Tool> = DefaultsByExtension.currentValue
+            val filesByExtension = files.groupBy { file ->
+                // Associate wrapper.log.n files to the log extension
+                if (file.extension.all(Char::isDigit)) "log" else file.extension
+            }
+
+            for ((ext, files) in filesByExtension) {
+                var tool = specifiedTool ?: userDefaults[ext]
+
+                if (tool == null) {
+                    val possibleTools = Tool.byExtension[ext] ?: run {
+                        LOGGER.warn("No tool found for extension $ext")
+                        // This extension isn't registered by a tool. Try to validate it using the filters.
+                        listOf(Tool[files.first()])
+                    }
+
+                    tool = possibleTools.singleOrNull() ?: selectTool(ext) ?: continue
+                }
+
                 if (tool is MultiTool) {
-                    openOrError(tool.title, filesByTool.joinToString()) {
-                        tool.open(filesByTool.map(File::toPath))
+                    openOrError(tool.title, files.joinToString()) {
+                        tool.open(files.map(File::toPath))
                     }
                 } else {
-                    filesByTool.forEach { file ->
+                    files.forEach { file ->
                         openOrError(tool.title, file.toString()) {
                             tool.open(file.toPath())
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun selectTool(extension: String): Tool? {
+        toolSelectionPrompt.setExtension(extension)
+
+        val result = JOptionPane.showConfirmDialog(this, toolSelectionPrompt, "Select a tool", JOptionPane.OK_CANCEL_OPTION)
+
+        return if (result == JOptionPane.YES_OPTION) {
+            if (toolSelectionPrompt.setDefault.isSelected) {
+                val defaults = DefaultsByExtension.currentValue.toMutableMap()
+                defaults[extension] = toolSelectionPrompt.combo.selectedItem as Tool
+                DefaultsByExtension.currentValue = defaults
+            }
+
+            toolSelectionPrompt.combo.selectedItem as Tool
+        } else {
+            null
         }
     }
 
@@ -452,6 +529,7 @@ class MainPanel : JPanel(MigLayout("ins 6, fill, hidemode 3")) {
                 put("Tree.showDefaultIcons", true)
             }
 
+            @Suppress("RemoveExplicitTypeArguments")
             FlatSVGIcon.ColorFilter.getInstance().mapperEx = BiFunction<Component, Color, Color> { component, color ->
                 if (component is RendererBase && component.selected && component.focused) {
                     UIManager.getColor("Tree.selectionForeground")

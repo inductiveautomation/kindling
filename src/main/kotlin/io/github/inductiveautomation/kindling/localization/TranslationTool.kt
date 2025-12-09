@@ -107,7 +107,7 @@ class TranslationView(
         }
 
         val localeComboBox = JComboBox(locales.toTypedArray()).apply {
-            configureCellRenderer { list, locale, row, focused, selected ->
+            configureCellRenderer { _, locale, _, _, _ ->
                 text = when (locale) {
                     Locale.ROOT -> "Select Locale"
                     null -> null
@@ -258,8 +258,8 @@ private class TranslationTableModel(
     override fun getRowCount(): Int = data.size
     override fun getColumnCount(): Int = columns.size
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex != 0
-    override fun getColumnClass(columnIndex: Int): Class<*>? = columns[columnIndex].clazz
-    override fun getColumnName(column: Int): String? = columns[column].header
+    override fun getColumnClass(columnIndex: Int): Class<*> = columns[columnIndex].clazz
+    override fun getColumnName(column: Int): String = columns[column].header
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = columns[columnIndex].getValue.invoke(data[rowIndex])
 
@@ -420,7 +420,7 @@ data object TranslationTool : MultiTool, ClipboardTool {
     override val title: String = "Translation Bundle"
     override val description: String = "Translation Bundle Files (\$locale.properties, \$locale.xml)"
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/bx-globe.svg")
-    override val filter: FileFilter = FileFilter(description, "properties", "xml")
+    override val extensions: Array<String> = arrayOf("properties", "xml")
     override val serialKey: String = "bundle-view"
 
     internal val exportZipFileChooser by lazy {

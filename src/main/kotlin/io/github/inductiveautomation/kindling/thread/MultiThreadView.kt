@@ -461,7 +461,7 @@ data object MultiThreadViewer : MultiTool, ClipboardTool, PreferenceCategory {
     override val title = "Thread Dump"
     override val description = "Thread Dump (.json, .txt)"
     override val icon = FlatSVGIcon("icons/bx-chip.svg")
-    override val filter = FileFilter(description, "json", "txt")
+    override val extensions: Array<String> = arrayOf("json", "txt")
 
     override val respectsEncoding = true
     override fun open(path: Path) = open(listOf(path))

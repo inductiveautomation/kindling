@@ -3,9 +3,7 @@ package io.github.inductiveautomation.kindling.quest
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatSplitPane
 import com.formdev.flatlaf.util.SystemInfo
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.MultiTool
-import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolOpeningException
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.db.Column
@@ -28,7 +26,6 @@ import io.questdb.cairo.security.AllowAllSecurityContext
 import io.questdb.griffin.SqlExecutionContext
 import io.questdb.griffin.SqlExecutionContextImpl
 import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
@@ -261,7 +258,7 @@ data object QuestDbViewer : MultiTool {
     override val title = "QuestDB Viewer"
     override val description = "QuestDB Export (.zip)"
     override val icon: FlatSVGIcon = FlatSVGIcon("icons/Questdb-logo.svg")
-    override val filter = FileFilter(description, "zip")
+    override val extensions: Array<String> = arrayOf("zip")
     override fun open(path: Path): ToolPanel = QuestDbView(path)
     override fun open(paths: List<Path>): ToolPanel = open(paths.first())
 }

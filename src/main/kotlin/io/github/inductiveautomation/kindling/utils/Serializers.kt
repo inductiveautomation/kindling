@@ -7,6 +7,7 @@ import io.github.inductiveautomation.kindling.idb.IdbViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.zip.ZipViewer
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -56,7 +57,7 @@ data object ToolSerializer : KSerializer<Tool> {
     override fun deserialize(decoder: Decoder): Tool {
         val storedKey = decoder.decodeString()
         val actualKey = aliases[storedKey] ?: storedKey
-        return bySerialKey.getValue(actualKey)
+        return bySerialKey[actualKey] ?: throw SerializationException("No tool found for key $storedKey")
     }
 
     override fun serialize(encoder: Encoder, value: Tool) = encoder.encodeString(value.serialKey)
