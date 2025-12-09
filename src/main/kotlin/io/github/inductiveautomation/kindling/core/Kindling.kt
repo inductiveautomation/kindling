@@ -10,16 +10,16 @@ import io.github.inductiveautomation.kindling.idb.IdbViewer
 import io.github.inductiveautomation.kindling.thread.MultiThreadViewer
 import io.github.inductiveautomation.kindling.utils.ACTION_ICON_SCALE_FACTOR
 import io.github.inductiveautomation.kindling.utils.CharsetSerializer
+import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.DocumentAdapter
+import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.PathSerializer
 import io.github.inductiveautomation.kindling.utils.PathSerializer.serializedForm
-import io.github.inductiveautomation.kindling.utils.ThemeSerializer
-import io.github.inductiveautomation.kindling.utils.ToolSerializer
-import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
-import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
+import io.github.inductiveautomation.kindling.utils.ThemeSerializer
+import io.github.inductiveautomation.kindling.utils.ToolSerializer
 import io.github.inductiveautomation.kindling.utils.configureCellRenderer
 import io.github.inductiveautomation.kindling.utils.debounce
 import io.github.inductiveautomation.kindling.utils.render
@@ -35,19 +35,19 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.jdesktop.swingx.JXTextField
 import java.awt.Component
-import java.awt.Image
 import java.awt.Dimension
+import java.awt.Image
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Vector
+import javax.swing.DefaultCellEditor
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
-import javax.swing.JTable
-import javax.swing.JSpinner
-import javax.swing.SpinnerNumberModel
-import javax.swing.DefaultCellEditor
 import javax.swing.JComponent
+import javax.swing.JSpinner
+import javax.swing.JTable
+import javax.swing.SpinnerNumberModel
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.inputStream
@@ -293,10 +293,12 @@ data object Kindling {
             mutableMapOf()
         }
 
-        operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? =
-            internalState.getOrPut(category.serialKey) { mutableMapOf() }[preference.serialKey]?.let { currentValue ->
+        operator fun <T : Any> get(category: PreferenceCategory, preference: Preference<T>): T? {
+            val categoryData = internalState.getOrPut(category.serialKey) { mutableMapOf() }
+            return categoryData[preference.serialKey]?.let { currentValue ->
                 preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
             }
+        }
 
         operator fun <T : Any> set(
             category: PreferenceCategory,
@@ -342,15 +344,14 @@ private fun createToolPreferenceTable(): JComponent {
         .sorted()
         .map { ext -> Row(ext, pref.currentValue[ext]) }
 
-    @Suppress("unused") val columns = object : ColumnList<Row>() {
+    @Suppress("unused")
+    val columns = object : ColumnList<Row>() {
         val Extension by column<String> { it.extension }
         val Tool by column<Tool?> { it.tool }
     }
 
     val model = object : ReifiedListTableModel<Row>(rows, columns) {
-        override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-            return columnIndex == columns[columns.Tool]
-        }
+        override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex == columns[columns.Tool]
 
         override fun setValueAt(value: Any?, rowIndex: Int, columnIndex: Int) {
             if (columnIndex == columns[columns.Tool]) {
