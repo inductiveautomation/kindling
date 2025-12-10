@@ -2,8 +2,6 @@ package io.github.inductiveautomation.kindling.idb.generic
 
 import com.formdev.flatlaf.extras.components.FlatSplitPane
 import com.formdev.flatlaf.util.SystemInfo
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
-import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.core.db.Column
 import io.github.inductiveautomation.kindling.core.db.QueryResult
@@ -23,7 +21,6 @@ import io.github.inductiveautomation.kindling.utils.javaType
 import io.github.inductiveautomation.kindling.utils.menuShortcutKeyMaskEx
 import io.github.inductiveautomation.kindling.utils.toList
 import net.miginfocom.swing.MigLayout
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
@@ -62,6 +59,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                     },
                 size = connection
                     .executeQuery("""SELECT SUM("pgsize") FROM "dbstat" WHERE name='$tableName'""")[1],
+                rowCount = connection.executeQuery("SELECT COUNT(*) FROM $tableName")[1],
             )
         }
 
