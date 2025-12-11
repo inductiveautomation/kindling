@@ -9,6 +9,7 @@ data class Table(
     val columns: List<Column>,
     val _parent: () -> TreeNode,
     val size: Long,
+    val rowCount: Long,
 ) : TreeNode {
     override fun getChildAt(childIndex: Int): TreeNode = columns[childIndex]
     override fun getChildCount(): Int = columns.size

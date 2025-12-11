@@ -16,13 +16,15 @@ class DBMetaDataTree(treeModel: TreeModel) : FlatTree() {
         setShowsRootHandles(true)
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
         setCellRenderer(
-            treeCellRenderer { _, value, selected, _, _, _, hasFocus ->
+            treeCellRenderer { _, value, _, _, _, _, _ ->
                 when (value) {
                     is Table -> {
                         text = buildString {
                             append(value.name)
                             append(" ")
                             append("(${value.size.toFileSizeLabel()})")
+                            append(" ")
+                            append("[${value.rowCount} rows]")
                         }
                         icon = FlatActionIcon("icons/bx-table.svg")
                     }
