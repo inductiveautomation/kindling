@@ -5,6 +5,7 @@ import io.github.inductiveautomation.kindling.utils.StyledLabel
 import io.github.inductiveautomation.kindling.utils.dismissOnEscape
 import io.github.inductiveautomation.kindling.utils.jFrame
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
 import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTaskPane
@@ -31,6 +32,7 @@ class Preference<T : Any>(
     val category: PreferenceCategory,
     val name: String,
     override val serialKey: String,
+    val legacyValueProvider: ((Map<String, Map<String, JsonElement>>) -> T?)? = null,
     val description: String? = null,
     val requiresRestart: Boolean = false,
     val default: T,
@@ -92,6 +94,7 @@ class Preference<T : Any>(
             name: String,
             description: String? = null,
             serialKey: String = name.lowercase().filter(Char::isJavaIdentifierStart),
+            noinline legacyValueProvider: ((Map<String, Map<String, JsonElement>>) -> T?)? = null,
             requiresRestart: Boolean = false,
             default: T,
             serializer: KSerializer<T> = serializer(),
@@ -99,6 +102,7 @@ class Preference<T : Any>(
         ): Preference<T> = Preference(
             name = name,
             serialKey = serialKey,
+            legacyValueProvider = legacyValueProvider,
             category = this,
             description = description,
             requiresRestart = requiresRestart,

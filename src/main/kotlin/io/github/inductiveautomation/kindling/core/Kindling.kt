@@ -189,6 +189,11 @@ data object Kindling {
             val DefaultTimezone = preference(
                 name = "Timezone",
                 description = "Timezone to use when displaying timestamps",
+                legacyValueProvider = { allPrefs ->
+                    allPrefs["logview"]?.get("timezone")?.let {
+                        Json.decodeFromJsonElement(ZoneIdSerializer, it)
+                    }
+                },
                 default = ZoneId.systemDefault(),
                 serializer = ZoneIdSerializer,
                 editor = {
@@ -318,7 +323,7 @@ data object Kindling {
             val categoryData = internalState.getOrPut(category.serialKey) { mutableMapOf() }
             return categoryData[preference.serialKey]?.let { currentValue ->
                 preferencesJson.decodeFromJsonElement(preference.serializer, currentValue)
-            }
+            } ?: preference.legacyValueProvider?.invoke(internalState)
         }
 
         operator fun <T : Any> set(
