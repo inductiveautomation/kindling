@@ -171,12 +171,12 @@ class ZipView(path: Path) : ToolPanel("ins 6, flowy") {
 private typealias PathPredicate = (Path) -> Boolean
 private typealias PathViewProvider = (FileSystemProvider, Path) -> PathView?
 
-object ZipViewer : Tool {
+data object ZipViewer : Tool {
     override val serialKey = "zip-viewer"
     override val title = "ZIP Archive"
     override val description = "ZIP Archive (.gwbk, .zip, .modl)"
     override val icon = FlatSVGIcon("icons/bx-archive.svg")
-    override val filter = FileFilter(description, "gwbk", "zip", "modl", "jar")
+    override val extensions: Array<String> = arrayOf("gwbk", "zip", "modl", "jar")
 
     override fun open(path: Path): ToolPanel = ZipView(path)
 

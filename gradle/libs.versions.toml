@@ -1,35 +1,35 @@
 [versions]
 java = "21"
-kotlin = "2.2.10"
+kotlin = "2.2.21"
 coroutines = "1.10.2"
 flatlaf = "3.6.1"
 kotest = "5.9.1"
 ignition = "8.1.20"
-jackson = "2.19.2"
+jackson = "2.20.1"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 conveyor = { id = "dev.hydraulic.conveyor", version = "1.12" }
-spotless = { id = "com.diffplug.spotless", version = "8.0.0" }
-dokka = { id = "org.jetbrains.dokka", version = "2.0.0" }
+spotless = { id = "com.diffplug.spotless", version = "8.1.0" }
+dokka = { id = "org.jetbrains.dokka", version = "2.1.0" }
 
 [libraries]
 # core functionality
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.9.0" }
-xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.50.3.0" }
+xerial-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.51.1.0" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.5.18" }
 hsql = { group = "org.hsqldb", name = "hsqldb", version = "2.7.4" }
-poi = { group = "org.apache.poi", name = "poi-ooxml", version = "5.4.1" }
+poi = { group = "org.apache.poi", name = "poi-ooxml", version = "5.5.1" }
 excelkt = { group = "io.github.evanrupert", name = "excelkt", version = "1.0.2" }
 jsvg = { group = "com.github.weisj", name = "jsvg", version = "2.0.0" }
 jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
 jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
 # build
-jsoup = { group = "org.jsoup", name = "jsoup", version = "1.21.1" }
+jsoup = { group = "org.jsoup", name = "jsoup", version = "1.21.2" }
 
 # appearance/swing
 miglayout = { group = "com.miglayout", name = "miglayout-swing", version = "11.4.2" }

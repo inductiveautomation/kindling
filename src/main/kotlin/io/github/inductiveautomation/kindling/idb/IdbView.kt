@@ -129,7 +129,7 @@ data object IdbViewer : MultiTool {
     override val title = "SQLite Database"
     override val description = "SQLite Database (.idb)"
     override val icon = FlatSVGIcon("icons/bx-data.svg")
-    override val filter = FileFilter(description, "idb", "db", "sqlite")
+    override val extensions: Array<String> = arrayOf("idb", "db", "sqlite")
 
     override fun open(path: Path): ToolPanel = IdbView(listOf(path))
 

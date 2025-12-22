@@ -63,7 +63,8 @@ data object SerialViewer : Tool {
 
     override fun open(path: Path): ToolPanel = SerialViewPanel(path)
 
-    override val filter: FileFilter = FileFilter("Java Serialized File", "bin")
+    override val extensions: Array<String> = arrayOf("bin")
+    override val filter: FileFilter = FileFilter("Java Serialized File", *extensions)
     override val serialKey: String = "serial-viewer"
 
     override val isAdvanced: Boolean = true

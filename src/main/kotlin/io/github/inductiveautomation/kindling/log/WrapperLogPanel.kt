@@ -189,6 +189,7 @@ data object LogViewer : MultiTool, ClipboardTool {
     override val description = "Wrapper Log(s) (wrapper.log, wrapper.log.1, wrapper.log...)"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
     override val respectsEncoding = true
+    override val extensions: Array<String> = arrayOf("log")
 
     override val filter = FileFilter(description) { file ->
         file.name.endsWith("log") || file.name.substringAfterLast('.').toIntOrNull() != null

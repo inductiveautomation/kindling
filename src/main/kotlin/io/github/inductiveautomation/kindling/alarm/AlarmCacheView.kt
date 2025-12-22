@@ -163,6 +163,7 @@ data object AlarmViewer : Tool {
     override val description = "Persistent Alarms Cache (.alarms_[TIMESTAMP])"
     override val icon = FlatSVGIcon("icons/bx-bell.svg")
     override val requiresHiddenFiles = true
+    override val extensions: Array<String> = emptyArray()
 
     override fun open(path: Path): ToolPanel = AlarmCacheView(path)
 
