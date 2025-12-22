@@ -42,7 +42,6 @@ import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.ZoneId
-import java.time.zone.ZoneRulesProvider
 import java.util.Vector
 import javax.swing.DefaultCellEditor
 import javax.swing.DefaultComboBoxModel
@@ -187,13 +186,16 @@ data object Kindling {
                 },
             )
 
-            val SelectedTimeZone = preference(
+            val DefaultTimezone = preference(
                 name = "Timezone",
                 description = "Timezone to use when displaying timestamps",
                 default = ZoneId.systemDefault(),
                 serializer = ZoneIdSerializer,
                 editor = {
-                    JComboBox(Vector(ZoneRulesProvider.getAvailableZoneIds().sorted())).apply {
+                    val zoneIds = ZoneId.getAvailableZoneIds().filter { id ->
+                        id !in ZoneId.SHORT_IDS.keys
+                    }.sorted()
+                    JComboBox(Vector(zoneIds)).apply {
                         selectedItem = currentValue.id
                         addActionListener {
                             currentValue = ZoneId.of(selectedItem as String)
@@ -212,7 +214,7 @@ data object Kindling {
                 ShowLogTree,
                 UseHyperlinks,
                 HighlightByDefault,
-                SelectedTimeZone,
+                DefaultTimezone,
             )
         }
 

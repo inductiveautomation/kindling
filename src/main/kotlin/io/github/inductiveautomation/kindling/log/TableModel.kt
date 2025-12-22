@@ -2,7 +2,7 @@ package io.github.inductiveautomation.kindling.log
 
 import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.ShowFullLoggerNames
-import io.github.inductiveautomation.kindling.core.TimePreferences
+import io.github.inductiveautomation.kindling.core.Timezone
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
@@ -82,7 +82,7 @@ sealed class LogColumnList<T : LogEvent> : ColumnList<T>() {
             minWidth = 155
             maxWidth = 155
             cellRenderer = DefaultTableRenderer {
-                (it as? Instant)?.let(TimePreferences::format)
+                (it as? Instant)?.let(Timezone.Default::format)
             }
         },
         getValue = LogEvent::timestamp,

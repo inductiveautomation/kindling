@@ -2,7 +2,7 @@ package io.github.inductiveautomation.kindling.idb.metrics
 
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
-import io.github.inductiveautomation.kindling.core.TimePreferences
+import io.github.inductiveautomation.kindling.core.Timezone
 import org.jfree.chart.ChartFactory
 import org.jfree.chart.JFreeChart
 import org.jfree.chart.axis.NumberAxis
@@ -44,13 +44,13 @@ fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart = Cha
         val updateTooltipGenerator = {
             renderer.setDefaultToolTipGenerator { dataset, series, item ->
                 val time = Instant.ofEpochMilli(dataset.getXValue(series, item).toLong())
-                "${TimePreferences.format(time)} - ${formatter.format(dataset.getYValue(series, item))}"
+                "${Timezone.Default.format(time)} - ${formatter.format(dataset.getYValue(series, item))}"
             }
         }
 
         updateTooltipGenerator()
 
-        TimePreferences.addChangeListener {
+        Timezone.Default.addChangeListener {
             updateTooltipGenerator()
         }
 

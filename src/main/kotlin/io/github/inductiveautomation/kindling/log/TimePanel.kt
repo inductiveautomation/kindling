@@ -5,8 +5,7 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
-import io.github.inductiveautomation.kindling.core.TimePreferences
-import io.github.inductiveautomation.kindling.core.TimePreferences.SelectedTimeZone
+import io.github.inductiveautomation.kindling.core.Timezone
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
@@ -266,12 +265,12 @@ internal class TimePanel<T : LogEvent>(
     ) {
         if (column == WrapperLogColumns.Timestamp || column == SystemLogColumns.Timestamp) {
             menu.add(
-                Action("Show only events after ${TimePreferences.format(event.timestamp)}") {
+                Action("Show only events after ${Timezone.Default.format(event.timestamp)}") {
                     startSelector.time = event.timestamp
                 },
             )
             menu.add(
-                Action("Show only events before ${TimePreferences.format(event.timestamp)}") {
+                Action("Show only events before ${Timezone.Default.format(event.timestamp)}") {
                     endSelector.time = event.timestamp
                 },
             )
@@ -286,11 +285,11 @@ internal class TimePanel<T : LogEvent>(
 }
 
 private var JXDatePicker.localDate: LocalDate?
-    get() = date?.toInstant()?.let { LocalDate.ofInstant(it, SelectedTimeZone.currentValue) }
+    get() = date?.toInstant()?.let { LocalDate.ofInstant(it, Timezone.Default.zoneId) }
     set(value) {
         date =
             value?.atStartOfDay()
-                ?.atOffset(SelectedTimeZone.currentValue.rules.getOffset(value.atStartOfDay()))
+                ?.atOffset(Timezone.Default.zoneId.rules.getOffset(value.atStartOfDay()))
                 ?.toInstant()
                 .let(Date::from)
     }
@@ -309,7 +308,7 @@ class DateTimeSelector(
         }
 
     private val initialZonedTime: ZonedDateTime
-        get() = defaultValue.atZone(SelectedTimeZone.currentValue)
+        get() = defaultValue.atZone(Timezone.Default.zoneId)
 
     private val datePicker =
         JXDatePicker().apply {
@@ -349,12 +348,12 @@ class DateTimeSelector(
                 ZonedDateTime.of(
                     localDate,
                     timeSelector.localTime,
-                    SelectedTimeZone.currentValue,
+                    Timezone.Default.zoneId,
                 ).toInstant() ?: defaultValue
             }
         }
         set(value) {
-            val zonedDateTime = value.atZone(SelectedTimeZone.currentValue)
+            val zonedDateTime = value.atZone(Timezone.Default.zoneId)
             datePicker.localDate = zonedDateTime.toLocalDate()
             timeSelector.localTime = zonedDateTime.toLocalTime()
         }
@@ -513,10 +512,10 @@ private object DensityColumns : ColumnList<DenseTime>() {
         get() {
             if (!this::_formatter.isInitialized) {
                 _formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm")
-                    .withZone(SelectedTimeZone.currentValue)
+                    .withZone(Timezone.Default.zoneId)
             }
-            if (_formatter.zone != SelectedTimeZone.currentValue) {
-                _formatter = _formatter.withZone(SelectedTimeZone.currentValue)
+            if (_formatter.zone != Timezone.Default.zoneId) {
+                _formatter = _formatter.withZone(Timezone.Default.zoneId)
             }
             return _formatter
         }

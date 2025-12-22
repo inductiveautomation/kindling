@@ -1,6 +1,6 @@
 package io.github.inductiveautomation.kindling.idb.metrics
 
-import io.github.inductiveautomation.kindling.core.TimePreferences
+import io.github.inductiveautomation.kindling.core.Timezone
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.MetricPresentation.Cpu
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.MetricPresentation.Default
 import io.github.inductiveautomation.kindling.idb.metrics.MetricCard.Companion.MetricPresentation.Heap
@@ -18,6 +18,7 @@ import java.text.DecimalFormat
 import java.text.FieldPosition
 import java.text.NumberFormat
 import java.text.ParsePosition
+import java.util.Date
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants.CENTER
@@ -65,9 +66,18 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
         )
 
         val aggregateData = DoubleArray(data.size) { i -> data[i].value }
-        add(JLabel("Min: ${presentation.formatter.format(aggregateData.min())}", CENTER), "pushx, growx")
-        add(JLabel("Avg: ${presentation.formatter.format(aggregateData.average())}", CENTER), "pushx, growx")
-        add(JLabel("Max: ${presentation.formatter.format(aggregateData.max())}", CENTER), "pushx, growx, wrap")
+        add(
+            JLabel("Min: ${presentation.formatter.format(aggregateData.min())}", CENTER),
+            "pushx, growx",
+        )
+        add(
+            JLabel("Avg: ${presentation.formatter.format(aggregateData.average())}", CENTER),
+            "pushx, growx",
+        )
+        add(
+            JLabel("Max: ${presentation.formatter.format(aggregateData.max())}", CENTER),
+            "pushx, growx, wrap",
+        )
 
         val minTimestamp = data.first().timestamp
         val maxTimestamp = data.last().timestamp
@@ -91,27 +101,45 @@ class MetricCard(val metric: Metric, data: List<MetricData>) : JPanel(MigLayout(
 
         add(sparkLine, "span, w 300, h 170, pushx, growx")
 
-        val timeLabel = JLabel("${TimePreferences.format(minTimestamp)} - ${TimePreferences.format(maxTimestamp)}", CENTER)
+        val timeLabel = JLabel(
+            buildTimeLabelString(minTimestamp, maxTimestamp),
+            CENTER,
+        )
         add(timeLabel, "pushx, growx, span")
 
-        TimePreferences.addChangeListener {
-            timeLabel.text = "${TimePreferences.format(minTimestamp)} - ${TimePreferences.format(maxTimestamp)}"
+        Timezone.Default.addChangeListener {
+            timeLabel.text =
+                buildTimeLabelString(minTimestamp, maxTimestamp)
         }
 
         border = LineBorder(UIManager.getColor("Component.borderColor"), 3, true)
+    }
+
+    private fun buildTimeLabelString(minTimestamp: Date, maxTimestamp: Date): String = buildString {
+        append(Timezone.Default.format(minTimestamp))
+        append(" - ")
+        append(Timezone.Default.format(maxTimestamp))
     }
 
     companion object {
 
         private val mbFormatter = DecimalFormat("0.0 'mB'")
         private val heapFormatter = object : NumberFormat() {
-            override fun format(number: Double, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer = mbFormatter.format(number / 1_000_000, toAppendTo, pos)
+            override fun format(
+                number: Double,
+                toAppendTo: StringBuffer,
+                pos: FieldPosition,
+            ): StringBuffer = mbFormatter.format(number / 1_000_000, toAppendTo, pos)
 
-            override fun format(number: Long, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer = mbFormatter.format(number, toAppendTo, pos)
+            override fun format(
+                number: Long,
+                toAppendTo: StringBuffer,
+                pos: FieldPosition,
+            ): StringBuffer = mbFormatter.format(number, toAppendTo, pos)
+
             override fun parse(source: String, parsePosition: ParsePosition): Number = mbFormatter.parse(source, parsePosition)
         }
 
-        @Suppress("ktlint:standard:trailing-comma-on-declaration-site")
         enum class MetricPresentation(val formatter: NumberFormat, val isShowTrend: Boolean) {
             Heap(heapFormatter, true),
             Queue(NumberFormat.getIntegerInstance(), false),
