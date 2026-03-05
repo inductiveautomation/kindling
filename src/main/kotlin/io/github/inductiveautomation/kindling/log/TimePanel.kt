@@ -27,7 +27,6 @@ import java.awt.event.MouseEvent
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoField
@@ -294,7 +293,7 @@ internal class TimePanel<T : LogEvent>(
     }
 }
 
-fun ZonedDateTime.toDate(): Date? = this.toLocalDate()
+private fun ZonedDateTime.toDate(): Date? = this.toLocalDate()
     .atStartOfDay(this.zone)
     .toInstant()
     .let(Date::from)
