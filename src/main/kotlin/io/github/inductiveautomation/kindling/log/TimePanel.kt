@@ -293,17 +293,17 @@ internal class TimePanel<T : LogEvent>(
     }
 }
 
-private fun ZonedDateTime.toDate(): Date? = this.toLocalDate()
-    .atStartOfDay(this.zone)
+private fun ZonedDateTime.toDate(): Date? = toLocalDate()
+    .atStartOfDay(zone)
     .toInstant()
     .let(Date::from)
 
 private fun JXDatePicker.getLocalDate(): LocalDate? = date?.toInstant()
-    ?.let { LocalDate.ofInstant(it, this.timeZone.toZoneId()) }
+    ?.let { LocalDate.ofInstant(it, timeZone.toZoneId()) }
 
 private fun JXDatePicker.setDate(zonedDateTime: ZonedDateTime) {
-    this.timeZone = java.util.TimeZone.getTimeZone(zonedDateTime.zone)
-    this.date = zonedDateTime.toDate()
+    timeZone = java.util.TimeZone.getTimeZone(zonedDateTime.zone)
+    date = zonedDateTime.toDate()
 }
 
 class DateTimeSelector(
