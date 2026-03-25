@@ -195,6 +195,38 @@ sealed class LogPanel<T : LogEvent>(
         add(footer, "growx, spanx 2")
 
         table.apply {
+            var lastMarkedRow: Int? = null
+
+            // If a log checkbox is checked while holding shift it checks all between previous check
+            // to align with Java Swing highlighting features
+            addMouseListener(object : java.awt.event.MouseAdapter() {
+                override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                    val viewCol = columnAtPoint(e.point)
+                    val viewRow = rowAtPoint(e.point)
+                    if (viewRow == -1 || viewCol == -1) return
+
+                    val modelCol = convertColumnIndexToModel(viewCol)
+                    if (modelCol != model.markIndex) return
+
+                    val modelRow = convertRowIndexToModel(viewRow)
+
+                    if (e.isShiftDown && lastMarkedRow != null) {
+                        val anchor = lastMarkedRow!!
+                        val from = minOf(anchor, modelRow) // range selection works in both directions
+                        val to = maxOf(anchor, modelRow)
+                        val newValue = model.data[modelRow].marked
+                        var idx = 0
+                        model.markRows { _ ->
+                            val inRange = idx in from..to
+                            idx++
+                            if (inRange) newValue else null
+                        }
+                    } else {
+                        lastMarkedRow = modelRow
+                    }
+                }
+            })
+
             selectionModel.addListSelectionListener { selectionEvent ->
                 if (!selectionEvent.valueIsAdjusting) {
                     selectionModel.updateDetails()
