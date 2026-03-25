@@ -207,6 +207,15 @@ internal class TimePanel<T : LogEvent>(
         endSelector.addPropertyChangeListener("time") {
             updateCoveredRange()
         }
+
+        Timezone.Default.addChangeListener {
+            lowerBound = data.minOf { it.timestamp }
+            upperBound = data.maxOf { it.timestamp }
+            totalCurrentRange = lowerBound..upperBound
+            startSelector.range = totalCurrentRange
+            endSelector.range = totalCurrentRange
+            reset()
+        }
     }
 
     override fun isFilterApplied(): Boolean = coveredRange != totalCurrentRange
@@ -284,17 +293,20 @@ internal class TimePanel<T : LogEvent>(
     }
 }
 
-private var JXDatePicker.localDate: LocalDate?
-    get() = date?.toInstant()?.let { LocalDate.ofInstant(it, Timezone.Default.zoneId) }
-    set(value) {
-        date =
-            value?.atStartOfDay()
-                ?.atOffset(Timezone.Default.zoneId.rules.getOffset(value.atStartOfDay()))
-                ?.toInstant()
-                .let(Date::from)
-    }
+private fun ZonedDateTime.toDate(): Date = toLocalDate()
+    .atStartOfDay(zone)
+    .toInstant()
+    .let(Date::from)
 
-class DateTimeSelector(
+private fun JXDatePicker.getLocalDate(): LocalDate? = date?.toInstant()
+    ?.let { LocalDate.ofInstant(it, timeZone.toZoneId()) }
+
+private fun JXDatePicker.setDate(zonedDateTime: ZonedDateTime) {
+    timeZone = java.util.TimeZone.getTimeZone(zonedDateTime.zone)
+    date = zonedDateTime.toDate()
+}
+
+private class DateTimeSelector(
     var defaultValue: Instant,
     initialRange: ClosedRange<Instant>,
 ) : JPanel(MigLayout("ins 0")) {
@@ -302,8 +314,12 @@ class DateTimeSelector(
         set(value) {
             field = value
             datePicker.monthView.apply {
-                lowerBound = Date.from(value.start)
-                upperBound = Date.from(value.endInclusive)
+                lowerBound = value.start
+                    .atZone(Timezone.Default.zoneId)
+                    .toDate()
+                upperBound = value.endInclusive
+                    .atZone(Timezone.Default.zoneId)
+                    .toDate()
             }
         }
 
@@ -312,20 +328,20 @@ class DateTimeSelector(
 
     private val datePicker =
         JXDatePicker().apply {
-            localDate = initialZonedTime.toLocalDate()
+            setDate(initialZonedTime)
             editor.horizontalAlignment = SwingConstants.CENTER
             monthView.apply {
                 // adjust calendar from java.time to java.util weekday numbering
                 firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.value % 7 + 1
 
-                lowerBound = Date.from(range.start)
-                upperBound = Date.from(range.endInclusive)
+                lowerBound = range.start.atZone(Timezone.Default.zoneId).toDate()
+                upperBound = range.endInclusive.atZone(Timezone.Default.zoneId).toDate()
             }
             linkPanel = JPanel() // can't be null or BasicDatePickerUI throws an NPE on theme change
 
             addActionListener {
                 if (date == null) { // out of range selection sets null in JXDatePicker - we'll be nicer and reset
-                    localDate = initialZonedTime.toLocalDate()
+                    setDate(initialZonedTime)
                 } else {
                     firePropertyChange("time", null, time)
                 }
@@ -341,7 +357,7 @@ class DateTimeSelector(
 
     var time: Instant
         get() {
-            val localDate = datePicker.localDate
+            val localDate = datePicker.getLocalDate()
             return if (localDate == null) {
                 defaultValue
             } else {
@@ -349,12 +365,12 @@ class DateTimeSelector(
                     localDate,
                     timeSelector.localTime,
                     Timezone.Default.zoneId,
-                ).toInstant() ?: defaultValue
+                ).toInstant()
             }
         }
         set(value) {
             val zonedDateTime = value.atZone(Timezone.Default.zoneId)
-            datePicker.localDate = zonedDateTime.toLocalDate()
+            datePicker.setDate(zonedDateTime)
             timeSelector.localTime = zonedDateTime.toLocalTime()
         }
 
@@ -387,7 +403,7 @@ class DateTimeSelector(
     }
 }
 
-class TimeSelector : JPanel(MigLayout("fill, ins 0")) {
+private class TimeSelector : JPanel(MigLayout("fill, ins 0")) {
     private val hourSelector = timePartSpinner(HOUR_OF_DAY, "00", 10)
     private val minuteSelector = timePartSpinner(MINUTE_OF_HOUR, ":00", 6)
     private val secondSelector = timePartSpinner(SECOND_OF_MINUTE, ":00", 6)
