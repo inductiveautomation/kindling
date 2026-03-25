@@ -293,7 +293,7 @@ internal class TimePanel<T : LogEvent>(
     }
 }
 
-private fun ZonedDateTime.toDate(): Date? = toLocalDate()
+private fun ZonedDateTime.toDate(): Date = toLocalDate()
     .atStartOfDay(zone)
     .toInstant()
     .let(Date::from)
@@ -306,7 +306,7 @@ private fun JXDatePicker.setDate(zonedDateTime: ZonedDateTime) {
     date = zonedDateTime.toDate()
 }
 
-class DateTimeSelector(
+private class DateTimeSelector(
     var defaultValue: Instant,
     initialRange: ClosedRange<Instant>,
 ) : JPanel(MigLayout("ins 0")) {
@@ -334,8 +334,8 @@ class DateTimeSelector(
                 // adjust calendar from java.time to java.util weekday numbering
                 firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.value % 7 + 1
 
-                lowerBound = Date.from(range.start)
-                upperBound = Date.from(range.endInclusive)
+                lowerBound = range.start.atZone(Timezone.Default.zoneId).toDate()
+                upperBound = range.endInclusive.atZone(Timezone.Default.zoneId).toDate()
             }
             linkPanel = JPanel() // can't be null or BasicDatePickerUI throws an NPE on theme change
 
@@ -365,7 +365,7 @@ class DateTimeSelector(
                     localDate,
                     timeSelector.localTime,
                     Timezone.Default.zoneId,
-                ).toInstant() ?: defaultValue
+                ).toInstant()
             }
         }
         set(value) {
@@ -403,7 +403,7 @@ class DateTimeSelector(
     }
 }
 
-class TimeSelector : JPanel(MigLayout("fill, ins 0")) {
+private class TimeSelector : JPanel(MigLayout("fill, ins 0")) {
     private val hourSelector = timePartSpinner(HOUR_OF_DAY, "00", 10)
     private val minuteSelector = timePartSpinner(MINUTE_OF_HOUR, ":00", 6)
     private val secondSelector = timePartSpinner(SECOND_OF_MINUTE, ":00", 6)
