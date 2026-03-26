@@ -35,6 +35,8 @@ import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.util.Vector
 import javax.swing.BorderFactory
 import javax.swing.Icon
@@ -199,8 +201,8 @@ sealed class LogPanel<T : LogEvent>(
 
             // If a log checkbox is checked while holding shift it checks all between previous check
             // to align with Java Swing highlighting features
-            addMouseListener(object : java.awt.event.MouseAdapter() {
-                override fun mouseClicked(e: java.awt.event.MouseEvent) {
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
                     val viewCol = columnAtPoint(e.point)
                     val viewRow = rowAtPoint(e.point)
                     if (viewRow == -1 || viewCol == -1) return
