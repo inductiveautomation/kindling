@@ -212,15 +212,12 @@ sealed class LogPanel<T : LogEvent>(
 
                     if (e.isShiftDown && lastMarkedRow != null) {
                         val anchor = lastMarkedRow!!
-                        val from = minOf(anchor, modelRow) // range selection works in both directions
-                        val to = maxOf(anchor, modelRow)
+                        val range = minOf(anchor, modelRow)..maxOf(anchor, modelRow)
                         val newValue = model.data[modelRow].marked
-                        var idx = 0
-                        model.markRows { _ ->
-                            val inRange = idx in from..to
-                            idx++
-                            if (inRange) newValue else null
+                        model.markRows { i, _ ->
+                            newValue.takeIf {i in range }
                         }
+                        lastMarkedRow = null
                     } else {
                         lastMarkedRow = modelRow
                     }

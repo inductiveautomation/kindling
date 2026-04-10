@@ -36,12 +36,16 @@ class LogsModel<T : LogEvent>(
      * Update marks in the model, efficiently.
      * Return true to set marked, false to clear a mark, or null to bypass the row.
      */
-    fun markRows(predicate: (T) -> Boolean?) {
+    fun markRows(predicate: (event: T) -> Boolean?) {
+        markRows { _, event -> predicate(event) }
+    }
+
+    fun markRows(predicate: (i: Int, event: T) -> Boolean?) {
         var firstIndex = -1
         var lastIndex = -1
 
         for ((rowIndex, event) in data.withIndex()) {
-            val shouldMark = predicate(event) ?: continue
+            val shouldMark = predicate(rowIndex,event) ?: continue
             if (firstIndex == -1) {
                 firstIndex = rowIndex
             }
