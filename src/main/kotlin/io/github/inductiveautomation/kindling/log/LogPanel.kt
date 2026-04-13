@@ -215,7 +215,7 @@ sealed class LogPanel<T : LogEvent>(
                         val range = minOf(anchor, modelRow)..maxOf(anchor, modelRow)
                         val newValue = model.data[modelRow].marked
                         model.markRows { i, _ ->
-                            newValue.takeIf {i in range }
+                            newValue.takeIf { i in range }
                         }
                         lastMarkedRow = null
                     } else {

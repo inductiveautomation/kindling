@@ -45,7 +45,7 @@ class LogsModel<T : LogEvent>(
         var lastIndex = -1
 
         for ((rowIndex, event) in data.withIndex()) {
-            val shouldMark = predicate(rowIndex,event) ?: continue
+            val shouldMark = predicate(rowIndex, event) ?: continue
             if (firstIndex == -1) {
                 firstIndex = rowIndex
             }
