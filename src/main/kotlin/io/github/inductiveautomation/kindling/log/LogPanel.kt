@@ -35,6 +35,8 @@ import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXSearchField
 import org.jdesktop.swingx.table.ColumnControlButton.COLUMN_CONTROL_MARKER
 import java.awt.BorderLayout
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.util.Vector
 import javax.swing.BorderFactory
 import javax.swing.Icon
@@ -195,6 +197,34 @@ sealed class LogPanel<T : LogEvent>(
         add(footer, "growx, spanx 2")
 
         table.apply {
+            var lastMarkedRow: Int? = null
+
+            // Handle shift clicks in the mark column as multi-select events
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    val viewCol = columnAtPoint(e.point)
+                    val viewRow = rowAtPoint(e.point)
+                    if (viewRow == -1 || viewCol == -1) return
+
+                    val modelCol = convertColumnIndexToModel(viewCol)
+                    if (modelCol != model.markIndex) return
+
+                    val modelRow = convertRowIndexToModel(viewRow)
+
+                    if (e.isShiftDown && lastMarkedRow != null) {
+                        val anchor = lastMarkedRow!!
+                        val range = minOf(anchor, modelRow)..maxOf(anchor, modelRow)
+                        val newValue = model.data[modelRow].marked
+                        model.markRows { i, _ ->
+                            newValue.takeIf { i in range }
+                        }
+                        lastMarkedRow = null
+                    } else {
+                        lastMarkedRow = modelRow
+                    }
+                }
+            })
+
             selectionModel.addListSelectionListener { selectionEvent ->
                 if (!selectionEvent.valueIsAdjusting) {
                     selectionModel.updateDetails()
