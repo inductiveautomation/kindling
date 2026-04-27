@@ -28,7 +28,6 @@ import javax.swing.JPopupMenu
 import javax.swing.SwingConstants
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
-import kotlin.io.path.exists
 import kotlin.io.path.extension
 
 class GwbkStatsView(
@@ -44,18 +43,17 @@ class GwbkStatsView(
     private val gatewayBackup = GatewayBackup(path)
 
     init {
-        if (gatewayBackup.configDirectory.exists()) {
-            add(eightThreeWarning(), "wrap")
-        }
-        add(MetaStatistics.Calculator renderedWith MetaStatisticsRenderer(), "growx, wrap")
-        add(ProjectStatistics.Calculator renderedWith ProjectStatisticsRenderer(), "growx, sg")
-        add(DatabaseStatistics.Calculator renderedWith DatabaseStatisticsRenderer(), "growx, sg")
-        add(DeviceStatistics.Calculator renderedWith DeviceStatisticsRenderer(), "growx, sg")
-        add(OpcServerStatistics.Calculator renderedWith OpcConnectionsStatisticsRenderer(), "growx, sg")
-        add(GatewayNetworkStatistics.Calculator renderedWith GatewayNetworkStatisticsRenderer(), "growx, sg")
+        val version = gatewayBackup.version
+
+        add(MetaStatistics[version] renderedWith MetaStatisticsRenderer(), "growx, wrap")
+        add(ProjectStatistics[version] renderedWith ProjectStatisticsRenderer(), "growx, sg")
+        add(DatabaseStatistics[version] renderedWith DatabaseStatisticsRenderer(), "growx, sg")
+        add(DeviceStatistics[version] renderedWith DeviceStatisticsRenderer(), "growx, sg")
+        add(OpcServerStatistics[version] renderedWith OpcConnectionsStatisticsRenderer(), "growx, sg")
+        add(GatewayNetworkStatistics[version] renderedWith GatewayNetworkStatisticsRenderer(), "growx, sg")
     }
 
-    private infix fun <T : Statistic> StatisticCalculator<T>.renderedWith(renderer: StatisticRenderer<T>): JPanel {
+    private infix fun <T : Statistic> StatisticCalculator<T>?.renderedWith(renderer: StatisticRenderer<T>): JPanel {
         val headerLabel = JLabel(renderer.title, renderer.icon, SwingConstants.LEFT).apply {
             putClientProperty("FlatLaf.styleClass", "h3")
         }
@@ -70,7 +68,7 @@ class GwbkStatsView(
 
             BACKGROUND.launch {
                 val statistic: T? = try {
-                    calculate(gatewayBackup)
+                    this@renderedWith?.calculate(gatewayBackup)
                 } catch (e: Exception) {
                     MainPanel.LOGGER.error("Error calculating statistic", e)
                     null
@@ -92,14 +90,6 @@ class GwbkStatsView(
                 }
             }
         }
-    }
-
-    private fun eightThreeWarning(): JLabel = JLabel(
-        "8.3 Backups are not yet processed correctly",
-        FlatSVGIcon("icons/bx-error.svg"),
-        SwingConstants.CENTER,
-    ).apply {
-        putClientProperty("FlatLaf.styleClass", "h2")
     }
 
     companion object {
