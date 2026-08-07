@@ -3,7 +3,9 @@ package io.github.inductiveautomation.kindling.log
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.jidesoft.comparator.AlphanumComparator
 import io.github.inductiveautomation.kindling.core.ClipboardTool
+import io.github.inductiveautomation.kindling.core.DEFAULT_TIMESTAMP_PATTERN
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.DefaultEncoding
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.TimestampPattern
 import io.github.inductiveautomation.kindling.core.MultiTool
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.log.WrapperLogEvent.Companion.STDOUT
@@ -21,7 +23,6 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import javax.swing.SwingUtilities
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
@@ -103,12 +104,43 @@ class WrapperLogPanel(
     }
 
     companion object {
-        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern(DEFAULT_TIMESTAMP_PATTERN)
             .withZone(ZoneId.systemDefault())
+
+        /**
+         * The user's configured [TimestampPattern], or null if it is unusable or is just the stock format
+         * (in which case [DEFAULT_WRAPPER_LOG_TIME_FORMAT] already covers it).
+         */
+        private val configuredTimeFormat: DateTimeFormatter?
+            get() = TimestampPattern.currentValue
+                .takeIf { it != DEFAULT_TIMESTAMP_PATTERN }
+                ?.let { pattern ->
+                    runCatching {
+                        DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.systemDefault())
+                    }.getOrNull()
+                }
+
+        /**
+         * Parse [value] with the configured pattern, falling back to the stock wrapper log format so that a
+         * timestamp pattern chosen for the Logback tool can't render wrapper logs unreadable.
+         * Returns null if neither format applies.
+         */
+        private fun parseTimestamp(
+            value: String,
+            configured: DateTimeFormatter?,
+        ): Instant? {
+            if (configured != null) {
+                runCatching { configured.parse(value, Instant::from) }.getOrNull()?.let { return it }
+            }
+            return runCatching { DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(value, Instant::from) }.getOrNull()
+        }
+
         private val DEFAULT_WRAPPER_MESSAGE_FORMAT =
             "(?:^[^|]+\\|)?(?<prefix>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))$".toRegex()
 
         fun parseLogs(lines: Sequence<String>): List<WrapperLogEvent> {
+            // resolved once so that every line in a file is parsed consistently
+            val configuredFormat = configuredTimeFormat
             val events = mutableListOf<WrapperLogEvent>()
             val currentStack = mutableListOf<String>()
             var partialEvent: WrapperLogEvent? = null
@@ -129,9 +161,8 @@ class WrapperLogPanel(
                 val match = DEFAULT_WRAPPER_MESSAGE_FORMAT.matchEntire(line)
                 if (match != null) {
                     val timestamp by match.groups
-                    val time = try {
-                        DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(timestamp.value.trim(), Instant::from)
-                    } catch (_: DateTimeParseException) {
+                    val time = parseTimestamp(timestamp.value.trim(), configuredFormat)
+                    if (time == null) {
                         if (events.isEmpty()) {
                             throw IllegalArgumentException("Error parsing wrapper log file; unexpected content format on first line:\n$line")
                         }

@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.core
 
+import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
@@ -42,6 +43,7 @@ import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Vector
 import javax.swing.DefaultCellEditor
 import javax.swing.DefaultComboBoxModel
@@ -56,6 +58,18 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.time.Duration.Companion.seconds
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
+
+/**
+ * The stock Ignition wrapper log timestamp format, which doubles as a reasonable default for the
+ * Logback encoders Kindling generates.
+ */
+const val DEFAULT_TIMESTAMP_PATTERN: String = "yyyy/MM/dd HH:mm:ss"
+
+/**
+ * Whether [pattern] is a non-blank, well-formed [DateTimeFormatter] pattern.
+ */
+fun isValidTimestampPattern(pattern: String): Boolean =
+    pattern.isNotBlank() && runCatching { DateTimeFormatter.ofPattern(pattern) }.isSuccess
 
 data object Kindling {
     val logo = SVGLoader().run {
@@ -209,6 +223,36 @@ data object Kindling {
                 },
             )
 
+            /**
+             * The timestamp portion of a log line, as a [DateTimeFormatter] pattern.
+             *
+             * Used by the Logback XML tool for the `%d{}` conversion in the encoder patterns it generates,
+             * and by the Wrapper Log tool to parse the timestamp column. Rolling log *filename* patterns
+             * are deliberately not affected; those need a filesystem-safe pattern.
+             */
+            val TimestampPattern: Preference<String> = preference(
+                name = "Timestamp Pattern",
+                description = "The pattern used for log event timestamps, " +
+                    "both when generating a Logback encoder and when parsing wrapper logs",
+                default = DEFAULT_TIMESTAMP_PATTERN,
+                editor = {
+                    JXTextField("A java.time pattern, e.g. $DEFAULT_TIMESTAMP_PATTERN").apply {
+                        text = currentValue
+
+                        document.addDocumentListener(
+                            DocumentAdapter {
+                                if (isValidTimestampPattern(text)) {
+                                    putClientProperty(FlatClientProperties.OUTLINE, null)
+                                    currentValue = text
+                                } else {
+                                    putClientProperty(FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR)
+                                }
+                            },
+                        )
+                    }
+                },
+            )
+
             override val displayName: String = "General"
             override val serialKey: String = "general"
             override val preferences: List<Preference<*>> = listOf(
@@ -220,6 +264,7 @@ data object Kindling {
                 UseHyperlinks,
                 HighlightByDefault,
                 DefaultTimezone,
+                TimestampPattern,
             )
         }
 

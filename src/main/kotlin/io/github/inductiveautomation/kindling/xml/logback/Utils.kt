@@ -1,8 +1,17 @@
 package io.github.inductiveautomation.kindling.xml.logback
 
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.TimestampPattern
 import io.github.inductiveautomation.kindling.utils.NumericEntryField
 import io.github.inductiveautomation.kindling.utils.rightBuddy
 import javax.swing.JLabel
+
+/**
+ * The `%d` conversion word for generated encoder patterns, using the user's configured [TimestampPattern].
+ *
+ * This is deliberately not used for rolling policy `fileNamePattern`s, which need a pattern that is safe
+ * to embed in a filename.
+ */
+internal fun timestampConversion(): String = "%d{${TimestampPattern.currentValue}}"
 
 internal fun sizeEntryField(
     inputValue: Long?,
@@ -89,7 +98,7 @@ internal fun LogbackConfigData.update(
             encoder = mutableListOf(
                 Encoder(
                     pattern =
-                    "%.-1p [%-30logger] [%d{YYYY/MM/dd HH:mm:ss, SSS}]: " +
+                    "%.-1p [%-30logger] [${timestampConversion()}]: " +
                         "{%thread} %replace(%m){\"[\\r\\n]+\", \"\"} %X%n",
                 ),
             ),
