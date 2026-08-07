@@ -5,6 +5,7 @@ import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.Timezone
 import org.jfree.chart.ChartFactory
 import org.jfree.chart.JFreeChart
+import org.jfree.chart.axis.DateAxis
 import org.jfree.chart.axis.NumberAxis
 import org.jfree.chart.ui.RectangleInsets
 import org.jfree.data.time.FixedMillisecond
@@ -12,6 +13,7 @@ import org.jfree.data.time.TimeSeries
 import org.jfree.data.time.TimeSeriesCollection
 import java.text.NumberFormat
 import java.time.Instant
+import java.util.TimeZone
 
 fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart = ChartFactory.createTimeSeriesChart(
     /* title = */
@@ -41,17 +43,20 @@ fun sparkline(data: List<MetricData>, formatter: NumberFormat): JFreeChart = Cha
             isPositiveArrowVisible = true
             (this as NumberAxis).numberFormatOverride = formatter
         }
-        val updateTooltipGenerator = {
+
+        fun applyTimezone() {
+            (domainAxis as? DateAxis)?.timeZone = TimeZone.getTimeZone(Timezone.Default.zoneId)
             renderer.setDefaultToolTipGenerator { dataset, series, item ->
                 val time = Instant.ofEpochMilli(dataset.getXValue(series, item).toLong())
                 "${Timezone.Default.format(time)} - ${formatter.format(dataset.getYValue(series, item))}"
             }
         }
 
-        updateTooltipGenerator()
+        applyTimezone()
 
         Timezone.Default.addChangeListener {
-            updateTooltipGenerator()
+            applyTimezone()
+            fireChartChanged()
         }
 
         isDomainGridlinesVisible = false

@@ -25,8 +25,8 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
 import java.awt.event.KeyEvent
 import java.sql.Connection
-import java.sql.Date
 import java.sql.JDBCType
+import java.sql.Timestamp
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JMenuItem
@@ -86,7 +86,9 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                         val types = List(columnCount) { i ->
                             val isTimestamp = names[i].containsInOrder("tsmp", true)
                             if (isTimestamp) {
-                                Date::class.java
+                                // Use Timestamp (not java.sql.Date) so full time-of-day is preserved
+                                // when formatting with the user's timezone preference.
+                                Timestamp::class.java
                             } else {
                                 val sqlType = resultSet.metaData.getColumnType(i + 1)
                                 val jdbcType = JDBCType.valueOf(sqlType)
@@ -99,7 +101,7 @@ class GenericView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
                                 val value = resultSet.getObject(i + 1)
                                 when {
                                     types[i] == Boolean::class.javaObjectType -> value == 1
-                                    types[i] == Date::class.java && value is Number -> Date(value.toLong())
+                                    types[i] == Timestamp::class.java && value is Number -> Timestamp(value.toLong())
                                     else -> value
                                 }
                             }
