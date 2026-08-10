@@ -83,10 +83,7 @@ class WrapperLogPanel(
             val newFileData = runBlocking {
                 files.map { path ->
                     async(Dispatchers.IO) {
-                        val logFile = path.useLines {
-                            LogFile(parseLogs(it))
-                        }
-                        path to logFile
+                        path to parseLogFile(path)
                     }
                 }.awaitAll()
             }
@@ -102,6 +99,14 @@ class WrapperLogPanel(
     companion object {
         private val DEFAULT_WRAPPER_MESSAGE_FORMAT =
             "(?:^[^|]+\\|)?(?<prefix>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))$".toRegex()
+
+        fun parseLogFile(path: Path): LogFile<WrapperLogEvent> = if (LogbackLogParser.matches(path)) {
+            LogbackLogParser.parseFile(path)
+        } else {
+            path.useLines(DefaultEncoding.currentValue) { lines ->
+                LogFile(parseLogs(lines))
+            }
+        }
 
         fun parseLogs(lines: Sequence<String>): List<WrapperLogEvent> {
             val configuredFormat = configuredTimestampFormat
@@ -194,20 +199,7 @@ data object LogViewer : MultiTool, ClipboardTool {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
         // flip the paths, so the .5, .4, .3, .2, .1 - this hopefully helps with the per-event sort below
         val reverseOrder = paths.sortedWith(compareBy(AlphanumComparator(), Path::name).reversed())
-
-        if (reverseOrder.all(LogbackLogParser::matches)) {
-            return SystemLogPanel(
-                reverseOrder,
-                reverseOrder.map(LogbackLogParser::parseFile),
-                LogbackLogParser::parseFile,
-            )
-        }
-
-        val fileData = reverseOrder.map { path ->
-            path.useLines(DefaultEncoding.currentValue) { lines ->
-                LogFile(WrapperLogPanel.parseLogs(lines))
-            }
-        }
+        val fileData = reverseOrder.map(WrapperLogPanel::parseLogFile)
         return WrapperLogPanel(
             reverseOrder,
             fileData,
@@ -218,19 +210,6 @@ data object LogViewer : MultiTool, ClipboardTool {
         val tempFile = Files.createTempFile("paste", "kindl")
         data.byteInputStream() transferTo tempFile.outputStream()
 
-        if (LogbackLogParser.matches(tempFile)) {
-            return SystemLogPanel(
-                listOf(tempFile),
-                listOf(LogbackLogParser.parseFile(tempFile)),
-                LogbackLogParser::parseFile,
-            )
-        }
-
-        val fileData = LogFile(
-            tempFile.useLines(DefaultEncoding.currentValue) { lines ->
-                WrapperLogPanel.parseLogs(lines)
-            },
-        )
-        return WrapperLogPanel(listOf(tempFile), listOf(fileData))
+        return WrapperLogPanel(listOf(tempFile), listOf(WrapperLogPanel.parseLogFile(tempFile)))
     }
 }

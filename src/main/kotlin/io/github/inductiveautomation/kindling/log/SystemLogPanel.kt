@@ -1,7 +1,6 @@
 package io.github.inductiveautomation.kindling.log
 
 import io.github.inductiveautomation.kindling.idb.IdbView
-import io.github.inductiveautomation.kindling.log.SystemLogPanel.Companion.parseLogs
 import io.github.inductiveautomation.kindling.utils.FileFilterSidebar
 import io.github.inductiveautomation.kindling.utils.SQLiteConnection
 import io.github.inductiveautomation.kindling.utils.TabStrip
@@ -18,18 +17,10 @@ import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
 import javax.swing.SwingUtilities
-import kotlin.io.path.absolutePathString
-
-private fun parseIdbLogFile(path: Path): LogFile<SystemLogEvent> {
-    val connection = SQLiteConnection(path)
-    return LogFile(connection.parseLogs().also { connection.close() })
-}
 
 class SystemLogPanel(
     paths: List<Path>,
     fileData: List<LogFile<SystemLogEvent>>,
-
-    private val parseFile: (Path) -> LogFile<SystemLogEvent> = ::parseIdbLogFile,
 ) : LogPanel<SystemLogEvent>(fileData.flatMap { it.items }, SystemLogColumns) {
 
     override val sidebar = FileFilterSidebar(
@@ -44,9 +35,6 @@ class SystemLogPanel(
     )
 
     init {
-        name = "System Logs [${fileData.size}]"
-        toolTipText = paths.joinToString("\n") { it.absolutePathString() }
-
         filters.add { event ->
             val text = header.search.text
             if (text.isNullOrEmpty()) {
@@ -73,10 +61,10 @@ class SystemLogPanel(
             sidebar.addFileFilterChangeListener {
                 selectedData = sidebar.selectedFiles.flatMap { it.items }
 
-                // When opened from an .idb, this toolPanel is not a direct child of MainPanel's tabstrip.
+                // Since this toolPanel is not a direct child of MainPanel's tabstrip, this is what must be done.
 
                 val mainTabbedPane = SwingUtilities.getAncestorNamed("MainTabStrip", this) as? TabStrip
-                val parentToolPanel: Container? = SwingUtilities.getAncestorOfClass(IdbView::class.java, this) ?: this
+                val parentToolPanel: Container? = SwingUtilities.getAncestorOfClass(IdbView::class.java, this)
 
                 if (mainTabbedPane != null && parentToolPanel != null) {
                     val index = mainTabbedPane.indexOfComponent(parentToolPanel)
@@ -93,7 +81,11 @@ class SystemLogPanel(
             val newFileData = runBlocking {
                 files.map { path ->
                     async(Dispatchers.IO) {
-                        path to parseFile(path)
+                        val connection = SQLiteConnection(path)
+                        val logFile = LogFile(
+                            connection.parseLogs().also { connection.close() },
+                        )
+                        path to logFile
                     }
                 }.awaitAll()
             }

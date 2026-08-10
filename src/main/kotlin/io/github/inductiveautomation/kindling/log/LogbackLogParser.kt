@@ -54,13 +54,8 @@ internal fun parseLogTimestamp(
 }
 
 object LogbackLogParser {
-
     val EVENT_LINE =
-        """^(?<level>[TDIWE]) \[(?<logger>[^]]++)] \[(?<timestamp>[^]]++)]: (?:\{(?<thread>[^}]*+)} )?(?<message>.*)$"""
-            .toRegex()
-
-    private val MDC_SUFFIX =
-        """(?:^|(?<= ))([A-Za-z_][\w.-]*=[^,]*(?:, [A-Za-z_][\w.-]*=[^,]*)*)$""".toRegex()
+        """^(?<level>[TDIWE]) \[(?<logger>[^]]++)] \[(?<timestamp>[^]]++)]: (?<message>.*)$""".toRegex()
 
     fun matches(path: Path): Boolean = path.useLines(DefaultEncoding.currentValue) { lines ->
         matches(lines)
@@ -69,16 +64,15 @@ object LogbackLogParser {
     fun matches(lines: Sequence<String>): Boolean =
         lines.firstOrNull(String::isNotBlank)?.let(EVENT_LINE::matches) == true
 
-    fun parseFile(path: Path): LogFile<SystemLogEvent> = path.useLines(DefaultEncoding.currentValue) { lines ->
+    fun parseFile(path: Path): LogFile<WrapperLogEvent> = path.useLines(DefaultEncoding.currentValue) { lines ->
         LogFile(parse(lines))
     }
 
-    fun parse(lines: Sequence<String>): List<SystemLogEvent> {
-        // resolved once so that every line in a file is parsed consistently
+    fun parse(lines: Sequence<String>): List<WrapperLogEvent> {
         val configuredFormat = configuredTimestampFormat
-        val events = mutableListOf<SystemLogEvent>()
+        val events = mutableListOf<WrapperLogEvent>()
         val currentStack = mutableListOf<String>()
-        var partialEvent: SystemLogEvent? = null
+        var partialEvent: WrapperLogEvent? = null
 
         fun flush() {
             partialEvent?.let { events += it.copy(stacktrace = currentStack.toList()) }
@@ -116,27 +110,14 @@ object LogbackLogParser {
 
             flush()
 
-            val (message, mdc) = extractMdc(match.groups["message"]!!.value.trim())
-            partialEvent = SystemLogEvent(
+            partialEvent = WrapperLogEvent(
                 timestamp = time,
-                message = message,
+                message = match.groups["message"]!!.value.trim(),
                 logger = match.groups["logger"]!!.value.trim(),
-                thread = match.groups["thread"]?.value?.trim().orEmpty(),
                 level = Level.valueOf(match.groups["level"]!!.value.single()),
-                mdc = mdc,
-                stacktrace = emptyList(),
             )
         }
         flush()
         return events
-    }
-
-    private fun extractMdc(message: String): Pair<String, List<MDC>> {
-        val match = MDC_SUFFIX.find(message) ?: return message to emptyList()
-        val mdc = match.groupValues[1].split(", ").map { pair ->
-            val (key, value) = pair.split('=', limit = 2)
-            MDC(key, value)
-        }
-        return message.substring(0, match.range.first).trim() to mdc
     }
 }
