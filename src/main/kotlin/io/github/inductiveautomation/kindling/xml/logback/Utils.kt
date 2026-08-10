@@ -5,12 +5,6 @@ import io.github.inductiveautomation.kindling.utils.NumericEntryField
 import io.github.inductiveautomation.kindling.utils.rightBuddy
 import javax.swing.JLabel
 
-/**
- * The `%d` conversion word for generated encoder patterns, using the user's configured [TimestampPattern].
- *
- * This is deliberately not used for rolling policy `fileNamePattern`s, which need a pattern that is safe
- * to embed in a filename.
- */
 internal fun timestampConversion(): String = "%d{${TimestampPattern.currentValue}}"
 
 internal fun sizeEntryField(

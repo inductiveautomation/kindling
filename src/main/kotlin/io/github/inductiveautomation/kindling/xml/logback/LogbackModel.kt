@@ -70,7 +70,6 @@ data class LogbackConfigData(
             .serializationInclusion(JsonInclude.Include.NON_EMPTY)
             .build()
 
-        // computed on each access so that changes to the timestamp pattern preference are picked up
         val DEFAULT_APPENDERS: List<Appender>
             get() = listOf(
                 Appender(

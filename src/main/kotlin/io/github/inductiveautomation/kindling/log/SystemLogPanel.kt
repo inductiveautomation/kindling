@@ -20,9 +20,6 @@ import java.time.Instant
 import javax.swing.SwingUtilities
 import kotlin.io.path.absolutePathString
 
-/**
- * Read the `logging_event` tables of the SQLite log database at [path].
- */
 private fun parseIdbLogFile(path: Path): LogFile<SystemLogEvent> {
     val connection = SQLiteConnection(path)
     return LogFile(connection.parseLogs().also { connection.close() })
@@ -31,10 +28,7 @@ private fun parseIdbLogFile(path: Path): LogFile<SystemLogEvent> {
 class SystemLogPanel(
     paths: List<Path>,
     fileData: List<LogFile<SystemLogEvent>>,
-    /**
-     * How to read an additional file dropped onto the sidebar. Defaults to the `logging_event` tables of an .idb,
-     * but the panel is also used for Logback additional log files.
-     */
+
     private val parseFile: (Path) -> LogFile<SystemLogEvent> = ::parseIdbLogFile,
 ) : LogPanel<SystemLogEvent>(fileData.flatMap { it.items }, SystemLogColumns) {
 

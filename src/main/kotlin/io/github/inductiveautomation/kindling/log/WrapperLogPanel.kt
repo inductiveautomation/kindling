@@ -104,7 +104,6 @@ class WrapperLogPanel(
             "(?:^[^|]+\\|)?(?<prefix>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))$".toRegex()
 
         fun parseLogs(lines: Sequence<String>): List<WrapperLogEvent> {
-            // resolved once so that every line in a file is parsed consistently
             val configuredFormat = configuredTimestampFormat
             val events = mutableListOf<WrapperLogEvent>()
             val currentStack = mutableListOf<String>()
@@ -182,7 +181,7 @@ class WrapperLogPanel(
 data object LogViewer : MultiTool, ClipboardTool {
     override val serialKey = "logview"
     override val title = "Wrapper Log"
-    override val description = "Wrapper Log(s) (wrapper.log, wrapper.log.1, wrapper.log...) and Logback additional logs"
+    override val description = "Wrapper Log(s) (wrapper.log, wrapper.log.1, wrapper.log...)"
     override val icon = FlatSVGIcon("icons/bx-file.svg")
     override val respectsEncoding = true
     override val extensions: Array<String> = arrayOf("log")
@@ -196,7 +195,6 @@ data object LogViewer : MultiTool, ClipboardTool {
         // flip the paths, so the .5, .4, .3, .2, .1 - this hopefully helps with the per-event sort below
         val reverseOrder = paths.sortedWith(compareBy(AlphanumComparator(), Path::name).reversed())
 
-        // logs written by a Logback file appender have no wrapper prefix, but do have a thread and MDC values
         if (reverseOrder.all(LogbackLogParser::matches)) {
             return SystemLogPanel(
                 reverseOrder,

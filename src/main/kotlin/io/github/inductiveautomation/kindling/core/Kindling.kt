@@ -62,15 +62,8 @@ import kotlin.io.path.outputStream
 import kotlin.time.Duration.Companion.seconds
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
 
-/**
- * The stock Ignition wrapper log timestamp format, which doubles as a reasonable default for the
- * Logback encoders Kindling generates.
- */
 const val DEFAULT_TIMESTAMP_PATTERN: String = "yyyy/MM/dd HH:mm:ss"
 
-/**
- * Whether [pattern] is a non-blank, well-formed [DateTimeFormatter] pattern.
- */
 fun isValidTimestampPattern(pattern: String): Boolean =
     pattern.isNotBlank() && runCatching { DateTimeFormatter.ofPattern(pattern) }.isSuccess
 
@@ -226,13 +219,6 @@ data object Kindling {
                 },
             )
 
-            /**
-             * The timestamp portion of a log line, as a [DateTimeFormatter] pattern.
-             *
-             * Used by the Logback XML tool for the `%d{}` conversion in the encoder patterns it generates,
-             * and by the Wrapper Log tool to parse the timestamp column. Rolling log *filename* patterns
-             * are deliberately not affected; those need a filesystem-safe pattern.
-             */
             val TimestampPattern: Preference<String> = preference(
                 name = "Timestamp Pattern",
                 description = "The pattern used for log event timestamps, " +
