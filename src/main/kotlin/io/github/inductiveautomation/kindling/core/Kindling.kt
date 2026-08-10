@@ -35,6 +35,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTextField
 import java.awt.Component
 import java.awt.Dimension
@@ -47,8 +48,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Vector
 import javax.swing.DefaultCellEditor
 import javax.swing.DefaultComboBoxModel
+import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JComponent
+import javax.swing.JPanel
 import javax.swing.JSpinner
 import javax.swing.JTable
 import javax.swing.SpinnerNumberModel
@@ -236,19 +239,36 @@ data object Kindling {
                     "both when generating a Logback encoder and when parsing wrapper logs",
                 default = DEFAULT_TIMESTAMP_PATTERN,
                 editor = {
-                    JXTextField("A java.time pattern, e.g. $DEFAULT_TIMESTAMP_PATTERN").apply {
+                    val field = JXTextField("A java.time pattern, e.g. $DEFAULT_TIMESTAMP_PATTERN").apply {
                         text = currentValue
+                    }
 
-                        document.addDocumentListener(
-                            DocumentAdapter {
-                                if (isValidTimestampPattern(text)) {
-                                    putClientProperty(FlatClientProperties.OUTLINE, null)
-                                    currentValue = text
-                                } else {
-                                    putClientProperty(FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR)
-                                }
-                            },
-                        )
+                    val reset = JButton("Reset").apply {
+                        toolTipText = "Restore the default pattern ($DEFAULT_TIMESTAMP_PATTERN)"
+                        isEnabled = field.text != DEFAULT_TIMESTAMP_PATTERN
+                        addActionListener {
+                            field.text = DEFAULT_TIMESTAMP_PATTERN
+                        }
+                    }
+
+                    field.document.addDocumentListener(
+                        DocumentAdapter {
+                            reset.isEnabled = field.text != DEFAULT_TIMESTAMP_PATTERN
+                            if (isValidTimestampPattern(field.text)) {
+                                field.putClientProperty(FlatClientProperties.OUTLINE, null)
+                                currentValue = field.text
+                            } else {
+                                field.putClientProperty(
+                                    FlatClientProperties.OUTLINE,
+                                    FlatClientProperties.OUTLINE_ERROR,
+                                )
+                            }
+                        },
+                    )
+
+                    JPanel(MigLayout("fill, ins 0")).apply {
+                        add(field, "growx, pushx")
+                        add(reset)
                     }
                 },
             )
