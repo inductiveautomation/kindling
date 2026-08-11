@@ -70,14 +70,14 @@ data class LogbackConfigData(
             .serializationInclusion(JsonInclude.Include.NON_EMPTY)
             .build()
 
-        val DEFAULT_APPENDERS =
-            listOf(
+        val DEFAULT_APPENDERS: List<Appender>
+            get() = listOf(
                 Appender(
                     name = "SysoutAppender",
                     className = "ch.qos.logback.core.ConsoleAppender",
                     encoder = listOf(
                         Encoder(
-                            pattern = "%.-1p [%-30c{1}] [%d{HH:mm:ss,SSS}]: %m %X%n",
+                            pattern = "%.-1p [%-30c{1}] [${timestampConversion()}]: %m %X%n",
                         ),
                     ),
                 ),
@@ -188,7 +188,7 @@ data class AppenderRef(
 
 data class Encoder(
     @field:JacksonXmlProperty(localName = "pattern")
-    val pattern: String = "%.-1p [%-30c{1}] [%d{MM:dd:YYYY HH:mm:ss, America/Los_Angeles}]: %m %X%n",
+    val pattern: String = "%.-1p [%-30c{1}] [${timestampConversion()}]: %m %X%n",
 )
 
 /**

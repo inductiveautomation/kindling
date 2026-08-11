@@ -19,9 +19,6 @@ import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import javax.swing.SwingUtilities
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
@@ -86,10 +83,7 @@ class WrapperLogPanel(
             val newFileData = runBlocking {
                 files.map { path ->
                     async(Dispatchers.IO) {
-                        val logFile = path.useLines {
-                            LogFile(parseLogs(it))
-                        }
-                        path to logFile
+                        path to parseLogFile(path)
                     }
                 }.awaitAll()
             }
@@ -103,12 +97,19 @@ class WrapperLogPanel(
     }
 
     companion object {
-        private val DEFAULT_WRAPPER_LOG_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault())
         private val DEFAULT_WRAPPER_MESSAGE_FORMAT =
             "(?:^[^|]+\\|)?(?<prefix>[^|]+)\\|(?<timestamp>[^|]+)\\|(?: (?<level>[TDIWE]) \\[(?<logger>[^]]++)] \\[(?<time>[^]]++)]: (?<message>.*)| (?<stack>.*))$".toRegex()
 
+        fun parseLogFile(path: Path): LogFile<WrapperLogEvent> = if (LogbackLogParser.matches(path)) {
+            LogbackLogParser.parseFile(path)
+        } else {
+            path.useLines(DefaultEncoding.currentValue) { lines ->
+                LogFile(parseLogs(lines))
+            }
+        }
+
         fun parseLogs(lines: Sequence<String>): List<WrapperLogEvent> {
+            val configuredFormat = configuredTimestampFormat
             val events = mutableListOf<WrapperLogEvent>()
             val currentStack = mutableListOf<String>()
             var partialEvent: WrapperLogEvent? = null
@@ -129,9 +130,8 @@ class WrapperLogPanel(
                 val match = DEFAULT_WRAPPER_MESSAGE_FORMAT.matchEntire(line)
                 if (match != null) {
                     val timestamp by match.groups
-                    val time = try {
-                        DEFAULT_WRAPPER_LOG_TIME_FORMAT.parse(timestamp.value.trim(), Instant::from)
-                    } catch (_: DateTimeParseException) {
+                    val time = parseLogTimestamp(timestamp.value.trim(), configuredFormat)
+                    if (time == null) {
                         if (events.isEmpty()) {
                             throw IllegalArgumentException("Error parsing wrapper log file; unexpected content format on first line:\n$line")
                         }
@@ -199,11 +199,7 @@ data object LogViewer : MultiTool, ClipboardTool {
         require(paths.isNotEmpty()) { "Must provide at least one path" }
         // flip the paths, so the .5, .4, .3, .2, .1 - this hopefully helps with the per-event sort below
         val reverseOrder = paths.sortedWith(compareBy(AlphanumComparator(), Path::name).reversed())
-        val fileData = reverseOrder.map { path ->
-            path.useLines(DefaultEncoding.currentValue) { lines ->
-                LogFile(WrapperLogPanel.parseLogs(lines))
-            }
-        }
+        val fileData = reverseOrder.map(WrapperLogPanel::parseLogFile)
         return WrapperLogPanel(
             reverseOrder,
             fileData,
@@ -214,11 +210,6 @@ data object LogViewer : MultiTool, ClipboardTool {
         val tempFile = Files.createTempFile("paste", "kindl")
         data.byteInputStream() transferTo tempFile.outputStream()
 
-        val fileData = LogFile(
-            tempFile.useLines(DefaultEncoding.currentValue) { lines ->
-                WrapperLogPanel.parseLogs(lines)
-            },
-        )
-        return WrapperLogPanel(listOf(tempFile), listOf(fileData))
+        return WrapperLogPanel(listOf(tempFile), listOf(WrapperLogPanel.parseLogFile(tempFile)))
     }
 }
