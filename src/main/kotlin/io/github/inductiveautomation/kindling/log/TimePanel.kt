@@ -1,15 +1,13 @@
 package io.github.inductiveautomation.kindling.log
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
-import com.formdev.flatlaf.extras.components.FlatButton
 import io.github.inductiveautomation.kindling.core.FilterChangeListener
 import io.github.inductiveautomation.kindling.core.FilterPanel
-import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Timezone
 import io.github.inductiveautomation.kindling.utils.Action
 import io.github.inductiveautomation.kindling.utils.Column
 import io.github.inductiveautomation.kindling.utils.ColumnList
-import io.github.inductiveautomation.kindling.utils.EmptyBorder
+import io.github.inductiveautomation.kindling.utils.DateTimeSelector
 import io.github.inductiveautomation.kindling.utils.FileFilterResponsive
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
 import io.github.inductiveautomation.kindling.utils.ReifiedJXTable
@@ -17,42 +15,21 @@ import io.github.inductiveautomation.kindling.utils.ReifiedListTableModel
 import io.github.inductiveautomation.kindling.utils.getAll
 import io.github.inductiveautomation.kindling.utils.getAncestorOfClass
 import net.miginfocom.swing.MigLayout
-import org.jdesktop.swingx.JXDatePicker
 import org.jdesktop.swingx.renderer.DefaultTableRenderer
-import java.awt.Cursor
 import java.awt.EventQueue
-import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoField
-import java.time.temporal.ChronoField.HOUR_OF_DAY
-import java.time.temporal.ChronoField.MILLI_OF_SECOND
-import java.time.temporal.ChronoField.MINUTE_OF_HOUR
-import java.time.temporal.ChronoField.SECOND_OF_MINUTE
 import java.time.temporal.ChronoUnit
-import java.time.temporal.WeekFields
-import java.util.Date
-import java.util.Locale
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JSeparator
-import javax.swing.JSpinner
 import javax.swing.ListSelectionModel
 import javax.swing.SortOrder
-import javax.swing.SpinnerModel
-import javax.swing.SpinnerNumberModel
-import javax.swing.SwingConstants
-import javax.swing.UIManager
-import javax.swing.border.LineBorder
-import kotlin.math.absoluteValue
 
 internal class TimePanel<T : LogEvent>(
     data: List<T>,
@@ -66,9 +43,9 @@ internal class TimePanel<T : LogEvent>(
     private var coveredRange: ClosedRange<Instant> = lowerBound..upperBound
     private var totalCurrentRange = coveredRange
 
-    private val startSelector = DateTimeSelector(lowerBound, totalCurrentRange)
-    private val endSelector = DateTimeSelector(upperBound, totalCurrentRange)
-
+    private val startSelector = DateTimeSelector(lowerBound, totalCurrentRange, "Start Time")
+    private val endSelector = DateTimeSelector(upperBound, totalCurrentRange, "End Time")
+    private var pushingBounds = false
     private val denseMinutesTable =
         ReifiedJXTable(
             ReifiedListTableModel(
@@ -168,13 +145,7 @@ internal class TimePanel<T : LogEvent>(
     override val component =
         JPanel(MigLayout("ins 2 0, fill, wrap 1")).apply {
             add(startSelector, "pushx, growx")
-            add(
-                JLabel("To").apply {
-                    horizontalAlignment = SwingConstants.CENTER
-                },
-                "align center, growx",
-            )
-            add(endSelector, "pushx, growx")
+            add(endSelector, "pushx, growx, gaptop 4")
 
             add(
                 JSeparator(JSeparator.HORIZONTAL),
@@ -202,11 +173,32 @@ internal class TimePanel<T : LogEvent>(
 
     init {
         startSelector.addPropertyChangeListener("time") {
+            if (pushingBounds) return@addPropertyChangeListener
+            // push the other bound along rather than letting the two cross
+            if (startSelector.time > endSelector.time) {
+                pushingBounds = true
+                try {
+                    endSelector.time = startSelector.time
+                } finally {
+                    pushingBounds = false
+                }
+            }
             updateCoveredRange()
         }
         endSelector.addPropertyChangeListener("time") {
+            if (pushingBounds) return@addPropertyChangeListener
+            if (endSelector.time < startSelector.time) {
+                pushingBounds = true
+                try {
+                    startSelector.time = endSelector.time
+                } finally {
+                    pushingBounds = false
+                }
+            }
             updateCoveredRange()
         }
+
+        updateHighlightedDates(data)
 
         Timezone.Default.addChangeListener {
             lowerBound = data.minOf { it.timestamp }
@@ -214,8 +206,16 @@ internal class TimePanel<T : LogEvent>(
             totalCurrentRange = lowerBound..upperBound
             startSelector.range = totalCurrentRange
             endSelector.range = totalCurrentRange
+            updateHighlightedDates(data)
             reset()
         }
+    }
+
+    /** Flags the days which contain events in both selectors' calendars. */
+    private fun updateHighlightedDates(data: List<T>) {
+        val daysWithData = data.mapTo(mutableSetOf()) { LocalDate.ofInstant(it.timestamp, Timezone.Default.zoneId) }
+        startSelector.highlightedDates = daysWithData
+        endSelector.highlightedDates = daysWithData
     }
 
     override fun isFilterApplied(): Boolean = coveredRange != totalCurrentRange
@@ -246,10 +246,9 @@ internal class TimePanel<T : LogEvent>(
         )
 
         startSelector.range = totalCurrentRange
-        startSelector.defaultValue = lowerBound
-
         endSelector.range = totalCurrentRange
-        endSelector.defaultValue = upperBound
+
+        updateHighlightedDates(data)
 
         if (!isFilterApplied) {
             reset()
@@ -291,228 +290,6 @@ internal class TimePanel<T : LogEvent>(
         endSelector.time = upperBound
         updateCoveredRange()
     }
-}
-
-private fun ZonedDateTime.toDate(): Date = toLocalDate()
-    .atStartOfDay(zone)
-    .toInstant()
-    .let(Date::from)
-
-private fun JXDatePicker.getLocalDate(): LocalDate? = date?.toInstant()
-    ?.let { LocalDate.ofInstant(it, timeZone.toZoneId()) }
-
-private fun JXDatePicker.setDate(zonedDateTime: ZonedDateTime) {
-    timeZone = java.util.TimeZone.getTimeZone(zonedDateTime.zone)
-    date = zonedDateTime.toDate()
-}
-
-private class DateTimeSelector(
-    var defaultValue: Instant,
-    initialRange: ClosedRange<Instant>,
-) : JPanel(MigLayout("ins 0")) {
-    var range: ClosedRange<Instant> = initialRange
-        set(value) {
-            field = value
-            datePicker.monthView.apply {
-                lowerBound = value.start
-                    .atZone(Timezone.Default.zoneId)
-                    .toDate()
-                upperBound = value.endInclusive
-                    .atZone(Timezone.Default.zoneId)
-                    .toDate()
-            }
-        }
-
-    private val initialZonedTime: ZonedDateTime
-        get() = defaultValue.atZone(Timezone.Default.zoneId)
-
-    private val datePicker =
-        JXDatePicker().apply {
-            setDate(initialZonedTime)
-            editor.horizontalAlignment = SwingConstants.CENTER
-            monthView.apply {
-                // adjust calendar from java.time to java.util weekday numbering
-                firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.value % 7 + 1
-
-                lowerBound = range.start.atZone(Timezone.Default.zoneId).toDate()
-                upperBound = range.endInclusive.atZone(Timezone.Default.zoneId).toDate()
-            }
-            linkPanel = JPanel() // can't be null or BasicDatePickerUI throws an NPE on theme change
-
-            addActionListener {
-                if (date == null) { // out of range selection sets null in JXDatePicker - we'll be nicer and reset
-                    setDate(initialZonedTime)
-                } else {
-                    firePropertyChange("time", null, time)
-                }
-            }
-        }
-
-    private val timeSelector = TimeSelector().apply {
-        localTime = initialZonedTime.toLocalTime()
-        addPropertyChangeListener("localTime") {
-            firePropertyChange("time", null, time)
-        }
-    }
-
-    var time: Instant
-        get() {
-            val localDate = datePicker.getLocalDate()
-            return if (localDate == null) {
-                defaultValue
-            } else {
-                ZonedDateTime.of(
-                    localDate,
-                    timeSelector.localTime,
-                    Timezone.Default.zoneId,
-                ).toInstant()
-            }
-        }
-        set(value) {
-            val zonedDateTime = value.atZone(Timezone.Default.zoneId)
-            datePicker.setDate(zonedDateTime)
-            timeSelector.localTime = zonedDateTime.toLocalTime()
-        }
-
-    init {
-        add(datePicker, "growx, spanx, pushx, wrap")
-        add(timeSelector, "growx, spanx, pushx, wrap")
-
-        for (amount in listOf(-30L, -15, -5, -1, 1L, 5, 15, 30)) {
-            add(
-                FlatButton().apply {
-                    action = Action(
-                        name = "%+d".format(amount),
-                        description = buildString {
-                            append(if (amount > 0) "Add" else "Subtract")
-                            append(" ")
-                            append(amount.absoluteValue)
-                            append(" minute")
-                            if (amount.absoluteValue > 1) {
-                                append("s")
-                            }
-                        },
-                    ) {
-                        time = time.plusSeconds(amount * 60)
-                    }
-                    margin = Insets(1, 1, 1, 1)
-                },
-                "w 12.5%, sgx",
-            )
-        }
-    }
-}
-
-private class TimeSelector : JPanel(MigLayout("fill, ins 0")) {
-    private val hourSelector = timePartSpinner(HOUR_OF_DAY, "00", 10)
-    private val minuteSelector = timePartSpinner(MINUTE_OF_HOUR, ":00", 6)
-    private val secondSelector = timePartSpinner(SECOND_OF_MINUTE, ":00", 6)
-    private val milliSelector = timePartSpinner(MILLI_OF_SECOND, "'.'000", 1)
-
-    private fun timePartSpinner(
-        field: ChronoField,
-        pattern: String,
-        pixelsPerValueChange: Int,
-    ) = TimePartSpinner(ChronoSpinnerModel(field, pattern), pixelsPerValueChange).apply {
-        addChangeListener {
-            firePropertyChange("localTime", null, localTime)
-        }
-    }
-
-    init {
-        background = UIManager.getColor("ComboBox.background")
-        border = LineBorder(UIManager.getColor("Button.borderColor"))
-        add(hourSelector, "wmin 45, growx")
-        add(minuteSelector, "wmin 45, growx")
-        add(secondSelector, "wmin 45, growx")
-        add(milliSelector, "wmin 55, growx")
-
-        Theme.addChangeListener {
-            background = UIManager.getColor("ComboBox.background")
-            border = LineBorder(UIManager.getColor("Button.borderColor"))
-        }
-    }
-
-    var localTime: LocalTime
-        get() =
-            LocalTime.of(
-                hourSelector.value.toInt(),
-                minuteSelector.value.toInt(),
-                secondSelector.value.toInt(),
-                // milli-of-second to nano-of-second
-                (milliSelector.value * 1_000_000).toInt(),
-            )
-        set(value) {
-            hourSelector.value = value.hour.toLong()
-            minuteSelector.value = value.minute.toLong()
-            secondSelector.value = value.second.toLong()
-            // milli-of-second to nano-of-second
-            milliSelector.value = (value.nano / 1_000_000).toLong()
-        }
-}
-
-private class TimePartSpinner(
-    model: ChronoSpinnerModel,
-    pixelsPerValueChange: Int,
-) : JSpinner(model) {
-    var isSelection = true
-
-    private val dragListener =
-        object : MouseAdapter() {
-            private var previousY = 0
-
-            override fun mouseDragged(e: MouseEvent) {
-                if (e.y < 0 || e.y > height) {
-                    val deltaY = previousY - (e.y / pixelsPerValueChange)
-                    var currentValue = value + deltaY
-                    if (deltaY < 0 && previousY == 0) {
-                        currentValue += height
-                    }
-                    value = currentValue.coerceIn(0, model.maximum)
-                }
-                previousY = e.y / pixelsPerValueChange
-            }
-
-            override fun mouseReleased(e: MouseEvent) {
-                isSelection = true
-                previousY = 0
-                fireStateChanged()
-            }
-
-            override fun mousePressed(e: MouseEvent) {
-                isSelection = false
-            }
-        }
-
-    override fun createEditor(model: SpinnerModel): JComponent {
-        check(model is ChronoSpinnerModel)
-        return NumberEditor(this, model.pattern).apply {
-            textField.apply {
-                border = EmptyBorder()
-                cursor = Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR)
-            }
-        }
-    }
-
-    init {
-        border = EmptyBorder()
-        isOpaque = false
-        (editor as DefaultEditor).textField.apply {
-            addMouseMotionListener(dragListener)
-            addMouseListener(dragListener)
-        }
-    }
-
-    override fun getValue(): Long = super.getValue() as Long
-
-    override fun getModel(): ChronoSpinnerModel = super.getModel() as ChronoSpinnerModel
-}
-
-private class ChronoSpinnerModel(
-    field: ChronoField,
-    val pattern: String,
-) : SpinnerNumberModel(0L, field.range().minimum, field.range().maximum, 1L) {
-    override fun getMaximum(): Long = super.getMaximum() as Long
 }
 
 private data class DenseTime(
