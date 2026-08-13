@@ -45,7 +45,7 @@ internal class TimePanel<T : LogEvent>(
 
     private val startSelector = DateTimeSelector(lowerBound, totalCurrentRange, "Start Time")
     private val endSelector = DateTimeSelector(upperBound, totalCurrentRange, "End Time")
-
+    private var pushingBounds = false
     private val denseMinutesTable =
         ReifiedJXTable(
             ReifiedListTableModel(
@@ -173,15 +173,27 @@ internal class TimePanel<T : LogEvent>(
 
     init {
         startSelector.addPropertyChangeListener("time") {
+            if (pushingBounds) return@addPropertyChangeListener
             // push the other bound along rather than letting the two cross
             if (startSelector.time > endSelector.time) {
-                endSelector.time = startSelector.time
+                pushingBounds = true
+                try {
+                    endSelector.time = startSelector.time
+                } finally {
+                    pushingBounds = false
+                }
             }
             updateCoveredRange()
         }
         endSelector.addPropertyChangeListener("time") {
+            if (pushingBounds) return@addPropertyChangeListener
             if (endSelector.time < startSelector.time) {
-                startSelector.time = endSelector.time
+                pushingBounds = true
+                try {
+                    startSelector.time = endSelector.time
+                } finally {
+                    pushingBounds = false
+                }
             }
             updateCoveredRange()
         }
@@ -234,10 +246,9 @@ internal class TimePanel<T : LogEvent>(
         )
 
         startSelector.range = totalCurrentRange
-        startSelector.defaultValue = lowerBound
-
         endSelector.range = totalCurrentRange
-        endSelector.defaultValue = upperBound
+
+        updateHighlightedDates(data)
 
         if (!isFilterApplied) {
             reset()

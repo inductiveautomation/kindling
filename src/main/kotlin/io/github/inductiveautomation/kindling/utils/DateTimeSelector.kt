@@ -60,9 +60,6 @@ class DateTimeSelector(
     private val zoneId: ZoneId
         get() = Timezone.Default.zoneId
 
-    /** The value [reset] returns to. */
-    var defaultValue: Instant = initialValue
-
     /** Times outside this range are dimmed in the popup's list. */
     var range: ClosedRange<Instant> = initialRange
         set(value) {
@@ -242,10 +239,6 @@ class DateTimeSelector(
         }
     }
 
-    fun reset() {
-        time = defaultValue
-    }
-
     // Actions are inlined into their buttons since each is only used in one place
     private fun footer() = JPanel(MigLayout("ins 0, fillx, wrap 4, gapx 2, gapy 2")).apply {
         add(
@@ -273,7 +266,7 @@ class DateTimeSelector(
             "sgx jump, growx",
         )
 
-        for (amount in listOf(-30L, -15, -5, -1, 1L, 5, 15, 30)) {
+        for (amount in listOf(-30L, -15, -5, -1, 30L, 15, 5, 1)) {
             add(
                 footerButton(
                     name = "%+d".format(amount),
@@ -410,7 +403,7 @@ class DateTimeSelector(
         val END_OF_DAY: LocalTime = LocalTime.MAX.truncatedTo(ChronoUnit.MILLIS)
 
         val DISPLAY_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.SSS")
-        val TIME_HEADER_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+        val TIME_HEADER_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss:SSS")
         val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
         val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd")
 
