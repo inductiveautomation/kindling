@@ -2,14 +2,15 @@ package io.github.inductiveautomation.kindling.zip.views.gwbk
 
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatTabbedPane.TabType
+import io.github.inductiveautomation.kindling.resources.ResourcePath
+import io.github.inductiveautomation.kindling.resources.ResourceType
+import io.github.inductiveautomation.kindling.resources.ResourceType.Companion.PLATFORM_MODULE_ID
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.PERSPECTIVE_MODULE_ID
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.VISION_MODULE_ID
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.hasPerspectiveResources
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Calculator.hasVisionResources
 import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Project
-import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.Resource
-import io.github.inductiveautomation.kindling.statistics.categories.ProjectStatistics.ResourceType
 import io.github.inductiveautomation.kindling.utils.ColumnList
 import io.github.inductiveautomation.kindling.utils.FlatActionIcon
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -66,7 +67,7 @@ class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
 
     private fun createProjectTable(project: Project): JComponent {
         val data = project.resources
-            .groupingBy(Resource::type)
+            .groupingBy(ResourcePath::type)
             .eachCount()
             .entries
             .toList()
@@ -82,8 +83,6 @@ class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
         }
         val Count by column { it.value }
 
-        private const val PLATFORM_ID = "ignition"
-
         private val COMMON_RESOURCE_TYPES = mapOf(
             ResourceType("com.inductiveautomation.alarm-notification", "alarm-pipelines") to "Alarm Pipelines",
             ResourceType("com.inductiveautomation.reporting", "reports") to "Reports",
@@ -98,11 +97,11 @@ class ProjectStatisticsRenderer : StatisticRenderer<ProjectStatistics> {
             ResourceType(PERSPECTIVE_MODULE_ID, "style-classes") to "Perspective Style Classes",
             ResourceType(PERSPECTIVE_MODULE_ID, "stylesheet") to "Perspective Advanced Stylesheet",
             ResourceType(PERSPECTIVE_MODULE_ID, "views") to "Perspective Views",
-            ResourceType(PLATFORM_ID, "designer-properties") to "Designer Properties",
-            ResourceType(PLATFORM_ID, "event-scripts") to "Gateway Event Scripts",
-            ResourceType(PLATFORM_ID, "global-props") to "Project Properties",
-            ResourceType(PLATFORM_ID, "named-query") to "Named Queries",
-            ResourceType(PLATFORM_ID, "script-python") to "Project Library Scripts",
+            ResourceType(PLATFORM_MODULE_ID, "designer-properties") to "Designer Properties",
+            ResourceType(PLATFORM_MODULE_ID, "event-scripts") to "Gateway Event Scripts",
+            ResourceType(PLATFORM_MODULE_ID, "global-props") to "Project Properties",
+            ResourceType(PLATFORM_MODULE_ID, "named-query") to "Named Queries",
+            ResourceType(PLATFORM_MODULE_ID, "script-python") to "Project Library Scripts",
             ResourceType(VISION_MODULE_ID, "client-event-scripts") to "Client Event Scripts",
             ResourceType(VISION_MODULE_ID, "client-tags") to "Vision Client Tags",
             ResourceType(VISION_MODULE_ID, "designer-properties") to "Vision Designer Properties",

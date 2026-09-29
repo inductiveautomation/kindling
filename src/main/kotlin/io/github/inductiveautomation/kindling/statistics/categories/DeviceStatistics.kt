@@ -1,11 +1,16 @@
 package io.github.inductiveautomation.kindling.statistics.categories
 
+import io.github.inductiveautomation.kindling.resources.ResourceType
 import io.github.inductiveautomation.kindling.statistics.GatewayBackup
+import io.github.inductiveautomation.kindling.statistics.GatewayBackup.Filesystem
+import io.github.inductiveautomation.kindling.statistics.GatewayBackup.InternalDatabase
 import io.github.inductiveautomation.kindling.statistics.Statistic
 import io.github.inductiveautomation.kindling.statistics.StatisticCalculator
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 data class DeviceStatistics(
     val devices: List<Device>,
@@ -33,7 +38,7 @@ data class DeviceStatistics(
                 devicesettings
             """.trimIndent()
 
-        override suspend fun calculate(backup: GatewayBackup): DeviceStatistics? {
+        override suspend fun calculate(backup: InternalDatabase): DeviceStatistics? {
             val devices =
                 backup.configDb.executeQuery(DEVICES)
                     .toList { rs ->
@@ -44,6 +49,25 @@ data class DeviceStatistics(
                             enabled = rs[4],
                         )
                     }
+
+            if (devices.isEmpty()) {
+                return null
+            }
+
+            return DeviceStatistics(devices)
+        }
+
+        private val DEVICE = ResourceType("com.inductiveautomation.opcua", "device")
+
+        override suspend fun calculate(backup: Filesystem): DeviceStatistics? {
+            val devices = backup.core.resourcesOfType(DEVICE).map { resource ->
+                Device(
+                    name = checkNotNull(resource.name),
+                    type = resource.config.getValue("profile").jsonObject.getValue("type").jsonPrimitive.content,
+                    description = resource.description,
+                    enabled = resource.enabled,
+                )
+            }
 
             if (devices.isEmpty()) {
                 return null
