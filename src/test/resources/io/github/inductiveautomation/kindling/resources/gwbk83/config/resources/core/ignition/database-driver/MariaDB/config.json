@@ -1,0 +1,4 @@
+{
+  "classname": "org.mariadb.jdbc.Driver",
+  "type": "MYSQL"
+}
