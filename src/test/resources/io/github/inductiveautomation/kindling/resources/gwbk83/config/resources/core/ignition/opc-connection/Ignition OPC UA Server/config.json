@@ -1,0 +1,7 @@
+{
+  "profile": {
+    "type": "com.inductiveautomation.OpcUaServerType",
+    "readOnly": false
+  },
+  "settings": {}
+}

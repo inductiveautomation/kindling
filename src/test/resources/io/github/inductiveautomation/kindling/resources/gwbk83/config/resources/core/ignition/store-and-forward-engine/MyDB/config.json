@@ -1,0 +1,15 @@
+{
+  "dataThreshold": 5000,
+  "primaryMaintenancePolicy": {
+    "limit": {
+      "limitType": "COUNT",
+      "value": 1000
+    }
+  },
+  "secondaryMaintenancePolicy": {
+    "limit": {
+      "limitType": "COUNT",
+      "value": 25000
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "driver": "MariaDB",
+  "translator": "MYSQL",
+  "connectURL": "jdbc:mariadb://localhost:3306/test"
+}

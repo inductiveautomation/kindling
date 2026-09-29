@@ -1,0 +1,4 @@
+{
+  "driver": "MariaDB",
+  "translator": "MYSQL"
+}

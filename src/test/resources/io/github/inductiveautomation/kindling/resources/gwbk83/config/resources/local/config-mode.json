@@ -1,0 +1,6 @@
+{
+  "title": "Local",
+  "enabled": true,
+  "inheritable": false,
+  "parent": "core"
+}
