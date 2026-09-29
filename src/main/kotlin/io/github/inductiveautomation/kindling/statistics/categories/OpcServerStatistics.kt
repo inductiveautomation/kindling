@@ -1,11 +1,18 @@
 package io.github.inductiveautomation.kindling.statistics.categories
 
+import io.github.inductiveautomation.kindling.resources.ResourceType
+import io.github.inductiveautomation.kindling.resources.ResourceType.Companion.PLATFORM_MODULE_ID
 import io.github.inductiveautomation.kindling.statistics.GatewayBackup
+import io.github.inductiveautomation.kindling.statistics.GatewayBackup.Filesystem
+import io.github.inductiveautomation.kindling.statistics.GatewayBackup.InternalDatabase
 import io.github.inductiveautomation.kindling.statistics.Statistic
 import io.github.inductiveautomation.kindling.statistics.StatisticCalculator
 import io.github.inductiveautomation.kindling.utils.executeQuery
 import io.github.inductiveautomation.kindling.utils.get
 import io.github.inductiveautomation.kindling.utils.toList
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -74,7 +81,7 @@ data class OpcServerStatistics(
                 o.type NOT IN ('$COM_SERVER_TYPE', '$UA_SERVER_TYPE');
             """.trimIndent()
 
-        override suspend fun calculate(backup: GatewayBackup): OpcServerStatistics? {
+        override suspend fun calculate(backup: InternalDatabase): OpcServerStatistics? {
             val uaServers = queryServers(backup, UA_SERVER_QUERY, enabled = { it["enabled"] })
             val comServers = queryServers(backup, COM_SERVER_QUERY, enabled = { it["enabled"] })
             val otherServers = queryServers(backup, OTHER_SERVER_QUERY, enabled = { null })
@@ -87,7 +94,7 @@ data class OpcServerStatistics(
         }
 
         private fun queryServers(
-            backup: GatewayBackup,
+            backup: InternalDatabase,
             @Language("sql")
             query: String,
             enabled: (ResultSet) -> Boolean?,
@@ -103,8 +110,29 @@ data class OpcServerStatistics(
                         enabled = enabled(rs),
                     )
                 }
-        } catch (e: SQLException) {
+        } catch (_: SQLException) {
             emptyList()
+        }
+
+        private val OPC_CONNECTION = ResourceType(PLATFORM_MODULE_ID, "opc-connection")
+
+        override suspend fun calculate(backup: Filesystem): OpcServerStatistics? {
+            val servers = backup.core.resourcesOfType(OPC_CONNECTION).map { resource ->
+                val profile = resource.config.getValue("profile").jsonObject
+                OpcServer(
+                    name = checkNotNull(resource.name),
+                    type = profile.getValue("type").jsonPrimitive.content,
+                    description = resource.description,
+                    readOnly = profile["readOnly"]?.jsonPrimitive?.boolean ?: false,
+                    enabled = resource.enabled,
+                )
+            }
+
+            if (servers.isEmpty()) {
+                return null
+            }
+
+            return OpcServerStatistics(servers)
         }
     }
 }
