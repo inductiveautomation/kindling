@@ -387,7 +387,7 @@ sealed class LogPanel<T : LogEvent>(
 
         val version: JComboBox<MajorVersion> =
             JComboBox(Vector(MajorVersion.entries)).apply {
-                selectedItem = MajorVersion.EightOne
+                selectedItem = MajorVersion.EightThree
                 configureCellRenderer { _, value, _, _, _ ->
                     text = "${value?.version}.*"
                 }

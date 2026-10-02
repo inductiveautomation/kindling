@@ -33,11 +33,20 @@ fun StackElement.toBodyLine(version: String): BodyLine = MajorVersion.lookup(ver
     }
 } ?: BodyLine(this)
 
-@Suppress("ktlint:standard:trailing-comma-on-declaration-site")
 enum class MajorVersion(val version: String) {
-    SevenNine("7.9"),
-    EightZero("8.0"),
-    EightOne("8.1");
+    SevenNine("7.9") {
+        override fun matches(version: String) = version.startsWith("7.9")
+    },
+    EightZero("8.0") {
+        override fun matches(version: String) = version.startsWith("8.0")
+    },
+    EightOne("8.1") {
+        override fun matches(version: String) = version.startsWith("8.1")
+    },
+    EightThree("8.3") {
+        override fun matches(version: String) = version.startsWith("8.3") || version == "dev"
+    },
+    ;
 
     val classMap: Properties? by lazy {
         Properties().also { properties ->
@@ -45,24 +54,9 @@ enum class MajorVersion(val version: String) {
         }
     }
 
-    companion object {
-        private val versionCache = LinkedHashMap<String, MajorVersion?>().apply {
-            put("dev", EightOne)
-            repeat(22) { patch ->
-                put("7.9.$patch", SevenNine)
-            }
-            repeat(18) { patch ->
-                put("8.0.$patch", EightZero)
-            }
-            repeat(33) { patch ->
-                put("8.1.$patch", EightOne)
-            }
-        }
+    internal abstract fun matches(version: String): Boolean
 
-        fun lookup(version: String): MajorVersion? = versionCache.getOrPut(version) {
-            entries.firstOrNull { majorVersion ->
-                version.startsWith(majorVersion.version)
-            }
-        }
+    companion object {
+        fun lookup(version: String): MajorVersion? = entries.firstOrNull { it.matches(version) }
     }
 }
