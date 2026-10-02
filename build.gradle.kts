@@ -81,15 +81,24 @@ tasks {
     val download81 by registering(DownloadJavadocs::class) {
         version = "8.1"
         urls = listOf(
-            "https://sdk.inductiveautomation.com/javadoc/ignition81/8.1.48/allclasses-index.html",
+            "https://sdk.inductiveautomation.com/javadoc/ignition81/latest/allclasses-index.html",
             "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
             "https://www.javadoc.io/static/org.python/jython-standalone/2.7.3/allclasses-noframe.html",
         )
         baseOutputDirectory = javadocDirectory
     }
+    val download83 by registering(DownloadJavadocs::class) {
+        version = "8.3"
+        urls = listOf(
+            "https://sdk.inductiveautomation.com/javadoc/ignition83/latest/allclasses-index.html",
+            "https://docs.oracle.com/en/java/javase/17/docs/api/allclasses-index.html",
+            "https://www.javadoc.io/static/org.python/jython-standalone/2.7.4/allclasses-noframe.html",
+        )
+        baseOutputDirectory = javadocDirectory
+    }
     processResources {
         duplicatesStrategy = DuplicatesStrategy.WARN
-        dependsOn(download79, download80, download81)
+        dependsOn(download79, download80, download81, download83)
     }
 }
 
