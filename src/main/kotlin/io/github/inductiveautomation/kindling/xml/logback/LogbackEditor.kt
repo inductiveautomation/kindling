@@ -2,6 +2,7 @@ package io.github.inductiveautomation.kindling.xml.logback
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.HomeLocation
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.TimestampPattern
 import io.github.inductiveautomation.kindling.core.Kindling.Preferences.UI.Theme
 import io.github.inductiveautomation.kindling.core.Theme.Companion.theme
 import io.github.inductiveautomation.kindling.core.ToolPanel.Companion.exportFileChooser
@@ -226,6 +227,8 @@ class LogbackEditor(file: List<String>) : JPanel(MigLayout("ins 6, fill, hidemod
             updateData()
         }
         logHomeField.document.addDocumentListener(DocumentAdapter { updateData() })
+
+        TimestampPattern.addChangeListener { updateData() }
 
         add(HorizontalSplitPane(editorPanel, previewPanel), "push, grow")
     }

@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.core
 
+import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.SystemInfo
@@ -34,6 +35,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import net.miginfocom.swing.MigLayout
 import org.jdesktop.swingx.JXTextField
 import java.awt.Component
 import java.awt.Dimension
@@ -42,11 +44,14 @@ import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Vector
 import javax.swing.DefaultCellEditor
 import javax.swing.DefaultComboBoxModel
+import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JComponent
+import javax.swing.JPanel
 import javax.swing.JSpinner
 import javax.swing.JTable
 import javax.swing.SpinnerNumberModel
@@ -56,6 +61,11 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.time.Duration.Companion.seconds
 import io.github.inductiveautomation.kindling.core.Theme.Companion as KindlingTheme
+
+const val DEFAULT_TIMESTAMP_PATTERN: String = "yyyy/MM/dd HH:mm:ss"
+
+fun isValidTimestampPattern(pattern: String): Boolean =
+    pattern.isNotBlank() && runCatching { DateTimeFormatter.ofPattern(pattern) }.isSuccess
 
 data object Kindling {
     val logo = SVGLoader().run {
@@ -209,6 +219,46 @@ data object Kindling {
                 },
             )
 
+            val TimestampPattern: Preference<String> = preference(
+                name = "Timestamp Pattern",
+                description = "The pattern used for log event timestamps, " +
+                    "both when generating a Logback encoder and when parsing wrapper logs",
+                default = DEFAULT_TIMESTAMP_PATTERN,
+                editor = {
+                    val field = JXTextField("A java.time pattern, e.g. $DEFAULT_TIMESTAMP_PATTERN").apply {
+                        text = currentValue
+                    }
+
+                    val reset = JButton("Reset").apply {
+                        toolTipText = "Restore the default pattern ($DEFAULT_TIMESTAMP_PATTERN)"
+                        isEnabled = field.text != DEFAULT_TIMESTAMP_PATTERN
+                        addActionListener {
+                            field.text = DEFAULT_TIMESTAMP_PATTERN
+                        }
+                    }
+
+                    field.document.addDocumentListener(
+                        DocumentAdapter {
+                            reset.isEnabled = field.text != DEFAULT_TIMESTAMP_PATTERN
+                            if (isValidTimestampPattern(field.text)) {
+                                field.putClientProperty(FlatClientProperties.OUTLINE, null)
+                                currentValue = field.text
+                            } else {
+                                field.putClientProperty(
+                                    FlatClientProperties.OUTLINE,
+                                    FlatClientProperties.OUTLINE_ERROR,
+                                )
+                            }
+                        },
+                    )
+
+                    JPanel(MigLayout("fill, ins 0")).apply {
+                        add(field, "growx, pushx")
+                        add(reset)
+                    }
+                },
+            )
+
             override val displayName: String = "General"
             override val serialKey: String = "general"
             override val preferences: List<Preference<*>> = listOf(
@@ -220,6 +270,7 @@ data object Kindling {
                 UseHyperlinks,
                 HighlightByDefault,
                 DefaultTimezone,
+                TimestampPattern,
             )
         }
 
