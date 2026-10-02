@@ -1,5 +1,6 @@
 package io.github.inductiveautomation.kindling.idb.metrics
 
+import io.github.inductiveautomation.kindling.core.Timezone
 import io.github.inductiveautomation.kindling.core.ToolPanel
 import io.github.inductiveautomation.kindling.utils.EDT_SCOPE
 import io.github.inductiveautomation.kindling.utils.FlatScrollPane
@@ -10,7 +11,9 @@ import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import java.sql.Connection
 import javax.swing.Icon
+import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 
 class MetricsView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3") {
     @Suppress("SqlResolve")
@@ -60,6 +63,11 @@ class MetricsView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
             MetricCard(metric, metricData)
         }
 
+    private val timezoneLabel = JLabel(timezoneLabelText(), SwingConstants.CENTER).apply {
+        putClientProperty("FlatLaf.styleClass", "small")
+        toolTipText = "Timestamps are displayed using the General > Timezone preference"
+    }
+
     private val cardPanel =
         JPanel(MigLayout("wrap 2, fillx, gap 20, hidemode 3, ins 6")).apply {
             for (card in metricCards) {
@@ -67,12 +75,23 @@ class MetricsView(connection: Connection) : ToolPanel("ins 0, fill, hidemode 3")
             }
         }
 
+    private val metricsPanel = JPanel(MigLayout("ins 0, fill")).apply {
+        add(timezoneLabel, "growx, wrap")
+        add(FlatScrollPane(cardPanel), "push, grow")
+    }
+
     init {
         add(FlatScrollPane(metricTree), "grow, w 200::20%")
-        add(FlatScrollPane(cardPanel), "push, grow, span")
+        add(metricsPanel, "push, grow, span")
 
         metricTree.checkBoxTreeSelectionModel.addTreeSelectionListener { updateData() }
+
+        Timezone.Default.addChangeListener {
+            timezoneLabel.text = timezoneLabelText()
+        }
     }
+
+    private fun timezoneLabelText(): String = "Timezone: ${Timezone.Default.zoneId.id}"
 
     private fun updateData() {
         BACKGROUND.launch {
