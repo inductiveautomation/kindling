@@ -1,6 +1,7 @@
 package io.github.inductiveautomation.kindling.utils
 
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import io.github.inductiveautomation.kindling.core.Timezone
 import io.github.inductiveautomation.kindling.utils.ReifiedLabelProvider.Companion.setDefaultRenderer
 import org.jdesktop.swingx.JXTable
 import org.jdesktop.swingx.JXTableHeader
@@ -10,7 +11,6 @@ import org.jdesktop.swingx.sort.SortController
 import org.jdesktop.swingx.table.ColumnControlButton
 import java.awt.Color
 import java.awt.event.MouseEvent
-import java.text.SimpleDateFormat
 import java.util.Date
 import javax.swing.JComponent
 import javax.swing.SortOrder
@@ -55,6 +55,10 @@ class ReifiedJXTable<T : TableModel>(
 
         packLater()
         actionMap.remove("find")
+
+        Timezone.Default.addChangeListener {
+            repaint()
+        }
     }
 
     override fun createDefaultTableHeader(): JTableHeader? = object : JXTableHeader(columnModel) {
@@ -77,9 +81,8 @@ class ReifiedJXTable<T : TableModel>(
             getText = { it },
             getTooltip = { it },
         )
-        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
         setDefaultRenderer<Date>(
-            getText = { it?.let(format::format) },
+            getText = { it?.let(Timezone.Default::format) },
         )
     }
 
