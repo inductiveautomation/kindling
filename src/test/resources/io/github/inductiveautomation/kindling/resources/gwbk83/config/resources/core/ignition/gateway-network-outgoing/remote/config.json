@@ -1,0 +1,5 @@
+{
+  "host": "remote.example.com",
+  "port": 8060,
+  "useSSL": true
+}
