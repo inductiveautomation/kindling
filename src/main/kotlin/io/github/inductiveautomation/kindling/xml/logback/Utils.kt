@@ -1,8 +1,11 @@
 package io.github.inductiveautomation.kindling.xml.logback
 
+import io.github.inductiveautomation.kindling.core.Kindling.Preferences.General.TimestampPattern
 import io.github.inductiveautomation.kindling.utils.NumericEntryField
 import io.github.inductiveautomation.kindling.utils.rightBuddy
 import javax.swing.JLabel
+
+internal fun timestampConversion(): String = "%d{${TimestampPattern.currentValue}}"
 
 internal fun sizeEntryField(
     inputValue: Long?,
@@ -89,7 +92,7 @@ internal fun LogbackConfigData.update(
             encoder = mutableListOf(
                 Encoder(
                     pattern =
-                    "%.-1p [%-30logger] [%d{YYYY/MM/dd HH:mm:ss, SSS}]: " +
+                    "%.-1p [%-30logger] [${timestampConversion()}]: " +
                         "{%thread} %replace(%m){\"[\\r\\n]+\", \"\"} %X%n",
                 ),
             ),
